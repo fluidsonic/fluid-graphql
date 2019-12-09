@@ -160,7 +160,7 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 
 
 		override fun enumValue(name: String) =
-			GValue.EnumValue(name)
+			GEnumValue(name)
 
 
 		fun Boolean.invoke(configure: InputValueBuilder.() -> Unit) =

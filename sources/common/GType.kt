@@ -16,7 +16,7 @@ sealed class GType(
 	open val description: String?
 		get() = null
 
-	open val inputFields: List<GParameter>?
+	open val inputFields: List<GArgumentDefinition>?
 		get() = null
 
 	open val interfaces: List<GInterfaceType>?
@@ -32,7 +32,7 @@ sealed class GType(
 		get() = null
 
 
-	open fun enumValues(includeDeprecated: Boolean = false): List<GEnumValue>? =
+	open fun enumValues(includeDeprecated: Boolean = false): List<GEnumValueDefinition>? =
 		null
 
 
@@ -45,6 +45,10 @@ sealed class GType(
 
 
 	abstract fun isSupertypeOf(other: GType): Boolean
+
+
+	override fun toString() =
+		GWriter { writeTypeName(this@GType) }
 
 
 	companion object;
@@ -94,8 +98,8 @@ class GEnumType internal constructor(
 	name = input.name
 ) {
 
-	private val valuesIncludingDeprecated = input.values.map(::GEnumValue)
-	private val valuesExcludingDeprecated = valuesIncludingDeprecated.filterNot(GEnumValue::isDeprecated)
+	private val valuesIncludingDeprecated = input.values.map(::GEnumValueDefinition)
+	private val valuesExcludingDeprecated = valuesIncludingDeprecated.filterNot(GEnumValueDefinition::isDeprecated)
 
 	override val description = input.description
 
@@ -133,7 +137,7 @@ class GInputObjectType internal constructor(
 ) {
 
 	override val description = input.description
-	override val inputFields = input.fields.map { GParameter(typeFactory, it) }
+	override val inputFields = input.fields.map { GArgumentDefinition(typeFactory, it) } // FIXME rn parameters
 
 
 //				init {
@@ -194,6 +198,28 @@ class GInterfaceType internal constructor(
 }
 
 
+// https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
+// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
+class GListType internal constructor(
+	typeFactory: TypeFactory,
+	input: GListTypeRef
+) : GWrappingType(
+	typeFactory = typeFactory,
+	kind = Kind.LIST,
+	ofType = input.elementType,
+	underlyingTypeName = input.underlyingName
+) {
+
+
+	override fun isSupertypeOf(other: GType) =
+		other === this ||
+			(other is GListType && ofType.isSupertypeOf(other.ofType))
+
+
+	companion object
+}
+
+
 sealed class GNamedType(
 	typeFactory: TypeFactory?,
 	directives: List<GDirective>,
@@ -211,11 +237,29 @@ sealed class GNamedType(
 //			}
 
 
-	override fun toString() =
-		name
-
-
 	companion object
+}
+
+
+// https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Non-Null
+// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
+class GNonNullType internal constructor(
+	typeFactory: TypeFactory,
+	input: GNonNullTypeRef
+) : GWrappingType(
+	typeFactory = typeFactory,
+	kind = Kind.NON_NULL,
+	ofType = input.nullableType,
+	underlyingTypeName = input.underlyingName
+) {
+
+	override fun isSupertypeOf(other: GType) =
+		other === this ||
+			(other is GNonNullType && ofType.isSupertypeOf(other.ofType))
+
+//				init {
+//					require(ofType !is NonNull) { "Cannot create a non-null type reference to another reference that is already non-null" }
+//				}
 }
 
 
@@ -292,7 +336,7 @@ class GObjectType internal constructor(
 
 				for (implementedArg in implementedField.args) {
 					if (expectedField.args.none { it.name == implementedArg.name }) {
-						require(implementedArg.type !is GWrappingType.NonNull) {
+						require(implementedArg.type !is GNonNullType) {
 							"'fields' element '${implementedField.name}' argument '${implementedArg.name}' must be of a nullable type " +
 								"as interface '${iface.name}' doesn't require it: $fields"
 						}
@@ -393,58 +437,5 @@ sealed class GWrappingType(
 	final override val ofType = typeFactory.get(ofType)
 	val underlyingNamedType = typeFactory.get(underlyingTypeName)
 
-
 	companion object
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
-	class List internal constructor(
-		typeFactory: TypeFactory,
-		input: GListTypeRef
-	) : GWrappingType(
-		typeFactory = typeFactory,
-		kind = Kind.LIST,
-		ofType = input.elementType,
-		underlyingTypeName = input.underlyingName
-	) {
-
-
-		override fun isSupertypeOf(other: GType) =
-			other === this ||
-				(other is List && ofType.isSupertypeOf(other.ofType))
-
-
-		override fun toString() =
-			"[${ofType}]"
-
-
-		companion object
-	}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Non-Null
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
-	class NonNull internal constructor(
-		typeFactory: TypeFactory,
-		input: GNonNullTypeRef
-	) : GWrappingType(
-		typeFactory = typeFactory,
-		kind = Kind.NON_NULL,
-		ofType = input.nullableType,
-		underlyingTypeName = input.underlyingName
-	) {
-
-		override fun isSupertypeOf(other: GType) =
-			other === this ||
-				(other is NonNull && ofType.isSupertypeOf(other.ofType))
-
-
-		override fun toString() =
-			"${ofType}!"
-
-//				init {
-//					require(ofType !is NonNull) { "Cannot create a non-null type reference to another reference that is already non-null" }
-//				}
-	}
 }

@@ -5,29 +5,40 @@ package io.fluidsonic.graphql
 class GSchema private constructor(
 	val directives: List<GDirectiveDefinition>,
 	val mutationType: GObjectType?,
-	val queryType: GObjectType,
+	val queryType: GObjectType?,
 	val subscriptionType: GObjectType?,
-	val types: List<GNamedType>
+	val types: Map<String, GNamedType>
 ) {
 
-	val usesDefaultOperationNames
-		get() = queryType.name == GSpecification.defaultQueryTypeName &&
+	fun resolveType(ref: GTypeRef): GType? {
+		TODO()
+	}
+
+
+	fun resolveType(ref: GNamedTypeRef) =
+		types[ref.name]
+
+
+	fun resolveType(name: String) =
+		resolveType(GNamedTypeRef(name))
+
+
+	fun rootTypeForOperationType(operationType: GOperationType) =
+		when (operationType) {
+			GOperationType.mutation -> mutationType
+			GOperationType.query -> queryType
+			GOperationType.subscription -> subscriptionType
+		}
+
+
+	val rootTypeNamesFollowCommonConvention
+		get() = (queryType == null || queryType.name == GSpecification.defaultQueryTypeName) &&
 			(mutationType == null || mutationType.name == GSpecification.defaultMutationTypeName) &&
 			(subscriptionType == null || subscriptionType.name == GSpecification.defaultSubscriptionTypeName)
 
 
-	fun resolveType(reference: GTypeRef): GType? {
-		TODO()
-	}
-
-
-	fun resolveType(reference: GNamedTypeRef): GNamedType? {
-		TODO()
-	}
-
-
 	override fun toString() =
-		GSchemaPrinter().print(this)
+		GWriter { writeSchema(this@GSchema) }
 
 
 	companion object {
@@ -91,8 +102,8 @@ class GSchema private constructor(
 							}
 						}
 
-						is GListTypeRef -> GWrappingType.List(typeFactory = this, input = reference)
-						is GNonNullTypeRef -> GWrappingType.NonNull(typeFactory = this, input = reference)
+						is GListTypeRef -> GListType(typeFactory = this, input = reference)
+						is GNonNullTypeRef -> GNonNullType(typeFactory = this, input = reference)
 					}
 				}
 
@@ -137,14 +148,15 @@ class GSchema private constructor(
 
 						is GWrappingType ->
 							when (type) {
-								is GWrappingType.List -> GListTypeRef(referenceForType(type.ofType))
-								is GWrappingType.NonNull -> GNonNullTypeRef(referenceForType(type.ofType))
+								is GListType -> GListTypeRef(referenceForType(type.ofType))
+								is GNonNullType -> GNonNullTypeRef(referenceForType(type.ofType))
 							}
 					}
 			}
 
 			val types = input.types
 				.map { typeFactory.get(it.name) }
+				.associateBy { it.name }
 
 			val queryTypeName = input.queryType ?: GSpecification.defaultQueryTypeName
 

@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 // https://graphql.github.io/graphql-spec/June2018/#EnumValue
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__EnumValue-Type
-class GEnumValue internal constructor(
+class GEnumValueDefinition internal constructor(
 	input: GQLInput.EnumValue
 ) {
 
@@ -17,6 +17,10 @@ class GEnumValue internal constructor(
 //		init {
 //			require(Specification.isValidEnumValue(name)) { "'name' is not a valid name: $name" }
 //		}
+
+
+	override fun toString() =
+		GWriter { writeEnumValueDefinition(this@GEnumValueDefinition) }
 
 
 	companion object

@@ -8,10 +8,14 @@ class GDirectiveDefinition internal constructor(
 	input: GQLInput.DirectiveDefinition
 ) {
 
-	val arguments = input.arguments.map { GParameter(typeFactory, it) }
+	val arguments = input.arguments.map { GArgumentDefinition(typeFactory, it) } // FIXME parameters
 	val description = input.description
 	val locations = input.locations
 	val name = input.name
+
+
+	override fun toString() =
+		GWriter { writeDirectiveDefinition(this@GDirectiveDefinition) }
 
 
 	companion object

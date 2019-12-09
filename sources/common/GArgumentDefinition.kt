@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 // https://graphql.github.io/graphql-spec/June2018/#InputValueDefinition
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__InputValue-Type
-class GParameter internal constructor(
+class GArgumentDefinition internal constructor(
 	typeFactory: TypeFactory,
 	input: GQLInput.InputValue
 ) {
@@ -13,6 +13,10 @@ class GParameter internal constructor(
 	val directives = input.directives.map(::GDirective)
 	val name = input.name
 	val type = typeFactory.get(input.type)
+
+
+	override fun toString() =
+		GWriter { writeArgumentDefinition(this@GArgumentDefinition) }
 
 
 //		init {

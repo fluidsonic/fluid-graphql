@@ -7,7 +7,7 @@ class GExecutionContext(
 	val errors: MutableList<GError> = mutableListOf(),
 	val fragmentsByName: Map<String, GFragmentDefinition>,
 	val operation: GOperationDefinition,
-	val rootValue: GValue.Object,
+	val rootValue: GObjectValue,
 	val schema: GSchema,
 	val variableValues: GVariableValues
 )

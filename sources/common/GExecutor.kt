@@ -6,7 +6,7 @@ interface GExecutor {
 	fun createContext(
 		schema: GSchema,
 		document: GDocument,
-		rootValue: GValue.Object,
+		rootValue: GObjectValue,
 		operationName: String? = null,
 		variableValues: GVariableValues = emptyMap(),
 		externalContext: Any? = null
@@ -53,13 +53,13 @@ interface GExecutor {
 				val defaultValue = argumentDefinition.defaultValue
 				if (defaultValue != null)
 					coercedValues[argumentName] = defaultValue
-				else if (argumentType is GWrappingType.NonNull)
+				else if (argumentType is GNonNullType)
 					context.errors += GError("Required argument '$argumentName' of type $argumentType was not provided.")
 
 				continue
 			}
 
-			if (argumentValue is GValue.Variable) {
+			if (argumentValue is GVariableReference) {
 				val variableName = argumentValue.name
 
 				val variableValue = context.variableValues[variableName]
@@ -67,7 +67,7 @@ interface GExecutor {
 					val defaultValue = argumentDefinition.defaultValue
 					if (defaultValue != null)
 						coercedValues[argumentName] = defaultValue
-					else if (argumentType is GWrappingType.NonNull)
+					else if (argumentType is GNonNullType)
 						context.errors += GError("Required argument '$argumentName' of type $argumentType is set to variable " +
 							"$$variableName, but no value was provided.")
 				}
@@ -77,7 +77,7 @@ interface GExecutor {
 				continue
 			}
 
-			if (coercedValues[argumentName] == GValue.Null && argumentType is GWrappingType.NonNull)
+			if (coercedValues[argumentName] == GNullValue && argumentType is GNonNullType)
 				context.errors += GError("Required argument '$argumentName' of type $argumentType must not be null.")
 
 			// FIXME actually coerce input
@@ -114,13 +114,13 @@ interface GExecutor {
 				val defaultValue = variableDefinition.defaultValue
 				if (defaultValue != null)
 					coercedValues[variableName] = defaultValue
-				else if (variableType is GWrappingType.NonNull)
+				else if (variableType is GNonNullType)
 					addError("A value for required variable $$variableName of type $variableType was not provided.")
 
 				continue
 			}
 
-			if (value == GValue.Null && variableType is GWrappingType.NonNull) {
+			if (value == GNullValue && variableType is GNonNullType) {
 				addError("Variable $$variableName of type $variableType must not be null.")
 				continue
 			}
@@ -143,7 +143,7 @@ interface GExecutor {
 		?.firstOrNull { it.name == argument }
 		?.value
 		?.let { value ->
-			if (value is GValue.Variable)
+			if (value is GVariableReference)
 				context.variableValues[value.name]
 			else
 				value
@@ -159,12 +159,7 @@ interface GExecutor {
 		visitedFragments: MutableSet<String> = mutableSetOf()
 	): Map<String, List<GFieldSelection>> {
 		loop@ for (selection in selectionSet) {
-			val skip = selection.directives.getArgumentValue(context, "skip", "if") == GValue.Boolean.True
-			if (skip)
-				continue
-
-			val include = selection.directives.getArgumentValue(context, "include", "if") != GValue.Boolean.False
-			if (include)
+			if (!shouldIncludeSelection(context, selection))
 				continue
 
 			when (selection) {
@@ -180,7 +175,9 @@ interface GExecutor {
 
 					visitedFragments += fragmentName
 
-					val fragment = context.fragmentsByName[fragmentName] ?: continue@loop
+					val fragment = context.fragmentsByName[fragmentName]
+						?: continue@loop
+
 					val fragmentType = context.schema.resolveType(fragment.typeCondition.type)
 					if (fragmentType == null || !doesFragmentTypeApply(objectType, fragmentType))
 						continue@loop
@@ -226,11 +223,11 @@ interface GExecutor {
 	): GValue {
 		val fieldName = fields.first().name
 
-		if (result == GValue.Null) {
-			if (fieldType is GWrappingType.NonNull)
+		if (result == GNullValue) {
+			if (fieldType is GNonNullType)
 				context.errors += GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value.")
 
-			return GValue.Null
+			return GNullValue
 		}
 
 		when (fieldType) {
@@ -242,12 +239,14 @@ interface GExecutor {
 			is GInterfaceType,
 			is GObjectType,
 			is GUnionType -> {
-				result as GValue.Object
+				if (result !is GObjectValue) {
+					context.errors += GError("Field '$fieldName' of type $fieldType has resulted in a value of an incorrect type: $result")
 
-				val objectType = if (fieldType is GObjectType)
-					fieldType
-				else
-					resolveAbstractType(fieldType, result)
+					return GNullValue
+				}
+
+				val objectType = fieldType as? GObjectType
+					?: resolveAbstractType(context, fieldType, result)
 
 				val subSelectionSet = GSpecification.mergeSelectionSets(fields)
 
@@ -259,10 +258,10 @@ interface GExecutor {
 				)
 			}
 
-			is GWrappingType.List -> {
+			is GListType -> {
 				val elementType = fieldType.ofType
 
-				return (result as GValue.List)
+				return (result as GListValue)
 					.value
 					.map { element ->
 						completeValue(
@@ -272,13 +271,13 @@ interface GExecutor {
 							element
 						)
 					}
-					.let { GValue.List(it) }
+					.let { GListValue(it) }
 			}
 
-			is GWrappingType.NonNull -> {
+			is GNonNullType -> {
 				val nullableType = fieldType.ofType
 				val completedResult = completeValue(context, nullableType, fields, result)
-				if (completedResult == GValue.Null)
+				if (completedResult == GNullValue)
 					context.errors += GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value.")
 
 				return completedResult
@@ -294,7 +293,7 @@ interface GExecutor {
 	fun executeField(
 		context: GExecutionContext,
 		objectType: GObjectType,
-		objectValue: GValue.Object,
+		objectValue: GObjectValue,
 		fieldType: GType,
 		fields: List<GFieldSelection>
 	): GValue {
@@ -315,14 +314,16 @@ interface GExecutor {
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	fun executeQuery(
 		context: GExecutionContext
-	): GValue.Object? {
-		val queryType = context.schema.queryType
-		val selectionSet = context.operation.selectionSet
+	): GObjectValue? {
+		val rootType = context.schema.rootTypeForOperationType(context.operation.type) ?: run {
+			context.errors += GError("Schema is not configured for ${context.operation.type} operations.")
+			return null
+		}
 
 		return executeSelectionSet(
 			context,
-			selectionSet,
-			queryType,
+			context.operation.selectionSet,
+			rootType,
 			context.rootValue
 		)
 	}
@@ -331,7 +332,7 @@ interface GExecutor {
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
 	fun executeRequest(
 		context: GExecutionContext
-	): Map<String, Any?> {
+	): GObjectValue {
 		context.errors.clear()
 
 		val data = when (context.operation.type) {
@@ -340,10 +341,12 @@ interface GExecutor {
 			GOperationType.subscription -> TODO() // subscribe(operation, schema, coercedVariableValues, initialValue)
 		}
 
-		return if (context.errors.isNotEmpty())
-			mapOf("errors" to context.errors, "data" to data)
-		else
-			mapOf("data" to data)
+		return GValue.from(
+			if (context.errors.isNotEmpty())
+				mapOf("errors" to context.errors, "data" to data)
+			else
+				mapOf("data" to data)
+		) as GObjectValue
 	}
 
 
@@ -352,8 +355,8 @@ interface GExecutor {
 		context: GExecutionContext,
 		selectionSet: GSelectionSet,
 		objectType: GObjectType,
-		objectValue: GValue.Object
-	): GValue.Object {
+		objectValue: GObjectValue
+	): GObjectValue {
 		val groupedFieldSet = collectFields(
 			context,
 			objectType,
@@ -375,7 +378,7 @@ interface GExecutor {
 			resultMap[responseKey] = responseValue
 		}
 
-		return GValue.Object(resultMap)
+		return GObjectValue(resultMap)
 	}
 
 
@@ -414,22 +417,42 @@ interface GExecutor {
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveAbstractType()
-	fun resolveAbstractType(abstractType: GType, objectValue: GValue.Object): GObjectType {
-		TODO()
+	fun resolveAbstractType(
+		context: GExecutionContext,
+		abstractType: GType,
+		objectValue: GObjectValue
+	): GObjectType {
+		return context.schema.resolveType("Human") as GObjectType
+		// FIXME
 	}
 
 
+	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
 	fun resolveFieldValue(
 		objectType: GObjectType,
-		objectValue: GValue.Object,
+		objectValue: GObjectValue,
 		fieldName: String,
 		argumentValues: Map<String, GValue>
 	): GValue {
-		val resolver: (objectValue: GValue.Object, argumentValues: Map<String, GValue>) -> GValue = { _, _ ->
-			GValue.String(fieldName)
+		val resolver: (objectValue: GObjectValue, argumentValues: Map<String, GValue>) -> GValue = { _, _ ->
+			if (fieldName == "hero")
+				GValue.from(mapOf("id" to "abc"))
+			else
+				GStringValue(fieldName)
 		}
 
 		return resolver(objectValue, argumentValues)
+	}
+
+
+	fun shouldIncludeSelection(context: GExecutionContext, selection: GSelection): Boolean {
+		val skip = selection.directives.getArgumentValue(context, "skip", "if") == GBooleanValue.True
+		if (skip)
+			return false
+
+		val include = selection.directives.getArgumentValue(context, "include", "if") != GBooleanValue.False
+
+		return include
 	}
 
 

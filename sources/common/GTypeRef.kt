@@ -14,6 +14,10 @@ sealed class GTypeRef {
 		this
 
 
+	override fun toString() =
+		GWriter { writeTypeRef(this@GTypeRef) }
+
+
 	companion object
 }
 
@@ -34,19 +38,16 @@ class GNamedTypeRef private constructor(
 		name.hashCode()
 
 
-	override fun toString() =
-		name
-
-
 	companion object {
 
+		@Suppress("USELESS_ELVIS")
 		operator fun invoke(name: String): GNamedTypeRef =
 			when (name) {
-				"Boolean" -> GBooleanTypeRef
-				"Float" -> GFloatTypeRef
-				"ID" -> GIDTypeRef
-				"Int" -> GIntTypeRef
-				"String" -> GStringTypeRef
+				"Boolean" -> GBooleanTypeRef ?: GNamedTypeRef(name)
+				"Float" -> GFloatTypeRef ?: GNamedTypeRef(name)
+				"ID" -> GIDTypeRef ?: GNamedTypeRef(name)
+				"Int" -> GIntTypeRef ?: GNamedTypeRef(name)
+				"String" -> GStringTypeRef ?: GNamedTypeRef(name)
 				else -> GNamedTypeRef(name)
 			}
 	}
@@ -67,10 +68,6 @@ class GListTypeRef(
 
 	override fun hashCode() =
 		1 + elementType.hashCode()
-
-
-	override fun toString() =
-		"[$elementType]"
 
 
 	companion object
@@ -99,10 +96,6 @@ class GNonNullTypeRef private constructor(
 
 	override fun nullable() =
 		nullableType
-
-
-	override fun toString() =
-		"$nullableType!"
 
 
 	companion object {

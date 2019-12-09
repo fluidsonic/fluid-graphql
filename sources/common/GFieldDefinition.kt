@@ -8,7 +8,7 @@ class GFieldDefinition internal constructor(
 	input: GQLInput.Field
 ) {
 
-	val args = input.args.map { GParameter(typeFactory, it) }
+	val args = input.args.map { GArgumentDefinition(typeFactory, it) }
 	val deprecationReason = input.deprecationReason
 	val description = input.description
 	val directives = input.directives.map(::GDirective)
@@ -23,6 +23,11 @@ class GFieldDefinition internal constructor(
 //				"'type' must be an output type: $type"
 //			}
 //		}
+
+
+	override fun toString() =
+		GWriter { writeFieldDefinition(this@GFieldDefinition) }
+
 
 	companion object
 }

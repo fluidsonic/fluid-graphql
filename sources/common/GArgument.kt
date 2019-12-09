@@ -10,5 +10,9 @@ class GArgument internal constructor(
 	val value = input.value
 
 
+	override fun toString() =
+		GWriter { writeArgument(this@GArgument) }
+
+
 	companion object
 }

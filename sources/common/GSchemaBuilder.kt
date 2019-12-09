@@ -260,7 +260,7 @@ interface SchemaBuilder {
 		// I hate that function invocation takes precedence over infix operators!
 		@SchemaBuilderKeywordB
 		fun enumValue(name: String, configure: InputValueBuilder.() -> Unit) =
-			GValue.EnumValue(name)(configure)
+			GEnumValue(name)(configure)
 
 		// GTypeRef.invoke() won't work for List(…) {} because Kotlin's global 'List' function takes precedence
 		@SchemaBuilderBuiltinTypeA
@@ -386,6 +386,6 @@ interface SchemaBuilder {
 	interface ValueContainer {
 
 		@SchemaBuilderKeywordB
-		fun enumValue(name: String): GValue.EnumValue
+		fun enumValue(name: String): GEnumValue
 	}
 }

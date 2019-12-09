@@ -131,5 +131,34 @@ fun main() {
 		}
 	}
 
-	println(gql)
+
+	val req = GDocument(
+		definitions = listOf(
+			GOperationDefinition(
+				type = GOperationType.query,
+				selectionSet = listOf(
+					GFieldSelection(
+						name = "hero",
+						selectionSet = listOf(
+							GFieldSelection(
+								name = "id"
+							)
+						)
+					)
+				)
+			)
+		)
+	)
+
+	val con = GExecutor.default.createContext(
+		schema = gql,
+		document = req,
+		rootValue = GObjectValue(mapOf("id" to GValue.from("Hey")))
+	).value!!
+
+	val r = GExecutor.default.executeRequest(con)
+
+	println(r)
+
+	//println(gql)
 }

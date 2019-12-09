@@ -10,5 +10,9 @@ class GDirective internal constructor(
 	val name = input.name
 
 
-	companion object;
+	override fun toString() =
+		GWriter { writeDirective(this@GDirective) }
+
+
+	companion object
 }
