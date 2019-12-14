@@ -10,7 +10,8 @@ class GFieldDefinition(
 	description: String? = null,
 	val directives: List<GDirective> = emptyList(),
 	val isDeprecated: Boolean = false,
-	deprecationReason: String? = null
+	deprecationReason: String? = null,
+	val resolver: GFieldResolver<*>? = null
 ) {
 
 	val arguments: Map<String, GArgumentDefinition>
@@ -43,7 +44,8 @@ class GFieldDefinition(
 		val description: String? = null,
 		val directives: List<GDirective> = emptyList(),
 		val isDeprecated: Boolean = false,
-		val deprecationReason: String? = null
+		val deprecationReason: String? = null,
+		val resolver: GFieldResolver<*>? = null
 	) {
 
 		fun resolve(typeRegistry: GTypeRegistry) = GFieldDefinition(
@@ -53,6 +55,7 @@ class GFieldDefinition(
 			directives = directives,
 			isDeprecated = isDeprecated,
 			name = name,
+			resolver = resolver,
 			type = typeRegistry.resolve(type)
 		)
 

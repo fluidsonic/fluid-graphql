@@ -74,6 +74,24 @@ sealed class GType(
 
 		companion object
 	}
+
+
+	interface WithArguments {
+
+		val arguments: Map<String, GArgumentDefinition>
+	}
+
+
+	interface WithFields {
+
+		val fields: Map<String, GFieldDefinition>
+	}
+
+
+	interface WithInterfaces {
+
+		val interfaces: List<GInterfaceType>
+	}
 }
 
 
@@ -158,15 +176,17 @@ class GInputObjectType private constructor(
 	description: String?,
 	directives: List<GDirective>,
 	name: String
-) : GNamedType(
-	typeRegistry = typeRegistry,
-	description = description,
-	directives = directives,
-	kind = Kind.INPUT_OBJECT,
-	name = name
-) {
+) :
+	GNamedType(
+		typeRegistry = typeRegistry,
+		description = description,
+		directives = directives,
+		kind = Kind.INPUT_OBJECT,
+		name = name
+	),
+	GType.WithArguments {
 
-	val arguments: Map<String, GArgumentDefinition>
+	override val arguments: Map<String, GArgumentDefinition>
 
 
 	constructor(
@@ -240,15 +260,17 @@ class GInterfaceType private constructor(
 	fields: List<GFieldDefinition>?,
 	fieldsToResolve: List<GFieldDefinition.Unresolved>?,
 	name: String
-) : GNamedType(
-	typeRegistry = typeRegistry,
-	description = description,
-	directives = directives,
-	kind = Kind.INTERFACE,
-	name = name
-) {
+) :
+	GNamedType(
+		typeRegistry = typeRegistry,
+		description = description,
+		directives = directives,
+		kind = Kind.INTERFACE,
+		name = name
+	),
+	GType.WithFields {
 
-	val fields: Map<String, GFieldDefinition>
+	override val fields: Map<String, GFieldDefinition>
 
 
 	constructor(
@@ -419,16 +441,19 @@ class GObjectType private constructor(
 	interfaces: List<GInterfaceType>?,
 	interfacesToResolve: List<GNamedTypeRef>?,
 	name: String
-) : GNamedType(
-	typeRegistry = typeRegistry,
-	description = description,
-	directives = directives,
-	kind = Kind.OBJECT,
-	name = name
-) {
+) :
+	GNamedType(
+		typeRegistry = typeRegistry,
+		description = description,
+		directives = directives,
+		kind = Kind.OBJECT,
+		name = name
+	),
+	GType.WithFields,
+	GType.WithInterfaces {
 
-	val fields: Map<String, GFieldDefinition>
-	val interfaces: List<GInterfaceType>
+	override val fields: Map<String, GFieldDefinition>
+	override val interfaces: List<GInterfaceType>
 
 
 	constructor(

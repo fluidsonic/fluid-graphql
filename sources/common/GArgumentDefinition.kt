@@ -6,7 +6,7 @@ package io.fluidsonic.graphql
 class GArgumentDefinition(
 	val name: String,
 	val type: GType,
-	val defaultValue: GValue? = null,
+	val defaultValue: Any? = null,
 	description: String? = null,
 	val directives: List<GDirective> = emptyList()
 ) {
@@ -29,7 +29,7 @@ class GArgumentDefinition(
 	class Unresolved(
 		val name: String,
 		val type: GTypeRef,
-		val defaultValue: GValue? = null,
+		val defaultValue: Any? = null,
 		val description: String? = null,
 		val directives: List<GDirective> = emptyList()
 	) {

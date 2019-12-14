@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 typealias GSelectionSet = List<GSelection>
-typealias GVariableValues = Map<String, GValue>
+typealias GVariableValues = Map<String, Any>
 
 
 // FIXME remove
@@ -27,7 +27,7 @@ object GSpecification {
 				type = GStringType,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
 					"Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).",
-				defaultValue = GStringValue("No longer supported")
+				defaultValue = "No longer supported"
 			)
 		),
 		description = "Marks an element of a GraphQL schema as no longer supported.",

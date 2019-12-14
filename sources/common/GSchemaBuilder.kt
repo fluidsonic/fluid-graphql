@@ -21,7 +21,7 @@ annotation class SchemaBuilderDsl
 
 @SchemaBuilderDsl
 @Suppress("PropertyName")
-interface SchemaBuilder {
+interface GSchemaBuilder {
 
 	@SchemaBuilderType
 	val type
@@ -87,7 +87,7 @@ interface SchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface ArgumentContainer : ValueContainer {
+	interface ArgumentContainer {
 
 		@SchemaBuilderKeywordB
 		fun argument(name: NameAndValue)
@@ -119,28 +119,8 @@ interface SchemaBuilder {
 
 		interface NameAndType {
 
-			// FIXME Any?
-
 			@SchemaBuilderKeywordB
-			infix fun default(default: Boolean): NameAndTypeAndDefault
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Double): NameAndTypeAndDefault
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Float): NameAndTypeAndDefault
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Int): NameAndTypeAndDefault
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Nothing?): NameAndTypeAndDefault
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: String): NameAndTypeAndDefault
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: GValue): NameAndTypeAndDefault
+			infix fun default(default: Any?): NameAndTypeAndDefault
 		}
 
 		interface NameAndTypeAndDefault
@@ -253,7 +233,11 @@ interface SchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface FieldDefinitionBuilder : ArgumentDefinitionContainer, DeprecationContainer, DescriptionContainer, DirectiveContainer, ValueContainer
+	interface FieldDefinitionBuilder : ArgumentDefinitionContainer, DeprecationContainer, DescriptionContainer, DirectiveContainer {
+
+		@SchemaBuilderKeywordB
+		fun <Parent : Any> resolve(parentClass: KClass<out Parent>, resolver: GFieldResolver.Context.(parent: Parent) -> Any?)
+	}
 
 
 	@SchemaBuilderDsl
@@ -346,12 +330,9 @@ interface SchemaBuilder {
 
 	@SchemaBuilderDsl
 	interface UnionDefinitionBuilder : DescriptionContainer, DirectiveContainer
-
-
-	@SchemaBuilderDsl
-	interface ValueContainer {
-
-		@SchemaBuilderKeywordB
-		fun enumValue(name: String): GEnumValue
-	}
 }
+
+
+@SchemaBuilderKeywordB
+inline fun <reified Parent : Any> GSchemaBuilder.FieldDefinitionBuilder.resolve(noinline resolver: GFieldResolver.Context.(parent: Parent) -> Any?) =
+	resolve(parentClass = Parent::class, resolver = resolver)

@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+// FIXME deprecation
 class GWriter(
 	val indent: String = "\t"
 ) {
@@ -529,16 +530,22 @@ fun GWriter.writeUnionDefinition(type: GUnionType) {
 }
 
 
-fun GWriter.writeValue(value: GValue) {
+fun GWriter.writeValue(value: Any?) {
 	@Suppress("UNUSED_VARIABLE")
 	val exhaustive = when (value) {
-		is GBooleanValue -> writeRaw(if (value.value) "true" else "false")
-		is GEnumValue -> writeName(value.value)
-		is GFloatValue -> writeRaw(value.value.toString())
-		is GIntValue -> writeRaw(value.value.toString())
-		is GListValue -> {
+		null, GNullValue -> writeRaw("null")
+		is GVariableReference -> {
+			writeRaw("$")
+			writeName(value.name)
+		}
+		is Boolean -> writeRaw(if (value) "true" else "false")
+		// is GEnumValue -> writeName(value.value) // FIXME
+		is Double -> writeRaw(value.toString())
+		is Float -> writeRaw(value.toString())
+		is Int -> writeRaw(value.toString())
+		is Collection<*> -> {
 			writeRaw("[")
-			value.value.forEachIndexed { index, element ->
+			value.forEachIndexed { index, element ->
 				if (index > 0)
 					writeRaw(", ")
 
@@ -546,24 +553,22 @@ fun GWriter.writeValue(value: GValue) {
 			}
 			writeRaw("]")
 		}
-		is GNullValue -> writeRaw("null")
-		is GObjectValue -> {
-			if (value.value.isNotEmpty())
-				writeBlock {
-					value.value.forEach { (fieldName, fieldValue) ->
-						writeName(fieldName)
-						writeRaw(": ")
-						writeValue(fieldValue)
-						writeRaw("\n")
-					}
-				}
-			else
-				writeRaw("{}")
-		}
-		is GStringValue -> writeStringValue(value.value)
-		is GVariableReference -> {
-			writeRaw("$")
-			writeName(value.name)
-		}
+		is String -> writeStringValue(value)
+		else ->
+			writeRaw("<OBJ>")
+		// FIXME
+//		{
+//			if (value.value.isNotEmpty())
+//				writeBlock {
+//					value.value.forEach { (fieldName, fieldValue) ->
+//						writeName(fieldName)
+//						writeRaw(": ")
+//						writeValue(fieldValue)
+//						writeRaw("\n")
+//					}
+//				}
+//			else
+//				writeRaw("{}")
+//		}
 	}
 }

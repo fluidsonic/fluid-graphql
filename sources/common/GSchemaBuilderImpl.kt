@@ -1,14 +1,15 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.SchemaBuilder.*
+import io.fluidsonic.graphql.GSchemaBuilder.*
+import kotlin.reflect.*
 
 
 @SchemaBuilderKeywordB
-fun schema(configure: SchemaBuilder.() -> Unit) =
-	SchemaBuilderImpl().apply(configure).build()
+fun schema(configure: GSchemaBuilder.() -> Unit) =
+	GSchemaBuilderImpl().apply(configure).build()
 
 
-internal class SchemaBuilderImpl : SchemaBuilder {
+internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 	private val directives = mutableListOf<GDirectiveDefinition.Unresolved>()
 	private var mutationType: GNamedTypeRef? = null
@@ -107,7 +108,7 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 
 	private class ArgumentBuilderImpl(
 		var name: String,
-		var value: GValue
+		var value: Any?
 	) : ArgumentContainer.NameAndValue {
 
 		fun build() =
@@ -121,7 +122,7 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 	private class ArgumentDefinitionBuilderImpl(
 		var name: String,
 		var type: GTypeRef,
-		var defaultValue: GValue? = null
+		var defaultValue: Any? = null
 	) : ContainerImpl(),
 		ArgumentDefinitionBuilder,
 		ArgumentDefinitionContainer.NameAndType,
@@ -137,38 +138,10 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 			)
 
 
-		override fun default(default: Boolean) = apply {
-			defaultValue = GValue.from(default)
-		}
+		override fun default(default: Any?) = apply {
+			// FIXME typecheck
 
-
-		override fun default(default: Double) = apply {
-			defaultValue = GValue.from(default)
-		}
-
-
-		override fun default(default: Float) = apply {
-			defaultValue = GValue.from(default)
-		}
-
-
-		override fun default(default: Int) = apply {
-			defaultValue = GValue.from(default)
-		}
-
-
-		override fun default(default: Nothing?) = apply {
-			defaultValue = GValue.from(default)
-		}
-
-
-		override fun default(default: String) = apply {
-			defaultValue = GValue.from(default)
-		}
-
-
-		override fun default(default: GValue) = apply {
-			defaultValue = default
+			defaultValue = default ?: GNullValue
 		}
 	}
 
@@ -221,10 +194,6 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 		}
 
 
-		override fun enumValue(name: String) =
-			GEnumValue(name)
-
-
 		fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.() -> Unit) {
 			fieldDefinitions += (name as FieldDefinitionBuilderImpl).apply(configure).build()
 		}
@@ -239,7 +208,7 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 
 
 		override fun String.with(value: Any?) =
-			ArgumentBuilderImpl(name = this, value = GValue.from(value))
+			ArgumentBuilderImpl(name = this, value = value)
 
 
 		override fun List(type: GTypeRef) =
@@ -390,6 +359,9 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 		FieldDefinitionBuilder,
 		FieldDefinitionContainer.NameAndType {
 
+		private var resolver: GFieldResolver<*>? = null
+
+
 		fun build() =
 			GFieldDefinition.Unresolved(
 				name = name,
@@ -398,8 +370,14 @@ internal class SchemaBuilderImpl : SchemaBuilder {
 				description = description,
 				directives = directives,
 				isDeprecated = isDeprecated,
-				deprecationReason = deprecationReason
+				deprecationReason = deprecationReason,
+				resolver = resolver
 			)
+
+
+		override fun <Parent : Any> resolve(parentClass: KClass<out Parent>, resolver: GFieldResolver.Context.(parent: Parent) -> Any?) {
+			this.resolver = GFieldResolver.of(resolver)
+		}
 
 
 		override fun String.of(type: GTypeRef) =

@@ -4,7 +4,6 @@ import io.fluidsonic.graphql.*
 fun main() {
 
 	val gql = schema {
-
 		val Character by type
 		val Date by type
 		val Droid by type
@@ -105,7 +104,7 @@ fun main() {
 			field("id" of !ID)
 			field("name" of !String)
 			field("length" of Float) {
-				argument("unit" of LengthUnit default enumValue("METERS")) {
+				argument("unit" of LengthUnit default "METERS") {
 					description("nice")
 					directive("hello")
 				}
@@ -145,7 +144,7 @@ fun main() {
 					GFieldSelection(
 						name = "__type",
 						arguments = listOf(
-							GArgument(name = "name", value = GStringValue("Droid"))
+							GArgument(name = "name", value = "Droid")
 						),
 						selectionSet = listOf(
 							GFieldSelection(name = "name"),
@@ -153,7 +152,11 @@ fun main() {
 								name = "fields",
 								selectionSet = listOf(
 									GFieldSelection("name"),
-									GFieldSelection(name = "type", selectionSet = listOf(GFieldSelection("name")))
+									GFieldSelection(name = "type", selectionSet = listOf(
+										GFieldSelection("name"),
+										GFieldSelection("kind"),
+										GFieldSelection("ofType")
+									))
 								)
 							)
 						)
@@ -166,12 +169,10 @@ fun main() {
 	val con = GExecutor.default.createContext(
 		schema = gql,
 		document = req,
-		rootValue = GObjectValue(mapOf("id" to GValue.from("Hey")))
+		rootValue = mapOf("id" to "Hey")
 	).value!!
 
 	val r = GExecutor.default.executeRequest(con)
 
 	println(r)
-
-	println(GIntrospection.schema)
 }
