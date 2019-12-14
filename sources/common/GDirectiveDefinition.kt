@@ -3,15 +3,24 @@ package io.fluidsonic.graphql
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Directives
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__Directive-Type
-class GDirectiveDefinition internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.DirectiveDefinition
+class GDirectiveDefinition(
+	val name: String,
+	val locations: List<GDirectiveLocation>,
+	arguments: List<GArgumentDefinition> = emptyList(),
+	description: String? = null
 ) {
 
-	val arguments = input.arguments.map { GArgumentDefinition(typeFactory, it) } // FIXME parameters
-	val description = input.description
-	val locations = input.locations
-	val name = input.name
+	val arguments: Map<String, GArgumentDefinition>
+	val description = description?.ifEmpty { null }
+
+
+	init {
+		require(arguments.size <= 1 || arguments.mapTo(hashSetOf()) { it.name }.size == arguments.size) {
+			"'arguments' must not contain multiple elements with the same name: $arguments"
+		}
+
+		this.arguments = arguments.associateBy { it.name }
+	}
 
 
 	override fun toString() =
@@ -19,4 +28,22 @@ class GDirectiveDefinition internal constructor(
 
 
 	companion object
+
+
+	class Unresolved(
+		val name: String,
+		val locations: List<GDirectiveLocation>,
+		val arguments: List<GArgumentDefinition.Unresolved> = emptyList(),
+		val description: String? = null
+	) {
+
+		fun resolve(typeRegistry: GTypeRegistry) = GDirectiveDefinition(
+			arguments = arguments.map { it.resolve(typeRegistry) },
+			description = description,
+			locations = locations,
+			name = name
+		)
+
+		companion object
+	}
 }

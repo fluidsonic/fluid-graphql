@@ -25,58 +25,62 @@ interface SchemaBuilder {
 
 	@SchemaBuilderType
 	val type
-		get() = TypeRefFactory
+		get() = NamedTypeRefFactory
+
+	@SchemaBuilderType
+	fun type(name: String) =
+		GNamedTypeRef(name)
 
 	@SchemaBuilderKeywordB
 	fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderType
-	fun Enum(type: GTypeRef, configure: EnumBuilder.() -> Unit)
+	fun Enum(type: GNamedTypeRef, configure: EnumDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun InputObject(type: GTypeRef, configure: InputObjectBuilder.() -> Unit)
+	fun InputObject(type: GNamedTypeRef, configure: InputObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Interface(type: GTypeRef, configure: InterfaceBuilder.() -> Unit)
+	fun Interface(type: GNamedTypeRef, configure: InterfaceDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Mutation(configure: ObjectBuilder.() -> Unit) =
+	fun Mutation(configure: ObjectDefinitionBuilder.() -> Unit) =
 		Mutation(type(GSpecification.defaultMutationTypeName), configure)
 
 	@SchemaBuilderType
-	fun Mutation(type: GTypeRef, configure: ObjectBuilder.() -> Unit)
+	fun Mutation(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(type: GTypeRef, configure: ObjectBuilder.() -> Unit)
+	fun Object(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(named: InterfacesForObject, configure: ObjectBuilder.() -> Unit)
+	fun Object(named: InterfacesForObject, configure: ObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Query(configure: ObjectBuilder.() -> Unit) =
+	fun Query(configure: ObjectDefinitionBuilder.() -> Unit) =
 		Query(type(GSpecification.defaultQueryTypeName), configure)
 
 	@SchemaBuilderType
-	fun Query(type: GTypeRef, configure: ObjectBuilder.() -> Unit)
+	fun Query(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Scalar(type: GTypeRef, configure: ScalarBuilder.() -> Unit = {})
+	fun Scalar(type: GNamedTypeRef, configure: ScalarBuilder.() -> Unit = {})
 
 	@SchemaBuilderType
-	fun Subscription(configure: ObjectBuilder.() -> Unit) =
+	fun Subscription(configure: ObjectDefinitionBuilder.() -> Unit) =
 		Subscription(type(GSpecification.defaultSubscriptionTypeName), configure)
 
 	@SchemaBuilderType
-	fun Subscription(type: GTypeRef, configure: ObjectBuilder.() -> Unit)
+	fun Subscription(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Union(named: PossibleTypesForUnion, configure: UnionBuilder.() -> Unit = {})
+	fun Union(named: PossibleTypesForUnion, configure: UnionDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderKeywordB
-	infix fun GTypeRef.implements(interfaceType: GTypeRef): InterfacesForObject
+	infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): InterfacesForObject
 
 	@SchemaBuilderKeywordB
-	infix fun GTypeRef.with(possibleType: GTypeRef): PossibleTypesForUnion
+	infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypesForUnion
 
 
 	companion object
@@ -86,7 +90,60 @@ interface SchemaBuilder {
 	interface ArgumentContainer : ValueContainer {
 
 		@SchemaBuilderKeywordB
-		infix fun String.with(value: Any?)
+		fun argument(name: NameAndValue)
+
+		@SchemaBuilderKeywordB
+		infix fun String.with(value: Any?): NameAndValue
+
+
+		interface NameAndValue
+	}
+
+
+	@SchemaBuilderDsl
+	interface ArgumentDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer
+
+
+	@SchemaBuilderDsl
+	interface ArgumentDefinitionContainer : TypeRefContainer {
+
+		@SchemaBuilderKeywordB
+		fun argument(name: NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit = {})
+
+		@SchemaBuilderKeywordB
+		fun argument(name: NameAndTypeAndDefault, configure: ArgumentDefinitionBuilder.() -> Unit = {})
+
+		@SchemaBuilderKeywordB
+		infix fun String.of(type: GTypeRef): NameAndType
+
+
+		interface NameAndType {
+
+			// FIXME Any?
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: Boolean): NameAndTypeAndDefault
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: Double): NameAndTypeAndDefault
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: Float): NameAndTypeAndDefault
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: Int): NameAndTypeAndDefault
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: Nothing?): NameAndTypeAndDefault
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: String): NameAndTypeAndDefault
+
+			@SchemaBuilderKeywordB
+			infix fun default(default: GValue): NameAndTypeAndDefault
+		}
+
+		interface NameAndTypeAndDefault
 	}
 
 
@@ -94,7 +151,7 @@ interface SchemaBuilder {
 	interface DeprecationContainer {
 
 		@SchemaBuilderKeywordB
-		fun deprecated(reason: String = "")
+		fun deprecated(reason: String? = null)
 	}
 
 
@@ -111,7 +168,7 @@ interface SchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface DirectiveDefinitionBuilder : InputValueContainer, DescriptionContainer {
+	interface DirectiveDefinitionBuilder : ArgumentDefinitionContainer, DescriptionContainer {
 
 		@SchemaBuilderBuiltinTypeA
 		val ARGUMENT_DEFINITION: DirectiveLocation
@@ -149,6 +206,8 @@ interface SchemaBuilder {
 		val SUBSCRIPTION: DirectiveLocation
 		@SchemaBuilderBuiltinTypeA
 		val UNION: DirectiveLocation
+		@SchemaBuilderBuiltinTypeA
+		val VARIABLE_DEFINITION: DirectiveLocation
 
 
 		@SchemaBuilderKeywordB
@@ -182,16 +241,10 @@ interface SchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface EnumBuilder : DescriptionContainer, DirectiveContainer {
+	interface EnumDefinitionBuilder : DescriptionContainer, DirectiveContainer {
 
-		operator fun String.invoke(configure: ValueBuilder.() -> Unit): DanglingValue
-		operator fun String.unaryMinus()
-
-
-		interface DanglingValue {
-
-			operator fun unaryMinus()
-		}
+		@SchemaBuilderKeywordB
+		fun value(name: String, configure: ValueBuilder.() -> Unit = {})
 
 
 		@SchemaBuilderDsl
@@ -200,146 +253,59 @@ interface SchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface FieldBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, InputValueContainer, ValueContainer
+	interface FieldDefinitionBuilder : ArgumentDefinitionContainer, DeprecationContainer, DescriptionContainer, DirectiveContainer, ValueContainer
 
 
 	@SchemaBuilderDsl
-	interface FieldContainer : TypeRefContainer {
+	interface FieldDefinitionContainer : TypeRefContainer {
 
 		@SchemaBuilderKeywordB
-		infix fun String.of(type: DanglingType)
+		fun field(name: NameAndType, configure: FieldDefinitionBuilder.() -> Unit = {})
 
 		@SchemaBuilderKeywordB
-		infix fun String.of(type: GTypeRef)
-
-		@SchemaBuilderBuiltinTypeA
-		operator fun GTypeRef.invoke(configure: FieldBuilder.() -> Unit): DanglingType
-
-		// GTypeRef.invoke() won't work for List(…) {} because Kotlin's global 'List' function takes precedence
-		@SchemaBuilderBuiltinTypeA
-		fun List(type: GTypeRef, configure: FieldBuilder.() -> Unit) =
-			List(type)(configure)
+		infix fun String.of(type: GTypeRef): NameAndType
 
 
-		interface DanglingType
+		interface NameAndType
 	}
 
 
 	@SchemaBuilderDsl
-	interface InputObjectBuilder : DescriptionContainer, DirectiveContainer, InputValueContainer
+	interface InputObjectDefinitionBuilder : ArgumentDefinitionContainer, DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
-	interface InputValueBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer
-
-
-	@SchemaBuilderDsl
-	interface InputValueContainer : TypeRefContainer {
-
-		@SchemaBuilderKeywordB
-		infix fun String.of(type: DanglingType)
-
-		@SchemaBuilderKeywordB
-		infix fun String.of(type: GTypeRef): InputValue
-
-		operator fun Boolean.invoke(configure: InputValueBuilder.() -> Unit): DanglingDefault
-
-		operator fun Double.invoke(configure: InputValueBuilder.() -> Unit): DanglingDefault
-
-		operator fun Float.invoke(configure: InputValueBuilder.() -> Unit): DanglingDefault
-
-		operator fun Int.invoke(configure: InputValueBuilder.() -> Unit): DanglingDefault
-
-		operator fun String.invoke(configure: InputValueBuilder.() -> Unit): DanglingDefault
-
-		@SchemaBuilderBuiltinTypeA
-		operator fun GTypeRef.invoke(configure: InputValueBuilder.() -> Unit): DanglingType
-
-		operator fun GValue.invoke(configure: InputValueBuilder.() -> Unit): DanglingDefault
-
-		// I hate that function invocation takes precedence over infix operators!
-		@SchemaBuilderKeywordB
-		fun enumValue(name: String, configure: InputValueBuilder.() -> Unit) =
-			GEnumValue(name)(configure)
-
-		// GTypeRef.invoke() won't work for List(…) {} because Kotlin's global 'List' function takes precedence
-		@SchemaBuilderBuiltinTypeA
-		fun List(type: GTypeRef, configure: InputValueBuilder.() -> Unit) =
-			List(type)(configure)
-
-
-		interface InputValue {
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Boolean): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Double): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Float): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Int): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: Nothing?): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: String): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: GValue): InputValue
-
-			@SchemaBuilderKeywordB
-			infix fun default(default: DanglingDefault): InputValue
-
-			operator fun invoke(configure: InputValueBuilder.() -> Unit)
-		}
-
-
-		interface DanglingDefault
-		interface DanglingType
-	}
-
-
-	@SchemaBuilderDsl
-	interface InterfaceBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldContainer
+	interface InterfaceDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
 
 
 	interface InterfacesForObject {
 
 		@SchemaBuilderKeywordB
-		infix fun and(type: GTypeRef): InterfacesForObject
+		infix fun and(type: GNamedTypeRef): InterfacesForObject
+	}
+
+
+	object NamedTypeRefFactory {
+
+		@SchemaBuilderType
+		operator fun getValue(thisRef: Any?, property: KProperty<*>) =
+			GNamedTypeRef(property.name)
 	}
 
 
 	interface PossibleTypesForUnion {
 
 		@SchemaBuilderKeywordB
-		infix fun or(type: GTypeRef): PossibleTypesForUnion
+		infix fun or(type: GNamedTypeRef): PossibleTypesForUnion
 	}
+
+
+	@SchemaBuilderDsl
+	interface ObjectDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
 
 
 	@SchemaBuilderDsl
 	interface ScalarBuilder : DescriptionContainer, DirectiveContainer
-
-
-	@SchemaBuilderDsl
-	interface ObjectBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldContainer
-
-
-	object TypeRefFactory {
-
-		@SchemaBuilderType
-		operator fun invoke(name: String): GTypeRef =
-			GNamedTypeRef(name)
-
-
-		@SchemaBuilderType
-		operator fun getValue(thisRef: Any?, property: KProperty<*>): GTypeRef =
-			invoke(property.name)
-	}
 
 
 	@SchemaBuilderDsl
@@ -374,12 +340,12 @@ interface SchemaBuilder {
 			if (this is GNonNullTypeRef)
 				error("Cannot use '!' on a type that's already non-null")
 			else
-				nonNull()
+				GNonNullTypeRef(this)
 	}
 
 
 	@SchemaBuilderDsl
-	interface UnionBuilder : DescriptionContainer, DirectiveContainer
+	interface UnionDefinitionBuilder : DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl

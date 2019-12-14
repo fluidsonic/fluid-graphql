@@ -3,29 +3,46 @@ package io.fluidsonic.graphql
 
 // https://graphql.github.io/graphql-spec/June2018/#InputValueDefinition
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__InputValue-Type
-class GArgumentDefinition internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.InputValue
+class GArgumentDefinition(
+	val name: String,
+	val type: GType,
+	val defaultValue: GValue? = null,
+	description: String? = null,
+	val directives: List<GDirective> = emptyList()
 ) {
 
-	val defaultValue = input.defaultValue // FIXME allow all types
-	val description = input.description
-	val directives = input.directives.map(::GDirective)
-	val name = input.name
-	val type = typeFactory.get(input.type)
+	val description = description?.ifEmpty { null }
+
+
+	init {
+		require(type.isInputType()) { "'type' must be an input type: $type" }
+	}
 
 
 	override fun toString() =
 		GWriter { writeArgumentDefinition(this@GArgumentDefinition) }
 
 
-//		init {
-//			require(Specification.isValidInputValueName(name)) { "'name' is not a valid name: $name" }
-//			require(Specification.isInputType(type)) {
-//				"'type' must be an input type: $type"
-//			}
-//		}
-
-
 	companion object
+
+
+	class Unresolved(
+		val name: String,
+		val type: GTypeRef,
+		val defaultValue: GValue? = null,
+		val description: String? = null,
+		val directives: List<GDirective> = emptyList()
+	) {
+
+		fun resolve(typeRegistry: GTypeRegistry) = GArgumentDefinition(
+			defaultValue = defaultValue,
+			description = description,
+			directives = directives,
+			name = name,
+			type = typeRegistry.resolve(type)
+		)
+
+
+		companion object
+	}
 }

@@ -1,9 +1,9 @@
 package io.fluidsonic.graphql
 
 
-// Note that Type instances can be compared by identity. Each schema has its own instances and there is exactly one instance per GraphQL type.
-// That includes wrapped types independent of the depth of nesting.
-// The only notable exception are built-in scalar types. Those are singletons and shared between all schemes.
+// Note that equality of `GNamedType` instance is based on identity and `GWrappedType` based on the type of wrapping and the equality of the wrapped type.
+// Each schema (or any construction that created types using `.Unresolved` variants) has its own instances and there is exactly one instance per named type.
+// The only notable exceptions are built-in scalar types. Those are singletons and shared between all schemas.
 //
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
@@ -13,31 +13,22 @@ sealed class GType(
 	val kind: Kind
 ) {
 
-	open val description: String?
-		get() = null
-
-	open val inputFields: List<GArgumentDefinition>?
-		get() = null
-
-	open val interfaces: List<GInterfaceType>?
-		get() = null
-
-	open val name: String?
-		get() = null
-
-	open val ofType: GType?
-		get() = null
-
-	open val possibleTypes: List<GObjectType>?
-		get() = null
+	// https://graphql.github.io/graphql-spec/June2018/#IsInputType()
+	fun isInputType(): Boolean =
+		when (this) {
+			is GWrappingType -> ofType.isInputType()
+			is GScalarType, is GEnumType, is GInputObjectType -> true
+			else -> false
+		}
 
 
-	open fun enumValues(includeDeprecated: Boolean = false): List<GEnumValueDefinition>? =
-		null
-
-
-	open fun fields(includeDeprecated: Boolean = false): List<GFieldDefinition>? =
-		null
+	// https://graphql.github.io/graphql-spec/June2018/#IsOutputType()
+	fun isOutputType(): Boolean =
+		when (this) {
+			is GWrappingType -> ofType.isOutputType()
+			is GScalarType, is GObjectType, is GInterfaceType, is GUnionType, is GEnumType -> true
+			else -> false
+		}
 
 
 	fun isSubtypeOf(other: GType) =
@@ -88,132 +79,259 @@ sealed class GType(
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Enums
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
-class GEnumType internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.Type.Enum
+class GEnumType private constructor(
+	typeRegistry: GTypeRegistry?,
+	description: String?,
+	directives: List<GDirective>,
+	name: String,
+	values: List<GEnumValueDefinition>
 ) : GNamedType(
-	typeFactory = typeFactory,
-	directives = input.directives.map(::GDirective),
+	typeRegistry = typeRegistry,
+	description = description,
+	directives = directives,
 	kind = Kind.ENUM,
-	name = input.name
+	name = name
 ) {
 
-	private val valuesIncludingDeprecated = input.values.map(::GEnumValueDefinition)
-	private val valuesExcludingDeprecated = valuesIncludingDeprecated.filterNot(GEnumValueDefinition::isDeprecated)
-
-	override val description = input.description
-
-//
-//				init {
-//					require(values.isNotEmpty()) { "'values' must not be empty" }
-//					require(values.size > 1 && values.mapTo(hashSetOf()) { it.name }.size == values.size) {
-//						"'values' must not contain multiple elements with the same name: $values"
-//					}
-//				}
+	val values: Map<String, GEnumValueDefinition>
 
 
-	override fun enumValues(includeDeprecated: Boolean) =
-		if (includeDeprecated) valuesIncludingDeprecated else valuesExcludingDeprecated
+	constructor(
+		name: String,
+		values: List<GEnumValueDefinition>,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		typeRegistry = null,
+		name = name,
+		values = values,
+		description = description,
+		directives = directives
+	)
+
+
+	init {
+		require(values.isNotEmpty()) { "'values' must not be empty" }
+		require(values.size <= 1 || values.mapTo(hashSetOf()) { it.name }.size == values.size) {
+			"'values' must not contain multiple elements with the same name: $values"
+		}
+
+		this.values = values.associateBy { it.name }
+	}
 
 
 	override fun isSupertypeOf(other: GType) =
-		other === this
+		other === this ||
+			(other is GNonNullType && other.ofType === this)
 
 
 	companion object
+
+
+	class Unresolved(
+		override val name: String,
+		val values: List<GEnumValueDefinition>,
+		val description: String? = null,
+		override val directives: List<GDirective> = emptyList()
+	) : GNamedType.Unresolved() {
+
+		override fun resolve(typeRegistry: GTypeRegistry) = GEnumType(
+			typeRegistry = typeRegistry,
+			description = description,
+			directives = directives,
+			name = name,
+			values = values
+		)
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
-class GInputObjectType internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.Type.InputObject
+class GInputObjectType private constructor(
+	typeRegistry: GTypeRegistry?,
+	arguments: List<GArgumentDefinition>?,
+	argumentsToResolve: List<GArgumentDefinition.Unresolved>?,
+	description: String?,
+	directives: List<GDirective>,
+	name: String
 ) : GNamedType(
-	typeFactory = typeFactory,
-	directives = input.directives.map(::GDirective),
+	typeRegistry = typeRegistry,
+	description = description,
+	directives = directives,
 	kind = Kind.INPUT_OBJECT,
-	name = input.name
+	name = name
 ) {
 
-	override val description = input.description
-	override val inputFields = input.fields.map { GArgumentDefinition(typeFactory, it) } // FIXME rn parameters
+	val arguments: Map<String, GArgumentDefinition>
 
 
-//				init {
-//					require(fields.isNotEmpty()) { "'fields' must not be empty" }
-//					require(fields.size > 1 && fields.mapTo(hashSetOf()) { it.name }.size == fields.size) {
-//						"'fields' must not contain multiple elements with the same name: $fields"
-//					}
-//					require(fields.all { Specification.isInputType(it.type) }) {
-//						"'fields' must not contain elements of an output type: $fields"
-//					}
-//				}
+	constructor(
+		name: String,
+		arguments: List<GArgumentDefinition>,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		typeRegistry = null,
+		arguments = arguments,
+		argumentsToResolve = null,
+		description = description,
+		directives = directives,
+		name = name
+	)
+
+
+	init {
+		val resolvedArguments = arguments
+			?: typeRegistry?.let { argumentsToResolve?.map { it.resolve(typeRegistry) } }
+			?: error("impossible")
+
+		require(resolvedArguments.isNotEmpty()) { "'arguments' must not be empty" }
+		require(resolvedArguments.size <= 1 || resolvedArguments.mapTo(hashSetOf()) { it.name }.size == resolvedArguments.size) {
+			"'arguments' must not contain multiple elements with the same name: ${arguments ?: argumentsToResolve}"
+		}
+		require(resolvedArguments.all { it.type.isInputType() }) {
+			"'arguments' must not contain elements with an output type: ${arguments ?: argumentsToResolve}"
+		}
+
+		this.arguments = resolvedArguments.associateBy { it.name }
+	}
 
 
 	override fun isSupertypeOf(other: GType) =
-		other === this
+		other === this ||
+			(other is GNonNullType && other.ofType === this)
 
 
 	companion object
+
+
+	class Unresolved(
+		override val name: String,
+		val arguments: List<GArgumentDefinition.Unresolved>,
+		val description: String? = null,
+		override val directives: List<GDirective> = emptyList()
+	) : GNamedType.Unresolved() {
+
+		override fun resolve(typeRegistry: GTypeRegistry) = GInputObjectType(
+			typeRegistry = typeRegistry,
+			arguments = null,
+			argumentsToResolve = arguments,
+			description = description,
+			directives = directives,
+			name = name
+		)
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interfaces
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interface
-class GInterfaceType internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.Type.Interface
+class GInterfaceType private constructor(
+	typeRegistry: GTypeRegistry?,
+	description: String?,
+	directives: List<GDirective>,
+	fields: List<GFieldDefinition>?,
+	fieldsToResolve: List<GFieldDefinition.Unresolved>?,
+	name: String
 ) : GNamedType(
-	typeFactory = typeFactory,
-	directives = input.directives.map(::GDirective),
+	typeRegistry = typeRegistry,
+	description = description,
+	directives = directives,
 	kind = Kind.INTERFACE,
-	name = input.name
+	name = name
 ) {
 
-	private val fieldsIncludingDeprecated = input.fields.map { GFieldDefinition(typeFactory, it) }
-	private val fieldsExcludingDeprecated = fieldsIncludingDeprecated.filterNot(GFieldDefinition::isDeprecated)
-
-	override val description = input.description
-	override val possibleTypes = typeFactory.getObjectsImplementingInterface(name)
-
-//				init {
-//					require(fields.isNotEmpty()) { "'fields' must not be empty" }
-//					require(fields.size > 1 && fields.mapTo(hashSetOf()) { it.name }.size == fields.size) {
-//						"'fields' must not contain multiple elements with the same name: $fields"
-//					}
-//				}
+	val fields: Map<String, GFieldDefinition>
 
 
-	override fun fields(includeDeprecated: Boolean) =
-		if (includeDeprecated) fieldsIncludingDeprecated else fieldsExcludingDeprecated
+	constructor(
+		name: String,
+		fields: List<GFieldDefinition>,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		typeRegistry = null,
+		description = description,
+		directives = directives,
+		fields = fields,
+		fieldsToResolve = null,
+		name = name
+	)
 
 
-	override fun isSupertypeOf(other: GType) =
+	init {
+		val resolvedFields = fields
+			?: typeRegistry?.let { fieldsToResolve?.map { it.resolve(typeRegistry) } }
+			?: error("impossible")
+
+		require(resolvedFields.isNotEmpty()) { "'fields' in '$name' must not be empty" }
+		require(resolvedFields.size <= 1 || resolvedFields.mapTo(hashSetOf()) { it.name }.size == resolvedFields.size) {
+			"'fields' in '$name' must not contain multiple elements with the same name: ${fields ?: fieldsToResolve}"
+		}
+
+		this.fields = resolvedFields.associateBy { it.name }
+	}
+
+
+	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
-			(other is GObjectType && other.interfaces.contains(this))
+			(other is GObjectType && other.interfaces.contains(this)) ||
+			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
 	companion object
+
+
+	class Unresolved(
+		override val name: String,
+		val fields: List<GFieldDefinition.Unresolved>,
+		val description: String? = null,
+		override val directives: List<GDirective> = emptyList()
+	) : GNamedType.Unresolved() {
+
+		override fun resolve(typeRegistry: GTypeRegistry) = GInterfaceType(
+			typeRegistry = typeRegistry,
+			description = description,
+			directives = directives,
+			fields = null,
+			fieldsToResolve = fields,
+			name = name
+		)
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
-class GListType internal constructor(
-	typeFactory: TypeFactory,
-	input: GListTypeRef
+class GListType(
+	ofType: GType
 ) : GWrappingType(
-	typeFactory = typeFactory,
 	kind = Kind.LIST,
-	ofType = input.elementType,
-	underlyingTypeName = input.underlyingName
+	ofType = ofType
 ) {
 
+	override fun equals(other: Any?) =
+		this === other || (other is GListType && ofType == other.ofType)
 
-	override fun isSupertypeOf(other: GType) =
+
+	override fun hashCode() =
+		1 xor ofType.hashCode()
+
+
+	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
-			(other is GListType && ofType.isSupertypeOf(other.ofType))
+			(other is GListType && ofType.isSupertypeOf(other.ofType)) ||
+			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
 	companion object
@@ -221,123 +339,175 @@ class GListType internal constructor(
 
 
 sealed class GNamedType(
-	typeFactory: TypeFactory?,
+	typeRegistry: GTypeRegistry?,
+	description: String?,
 	directives: List<GDirective>,
 	kind: Kind,
-	final override val name: String
+	val name: String
 ) : GType(directives = directives, kind = kind) {
+
+	val description = description?.ifEmpty { null }
+
 
 	init {
 		@Suppress("LeakingThis")
-		typeFactory?.register(this)
+		typeRegistry?.register(this)
 	}
 
-//			init {
-//				require(Specification.isValidTypeName(name)) { "'name' is not a valid name: $name" }
-//			}
+
+	override fun equals(other: Any?) =
+		this === other
 
 
-	companion object
+	override fun hashCode() =
+		name.hashCode()
+
+
+	companion object;
+
+
+	abstract class Unresolved internal constructor() {
+
+		abstract val directives: List<GDirective>
+		abstract val name: String
+
+
+		abstract fun resolve(typeRegistry: GTypeRegistry): GType
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Non-Null
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
-class GNonNullType internal constructor(
-	typeFactory: TypeFactory,
-	input: GNonNullTypeRef
+class GNonNullType(
+	ofType: GType
 ) : GWrappingType(
-	typeFactory = typeFactory,
 	kind = Kind.NON_NULL,
-	ofType = input.nullableType,
-	underlyingTypeName = input.underlyingName
+	ofType = ofType
 ) {
+
+	init {
+		require(ofType !is GNonNullType) { "Cannot create a non-null type that wraps another non-null type" }
+	}
+
+
+	override fun equals(other: Any?) =
+		this === other || (other is GNonNullType && ofType == other.ofType)
+
+
+	override fun hashCode() =
+		2 xor ofType.hashCode()
+
 
 	override fun isSupertypeOf(other: GType) =
 		other === this ||
 			(other is GNonNullType && ofType.isSupertypeOf(other.ofType))
-
-//				init {
-//					require(ofType !is NonNull) { "Cannot create a non-null type reference to another reference that is already non-null" }
-//				}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Object
-class GObjectType internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.Type.Object
+class GObjectType private constructor(
+	typeRegistry: GTypeRegistry?,
+	description: String?,
+	directives: List<GDirective>,
+	fields: List<GFieldDefinition>?,
+	fieldsToResolve: List<GFieldDefinition.Unresolved>?,
+	interfaces: List<GInterfaceType>?,
+	interfacesToResolve: List<GNamedTypeRef>?,
+	name: String
 ) : GNamedType(
-	typeFactory = typeFactory,
-	directives = input.directives.map(::GDirective),
+	typeRegistry = typeRegistry,
+	description = description,
+	directives = directives,
 	kind = Kind.OBJECT,
-	name = input.name
+	name = name
 ) {
 
-	private val fieldsIncludingDeprecated = input.fields.map { GFieldDefinition(typeFactory, it) }
-	private val fieldsExcludingDeprecated = fieldsIncludingDeprecated.filterNot(GFieldDefinition::isDeprecated)
-
-	override val description = input.description
-	override val interfaces = input.interfaces.map { typeFactory.get(it, Kind.INTERFACE) as GInterfaceType }
+	val fields: Map<String, GFieldDefinition>
+	val interfaces: List<GInterfaceType>
 
 
-//				init {
-//					require(fields.isNotEmpty()) { "'fields' must not be empty" }
-//					require(fields.size > 1 && fields.mapTo(hashSetOf()) { it.name }.size == fields.size) {
-//						"'fields' must not contain multiple elements with the same name: $fields"
-//					}
-//					require(interfaces.size > 1 && interfaces.mapTo(hashSetOf()) { it.name }.size == interfaces.size) {
-//						"'interfaces' must not contain multiple elements with the same name: $fields"
-//					}
-//
-//					for (iface in interfaces) {
-//						requireImplementationOfInterface(iface, fields = fields)
-//					}
-//				}
+	constructor(
+		name: String,
+		fields: List<GFieldDefinition>,
+		interfaces: List<GInterfaceType> = emptyList(),
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		typeRegistry = null,
+		description = description,
+		directives = directives,
+		fields = fields,
+		fieldsToResolve = null,
+		interfaces = interfaces,
+		interfacesToResolve = null,
+		name = name
+	)
 
 
-	fun field(name: String) =
-		fieldsIncludingDeprecated.firstOrNull { it.name == name }
+	init {
+		val resolvedFields = fields
+			?: typeRegistry?.let { fieldsToResolve?.map { it.resolve(typeRegistry) } }
+			?: error("impossible")
+
+		require(resolvedFields.isNotEmpty()) { "'fields' must not be empty" }
+		require(resolvedFields.size <= 1 || resolvedFields.mapTo(hashSetOf()) { it.name }.size == resolvedFields.size) {
+			"'fields' must not contain multiple elements with the same name: ${fields ?: fieldsToResolve}"
+		}
+
+		val resolvedInterfaces = interfaces
+			?: typeRegistry?.let { interfacesToResolve?.map { typeRegistry.resolveKind<GInterfaceType>(it) } }
+			?: error("impossible")
+
+		require(resolvedInterfaces.size <= 1 || resolvedInterfaces.mapTo(hashSetOf()) { it.name }.size == resolvedInterfaces.size) {
+			"'interfaces' must not contain multiple elements with the same name: ${interfaces ?: interfacesToResolve}"
+		}
+
+		resolvedInterfaces.forEach { requireImplementationOfInterface(name = name, iface = it, fields = resolvedFields) }
+
+		this.fields = resolvedFields.associateBy { it.name }
+		this.interfaces = resolvedInterfaces
+	}
 
 
-	override fun fields(includeDeprecated: Boolean) =
-		if (includeDeprecated) fieldsIncludingDeprecated else fieldsExcludingDeprecated
-
-
-	override fun isSupertypeOf(other: GType) =
-		other === this
+	override fun isSupertypeOf(other: GType): Boolean =
+		other === this ||
+			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
 	companion object {
 
-		private fun requireImplementationOfInterface(iface: GInterfaceType, fields: List<GFieldDefinition>) {
-			for (expectedField in iface.fields(includeDeprecated = true)) {
+		private fun requireImplementationOfInterface(name: String, iface: GInterfaceType, fields: List<GFieldDefinition>) {
+			for (expectedField in iface.fields.values) {
 				val implementedField = fields.firstOrNull { it.name == expectedField.name }
 				requireNotNull(implementedField) {
-					"'fields' must contain an element named '${expectedField.name}' as required by interface '${iface.name}': $fields"
+					"'fields' in object '$name' must contain an element named '${expectedField.name}' as required by interface '${iface.name}': $fields"
 				}
 				require(implementedField.type.isSubtypeOf(expectedField.type)) {
-					"'fields' element '${implementedField.name}' must be a subtype of '${expectedField.type}' " +
+					"'fields' element '${implementedField.name}' in object '$name' must be a subtype of '${expectedField.type}' " +
 						"as required by interface '${iface.name}': $fields"
 				}
 
-				for (expectedArg in expectedField.args) {
-					val implementedArg = implementedField.args.firstOrNull { it.name == expectedArg.name }
+				for (expectedArg in expectedField.arguments.values) {
+					val implementedArg = implementedField.arguments.values.firstOrNull { it.name == expectedArg.name }
 					requireNotNull(implementedArg) {
-						"'fields' element '${implementedField.name}' must accept an argument named '${expectedArg.name}' " +
+						"'fields' element '${implementedField.name}' in object '$name' must accept an argument named '${expectedArg.name}' " +
 							"as required by interface '${iface.name}': $fields"
 					}
 					require(implementedArg.type == expectedArg.type) {
-						"'fields' element '${implementedField.name}' argument '${implementedArg.name}' must be of type '${expectedArg.type}' " +
+						"'fields' element '${implementedField.name}' argument '${implementedArg.name}' in object '$name' must be of type '${expectedArg.type}' " +
 							"as required by interface '${iface.name}': $fields"
 					}
 				}
 
-				for (implementedArg in implementedField.args) {
-					if (expectedField.args.none { it.name == implementedArg.name }) {
+				for (implementedArg in implementedField.arguments.values) {
+					if (expectedField.arguments.values.none { it.name == implementedArg.name }) {
 						require(implementedArg.type !is GNonNullType) {
-							"'fields' element '${implementedField.name}' argument '${implementedArg.name}' must be of a nullable type " +
+							"'fields' element '${implementedField.name}' argument '${implementedArg.name}' in object '$name' must be of a nullable type " +
 								"as interface '${iface.name}' doesn't require it: $fields"
 						}
 					}
@@ -345,97 +515,199 @@ class GObjectType internal constructor(
 			}
 		}
 	}
+
+
+	data class Unresolved(
+		override val name: String,
+		val fields: List<GFieldDefinition.Unresolved>,
+		val interfaces: List<GNamedTypeRef> = emptyList(),
+		val description: String? = null,
+		override val directives: List<GDirective> = emptyList()
+	) : GNamedType.Unresolved() {
+
+		override fun resolve(typeRegistry: GTypeRegistry) = GObjectType(
+			typeRegistry = typeRegistry,
+			description = description,
+			directives = directives,
+			fields = null,
+			fieldsToResolve = fields,
+			interfaces = null,
+			interfacesToResolve = interfaces,
+			name = name
+		)
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalars
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalar
 sealed class GScalarType(
-	typeFactory: TypeFactory?,
-	directives: List<GDirective>,
-	name: String
+	name: String,
+	typeRegistry: GTypeRegistry? = null,
+	description: String? = null,
+	directives: List<GDirective> = emptyList()
 ) : GNamedType(
-	typeFactory = typeFactory,
+	typeRegistry = typeRegistry,
+	description = description,
 	directives = directives,
 	kind = Kind.SCALAR,
 	name = name
 ) {
 
-	override fun isSupertypeOf(other: GType) =
-		this == other
+	override fun isSupertypeOf(other: GType): Boolean =
+		this == other ||
+			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
 	companion object
 }
 
 
-object GBooleanType : GScalarType(typeFactory = null, directives = emptyList(), name = "Boolean")
-object GFloatType : GScalarType(typeFactory = null, directives = emptyList(), name = "Float")
-object GIDType : GScalarType(typeFactory = null, directives = emptyList(), name = "ID")
-object GIntType : GScalarType(typeFactory = null, directives = emptyList(), name = "Int")
-object GStringType : GScalarType(typeFactory = null, directives = emptyList(), name = "String")
+object GBooleanType : GScalarType(name = "Boolean")
+object GFloatType : GScalarType(name = "Float")
+object GIDType : GScalarType(name = "ID")
+object GIntType : GScalarType(name = "Int")
+object GStringType : GScalarType(name = "String")
 
 
-class GCustomScalarType internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.Type.Scalar
+class GCustomScalarType private constructor(
+	typeRegistry: GTypeRegistry?,
+	description: String?,
+	directives: List<GDirective>,
+	name: String
 ) : GScalarType(
-	typeFactory = typeFactory,
-	directives = input.directives.map(::GDirective),
-	name = input.name
+	typeRegistry = typeRegistry,
+	description = description,
+	directives = directives,
+	name = name
 ) {
 
-	override val description = input.description
+	constructor(
+		name: String,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		typeRegistry = null,
+		description = description,
+		directives = directives,
+		name = name
+	)
 
 
 	companion object
+
+
+	class Unresolved(
+		override val name: String,
+		val description: String? = null,
+		override val directives: List<GDirective> = emptyList()
+	) : GNamedType.Unresolved() {
+
+		override fun resolve(typeRegistry: GTypeRegistry) = GCustomScalarType(
+			typeRegistry = typeRegistry,
+			description = description,
+			directives = directives,
+			name = name
+		)
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Unions
 // https://graphql.github.io/graphql-spec/June2018/#sec-Union
-class GUnionType internal constructor(
-	typeFactory: TypeFactory,
-	input: GQLInput.Type.Union
+class GUnionType private constructor(
+	typeRegistry: GTypeRegistry?,
+	description: String?,
+	directives: List<GDirective>,
+	name: String,
+	possibleTypes: List<GObjectType>?,
+	possibleTypesToResolve: List<GNamedTypeRef>?
 ) : GNamedType(
-	typeFactory = typeFactory,
-	directives = input.directives.map(::GDirective),
+	typeRegistry = typeRegistry,
+	description = description,
+	directives = directives,
 	kind = Kind.UNION,
-	name = input.name
+	name = name
 ) {
 
-	override val description = input.description
-	override val possibleTypes = input.possibleTypes.map { typeFactory.get(it, Kind.OBJECT) as GObjectType }
+	val possibleTypes: List<GObjectType>
 
 
-//				init {
-//					require(possibleTypes.isNotEmpty()) { "'possibleTypes' must not be empty" }
-//					require(possibleTypes.size > 1 && possibleTypes.mapTo(hashSetOf()) { it.name }.size == possibleTypes.size) {
-//						"'possibleTypes' must not contain multiple elements with the same name: $possibleTypes"
-//					}
-//				}
+	constructor(
+		name: String,
+		possibleTypes: List<GObjectType>,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		typeRegistry = null,
+		description = description,
+		directives = directives,
+		name = name,
+		possibleTypes = possibleTypes,
+		possibleTypesToResolve = null
+	)
 
 
-	override fun isSupertypeOf(other: GType) =
+	init {
+		val resolvedPossibleTypes = possibleTypes
+			?: typeRegistry?.let { possibleTypesToResolve?.map { typeRegistry.resolveKind<GObjectType>(it) } }
+			?: error("impossible")
+
+		require(resolvedPossibleTypes.isNotEmpty()) { "'possibleTypes' must not be empty" }
+		require(resolvedPossibleTypes.size <= 1 || resolvedPossibleTypes.mapTo(hashSetOf()) { it.name }.size == resolvedPossibleTypes.size) {
+			"'interfaces' must not contain multiple elements with the same name: ${possibleTypes ?: possibleTypesToResolve}"
+		}
+
+		this.possibleTypes = resolvedPossibleTypes
+	}
+
+
+	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
-			other is GObjectType && possibleTypes.contains(other)
+			other is GObjectType && possibleTypes.contains(other) ||
+			(other is GNonNullType && isSupertypeOf(other.ofType))
+
+
+	companion object
+
+
+	class Unresolved(
+		override val name: String,
+		val possibleTypes: List<GNamedTypeRef>,
+		val description: String? = null,
+		override val directives: List<GDirective> = emptyList()
+	) : GNamedType.Unresolved() {
+
+		override fun resolve(typeRegistry: GTypeRegistry) = GUnionType(
+			typeRegistry = typeRegistry,
+			description = description,
+			directives = directives,
+			name = name,
+			possibleTypes = null,
+			possibleTypesToResolve = possibleTypes
+		)
+
+
+		companion object
+	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 sealed class GWrappingType(
-	typeFactory: TypeFactory,
 	kind: Kind,
-	ofType: GTypeRef,
-	underlyingTypeName: String
+	val ofType: GType
 ) : GType(
 	directives = emptyList(),
 	kind = kind
 ) {
-
-	final override val ofType = typeFactory.get(ofType)
-	val underlyingNamedType = typeFactory.get(underlyingTypeName)
 
 	companion object
 }

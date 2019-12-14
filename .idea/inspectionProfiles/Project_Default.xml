@@ -145,6 +145,7 @@
       </option>
     </inspection_tool>
     <inspection_tool class="UnusedLambdaExpressionBody" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="UnusedSymbol" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="WhenWithOnlyElse" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
   </profile>
 </component>

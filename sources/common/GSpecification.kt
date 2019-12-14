@@ -5,6 +5,7 @@ typealias GSelectionSet = List<GSelection>
 typealias GVariableValues = Map<String, GValue>
 
 
+// FIXME remove
 // https://graphql.github.io/graphql-spec/June2018/
 object GSpecification {
 
@@ -18,12 +19,12 @@ object GSpecification {
 	val nameRegex = Regex("[_A-Za-z][_0-9A-Za-z]*")
 
 
-	val defaultDeprecatedDirective = GQLInput.DirectiveDefinition(
+	val defaultDeprecatedDirective = GDirectiveDefinition(
 		name = "deprecated",
 		arguments = listOf(
-			GQLInput.InputValue(
+			GArgumentDefinition(
 				name = "reason",
-				type = GStringTypeRef,
+				type = GStringType,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
 					"Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).",
 				defaultValue = GStringValue("No longer supported")
@@ -37,12 +38,12 @@ object GSpecification {
 	)
 
 
-	val defaultIncludeDirective = GQLInput.DirectiveDefinition(
+	val defaultIncludeDirective = GDirectiveDefinition(
 		name = "include",
 		arguments = listOf(
-			GQLInput.InputValue(
+			GArgumentDefinition(
 				name = "if",
-				type = GNonNullTypeRef(GBooleanTypeRef),
+				type = GNonNullType(GBooleanType),
 				description = "Included when true."
 			)
 		),
@@ -55,12 +56,12 @@ object GSpecification {
 	)
 
 
-	val defaultSkipDirective = GQLInput.DirectiveDefinition(
+	val defaultSkipDirective = GDirectiveDefinition(
 		name = "skip",
 		arguments = listOf(
-			GQLInput.InputValue(
+			GArgumentDefinition(
 				name = "if",
-				type = GNonNullTypeRef(GBooleanTypeRef),
+				type = GNonNullType(GBooleanType),
 				description = "Skipped when true."
 			)
 		),

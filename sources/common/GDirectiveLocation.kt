@@ -20,7 +20,8 @@ enum class GDirectiveLocation {
 	SCALAR,
 	SCHEMA,
 	SUBSCRIPTION,
-	UNION;
+	UNION,
+	VARIABLE_DEFINITION;
 
 
 	companion object

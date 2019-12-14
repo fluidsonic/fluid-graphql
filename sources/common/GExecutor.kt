@@ -43,7 +43,7 @@ interface GExecutor {
 		val argumentValues = field.arguments.associate { it.name to it.value }
 		val fieldName = field.name
 
-		val argumentDefinitions = objectType.field(fieldName)?.args ?: emptyList()
+		val argumentDefinitions = objectType.fields[fieldName]?.arguments?.values ?: emptyList()
 		for (argumentDefinition in argumentDefinitions) {
 			val argumentName = argumentDefinition.name
 			val argumentType = argumentDefinition.type
@@ -104,7 +104,7 @@ interface GExecutor {
 				continue
 			}
 
-			if (!GSchema.isInputType(variableType)) {
+			if (!variableType.isInputType()) {
 				addError("Variable $$variableName expects a value of type $variableType which cannot be used as an input type.")
 				continue
 			}
@@ -147,6 +147,36 @@ interface GExecutor {
 				context.variableValues[value.name]
 			else
 				value
+		}
+
+
+	private fun getFieldDefinition(
+		schema: GSchema,
+		parentType: GType,
+		name: String
+	) =
+		when (name) {
+			"__schema" ->
+				if (parentType === schema.queryType)
+					GIntrospection.schemaField
+				else
+					null
+
+			"__type" ->
+				if (parentType === schema.queryType)
+					GIntrospection.typeField
+				else
+					null
+
+			"__typename" ->
+				GIntrospection.typenameField
+
+			else ->
+				when (parentType) {
+					is GInterfaceType -> parentType.fields[name]
+					is GObjectType -> parentType.fields[name]
+					else -> null
+				}
 		}
 
 
@@ -366,7 +396,7 @@ interface GExecutor {
 		val resultMap = mutableMapOf<String, GValue>()
 		for ((responseKey, fields) in groupedFieldSet) {
 			val fieldName = fields.first().name
-			val fieldType = objectType.field(fieldName)?.type ?: continue
+			val fieldType = objectType.fields[fieldName]?.type ?: continue
 
 			val responseValue = executeField(
 				context,

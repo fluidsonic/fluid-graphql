@@ -16,46 +16,32 @@ fun main() {
 		val Starship by type
 		val StarshipOwner by type
 
-		Directive("schemaDirective") {
+		Directive("myDirective") {
 			on(OBJECT)
 			on(ENUM_VALUE or QUERY or INLINE_FRAGMENT)
 			description("An @directive on the schema with an argument")
 
-			"argument" of String {
+			argument("argument" of String) {
 				deprecated()
 			}
 		}
 
 		Query {
-			"hero" of Character {
-				"episode" of Episode
+			field("hero" of Character) {
+				argument("episode" of Episode)
 			}
-			"droid" of Droid {
-				"id" of !ID
+			field("droid" of Droid) {
+				argument("id" of !ID)
 			}
 		}
 
 		Interface(Character) {
 			directive("hello")
 
-			"id" of !ID
-			"name" of String
-			"friends" of List(Character)
-			"appearsIn" of !List(Episode)
-			"test" of List(Episode) {
-				directive("hello") {
-					"a" with false
-					"b" with enumValue("HUH")
-					"c" with 2.2
-					"d" with 2
-					"e" with listOf(3)
-					"f" with null
-					"g" with "abc"
-					"i" with mapOf("a" to "b")
-				}
-
-				description("cool")
-			}
+			field("id" of !ID)
+			field("name" of String)
+			field("friends" of List(Character))
+			field("appearsIn" of !List(Episode))
 		}
 
 		Scalar(Date) {
@@ -67,47 +53,47 @@ fun main() {
 		Object(Droid implements Character) {
 			directive("hello")
 
-			"id" of !ID
-			"name" of !String
-			"friends" of List(Character) {
+			field("id" of !ID)
+			field("name" of !String)
+			field("friends" of List(Character)) {
 				deprecated("no friends for droids")
 			}
-			"appearsIn" of !List(Episode)
-			"primaryFunction" of String
+			field("appearsIn" of !List(Episode))
+			field("primaryFunction" of String)
 		}
 
 		Enum(Episode) {
 			description("Cool!")
 			directive("hello")
 
-			-"NEW_HOPE" {
+			value("NEW_HOPE") {
 				description("Cool!")
 				deprecated("no more hope")
 				directive("hello")
 			}
-			-"EMPIRE"
-			-"JEDI"
+			value("EMPIRE")
+			value("JEDI")
 		}
 
 		Object(Human implements Character and StarshipOwner) {
-			"id" of !ID
-			"name" of !String
-			"friends" of List(Character)
-			"appearsIn" of !List(Episode)
-			"starships" of List(Starship)
-			"totalCredits" of Int
+			field("id" of !ID)
+			field("name" of !String)
+			field("friends" of List(Character))
+			field("appearsIn" of !List(Episode))
+			field("starships" of List(Starship))
+			field("totalCredits" of Int)
 		}
 
 		Enum(LengthUnit) {
-			-"FEET"
-			-"METERS"
+			value("FEET")
+			value("METERS")
 		}
 
 		InputObject(ReviewInput) {
 			directive("hello")
 
-			"stars" of !Int default 2
-			"commentary" of String
+			argument("stars" of !Int default 2)
+			argument("commentary" of String)
 		}
 
 		Union(SearchResult with Droid or Human or Starship) {
@@ -116,10 +102,10 @@ fun main() {
 		}
 
 		Object(Starship) {
-			"id" of !ID
-			"name" of !String
-			"length" of Float {
-				"unit" of LengthUnit default enumValue("METERS") {
+			field("id" of !ID)
+			field("name" of !String)
+			field("length" of Float) {
+				argument("unit" of LengthUnit default enumValue("METERS")) {
 					description("nice")
 					directive("hello")
 				}
@@ -127,21 +113,48 @@ fun main() {
 		}
 
 		Interface(StarshipOwner) {
-			"starships" of List(Starship)
+			field("starships" of List(Starship))
 		}
 	}
 
+//
+//	val req = GDocument(
+//		definitions = listOf(
+//			GOperationDefinition(
+//				type = GOperationType.query,
+//				selectionSet = listOf(
+//					GFieldSelection(
+//						name = "hero",
+//						selectionSet = listOf(
+//							GFieldSelection(
+//								name = "id"
+//							)
+//						)
+//					)
+//				)
+//			)
+//		)
+//	)
 
 	val req = GDocument(
 		definitions = listOf(
 			GOperationDefinition(
 				type = GOperationType.query,
 				selectionSet = listOf(
+					GFieldSelection("__typename"),
 					GFieldSelection(
-						name = "hero",
+						name = "__type",
+						arguments = listOf(
+							GArgument(name = "name", value = GStringValue("Droid"))
+						),
 						selectionSet = listOf(
+							GFieldSelection(name = "name"),
 							GFieldSelection(
-								name = "id"
+								name = "fields",
+								selectionSet = listOf(
+									GFieldSelection("name"),
+									GFieldSelection(name = "type", selectionSet = listOf(GFieldSelection("name")))
+								)
 							)
 						)
 					)
@@ -160,5 +173,5 @@ fun main() {
 
 	println(r)
 
-	//println(gql)
+	println(GIntrospection.schema)
 }

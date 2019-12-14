@@ -183,7 +183,7 @@ fun GWriter.writeDirectiveDefinition(definition: GDirectiveDefinition) {
 	writeDescription(definition.description)
 	writeRaw("directive @")
 	writeName(definition.name)
-	writeArgumentDefinitions(definition.arguments)
+	writeArgumentDefinitions(definition.arguments.values)
 	writeRaw(" on ")
 	definition.locations
 		.sortedBy { it.name }
@@ -219,7 +219,7 @@ fun GWriter.writeEnumDefinition(definition: GEnumType) {
 	writeDescription(definition.description)
 	writeRaw("enum ")
 	writeName(definition.name)
-	writeEnumValueDefinitions(definition.enumValues(includeDeprecated = true))
+	writeEnumValueDefinitions(definition.values.values)
 	writeLinebreak()
 }
 
@@ -244,14 +244,14 @@ fun GWriter.writeEnumValueDefinitions(definitions: Collection<GEnumValueDefiniti
 fun GWriter.writeFieldDefinition(definition: GFieldDefinition) {
 	writeDescription(definition.description)
 	writeName(definition.name)
-	writeArgumentDefinitions(definition.args)
+	writeArgumentDefinitions(definition.arguments.values)
 	writeRaw(": ")
 	writeTypeName(definition.type)
 	writeDirectives(definition.directives)
 }
 
 
-fun GWriter.writeFieldDefinitions(definitions: List<GFieldDefinition>) {
+fun GWriter.writeFieldDefinitions(definitions: Collection<GFieldDefinition>) {
 	writeBlock {
 		definitions.forEach { definition ->
 			writeFieldDefinition(definition)
@@ -291,7 +291,7 @@ fun GWriter.writeInputObjectDefinition(definition: GInputObjectType) {
 	writeDescription(definition.description)
 	writeRaw("input ")
 	writeName(definition.name)
-	writeInputFieldDefinitions(definition.inputFields)
+	writeInputFieldDefinitions(definition.arguments.values)
 	writeLinebreak()
 }
 
@@ -301,7 +301,7 @@ fun GWriter.writeInterfaceDefinition(definition: GInterfaceType) {
 	writeRaw("interface ")
 	writeName(definition.name)
 	writeRaw(" ")
-	writeFieldDefinitions(definition.fields(includeDeprecated = true))
+	writeFieldDefinitions(definition.fields.values)
 	writeLinebreak()
 }
 
@@ -317,7 +317,7 @@ fun GWriter.writeObjectDefinition(definition: GObjectType) {
 	writeName(definition.name)
 	writeImplementedInterfaces(definition.interfaces)
 	writeRaw(" ")
-	writeFieldDefinitions(definition.fields(includeDeprecated = true))
+	writeFieldDefinitions(definition.fields.values)
 	writeLinebreak()
 }
 

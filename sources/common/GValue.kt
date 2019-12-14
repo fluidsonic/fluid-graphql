@@ -16,7 +16,7 @@ sealed class GValue {
 				is Boolean -> GBooleanValue(value)
 				is Double -> GFloatValue(value)
 				is Float -> GFloatValue(value.toDouble())
-				is GError -> GValue.from(mapOf(
+				is GError -> from(mapOf(
 					"message" to value.message
 				))
 				is Int -> GIntValue(value)

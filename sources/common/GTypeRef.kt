@@ -6,14 +6,6 @@ sealed class GTypeRef {
 	abstract val underlyingName: String
 
 
-	open fun nonNull() =
-		GNonNullTypeRef(this)
-
-
-	open fun nullable() =
-		this
-
-
 	override fun toString() =
 		GWriter { writeTypeRef(this@GTypeRef) }
 
@@ -88,14 +80,6 @@ class GNonNullTypeRef private constructor(
 
 	override fun hashCode() =
 		2 + nullableType.hashCode()
-
-
-	override fun nonNull() =
-		this
-
-
-	override fun nullable() =
-		nullableType
 
 
 	companion object {

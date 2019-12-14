@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 sealed class GDefinition
 sealed class GExecutableDefinition : GDefinition()
-sealed class GTypeSystemDefinition : GDefinition()
+class GTypeSystemDefinition : GDefinition()
 
 
 class GFragmentDefinition(
