@@ -11,5 +11,12 @@ class GArgument(
 		GWriter { writeArgument(this@GArgument) }
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.Argument) =
+			GArgument(
+				name = ast.name.value,
+				value = ast.value // FIXME
+			)
+	}
 }

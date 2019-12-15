@@ -42,7 +42,18 @@ sealed class GType(
 		GWriter { writeTypeName(this@GType) }
 
 
-	companion object;
+	companion object {
+
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type) =
+			when (ast) {
+				is AstNode.Definition.TypeSystem.Type.Enum -> GEnumType.build(ast)
+				is AstNode.Definition.TypeSystem.Type.InputObject -> GInputObjectType.build(ast)
+				is AstNode.Definition.TypeSystem.Type.Interface -> GInterfaceType.build(ast)
+				is AstNode.Definition.TypeSystem.Type.Object -> GObjectType.build(ast)
+				is AstNode.Definition.TypeSystem.Type.Scalar -> GCustomScalarType.build(ast)
+				is AstNode.Definition.TypeSystem.Type.Union -> GUnionType.build(ast)
+			}
+	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
@@ -143,7 +154,16 @@ class GEnumType private constructor(
 			(other is GNonNullType && other.ofType === this)
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Enum) =
+			Unresolved(
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				name = ast.name.value,
+				values = ast.values.map { GEnumValueDefinition.build(it) }
+			)
+	}
 
 
 	class Unresolved(
@@ -226,7 +246,16 @@ class GInputObjectType private constructor(
 			(other is GNonNullType && other.ofType === this)
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type.InputObject) =
+			Unresolved(
+				arguments = ast.arguments.map { GArgumentDefinition.build(it) },
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				name = ast.name.value
+			)
+	}
 
 
 	class Unresolved(
@@ -308,7 +337,17 @@ class GInterfaceType private constructor(
 			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
-	companion object
+	companion object {
+
+		// FIXME implements
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Interface) =
+			Unresolved(
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				fields = ast.fields.map { GFieldDefinition.build(it) },
+				name = ast.name.value
+			)
+	}
 
 
 	class Unresolved(
@@ -506,6 +545,16 @@ class GObjectType private constructor(
 
 	companion object {
 
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Object) =
+			Unresolved(
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				fields = ast.fields.map { GFieldDefinition.build(it) },
+				interfaces = ast.interfaces.map { GNamedTypeRef.build(it) },
+				name = ast.name.value
+			)
+
+
 		private fun requireImplementationOfInterface(name: String, iface: GInterfaceType, fields: List<GFieldDefinition>) {
 			for (expectedField in iface.fields.values) {
 				val implementedField = fields.firstOrNull { it.name == expectedField.name }
@@ -622,7 +671,15 @@ class GCustomScalarType private constructor(
 	)
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Scalar) =
+			Unresolved(
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				name = ast.name.value
+			)
+	}
 
 
 	class Unresolved(
@@ -651,8 +708,8 @@ class GUnionType private constructor(
 	description: String?,
 	directives: List<GDirective>,
 	name: String,
-	possibleTypes: List<GObjectType>?,
-	possibleTypesToResolve: List<GNamedTypeRef>?
+	types: List<GObjectType>?,
+	typesToResolve: List<GNamedTypeRef>?
 ) : GNamedType(
 	typeRegistry = typeRegistry,
 	description = description,
@@ -661,12 +718,12 @@ class GUnionType private constructor(
 	name = name
 ) {
 
-	val possibleTypes: List<GObjectType>
+	val types: List<GObjectType>
 
 
 	constructor(
 		name: String,
-		possibleTypes: List<GObjectType>,
+		types: List<GObjectType>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList()
 	) : this(
@@ -674,37 +731,46 @@ class GUnionType private constructor(
 		description = description,
 		directives = directives,
 		name = name,
-		possibleTypes = possibleTypes,
-		possibleTypesToResolve = null
+		types = types,
+		typesToResolve = null
 	)
 
 
 	init {
-		val resolvedPossibleTypes = possibleTypes
-			?: typeRegistry?.let { possibleTypesToResolve?.map { typeRegistry.resolveKind<GObjectType>(it) } }
+		val resolvedTypes = types
+			?: typeRegistry?.let { typesToResolve?.map { typeRegistry.resolveKind<GObjectType>(it) } }
 			?: error("impossible")
 
-		require(resolvedPossibleTypes.isNotEmpty()) { "'possibleTypes' must not be empty" }
-		require(resolvedPossibleTypes.size <= 1 || resolvedPossibleTypes.mapTo(hashSetOf()) { it.name }.size == resolvedPossibleTypes.size) {
-			"'interfaces' must not contain multiple elements with the same name: ${possibleTypes ?: possibleTypesToResolve}"
+		require(resolvedTypes.isNotEmpty()) { "'types' must not be empty" }
+		require(resolvedTypes.size <= 1 || resolvedTypes.mapTo(hashSetOf()) { it.name }.size == resolvedTypes.size) {
+			"'types' must not contain multiple elements with the same name: ${types ?: typesToResolve}"
 		}
 
-		this.possibleTypes = resolvedPossibleTypes
+		this.types = resolvedTypes
 	}
 
 
 	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
-			other is GObjectType && possibleTypes.contains(other) ||
+			other is GObjectType && types.contains(other) ||
 			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Union) =
+			Unresolved(
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				name = ast.name.value,
+				types = ast.types.map { GNamedTypeRef.build(it) }
+			)
+	}
 
 
 	class Unresolved(
 		override val name: String,
-		val possibleTypes: List<GNamedTypeRef>,
+		val types: List<GNamedTypeRef>,
 		val description: String? = null,
 		override val directives: List<GDirective> = emptyList()
 	) : GNamedType.Unresolved() {
@@ -714,8 +780,8 @@ class GUnionType private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			possibleTypes = null,
-			possibleTypesToResolve = possibleTypes
+			types = null,
+			typesToResolve = types
 		)
 
 

@@ -18,15 +18,10 @@ interface GExecutor {
 		val coercedVariableValues = coerceVariableValues(schema, operation, variableValues)
 			.onFailure { return it }
 
-		val fragmentsByName = document.definitions
-			.filterIsInstance<GFragmentDefinition>()
-			.associateBy { it.name }
-
 		return GResult.Success(GExecutionContext(
 			defaultResolver = defaultResolver,
 			document = document,
 			externalContext = externalContext,
-			fragmentsByName = fragmentsByName,
 			operation = operation,
 			rootValue = rootValue,
 			schema = schema,
@@ -69,8 +64,10 @@ interface GExecutor {
 					if (defaultValue != null)
 						coercedValues[argumentName] = defaultValue
 					else if (argumentType is GNonNullType)
-						context.errors += GError("Required argument '$argumentName' of type $argumentType is set to variable " +
-							"$$variableName, but no value was provided.")
+						context.errors += GError(
+							message = "Required argument '$argumentName' of type $argumentType is set to variable " +
+								"$$variableName, but no value was provided."
+						)
 				}
 				else
 					coercedValues[argumentName] = variableValue
@@ -141,7 +138,7 @@ interface GExecutor {
 	) = this
 		.firstOrNull { it.name == directive }
 		?.arguments
-		?.firstOrNull { it.name == argument }
+		?.get(argument)
 		?.value
 		?.let { value ->
 			if (value is GVariableReference)
@@ -189,7 +186,7 @@ interface GExecutor {
 		groupedFields: MutableMap<String, MutableList<GFieldSelection>> = mutableMapOf(),
 		visitedFragments: MutableSet<String> = mutableSetOf()
 	): Map<String, List<GFieldSelection>> {
-		loop@ for (selection in selectionSet) {
+		loop@ for (selection in selectionSet.selections) {
 			if (!shouldIncludeSelection(context, selection))
 				continue
 
@@ -199,17 +196,17 @@ interface GExecutor {
 					groupedFields.getOrPut(responseKey) { mutableListOf() } += selection
 				}
 
-				is GFragmentSpread -> {
+				is GFragmentSpreadSelection -> {
 					val fragmentName = selection.name
 					if (visitedFragments.contains(fragmentName))
 						continue@loop
 
 					visitedFragments += fragmentName
 
-					val fragment = context.fragmentsByName[fragmentName]
+					val fragment = context.document.fragments[fragmentName]
 						?: continue@loop
 
-					val fragmentType = context.schema.resolveType(fragment.typeCondition.type)
+					val fragmentType = context.schema.resolveType(fragment.typeCondition)
 					if (fragmentType == null || !doesFragmentTypeApply(objectType, fragmentType))
 						continue@loop
 
@@ -222,10 +219,10 @@ interface GExecutor {
 					)
 				}
 
-				is GInlineFragment -> {
+				is GInlineFragmentSelection -> {
 					val fragmentTypeCondition = selection.typeCondition
 					if (fragmentTypeCondition != null) {
-						val fragmentType = context.schema.resolveType(fragmentTypeCondition.type)
+						val fragmentType = context.schema.resolveType(fragmentTypeCondition)
 						if (fragmentType == null || !doesFragmentTypeApply(objectType, fragmentType))
 							continue@loop
 					}
@@ -280,7 +277,7 @@ interface GExecutor {
 				val objectType = fieldType as? GObjectType
 					?: resolveAbstractType(context, fieldType, result)
 
-				val subSelectionSet = GSpecification.mergeSelectionSets(fields)
+				val subSelectionSet = mergeSelectionSets(fields)
 
 				return executeSelectionSet(
 					context = context,
@@ -426,27 +423,36 @@ interface GExecutor {
 
 	// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
 	fun getOperation(document: GDocument, operationName: String?): GResult<GOperationDefinition> {
-		val operations = document.definitions
-			.filterIsInstance<GOperationDefinition>()
-
 		if (operationName == null) {
-			operations.singleOrNull()
+			document.operations.singleOrNull()
 				?.let { return GResult.Success(it) }
 
 			return GResult.Failure(GError(
-				if (operations.isEmpty())
+				if (document.operations.isEmpty())
 					"There are no operations in the document."
 				else
 					"There are multiple operations in the document. You must specify one by name."
 			))
 		}
 		else {
-			operations.firstOrNull { it.name == operationName }
+			document.operations.firstOrNull { it.name == operationName }
 				?.let { return GResult.Success(it) }
-
 
 			return GResult.Failure(GError("There is no operation named '$operationName' in the document."))
 		}
+	}
+
+
+	// https://graphql.github.io/graphql-spec/draft/#MergeSelectionSets()
+	fun mergeSelectionSets(fields: List<GFieldSelection>): GSelectionSet {
+		val selections = mutableListOf<GSelection>()
+		for (field in fields) {
+			val fieldSelectionSet = field.selectionSet?.selections.orEmpty()
+			if (fieldSelectionSet.isNotEmpty())
+				selections += fieldSelectionSet
+		}
+
+		return GSelectionSet(selections = selections)
 	}
 
 

@@ -41,7 +41,37 @@ class GSchema private constructor(
 		GWriter { writeSchema(this@GSchema) }
 
 
-	companion object
+	companion object {
+
+		// FIXME validate
+		internal fun build(ast: List<AstNode.Definition.TypeSystem>): GSchema {
+			val directiveDefinitions = ast.filterIsInstance<AstNode.Definition.TypeSystem.Directive>()
+			val typeDefinitions = ast.filterIsInstance<AstNode.Definition.TypeSystem.Type>()
+
+			val operationDefinitions = ast.filterIsInstance<AstNode.Definition.TypeSystem.Schema>()
+				.singleOrNull() // FIXME
+
+			val mutationType = operationDefinitions?.operationTypes
+				?.firstOrNull { it.operation == GOperationType.mutation }
+				?.type
+
+			val queryType = operationDefinitions?.operationTypes
+				?.firstOrNull { it.operation == GOperationType.query }
+				?.type
+
+			val subscriptionType = operationDefinitions?.operationTypes
+				?.firstOrNull { it.operation == GOperationType.subscription }
+				?.type
+
+			return Unresolved(
+				directives = directiveDefinitions.map { GDirectiveDefinition.build(it) },
+				mutationType = mutationType?.let { GNamedTypeRef.build(it) },
+				queryType = queryType?.let { GNamedTypeRef.build(it) },
+				subscriptionType = subscriptionType?.let { GNamedTypeRef.build(it) },
+				types = typeDefinitions.map { GType.build(it) }
+			).resolve()
+		}
+	}
 
 
 	class Unresolved(

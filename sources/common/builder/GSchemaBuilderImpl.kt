@@ -87,7 +87,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun Union(named: PossibleTypesForUnion, configure: UnionDefinitionBuilder.() -> Unit) {
+	override fun Union(named: TypesForUnion, configure: UnionDefinitionBuilder.() -> Unit) {
 		types += (named as UnionDefinitionBuilderImpl).apply(configure).build()
 	}
 
@@ -99,7 +99,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		)
 
 
-	override fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypesForUnion =
+	override fun GNamedTypeRef.with(possibleType: GNamedTypeRef): TypesForUnion =
 		UnionDefinitionBuilderImpl(
 			name = name,
 			possibleType = possibleType
@@ -156,11 +156,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 		protected val argumentDefinitions = mutableListOf<GArgumentDefinition.Unresolved>()
 		protected val arguments = mutableListOf<GArgument>()
-		protected var deprecationReason: String? = null
 		protected var description: String? = null
 		protected val directives = mutableListOf<GDirective>()
 		protected val fieldDefinitions = mutableListOf<GFieldDefinition.Unresolved>()
-		protected var isDeprecated = false
 
 
 		override fun argument(name: ArgumentContainer.NameAndValue) {
@@ -178,9 +176,18 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		}
 
 
+		// FIXME what if custom @deprecated is provided?
 		override fun deprecated(reason: String?) {
-			deprecationReason = reason?.ifEmpty { null }
-			isDeprecated = true
+			require(directives.none { it.name == GSpecification.defaultDeprecatedDirective.name }) {
+				"Cannot use deprecate() multiple times on the same element"
+			}
+
+			directives += GDirective(
+				name = GSpecification.defaultDeprecatedDirective.name,
+				arguments = listOf(
+					GArgument(name = "reason", value = reason) // FIXME null vs not-specified
+				)
+			)
 		}
 
 
@@ -344,9 +351,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			fun build() = GEnumValueDefinition(
 				name = name,
 				description = description,
-				directives = directives,
-				isDeprecated = isDeprecated,
-				deprecationReason = deprecationReason
+				directives = directives
 			)
 		}
 	}
@@ -369,8 +374,6 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 				arguments = argumentDefinitions,
 				description = description,
 				directives = directives,
-				isDeprecated = isDeprecated,
-				deprecationReason = deprecationReason,
 				resolver = resolver
 			)
 
@@ -471,10 +474,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		val name: String,
 		possibleType: GNamedTypeRef
 	) : ContainerImpl(),
-		PossibleTypesForUnion,
+		TypesForUnion,
 		UnionDefinitionBuilder {
 
-		private val possibleTypes = mutableListOf(possibleType)
+		private val types = mutableListOf(possibleType)
 
 
 		fun build() =
@@ -482,12 +485,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 				name = name,
 				description = description,
 				directives = directives,
-				possibleTypes = possibleTypes
+				types = types
 			)
 
 
 		override fun or(type: GNamedTypeRef) = apply {
-			possibleTypes += type
+			types += type
 		}
 	}
 }

@@ -176,7 +176,7 @@ fun GWriter.writeDescription(description: String?) {
 fun GWriter.writeDirective(directive: GDirective) {
 	writeRaw("@")
 	writeName(directive.name)
-	writeArguments(directive.arguments)
+	writeArguments(directive.arguments.values)
 }
 
 
@@ -220,6 +220,7 @@ fun GWriter.writeEnumDefinition(definition: GEnumType) {
 	writeDescription(definition.description)
 	writeRaw("enum ")
 	writeName(definition.name)
+	writeRaw(" ")
 	writeEnumValueDefinitions(definition.values.values)
 	writeLinebreak()
 }
@@ -395,17 +396,19 @@ fun GWriter.writeSelection(selection: GSelection) {
 			writeName(selection.name)
 			writeArguments(selection.arguments)
 			writeDirectives(selection.directives)
-			writeSelectionSet(selection.selectionSet)
+			selection.selectionSet?.let { selectionSet ->
+				writeSelectionSet(selectionSet)
+			}
 			writeLinebreak()
 		}
 
-		is GFragmentSpread -> {
+		is GFragmentSpreadSelection -> {
 			writeRaw("...")
 			writeName(selection.name)
 			writeDirectives(selection.directives)
 		}
 
-		is GInlineFragment -> {
+		is GInlineFragmentSelection -> {
 			writeRaw("...")
 			selection.typeCondition?.let { typeCondition ->
 				writeTypeCondition(typeCondition)
@@ -417,9 +420,9 @@ fun GWriter.writeSelection(selection: GSelection) {
 }
 
 
-fun GWriter.writeSelectionSet(selectionSet: Collection<GSelection>) {
+fun GWriter.writeSelectionSet(selectionSet: GSelectionSet) {
 	writeBlock {
-		selectionSet.forEach { selection ->
+		selectionSet.selections.forEach { selection ->
 			writeSelection(selection)
 			writeLinebreak()
 		}
@@ -444,9 +447,9 @@ fun GWriter.writeStringValue(string: String, block: Boolean = false) {
 }
 
 
-fun GWriter.writeTypeCondition(condition: GTypeCondition) {
+fun GWriter.writeTypeCondition(condition: GNamedTypeRef) {
 	writeRaw(" on ")
-	writeTypeRef(condition.type)
+	writeTypeRef(condition)
 }
 
 
@@ -520,7 +523,7 @@ fun GWriter.writeUnionDefinition(type: GUnionType) {
 	writeRaw("union ")
 	writeName(type.name)
 	writeRaw(" = ")
-	type.possibleTypes.forEachIndexed { index, possibleType ->
+	type.types.forEachIndexed { index, possibleType ->
 		if (index > 0)
 			writeRaw(" | ")
 

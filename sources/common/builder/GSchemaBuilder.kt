@@ -74,13 +74,13 @@ interface GSchemaBuilder {
 	fun Subscription(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Union(named: PossibleTypesForUnion, configure: UnionDefinitionBuilder.() -> Unit = {})
+	fun Union(named: TypesForUnion, configure: UnionDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderKeywordB
 	infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): InterfacesForObject
 
 	@SchemaBuilderKeywordB
-	infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypesForUnion
+	infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): TypesForUnion
 
 
 	companion object
@@ -277,13 +277,6 @@ interface GSchemaBuilder {
 	}
 
 
-	interface PossibleTypesForUnion {
-
-		@SchemaBuilderKeywordB
-		infix fun or(type: GNamedTypeRef): PossibleTypesForUnion
-	}
-
-
 	@SchemaBuilderDsl
 	interface ObjectDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
 
@@ -325,6 +318,13 @@ interface GSchemaBuilder {
 				error("Cannot use '!' on a type that's already non-null")
 			else
 				GNonNullTypeRef(this)
+	}
+
+
+	interface TypesForUnion {
+
+		@SchemaBuilderKeywordB
+		infix fun or(type: GNamedTypeRef): TypesForUnion
 	}
 
 

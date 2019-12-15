@@ -1,4 +1,5 @@
 import io.fluidsonic.graphql.*
+import java.io.*
 
 
 fun main() {
@@ -136,27 +137,35 @@ fun main() {
 //	)
 
 	val req = GDocument(
-		definitions = listOf(
+		operations = listOf(
 			GOperationDefinition(
 				type = GOperationType.query,
-				selectionSet = listOf(
-					GFieldSelection("__typename"),
-					GFieldSelection(
-						name = "__type",
-						arguments = listOf(
-							GArgument(name = "name", value = "Droid")
-						),
-						selectionSet = listOf(
-							GFieldSelection(name = "name"),
-							GFieldSelection(
-								name = "fields",
-								selectionSet = listOf(
-									GFieldSelection("name"),
-									GFieldSelection(name = "type", selectionSet = listOf(
-										GFieldSelection("name"),
-										GFieldSelection("kind"),
-										GFieldSelection("ofType")
-									))
+				selectionSet = GSelectionSet(
+					selections = listOf(
+						GFieldSelection("__typename"),
+						GFieldSelection(
+							name = "__type",
+							arguments = listOf(
+								GArgument(name = "name", value = "Droid")
+							),
+							selectionSet = GSelectionSet(
+								selections = listOf(
+									GFieldSelection(name = "name"),
+									GFieldSelection(
+										name = "fields",
+										selectionSet = GSelectionSet(
+											selections = listOf(
+												GFieldSelection("name"),
+												GFieldSelection(name = "type", selectionSet = GSelectionSet(
+													selections = listOf(
+														GFieldSelection("name"),
+														GFieldSelection("kind"),
+														GFieldSelection("ofType")
+													))
+												)
+											)
+										)
+									)
 								)
 							)
 						)
@@ -175,4 +184,9 @@ fun main() {
 	val r = GExecutor.default.executeRequest(con)
 
 	println(r)
+
+	val githubSource = File("github-schema.graphql").readText()
+	val githubSchema = GDocument.parse(githubSource).schema
+
+	println(githubSchema)
 }

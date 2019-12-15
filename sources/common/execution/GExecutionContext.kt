@@ -6,7 +6,6 @@ class GExecutionContext(
 	val document: GDocument,
 	val externalContext: Any? = null,
 	val errors: MutableList<GError> = mutableListOf(),
-	val fragmentsByName: Map<String, GFragmentDefinition>,
 	val operation: GOperationDefinition,
 	val rootValue: Any,
 	val schema: GSchema,

@@ -27,7 +27,16 @@ class GDirectiveDefinition(
 		GWriter { writeDirectiveDefinition(this@GDirectiveDefinition) }
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.Definition.TypeSystem.Directive) =
+			Unresolved(
+				arguments = ast.arguments.map { GArgumentDefinition.build(it) },
+				description = ast.description?.value,
+				locations = ast.locations.map { GDirectiveLocation.build(it) },
+				name = ast.name.value
+			)
+	}
 
 
 	class Unresolved(

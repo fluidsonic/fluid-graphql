@@ -9,14 +9,13 @@ class GFieldDefinition(
 	arguments: List<GArgumentDefinition> = emptyList(),
 	description: String? = null,
 	val directives: List<GDirective> = emptyList(),
-	val isDeprecated: Boolean = false,
-	deprecationReason: String? = null,
 	val resolver: GFieldResolver<*>? = null
 ) {
 
 	val arguments: Map<String, GArgumentDefinition>
+	val deprecationReason: String?
 	val description = description?.ifEmpty { null }
-	val deprecationReason = deprecationReason?.ifEmpty { null }
+	val isDeprecated: Boolean
 
 
 	init {
@@ -27,6 +26,11 @@ class GFieldDefinition(
 		require(type.isOutputType()) { "'type' must be an output type: $type" }
 
 		this.arguments = arguments.associateBy { it.name }
+
+		val deprecation = directives.firstOrNull { it.name == GSpecification.defaultDeprecatedDirective.name }
+
+		deprecationReason = (deprecation?.arguments?.get("reason")?.value as? String)?.ifEmpty { null }
+		isDeprecated = deprecation != null
 	}
 
 
@@ -34,7 +38,17 @@ class GFieldDefinition(
 		GWriter { writeFieldDefinition(this@GFieldDefinition) }
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.FieldDefinition) =
+			Unresolved(
+				arguments = ast.arguments.map { GArgumentDefinition.build(it) },
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				name = ast.name.value,
+				type = GTypeRef.build(ast.type)
+			)
+	}
 
 
 	class Unresolved(
@@ -43,17 +57,13 @@ class GFieldDefinition(
 		val arguments: List<GArgumentDefinition.Unresolved>,
 		val description: String? = null,
 		val directives: List<GDirective> = emptyList(),
-		val isDeprecated: Boolean = false,
-		val deprecationReason: String? = null,
 		val resolver: GFieldResolver<*>? = null
 	) {
 
 		fun resolve(typeRegistry: GTypeRegistry) = GFieldDefinition(
 			arguments = arguments.map { it.resolve(typeRegistry) },
-			deprecationReason = deprecationReason,
 			description = description,
 			directives = directives,
-			isDeprecated = isDeprecated,
 			name = name,
 			resolver = resolver,
 			type = typeRegistry.resolve(type)

@@ -23,7 +23,17 @@ class GArgumentDefinition(
 		GWriter { writeArgumentDefinition(this@GArgumentDefinition) }
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.ArgumentDefinition) =
+			Unresolved(
+				defaultValue = ast.defaultValue, // FIXME
+				description = ast.description?.value,
+				directives = ast.directives.map { GDirective.build(it) },
+				name = ast.name.value,
+				type = GTypeRef.build(ast.type)
+			)
+	}
 
 
 	class Unresolved(

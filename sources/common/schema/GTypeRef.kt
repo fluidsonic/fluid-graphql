@@ -10,37 +10,13 @@ sealed class GTypeRef {
 		GWriter { writeTypeRef(this@GTypeRef) }
 
 
-	companion object
-}
-
-
-class GNamedTypeRef private constructor(
-	val name: String
-) : GTypeRef() {
-
-	override val underlyingName
-		get() = name
-
-
-	override fun equals(other: Any?) =
-		this === other || (other is GNamedTypeRef && name == other.name)
-
-
-	override fun hashCode() =
-		name.hashCode()
-
-
 	companion object {
 
-		@Suppress("USELESS_ELVIS")
-		operator fun invoke(name: String): GNamedTypeRef =
-			when (name) {
-				"Boolean" -> GBooleanTypeRef ?: GNamedTypeRef(name)
-				"Float" -> GFloatTypeRef ?: GNamedTypeRef(name)
-				"ID" -> GIDTypeRef ?: GNamedTypeRef(name)
-				"Int" -> GIntTypeRef ?: GNamedTypeRef(name)
-				"String" -> GStringTypeRef ?: GNamedTypeRef(name)
-				else -> GNamedTypeRef(name)
+		internal fun build(ast: AstNode.TypeReference): GTypeRef =
+			when (ast) {
+				is AstNode.TypeReference.List -> GListTypeRef.build(ast)
+				is AstNode.TypeReference.Named -> GNamedTypeRef.build(ast)
+				is AstNode.TypeReference.NonNull -> GNonNullTypeRef.build(ast)
 			}
 	}
 }
@@ -62,7 +38,47 @@ class GListTypeRef(
 		1 + elementType.hashCode()
 
 
-	companion object
+	companion object {
+
+		internal fun build(ast: AstNode.TypeReference.List) =
+			GListTypeRef(elementType = build(ast.elementType))
+	}
+}
+
+
+class GNamedTypeRef private constructor(
+	val name: String
+) : GTypeRef() {
+
+	override val underlyingName
+		get() = name
+
+
+	override fun equals(other: Any?) =
+		this === other || (other is GNamedTypeRef && name == other.name)
+
+
+	override fun hashCode() =
+		name.hashCode()
+
+
+	companion object {
+
+		internal fun build(ast: AstNode.TypeReference.Named) =
+			GNamedTypeRef(name = ast.name.value)
+
+
+		@Suppress("USELESS_ELVIS")
+		operator fun invoke(name: String): GNamedTypeRef =
+			when (name) {
+				"Boolean" -> GBooleanTypeRef ?: GNamedTypeRef(name)
+				"Float" -> GFloatTypeRef ?: GNamedTypeRef(name)
+				"ID" -> GIDTypeRef ?: GNamedTypeRef(name)
+				"Int" -> GIntTypeRef ?: GNamedTypeRef(name)
+				"String" -> GStringTypeRef ?: GNamedTypeRef(name)
+				else -> GNamedTypeRef(name)
+			}
+	}
 }
 
 
@@ -83,6 +99,10 @@ class GNonNullTypeRef private constructor(
 
 
 	companion object {
+
+		internal fun build(ast: AstNode.TypeReference.NonNull) =
+			GNonNullTypeRef(nullableType = build(ast.nullableType))
+
 
 		operator fun invoke(nullableType: GTypeRef) =
 			nullableType as? GNonNullTypeRef ?: GNonNullTypeRef(nullableType)

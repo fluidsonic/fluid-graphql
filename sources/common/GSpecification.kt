@@ -1,7 +1,6 @@
 package io.fluidsonic.graphql
 
 
-typealias GSelectionSet = List<GSelection>
 typealias GVariableValues = Map<String, Any>
 
 
@@ -116,19 +115,6 @@ object GSpecification {
 	fun isValidTypeName(name: String) =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
-
-
-	// https://graphql.github.io/graphql-spec/draft/#MergeSelectionSets()
-	fun mergeSelectionSets(fields: List<GFieldSelection>): GSelectionSet {
-		val selectionSet = mutableListOf<GSelection>()
-		for (field in fields) {
-			val fieldSelectionSet = field.selectionSet
-			if (fieldSelectionSet.isNotEmpty())
-				selectionSet += fieldSelectionSet
-		}
-
-		return selectionSet
-	}
 
 
 	private fun requireValidName(name: String) {
