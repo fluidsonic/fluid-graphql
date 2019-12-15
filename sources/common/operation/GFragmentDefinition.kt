@@ -11,12 +11,12 @@ class GFragmentDefinition(
 	companion object {
 
 		// FIXME validation
-		internal fun build(ast: AstNode.Definition.Fragment) =
+		fun from(ast: GAst.Definition.Fragment) =
 			GFragmentDefinition(
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value,
-				typeCondition = GNamedTypeRef.build(ast.typeCondition),
-				selectionSet = GSelectionSet.build(ast.selectionSet)
+				typeCondition = GNamedTypeRef.from(ast.typeCondition),
+				selectionSet = GSelectionSet.from(ast.selectionSet)
 			)
 	}
 }

@@ -2,8 +2,10 @@ package io.fluidsonic.graphql
 
 
 internal class Lexer(
-	private val source: String
+	val source: GSource.Parsable
 ) {
+
+	private val content = source.content
 
 	var currentToken = Token(
 		kind = Token.Kind.SOF,
@@ -43,7 +45,6 @@ internal class Lexer(
 					lookaheadToken = token
 
 					readToken().also { nextToken ->
-						println(nextToken)
 						token.nextToken = nextToken
 					}
 				}
@@ -63,7 +64,7 @@ internal class Lexer(
 		var char = readChar(position)
 		while (char.isValid()) { // FIXME invalid chars
 			if (char eq '"' && readChar(position + 1) eq '"' && readChar(position + 2) eq '"') {
-				rawValue += source.substring(startIndex = chunkStart, endIndex = position)
+				rawValue += content.substring(startIndex = chunkStart, endIndex = position)
 
 				return makeToken(
 					kind = Token.Kind.BLOCK_STRING,
@@ -87,7 +88,7 @@ internal class Lexer(
 				readChar(position + 2) eq '"' &&
 				readChar(position + 3) eq '"'
 			) {
-				rawValue += source.substring(startIndex = chunkStart, endIndex = position) + "\"\"\""
+				rawValue += content.substring(startIndex = chunkStart, endIndex = position) + "\"\"\""
 
 				position += 4
 				chunkStart = position
@@ -103,10 +104,10 @@ internal class Lexer(
 
 
 	private fun readChar(position: Int) =
-		if (position >= source.length)
+		if (position >= content.length)
 			SourceCharacter.endOfInput
 		else
-			SourceCharacter(source[position].toInt())
+			SourceCharacter(content[position].toInt())
 
 
 	private fun readComment(): Token {
@@ -119,7 +120,7 @@ internal class Lexer(
 		return makeToken(
 			kind = Token.Kind.COMMENT,
 			endPosition = position,
-			value = source.substring(startIndex = lookaheadPosition + 1, endIndex = position)
+			value = content.substring(startIndex = lookaheadPosition + 1, endIndex = position)
 		)
 	}
 
@@ -150,7 +151,7 @@ internal class Lexer(
 		return makeToken(
 			kind = Token.Kind.NAME,
 			endPosition = position,
-			value = source.substring(startIndex = lookaheadPosition, endIndex = position)
+			value = content.substring(startIndex = lookaheadPosition, endIndex = position)
 		)
 	}
 
@@ -199,7 +200,7 @@ internal class Lexer(
 		return makeToken(
 			kind = if (isFloat) Token.Kind.FLOAT else Token.Kind.INT,
 			endPosition = position,
-			value = source.substring(startIndex = lookaheadPosition, endIndex = position)
+			value = content.substring(startIndex = lookaheadPosition, endIndex = position)
 		)
 	}
 
@@ -212,7 +213,7 @@ internal class Lexer(
 		var char = readChar(position)
 		while (char.isValid() && !char.isLineBreak()) { // FIXME throw in invalid char
 			if (char eq '"') {
-				value += source.substring(startIndex = chunkStart, endIndex = position)
+				value += content.substring(startIndex = chunkStart, endIndex = position)
 
 				return makeToken(
 					kind = Token.Kind.STRING,
@@ -224,7 +225,7 @@ internal class Lexer(
 			++position
 
 			if (char eq '\\') {
-				value += source.substring(startIndex = chunkStart, endIndex = position - 1)
+				value += content.substring(startIndex = chunkStart, endIndex = position - 1)
 
 				char = readChar(position)
 				when (char.toChar()) {
@@ -246,7 +247,7 @@ internal class Lexer(
 						)
 
 						if (charCode < 0) {
-							val invalidSequence = source.substring(startIndex = position + 1, endIndex = position + 5)
+							val invalidSequence = content.substring(startIndex = position + 1, endIndex = position + 5)
 
 							syntaxError(
 								description = "Invalid character escape sequence: \\u${invalidSequence}.",
@@ -364,6 +365,29 @@ internal class Lexer(
 	}
 
 
+	private fun syntaxError(description: String, position: Int): Nothing =
+		throw GError.syntax(
+			description = description,
+			origin = Origin(
+				column = position - lookaheadLinePosition + 1,
+				line = lookaheadLineNumber,
+				position = position,
+				source = source
+			)
+		)
+
+
+	private fun unexpectedCharacterError(character: SourceCharacter, position: Int): Nothing = // FIXME add expected
+		syntaxError(
+			description = when {
+				character == SourceCharacter.endOfInput -> "Unexpected end of input"
+				!character.isValid() -> "Cannot contain the invalid character 0x${character.toHexString()}"
+				else -> "Unexpected character '${character.toChar()}'"
+			},
+			position = position
+		)
+
+
 	companion object {
 
 		private fun Char.parseHex() =
@@ -403,7 +427,7 @@ internal class Lexer(
 
 		private fun normalizeBlockString(value: String): String {
 			if (value.indexOfFirst { it == '\n' || it == '\r' } < 0)
-				return value
+				return value.trimStart { it == ' ' || it == '\t' }
 
 			val lines = value.lineSequence().toMutableList()
 
@@ -421,20 +445,17 @@ internal class Lexer(
 
 			return lines.joinToString("\n")
 		}
+	}
 
 
-		private fun unexpectedCharacterError(character: SourceCharacter, position: Int): Nothing = // FIXME add expected
-			syntaxError(
-				description = when {
-					character == SourceCharacter.endOfInput -> "Unexpected end of input"
-					!character.isValid() -> "Cannot contain the invalid character 0x${character.toHexString()}"
-					else -> "Unexpected character '${character.toChar()}'"
-				},
-				position = position
-			)
+	private class Origin(
+		override val column: Int,
+		override val line: Int,
+		val position: Int,
+		override val source: GSource.Parsable
+	) : GOrigin {
 
-
-		private fun syntaxError(description: String, position: Int): Nothing =
-			throw GError.syntax(description = description, position = position)
+		override val startPosition
+			get() = position
 	}
 }

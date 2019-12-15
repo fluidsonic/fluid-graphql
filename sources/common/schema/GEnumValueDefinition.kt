@@ -27,10 +27,10 @@ class GEnumValueDefinition(
 
 	companion object {
 
-		internal fun build(ast: AstNode.EnumValueDefinition) =
+		fun from(ast: GAst.EnumValueDefinition) =
 			GEnumValueDefinition(
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value
 			)
 	}

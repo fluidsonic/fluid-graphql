@@ -23,22 +23,26 @@ class GDocument(
 
 		// FIXME validation
 		// FIXME extensions
-		internal fun build(ast: AstNode.Document) =
+		fun from(ast: GAst.Document) =
 			GDocument(
 				fragments = ast.definitions
-					.filterIsInstance<AstNode.Definition.Fragment>()
-					.map { GFragmentDefinition.build(it) },
+					.filterIsInstance<GAst.Definition.Fragment>()
+					.map { GFragmentDefinition.from(it) },
 				operations = ast.definitions
-					.filterIsInstance<AstNode.Definition.Operation>()
-					.map { GOperationDefinition.build(it) },
+					.filterIsInstance<GAst.Definition.Operation>()
+					.map { GOperationDefinition.from(it) },
 				schema = ast.definitions
-					.filterIsInstance<AstNode.Definition.TypeSystem>()
+					.filterIsInstance<GAst.Definition.TypeSystem>()
 					.ifEmpty { null }
-					?.let { GSchema.build(it) }
+					?.let { GSchema.from(it) }
 			)
 
 
-		fun parse(source: String) =
-			build(Parser.parse(source))
+		fun parse(source: GSource.Parsable) =
+			from(GAst.parseDocument(source))
+
+
+		fun parse(content: String, name: String = "<document>") =
+			parse(GSource.of(content = content, name = name))
 	}
 }

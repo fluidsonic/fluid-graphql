@@ -12,11 +12,11 @@ sealed class GTypeRef {
 
 	companion object {
 
-		internal fun build(ast: AstNode.TypeReference): GTypeRef =
+		fun from(ast: GAst.TypeReference): GTypeRef =
 			when (ast) {
-				is AstNode.TypeReference.List -> GListTypeRef.build(ast)
-				is AstNode.TypeReference.Named -> GNamedTypeRef.build(ast)
-				is AstNode.TypeReference.NonNull -> GNonNullTypeRef.build(ast)
+				is GAst.TypeReference.List -> GListTypeRef.from(ast)
+				is GAst.TypeReference.Named -> GNamedTypeRef.from(ast)
+				is GAst.TypeReference.NonNull -> GNonNullTypeRef.from(ast)
 			}
 	}
 }
@@ -40,8 +40,8 @@ class GListTypeRef(
 
 	companion object {
 
-		internal fun build(ast: AstNode.TypeReference.List) =
-			GListTypeRef(elementType = build(ast.elementType))
+		fun from(ast: GAst.TypeReference.List) =
+			GListTypeRef(elementType = from(ast.elementType))
 	}
 }
 
@@ -64,7 +64,7 @@ class GNamedTypeRef private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.TypeReference.Named) =
+		fun from(ast: GAst.TypeReference.Named) =
 			GNamedTypeRef(name = ast.name.value)
 
 
@@ -100,8 +100,8 @@ class GNonNullTypeRef private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.TypeReference.NonNull) =
-			GNonNullTypeRef(nullableType = build(ast.nullableType))
+		fun from(ast: GAst.TypeReference.NonNull) =
+			GNonNullTypeRef(nullableType = from(ast.nullableType))
 
 
 		operator fun invoke(nullableType: GTypeRef) =

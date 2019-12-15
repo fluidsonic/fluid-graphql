@@ -183,10 +183,11 @@ fun main() {
 
 	val r = GExecutor.default.executeRequest(con)
 
-	println(r)
+//	println(r)
 
-	val githubSource = File("github-schema.graphql").readText()
-	val githubSchema = GDocument.parse(githubSource).schema
+	val githubSource = File("sources/test-fixtures/github-schema.graphql").readText()
+	val githubSchema = GDocument.parse(githubSource, "github-schema.graphql")
+	val github = GAst.parseDocument(githubSource)
 
-	println(githubSchema)
+	println(GAst.print(github))
 }

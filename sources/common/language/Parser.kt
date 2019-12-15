@@ -1,25 +1,26 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.AstNode.*
+import io.fluidsonic.graphql.GAst.*
+import io.fluidsonic.graphql.Token.Kind as TokenKind
 
 
 internal class Parser private constructor(
-	source: String
+	source: GSource.Parsable
 ) {
 
 	private val lexer = Lexer(source = source)
 
 
 	private inline fun <T> any(
-		openKind: Token.Kind,
+		openKind: TokenKind,
 		parse: () -> T,
-		closeKind: Token.Kind
+		closeKind: TokenKind
 	): List<T> {
 		expectToken(openKind)
 
 		val elements = mutableListOf<T>()
 
-		while (expectOptionalToken(closeKind) != null)
+		while (expectOptionalToken(closeKind) == null)
 			elements += parse()
 
 		return elements
@@ -28,7 +29,7 @@ internal class Parser private constructor(
 
 	private fun expectKeyword(keyword: String) {
 		lexer.currentToken
-			.takeIf { it.kind == Token.Kind.NAME && it.value == keyword }
+			.takeIf { it.kind == TokenKind.NAME && it.value == keyword }
 			?.also { lexer.advance() }
 			?: unexpectedTokenError(expected = "\"$keyword\"")
 	}
@@ -36,34 +37,35 @@ internal class Parser private constructor(
 
 	private fun expectOptionalKeyword(keyword: String) =
 		null != lexer.currentToken
-			.takeIf { it.kind == Token.Kind.NAME && it.value == keyword }
+			.takeIf { it.kind == TokenKind.NAME && it.value == keyword }
 			?.also { lexer.advance() }
 
 
-	private fun expectOptionalToken(kind: Token.Kind) =
+	private fun expectOptionalToken(kind: TokenKind) =
 		lexer.currentToken
 			.takeIf { it.kind == kind }
 			?.also { lexer.advance() }
 
 
-	private fun expectToken(kind: Token.Kind) =
+	private fun expectToken(kind: TokenKind) =
 		lexer.currentToken
 			.takeIf { it.kind == kind }
 			?.also { lexer.advance() }
 			?: unexpectedTokenError(expected = kind.toString())
 
 
-	private fun makeSourceLocation(startToken: Token) =
-		SourceLocation(
+	private fun makeOrigin(startToken: Token, endToken: Token = lexer.previousToken) =
+		Origin(
+			source = lexer.source,
 			startToken = startToken,
-			endToken = lexer.previousToken
+			endToken = endToken
 		)
 
 
 	private inline fun <T> many(
-		openKind: Token.Kind,
+		openKind: TokenKind,
 		parse: () -> T,
-		closeKind: Token.Kind
+		closeKind: TokenKind
 	): List<T> {
 		val elements = mutableListOf<T>()
 
@@ -77,9 +79,9 @@ internal class Parser private constructor(
 
 
 	private inline fun <T> optionalMany(
-		openKind: Token.Kind,
+		openKind: TokenKind,
 		parse: () -> T,
-		closeKind: Token.Kind
+		closeKind: TokenKind
 	) =
 		if (expectOptionalToken(openKind) != null) {
 			val elements = mutableListOf<T>()
@@ -96,22 +98,22 @@ internal class Parser private constructor(
 	private fun parseArgument(isConstant: Boolean): Argument {
 		val startToken = lexer.currentToken
 		val name = parseName()
-
-		expectToken(Token.Kind.COLON)
+		expectToken(TokenKind.COLON)
+		val value = parseValue(isConstant = isConstant)
 
 		return Argument(
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
-			value = parseValue(isConstant = isConstant)
+			origin = makeOrigin(startToken = startToken),
+			value = value
 		)
 	}
 
 
 	private fun parseArguments(isConstant: Boolean) =
 		optionalMany(
-			Token.Kind.PAREN_L,
+			TokenKind.PAREN_L,
 			{ parseArgument(isConstant) },
-			Token.Kind.PAREN_R
+			TokenKind.PAREN_R
 		)
 
 
@@ -119,9 +121,9 @@ internal class Parser private constructor(
 		val startToken = lexer.currentToken
 		val description = parseDescription()
 		val name = parseName()
-		expectToken(Token.Kind.COLON)
+		expectToken(TokenKind.COLON)
 		val type = parseTypeReference()
-		val defaultValue = expectOptionalToken(Token.Kind.EQUALS)
+		val defaultValue = expectOptionalToken(TokenKind.EQUALS)
 			?.let { parseValue(isConstant = true) }
 		val directives = parseDirectives(isConstant = true)
 
@@ -130,7 +132,7 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			type = type
 		)
 	}
@@ -138,15 +140,15 @@ internal class Parser private constructor(
 
 	private fun parseArgumentDefinitions(isBlock: Boolean) =
 		optionalMany(
-			if (isBlock) Token.Kind.BRACE_L else Token.Kind.PAREN_L,
+			if (isBlock) TokenKind.BRACE_L else TokenKind.PAREN_L,
 			this::parseArgumentDefinition,
-			if (isBlock) Token.Kind.BRACE_R else Token.Kind.PAREN_R
+			if (isBlock) TokenKind.BRACE_R else TokenKind.PAREN_R
 		)
 
 
 	private fun parseDefinition() =
 		when {
-			peek(Token.Kind.NAME) ->
+			peek(TokenKind.NAME) ->
 				when (lexer.currentToken.value) {
 					"directive", "input", "enum", "interface", "scalar", "schema", "type", "union" ->
 						parseTypeSystemDefinition()
@@ -164,7 +166,7 @@ internal class Parser private constructor(
 						unexpectedTokenError()
 				}
 
-			peek(Token.Kind.BRACE_L) ->
+			peek(TokenKind.BRACE_L) ->
 				parseOperationDefinition()
 
 			peekDescription() ->
@@ -180,14 +182,14 @@ internal class Parser private constructor(
 
 
 	private fun parseDirective(isConstant: Boolean): Directive {
-		val startToken = expectToken(Token.Kind.AT)
+		val startToken = expectToken(TokenKind.AT)
 		val name = parseName()
 		val arguments = parseArguments(isConstant = isConstant)
 
 		return Directive(
 			arguments = arguments,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -196,7 +198,7 @@ internal class Parser private constructor(
 		val startToken = lexer.currentToken
 		val description = parseDescription()
 		expectKeyword("directive")
-		expectToken(Token.Kind.AT)
+		expectToken(TokenKind.AT)
 		val name = parseName()
 		val arguments = parseArgumentDefinitions(isBlock = false)
 		val isRepeatable = expectOptionalKeyword("repeatable")
@@ -209,7 +211,7 @@ internal class Parser private constructor(
 			isRepeatable = isRepeatable,
 			locations = locations,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -223,10 +225,10 @@ internal class Parser private constructor(
 	private fun parseDirectiveLocations(): List<Name> {
 		val locations = mutableListOf<Name>()
 
-		expectOptionalToken(Token.Kind.PIPE)
+		expectOptionalToken(TokenKind.PIPE)
 
 		do locations += parseDirectiveLocation()
-		while (expectOptionalToken(Token.Kind.PIPE) != null)
+		while (expectOptionalToken(TokenKind.PIPE) != null)
 
 		return locations
 	}
@@ -235,7 +237,7 @@ internal class Parser private constructor(
 	private fun parseDirectives(isConstant: Boolean): List<Directive> {
 		val directives = mutableListOf<Directive>()
 
-		while (peek(Token.Kind.AT))
+		while (peek(TokenKind.AT))
 			directives += parseDirective(isConstant = isConstant)
 
 		return directives
@@ -245,14 +247,14 @@ internal class Parser private constructor(
 	private fun parseDocument(): Document {
 		val startToken = lexer.currentToken
 		val definitions = many(
-			Token.Kind.SOF,
+			TokenKind.SOF,
 			this::parseDefinition,
-			Token.Kind.EOF
+			TokenKind.EOF
 		)
 
 		return Document(
 			definitions = definitions,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -269,7 +271,7 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			values = values
 		)
 	}
@@ -289,7 +291,7 @@ internal class Parser private constructor(
 		return Definition.TypeSystemExtension.Type.Enum(
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			values = values
 		)
 	}
@@ -305,16 +307,16 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
 
 	private fun parseEnumValueDefinitions() =
 		optionalMany(
-			Token.Kind.BRACE_L,
+			TokenKind.BRACE_L,
 			this::parseEnumValueDefinition,
-			Token.Kind.BRACE_R
+			TokenKind.BRACE_R
 		)
 
 
@@ -325,7 +327,7 @@ internal class Parser private constructor(
 		val alias: Name?
 		val name: Name
 
-		if (expectOptionalToken(Token.Kind.COLON) != null) {
+		if (expectOptionalToken(TokenKind.COLON) != null) {
 			alias = nameOrAlias
 			name = parseName()
 		}
@@ -336,15 +338,15 @@ internal class Parser private constructor(
 
 		val arguments = parseArguments(isConstant = false)
 		val directives = parseDirectives(isConstant = false)
-		val selectionSet = peek(Token.Kind.BRACE_L).thenTake { parseSelectionSet() }
+		val selectionSet = peek(TokenKind.BRACE_L).thenTake { parseSelectionSet() }
 
 		return Selection.Field(
 			arguments = arguments,
 			alias = alias,
 			directives = directives,
 			name = name,
-			selectionSet = selectionSet,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
+			selectionSet = selectionSet
 		)
 	}
 
@@ -354,7 +356,7 @@ internal class Parser private constructor(
 		val description = parseDescription()
 		val name = parseName()
 		val arguments = parseArgumentDefinitions(isBlock = false)
-		expectToken(Token.Kind.COLON)
+		expectToken(TokenKind.COLON)
 		val type = parseTypeReference()
 		val directives = parseDirectives(isConstant = true)
 
@@ -363,7 +365,7 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			type = type
 		)
 	}
@@ -371,24 +373,24 @@ internal class Parser private constructor(
 
 	private fun parseFieldDefinitions() =
 		optionalMany(
-			Token.Kind.BRACE_L,
+			TokenKind.BRACE_L,
 			this::parseFieldDefinition,
-			Token.Kind.BRACE_R
+			TokenKind.BRACE_R
 		)
 
 
 	private fun parseFragmentSelection(): Selection {
-		val startToken = expectToken(Token.Kind.SPREAD)
+		val startToken = expectToken(TokenKind.SPREAD)
 
 		val hasTypeCondition = expectOptionalKeyword("on")
-		if (!hasTypeCondition && peek(Token.Kind.NAME)) {
+		if (!hasTypeCondition && peek(TokenKind.NAME)) {
 			val name = parseFragmentName()
 			val directives = parseDirectives(isConstant = false)
 
-			return Selection.FragmentSpread(
+			return Selection.Fragment(
 				directives = directives,
 				name = name,
-				sourceLocation = makeSourceLocation(startToken = startToken)
+				origin = makeOrigin(startToken = startToken)
 			)
 		}
 
@@ -399,7 +401,7 @@ internal class Parser private constructor(
 		return Selection.InlineFragment(
 			directives = directives,
 			selectionSet = selectionSet,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			typeCondition = typeCondition
 		)
 	}
@@ -410,6 +412,7 @@ internal class Parser private constructor(
 		expectKeyword("fragment")
 		val name = parseFragmentName()
 		expectKeyword("on")
+		val variableDefinitions = parseVariableDefinitions()
 		val typeCondition = parseNamedType()
 		val directives = parseDirectives(isConstant = false)
 		val selectionSet = parseSelectionSet()
@@ -417,9 +420,10 @@ internal class Parser private constructor(
 		return Definition.Fragment(
 			directives = directives,
 			name = name,
+			origin = makeOrigin(startToken = startToken),
 			selectionSet = selectionSet,
-			sourceLocation = makeSourceLocation(startToken = startToken),
-			typeCondition = typeCondition
+			typeCondition = typeCondition,
+			variableDefinitions = variableDefinitions
 		)
 	}
 
@@ -437,9 +441,9 @@ internal class Parser private constructor(
 
 		val interfaces = mutableListOf<TypeReference.Named>()
 
-		expectOptionalToken(Token.Kind.AMP)
+		expectOptionalToken(TokenKind.AMP)
 		do interfaces += parseNamedType()
-		while (expectOptionalToken(Token.Kind.AMP) != null)
+		while (expectOptionalToken(TokenKind.AMP) != null)
 
 		return interfaces
 	}
@@ -458,7 +462,7 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -478,7 +482,7 @@ internal class Parser private constructor(
 			arguments = arguments,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -498,7 +502,7 @@ internal class Parser private constructor(
 			fields = fields,
 			interfaces = interfaces,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -520,7 +524,7 @@ internal class Parser private constructor(
 			fields = fields,
 			interfaces = interfaces,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -528,24 +532,24 @@ internal class Parser private constructor(
 	private fun parseList(isConstant: Boolean): Value.List {
 		val startToken = lexer.currentToken
 		val elements = any(
-			Token.Kind.BRACKET_L,
+			TokenKind.BRACKET_L,
 			{ parseValue(isConstant = isConstant) },
-			Token.Kind.BRACKET_R
+			TokenKind.BRACKET_R
 		)
 
 		return Value.List(
 			elements = elements,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
 
 	private fun parseName(): Name {
-		val startToken = expectToken(Token.Kind.NAME)
+		val startToken = expectToken(TokenKind.NAME)
 
 		return Name(
-			value = startToken.value!!,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
+			value = startToken.value!!
 		)
 	}
 
@@ -556,7 +560,7 @@ internal class Parser private constructor(
 
 		return TypeReference.Named(
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -564,14 +568,14 @@ internal class Parser private constructor(
 	private fun parseObject(isConstant: Boolean): Value.Object {
 		val startToken = lexer.currentToken
 		val fields = any(
-			Token.Kind.BRACE_L,
+			TokenKind.BRACE_L,
 			{ parseObjectField(isConstant = isConstant) },
-			Token.Kind.BRACE_R
+			TokenKind.BRACE_R
 		)
 
 		return Value.Object(
 			fields = fields,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -579,12 +583,12 @@ internal class Parser private constructor(
 	private fun parseObjectField(isConstant: Boolean): Value.Object.Field {
 		val startToken = lexer.currentToken
 		val name = parseName()
-		expectToken(Token.Kind.COLON)
+		expectToken(TokenKind.COLON)
 		val value = parseValue(isConstant = isConstant)
 
 		return Value.Object.Field(
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			value = value
 		)
 	}
@@ -605,7 +609,7 @@ internal class Parser private constructor(
 			fields = fields,
 			interfaces = interfaces,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -627,7 +631,7 @@ internal class Parser private constructor(
 			fields = fields,
 			interfaces = interfaces,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -635,21 +639,21 @@ internal class Parser private constructor(
 	private fun parseOperationDefinition(): Definition.Operation {
 		val startToken = lexer.currentToken
 
-		if (peek(Token.Kind.BRACE_L)) {
+		if (peek(TokenKind.BRACE_L)) {
 			val selectionSet = parseSelectionSet()
 
 			return Definition.Operation(
 				directives = emptyList(),
 				name = null,
+				origin = makeOrigin(startToken = startToken),
 				selectionSet = selectionSet,
-				sourceLocation = makeSourceLocation(startToken = startToken),
 				type = GOperationType.query,
 				variableDefinitions = emptyList()
 			)
 		}
 
 		val type = parseOperationType()
-		val name = peek(Token.Kind.NAME).thenTake { parseName() }
+		val name = peek(TokenKind.NAME).thenTake { parseName() }
 		val variableDefinitions = parseVariableDefinitions()
 		val directives = parseDirectives(isConstant = false)
 		val selectionSet = parseSelectionSet()
@@ -657,32 +661,35 @@ internal class Parser private constructor(
 		return Definition.Operation(
 			directives = directives,
 			name = name,
+			origin = makeOrigin(startToken = startToken),
 			selectionSet = selectionSet,
-			sourceLocation = makeSourceLocation(startToken = startToken),
 			type = type,
 			variableDefinitions = variableDefinitions
 		)
 	}
 
 
-	private fun parseOperationType() =
-		when (lexer.currentToken.value) {
+	private fun parseOperationType(): GOperationType {
+		val token = expectToken(TokenKind.NAME)
+
+		return when (token.value) {
 			"mutation" -> GOperationType.mutation
 			"query" -> GOperationType.query
 			"subscription" -> GOperationType.subscription
-			else -> unexpectedTokenError()
+			else -> unexpectedTokenError(token)
 		}
+	}
 
 
 	private fun parseOperationTypeDefinition(): OperationTypeDefinition {
 		val startToken = lexer.currentToken
 		val operation = parseOperationType()
-		expectToken(Token.Kind.COLON)
+		expectToken(TokenKind.COLON)
 		val type = parseNamedType()
 
 		return OperationTypeDefinition(
 			operation = operation,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			type = type
 		)
 	}
@@ -701,7 +708,7 @@ internal class Parser private constructor(
 		return Definition.TypeSystemExtension.Type.Scalar(
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -712,9 +719,9 @@ internal class Parser private constructor(
 		expectKeyword("schema")
 		val directives = parseDirectives(isConstant = true)
 		val operationTypes = optionalMany(
-			Token.Kind.BRACE_L,
+			TokenKind.BRACE_L,
 			this::parseOperationTypeDefinition,
-			Token.Kind.BRACE_R
+			TokenKind.BRACE_R
 		)
 
 		if (directives.isEmpty() && operationTypes.isEmpty())
@@ -723,7 +730,7 @@ internal class Parser private constructor(
 		return Definition.TypeSystemExtension.Schema(
 			directives = directives,
 			operationTypes = operationTypes,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -739,7 +746,7 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -749,35 +756,35 @@ internal class Parser private constructor(
 		expectKeyword("schema")
 		val directives = parseDirectives(isConstant = true)
 		val operationTypes = many(
-			Token.Kind.BRACE_L,
+			TokenKind.BRACE_L,
 			this::parseOperationTypeDefinition,
-			Token.Kind.BRACE_R
+			TokenKind.BRACE_R
 		)
 
 		return Definition.TypeSystem.Schema(
 			directives = directives,
 			operationTypes = operationTypes,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
 
 	private fun parseSelection() =
-		if (peek(Token.Kind.SPREAD)) parseFragmentSelection()
+		if (peek(TokenKind.SPREAD)) parseFragmentSelection()
 		else parseFieldSelection()
 
 
 	private fun parseSelectionSet(): SelectionSet {
 		val startToken = lexer.currentToken
 		val selections = many(
-			Token.Kind.BRACE_L,
+			TokenKind.BRACE_L,
 			this::parseSelection,
-			Token.Kind.BRACE_R
+			TokenKind.BRACE_R
 		)
 
 		return SelectionSet(
-			selections = selections,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
+			selections = selections
 		)
 	}
 
@@ -787,8 +794,8 @@ internal class Parser private constructor(
 		lexer.advance()
 
 		return Value.String(
-			isBlock = startToken.kind == Token.Kind.BLOCK_STRING,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			isBlock = startToken.kind == TokenKind.BLOCK_STRING,
+			origin = makeOrigin(startToken = startToken),
 			value = startToken.value!!
 		)
 	}
@@ -798,22 +805,22 @@ internal class Parser private constructor(
 		val startToken = lexer.currentToken
 
 		var type: TypeReference
-		if (expectOptionalToken(Token.Kind.BRACKET_L) != null) {
+		if (expectOptionalToken(TokenKind.BRACKET_L) != null) {
 			type = parseTypeReference()
-			expectToken(Token.Kind.BRACKET_R)
+			expectToken(TokenKind.BRACKET_R)
 
 			type = TypeReference.List(
 				elementType = type,
-				sourceLocation = makeSourceLocation(startToken = startToken)
+				origin = makeOrigin(startToken = startToken)
 			)
 		}
 		else
 			type = parseNamedType()
 
-		if (expectOptionalToken(Token.Kind.BANG) != null)
+		if (expectOptionalToken(TokenKind.BANG) != null)
 			type = TypeReference.NonNull(
 				nullableType = type,
-				sourceLocation = makeSourceLocation(startToken = startToken)
+				origin = makeOrigin(startToken = startToken)
 			)
 
 		return type
@@ -825,7 +832,7 @@ internal class Parser private constructor(
 			if (peekDescription()) lexer.lookahead()
 			else lexer.currentToken
 
-		if (keywordToken.kind != Token.Kind.NAME)
+		if (keywordToken.kind != TokenKind.NAME)
 			unexpectedTokenError(keywordToken)
 
 		return when (keywordToken.value) {
@@ -844,7 +851,7 @@ internal class Parser private constructor(
 
 	private fun parseTypeSystemExtension(): Definition.TypeSystemExtension {
 		val keywordToken = lexer.lookahead()
-		if (keywordToken.kind != Token.Kind.NAME)
+		if (keywordToken.kind != TokenKind.NAME)
 			unexpectedTokenError(keywordToken)
 
 		return when (keywordToken.value) {
@@ -861,14 +868,14 @@ internal class Parser private constructor(
 
 
 	private fun parseUnionMemberTypes(): List<TypeReference.Named> {
-		if (expectOptionalToken(Token.Kind.EQUALS) == null)
+		if (expectOptionalToken(TokenKind.EQUALS) == null)
 			return emptyList()
 
 		val types = mutableListOf<TypeReference.Named>()
 
-		expectOptionalToken(Token.Kind.PIPE)
+		expectOptionalToken(TokenKind.PIPE)
 		do types += parseNamedType()
-		while (expectOptionalToken(Token.Kind.PIPE) != null)
+		while (expectOptionalToken(TokenKind.PIPE) != null)
 
 		return types
 	}
@@ -886,7 +893,7 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			types = types
 		)
 	}
@@ -906,8 +913,8 @@ internal class Parser private constructor(
 		return Definition.TypeSystemExtension.Type.Union(
 			directives = directives,
 			name = name,
-			types = types,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
+			types = types
 		)
 	}
 
@@ -916,58 +923,58 @@ internal class Parser private constructor(
 		val startToken = lexer.currentToken
 
 		return when (startToken.kind) {
-			Token.Kind.BRACKET_L ->
+			TokenKind.BRACKET_L ->
 				parseList(isConstant)
 
-			Token.Kind.BRACE_L ->
+			TokenKind.BRACE_L ->
 				parseObject(isConstant)
 
-			Token.Kind.INT -> {
+			TokenKind.INT -> {
 				lexer.advance()
 
 				Value.Int(
-					sourceLocation = makeSourceLocation(startToken = startToken),
+					origin = makeOrigin(startToken = startToken),
 					value = startToken.value!!
 				)
 			}
 
-			Token.Kind.FLOAT -> {
+			TokenKind.FLOAT -> {
 				lexer.advance()
 
 				Value.Float(
-					sourceLocation = makeSourceLocation(startToken = startToken),
+					origin = makeOrigin(startToken = startToken),
 					value = startToken.value!!
 				)
 			}
 
-			Token.Kind.STRING,
-			Token.Kind.BLOCK_STRING ->
+			TokenKind.STRING,
+			TokenKind.BLOCK_STRING ->
 				parseStringValue()
 
-			Token.Kind.NAME -> {
+			TokenKind.NAME -> {
 				lexer.advance()
 
 				when (startToken.value) {
 					"true", "false" ->
 						Value.Boolean(
-							sourceLocation = makeSourceLocation(startToken = startToken),
+							origin = makeOrigin(startToken = startToken),
 							value = startToken.value == "true"
 						)
 
 					"null" ->
 						Value.Null(
-							sourceLocation = makeSourceLocation(startToken = startToken)
+							origin = makeOrigin(startToken = startToken)
 						)
 
 					else ->
 						Value.Enum(
 							name = startToken.value!!,
-							sourceLocation = makeSourceLocation(startToken = startToken)
+							origin = makeOrigin(startToken = startToken)
 						)
 				}
 			}
 
-			Token.Kind.DOLLAR ->
+			TokenKind.DOLLAR ->
 				if (isConstant)
 					unexpectedTokenError()
 				else
@@ -981,12 +988,12 @@ internal class Parser private constructor(
 
 	private fun parseVariable(): Value.Variable {
 		val startToken = lexer.currentToken
-		expectToken(Token.Kind.DOLLAR)
+		expectToken(TokenKind.DOLLAR)
 		val name = parseName()
 
 		return Value.Variable(
 			name = name,
-			sourceLocation = makeSourceLocation(startToken = startToken)
+			origin = makeOrigin(startToken = startToken)
 		)
 	}
 
@@ -994,15 +1001,15 @@ internal class Parser private constructor(
 	private fun parseVariableDefinition(): VariableDefinition {
 		val startToken = lexer.currentToken
 		val variable = parseVariable()
-		expectToken(Token.Kind.COLON)
+		expectToken(TokenKind.COLON)
 		val type = parseTypeReference()
-		val defaultValue = expectOptionalToken(Token.Kind.EQUALS)?.let { parseValue(isConstant = true) }
+		val defaultValue = expectOptionalToken(TokenKind.EQUALS)?.let { parseValue(isConstant = true) }
 		val directives = parseDirectives(isConstant = true)
 
 		return VariableDefinition(
 			defaultValue = defaultValue,
 			directives = directives,
-			sourceLocation = makeSourceLocation(startToken = startToken),
+			origin = makeOrigin(startToken = startToken),
 			type = type,
 			variable = variable
 		)
@@ -1011,34 +1018,76 @@ internal class Parser private constructor(
 
 	private fun parseVariableDefinitions() =
 		optionalMany(
-			Token.Kind.PAREN_L,
+			TokenKind.PAREN_L,
 			this::parseVariableDefinition,
-			Token.Kind.PAREN_R
+			TokenKind.PAREN_R
 		)
 
 
-	private fun peek(kind: Token.Kind) =
+	private fun peek(kind: TokenKind) =
 		lexer.currentToken.kind == kind
 
 
 	private fun peekDescription() =
-		peek(Token.Kind.STRING) || peek(Token.Kind.BLOCK_STRING)
+		peek(TokenKind.STRING) || peek(TokenKind.BLOCK_STRING)
 
 
 	private fun unexpectedTokenError(token: Token = lexer.currentToken, expected: String? = null): Nothing =
 		throw GError.syntax(
 			description = when (expected) {
-				null -> "Unexpected $token"
-				else -> "Unexpected $token, expected $expected"
+				null -> "Unexpected $token."
+				else -> "Expected $expected, found $token."
 			},
-			position = token.startPosition
+			origin = makeOrigin(startToken = token, endToken = token)
 		)
 
 
 	companion object {
 
-		// FIXME allow infos about source
-		fun parse(source: String) =
+		fun parseDocument(source: GSource.Parsable) =
 			Parser(source = source).parseDocument()
+
+
+		fun parseTypeReference(source: GSource.Parsable): TypeReference {
+			val parser = Parser(source = source)
+			parser.expectToken(TokenKind.SOF)
+			val reference = parser.parseTypeReference()
+			parser.expectToken(TokenKind.EOF)
+
+			return reference
+		}
+
+
+		fun parseValue(source: GSource.Parsable): Value {
+			val parser = Parser(source = source)
+			parser.expectToken(TokenKind.SOF)
+			val value = parser.parseValue(isConstant = true)
+			parser.expectToken(TokenKind.EOF)
+
+			return value
+		}
+	}
+
+
+	private class Origin(
+		override val source: GSource,
+		val startToken: Token,
+		val endToken: Token
+	) : GOrigin {
+
+		override val column: Int
+			get() = startToken.startPosition - startToken.linePosition + 1
+
+
+		override val endPosition
+			get() = endToken.endPosition
+
+
+		override val line
+			get() = startToken.lineNumber
+
+
+		override val startPosition
+			get() = startToken.startPosition
 	}
 }

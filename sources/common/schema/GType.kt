@@ -44,14 +44,14 @@ sealed class GType(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type) =
+		fun from(ast: GAst.Definition.TypeSystem.Type) =
 			when (ast) {
-				is AstNode.Definition.TypeSystem.Type.Enum -> GEnumType.build(ast)
-				is AstNode.Definition.TypeSystem.Type.InputObject -> GInputObjectType.build(ast)
-				is AstNode.Definition.TypeSystem.Type.Interface -> GInterfaceType.build(ast)
-				is AstNode.Definition.TypeSystem.Type.Object -> GObjectType.build(ast)
-				is AstNode.Definition.TypeSystem.Type.Scalar -> GCustomScalarType.build(ast)
-				is AstNode.Definition.TypeSystem.Type.Union -> GUnionType.build(ast)
+				is GAst.Definition.TypeSystem.Type.Enum -> GEnumType.from(ast)
+				is GAst.Definition.TypeSystem.Type.InputObject -> GInputObjectType.from(ast)
+				is GAst.Definition.TypeSystem.Type.Interface -> GInterfaceType.from(ast)
+				is GAst.Definition.TypeSystem.Type.Object -> GObjectType.from(ast)
+				is GAst.Definition.TypeSystem.Type.Scalar -> GCustomScalarType.from(ast)
+				is GAst.Definition.TypeSystem.Type.Union -> GUnionType.from(ast)
 			}
 	}
 
@@ -156,12 +156,12 @@ class GEnumType private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Enum) =
+		fun from(ast: GAst.Definition.TypeSystem.Type.Enum) =
 			Unresolved(
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value,
-				values = ast.values.map { GEnumValueDefinition.build(it) }
+				values = ast.values.map { GEnumValueDefinition.from(it) }
 			)
 	}
 
@@ -248,11 +248,11 @@ class GInputObjectType private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type.InputObject) =
+		fun from(ast: GAst.Definition.TypeSystem.Type.InputObject) =
 			Unresolved(
-				arguments = ast.arguments.map { GArgumentDefinition.build(it) },
+				arguments = ast.arguments.map { GArgumentDefinition.from(it) },
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value
 			)
 	}
@@ -340,11 +340,11 @@ class GInterfaceType private constructor(
 	companion object {
 
 		// FIXME implements
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Interface) =
+		fun from(ast: GAst.Definition.TypeSystem.Type.Interface) =
 			Unresolved(
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
-				fields = ast.fields.map { GFieldDefinition.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
+				fields = ast.fields.map { GFieldDefinition.from(it) },
 				name = ast.name.value
 			)
 	}
@@ -545,12 +545,12 @@ class GObjectType private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Object) =
+		fun from(ast: GAst.Definition.TypeSystem.Type.Object) =
 			Unresolved(
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
-				fields = ast.fields.map { GFieldDefinition.build(it) },
-				interfaces = ast.interfaces.map { GNamedTypeRef.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
+				fields = ast.fields.map { GFieldDefinition.from(it) },
+				interfaces = ast.interfaces.map { GNamedTypeRef.from(it) },
 				name = ast.name.value
 			)
 
@@ -673,10 +673,10 @@ class GCustomScalarType private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Scalar) =
+		fun from(ast: GAst.Definition.TypeSystem.Type.Scalar) =
 			Unresolved(
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value
 			)
 	}
@@ -758,12 +758,12 @@ class GUnionType private constructor(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Type.Union) =
+		fun from(ast: GAst.Definition.TypeSystem.Type.Union) =
 			Unresolved(
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value,
-				types = ast.types.map { GNamedTypeRef.build(it) }
+				types = ast.types.map { GNamedTypeRef.from(it) }
 			)
 	}
 

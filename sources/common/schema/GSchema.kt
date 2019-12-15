@@ -31,6 +31,7 @@ class GSchema private constructor(
 		}
 
 
+	// FIXME rm
 	val rootTypeNamesFollowCommonConvention
 		get() = (queryType == null || queryType.name == GSpecification.defaultQueryTypeName) &&
 			(mutationType == null || mutationType.name == GSpecification.defaultMutationTypeName) &&
@@ -44,11 +45,11 @@ class GSchema private constructor(
 	companion object {
 
 		// FIXME validate
-		internal fun build(ast: List<AstNode.Definition.TypeSystem>): GSchema {
-			val directiveDefinitions = ast.filterIsInstance<AstNode.Definition.TypeSystem.Directive>()
-			val typeDefinitions = ast.filterIsInstance<AstNode.Definition.TypeSystem.Type>()
+		fun from(ast: List<GAst.Definition.TypeSystem>): GSchema {
+			val directiveDefinitions = ast.filterIsInstance<GAst.Definition.TypeSystem.Directive>()
+			val typeDefinitions = ast.filterIsInstance<GAst.Definition.TypeSystem.Type>()
 
-			val operationDefinitions = ast.filterIsInstance<AstNode.Definition.TypeSystem.Schema>()
+			val operationDefinitions = ast.filterIsInstance<GAst.Definition.TypeSystem.Schema>()
 				.singleOrNull() // FIXME
 
 			val mutationType = operationDefinitions?.operationTypes
@@ -64,11 +65,11 @@ class GSchema private constructor(
 				?.type
 
 			return Unresolved(
-				directives = directiveDefinitions.map { GDirectiveDefinition.build(it) },
-				mutationType = mutationType?.let { GNamedTypeRef.build(it) },
-				queryType = queryType?.let { GNamedTypeRef.build(it) },
-				subscriptionType = subscriptionType?.let { GNamedTypeRef.build(it) },
-				types = typeDefinitions.map { GType.build(it) }
+				directives = directiveDefinitions.map { GDirectiveDefinition.from(it) },
+				mutationType = mutationType?.let { GNamedTypeRef.from(it) },
+				queryType = queryType?.let { GNamedTypeRef.from(it) },
+				subscriptionType = subscriptionType?.let { GNamedTypeRef.from(it) },
+				types = typeDefinitions.map { GType.from(it) }
 			).resolve()
 		}
 	}

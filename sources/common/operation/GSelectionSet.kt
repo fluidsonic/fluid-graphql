@@ -7,9 +7,9 @@ class GSelectionSet(
 
 	companion object {
 
-		internal fun build(ast: AstNode.SelectionSet) =
+		fun from(ast: GAst.SelectionSet) =
 			GSelectionSet(
-				selections = ast.selections.map { GSelection.build(it) }
+				selections = ast.selections.map { GSelection.from(it) }
 			)
 	}
 }

@@ -18,6 +18,7 @@ object GSpecification {
 	val nameRegex = Regex("[_A-Za-z][_0-9A-Za-z]*")
 
 
+	// FIXME add default directives to schemas
 	val defaultDeprecatedDirective = GDirectiveDefinition(
 		name = "deprecated",
 		arguments = listOf(

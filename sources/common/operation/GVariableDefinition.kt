@@ -10,12 +10,12 @@ class GVariableDefinition(
 
 	companion object {
 
-		internal fun build(ast: AstNode.VariableDefinition) =
+		fun from(ast: GAst.VariableDefinition) =
 			GVariableDefinition(
 				defaultValue = ast.defaultValue, // FIXME
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.variable.name.value,
-				type = GTypeRef.build(ast.type)
+				type = GTypeRef.from(ast.type)
 			)
 	}
 }

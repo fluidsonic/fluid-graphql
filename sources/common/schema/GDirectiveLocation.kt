@@ -26,7 +26,7 @@ enum class GDirectiveLocation {
 
 	companion object {
 
-		internal fun build(ast: AstNode.Name) =
+		fun from(ast: GAst.Name) =
 			values().firstOrNull { it.name == ast.value }
 				?: error("Invalid directive location '${ast.value}'")
 	}

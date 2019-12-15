@@ -33,74 +33,74 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun Enum(type: GNamedTypeRef, configure: EnumDefinitionBuilder.() -> Unit) {
-		types += EnumDefinitionBuilderImpl(name = type.name).apply(configure).build()
+	override fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit) {
+		types += EnumTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
-	override fun InputObject(type: GNamedTypeRef, configure: InputObjectDefinitionBuilder.() -> Unit) {
-		types += InputObjectDefinitionBuilderImpl(name = type.name).apply(configure).build()
+	override fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit) {
+		types += InputObjectTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
-	override fun Interface(type: GNamedTypeRef, configure: InterfaceDefinitionBuilder.() -> Unit) {
-		types += InterfaceDefinitionBuilderImpl(name = type.name).apply(configure).build()
+	override fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
+		types += InterfaceTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
-	override fun Mutation(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit) {
+	override fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		mutationType = type
 
 		Object(type, configure)
 	}
 
 
-	override fun Object(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit) {
-		types += ObjectDefinitionBuilderImpl(
+	override fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+		types += ObjectTypeDefinitionBuilderImpl(
 			name = type.name,
 			interfaceType = null
 		).apply(configure).build()
 	}
 
 
-	override fun Object(named: InterfacesForObject, configure: ObjectDefinitionBuilder.() -> Unit) {
-		types += (named as ObjectDefinitionBuilderImpl).apply(configure).build()
+	override fun Object(named: InterfacesForObject, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+		types += (named as ObjectTypeDefinitionBuilderImpl).apply(configure).build()
 	}
 
 
-	override fun Query(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit) {
+	override fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		queryType = type
 
 		Object(type, configure)
 	}
 
 
-	override fun Scalar(type: GNamedTypeRef, configure: ScalarBuilder.() -> Unit) {
-		types += ScalarBuilderImpl(name = type.name).apply(configure).build()
+	override fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit) {
+		types += ScalarTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
-	override fun Subscription(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit) {
+	override fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		subscriptionType = type
 
 		Object(type, configure)
 	}
 
 
-	override fun Union(named: TypesForUnion, configure: UnionDefinitionBuilder.() -> Unit) {
-		types += (named as UnionDefinitionBuilderImpl).apply(configure).build()
+	override fun Union(named: TypesForUnion, configure: UnionTypeDefinitionBuilder.() -> Unit) {
+		types += (named as UnionTypeDefinitionBuilderImpl).apply(configure).build()
 	}
 
 
 	override fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): InterfacesForObject =
-		ObjectDefinitionBuilderImpl(
+		ObjectTypeDefinitionBuilderImpl(
 			name = name,
 			interfaceType = interfaceType
 		)
 
 
 	override fun GNamedTypeRef.with(possibleType: GNamedTypeRef): TypesForUnion =
-		UnionDefinitionBuilderImpl(
+		UnionTypeDefinitionBuilderImpl(
 			name = name,
 			possibleType = possibleType
 		)
@@ -321,10 +321,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class EnumDefinitionBuilderImpl(
+	private class EnumTypeDefinitionBuilderImpl(
 		val name: String
 	) : ContainerImpl(),
-		EnumDefinitionBuilder {
+		EnumTypeDefinitionBuilder {
 
 		private val values = mutableListOf<GEnumValueDefinition>()
 
@@ -338,7 +338,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			)
 
 
-		override fun value(name: String, configure: EnumDefinitionBuilder.ValueBuilder.() -> Unit) {
+		override fun value(name: String, configure: EnumTypeDefinitionBuilder.ValueBuilder.() -> Unit) {
 			values += ValueBuilderImpl(name = name).apply(configure).build()
 		}
 
@@ -346,7 +346,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		private class ValueBuilderImpl(
 			val name: String
 		) : ContainerImpl(),
-			EnumDefinitionBuilder.ValueBuilder {
+			EnumTypeDefinitionBuilder.ValueBuilder {
 
 			fun build() = GEnumValueDefinition(
 				name = name,
@@ -388,10 +388,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class InputObjectDefinitionBuilderImpl(
+	private class InputObjectTypeDefinitionBuilderImpl(
 		val name: String
 	) : ContainerImpl(),
-		InputObjectDefinitionBuilder {
+		InputObjectTypeDefinitionBuilder {
 
 		fun build() =
 			GInputObjectType.Unresolved(
@@ -407,10 +407,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class InterfaceDefinitionBuilderImpl(
+	private class InterfaceTypeDefinitionBuilderImpl(
 		val name: String
 	) : ContainerImpl(),
-		InterfaceDefinitionBuilder {
+		InterfaceTypeDefinitionBuilder {
 
 		fun build() =
 			GInterfaceType.Unresolved(
@@ -426,11 +426,11 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class ObjectDefinitionBuilderImpl(
+	private class ObjectTypeDefinitionBuilderImpl(
 		val name: String,
 		val interfaceType: GNamedTypeRef?
 	) : ContainerImpl(),
-		ObjectDefinitionBuilder,
+		ObjectTypeDefinitionBuilder,
 		InterfacesForObject {
 
 		private val interfaces = interfaceType?.let { mutableListOf(it) } ?: mutableListOf()
@@ -456,10 +456,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class ScalarBuilderImpl(
+	private class ScalarTypeDefinitionBuilderImpl(
 		val name: String
 	) : ContainerImpl(),
-		ScalarBuilder {
+		ScalarTypeDefinitionBuilder {
 
 		fun build() =
 			GCustomScalarType.Unresolved(
@@ -470,12 +470,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class UnionDefinitionBuilderImpl(
+	private class UnionTypeDefinitionBuilderImpl(
 		val name: String,
 		possibleType: GNamedTypeRef
 	) : ContainerImpl(),
 		TypesForUnion,
-		UnionDefinitionBuilder {
+		UnionTypeDefinitionBuilder {
 
 		private val types = mutableListOf(possibleType)
 

@@ -3,22 +3,35 @@ package io.fluidsonic.graphql
 
 class GError(
 	message: String,
-	val positions: List<Int> = emptyList()
+	val nodes: List<GAst> = emptyList(),
+	val origins: List<GOrigin> = nodes.ifEmpty { null }?.map { it.origin }.orEmpty()
 ) : Exception(
-	buildMessage(message = message, positions = positions)
+	message
 ) {
+
+	fun describe() = buildString {
+		append(message)
+
+		for (node in nodes) {
+			append("\n\n")
+			append(node.origin.describe())
+		}
+
+		val origins = origins.filter { origin -> nodes.none { it.origin === origin } }
+		for (origin in origins) {
+			append("\n\n")
+			append(origin.describe())
+		}
+	}
+
+
+	override fun toString() =
+		"GraphQL Error: ${describe()}"
+
 
 	companion object {
 
-		private fun buildMessage(message: String, positions: List<Int>) =
-			when (positions.size) {
-				0 -> message
-				1 -> "$message, at position ${positions.first()}"
-				else -> "$message, at positions ${positions.joinToString()}"
-			}
-
-
-		internal fun syntax(description: String, position: Int) =
-			GError(message = "Syntax error: $description", positions = listOf(position))
+		internal fun syntax(description: String, origin: GOrigin) =
+			GError(message = "Syntax Error: $description", origins = listOf(origin))
 	}
 }

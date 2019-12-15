@@ -40,13 +40,13 @@ class GFieldDefinition(
 
 	companion object {
 
-		internal fun build(ast: AstNode.FieldDefinition) =
+		fun from(ast: GAst.FieldDefinition) =
 			Unresolved(
-				arguments = ast.arguments.map { GArgumentDefinition.build(it) },
+				arguments = ast.arguments.map { GArgumentDefinition.from(it) },
 				description = ast.description?.value,
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value,
-				type = GTypeRef.build(ast.type)
+				type = GTypeRef.from(ast.type)
 			)
 	}
 

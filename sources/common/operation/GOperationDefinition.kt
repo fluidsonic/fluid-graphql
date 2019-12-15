@@ -11,13 +11,13 @@ class GOperationDefinition(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.Operation) =
+		fun from(ast: GAst.Definition.Operation) =
 			GOperationDefinition(
-				directives = ast.directives.map { GDirective.build(it) },
+				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name?.value,
-				selectionSet = GSelectionSet.build(ast.selectionSet),
+				selectionSet = GSelectionSet.from(ast.selectionSet),
 				type = ast.type,
-				variableDefinitions = ast.variableDefinitions.map { GVariableDefinition.build(it) }
+				variableDefinitions = ast.variableDefinitions.map { GVariableDefinition.from(it) }
 			)
 	}
 }

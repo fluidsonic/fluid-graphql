@@ -29,11 +29,11 @@ class GDirectiveDefinition(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Definition.TypeSystem.Directive) =
+		fun from(ast: GAst.Definition.TypeSystem.Directive) =
 			Unresolved(
-				arguments = ast.arguments.map { GArgumentDefinition.build(it) },
+				arguments = ast.arguments.map { GArgumentDefinition.from(it) },
 				description = ast.description?.value,
-				locations = ast.locations.map { GDirectiveLocation.build(it) },
+				locations = ast.locations.map { GDirectiveLocation.from(it) },
 				name = ast.name.value
 			)
 	}

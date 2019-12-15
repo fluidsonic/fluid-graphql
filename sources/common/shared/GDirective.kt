@@ -25,9 +25,9 @@ class GDirective(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Directive) =
+		fun from(ast: GAst.Directive) =
 			GDirective(
-				arguments = ast.arguments.map { GArgument.build(it) },
+				arguments = ast.arguments.map { GArgument.from(it) },
 				name = ast.name.value
 			)
 	}

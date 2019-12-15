@@ -13,7 +13,7 @@ class GArgument(
 
 	companion object {
 
-		internal fun build(ast: AstNode.Argument) =
+		fun from(ast: GAst.Argument) =
 			GArgument(
 				name = ast.name.value,
 				value = ast.value // FIXME

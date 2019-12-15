@@ -35,46 +35,46 @@ interface GSchemaBuilder {
 	fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderType
-	fun Enum(type: GNamedTypeRef, configure: EnumDefinitionBuilder.() -> Unit)
+	fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun InputObject(type: GNamedTypeRef, configure: InputObjectDefinitionBuilder.() -> Unit)
+	fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Interface(type: GNamedTypeRef, configure: InterfaceDefinitionBuilder.() -> Unit)
+	fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Mutation(configure: ObjectDefinitionBuilder.() -> Unit) =
+	fun Mutation(configure: ObjectTypeDefinitionBuilder.() -> Unit) =
 		Mutation(type(GSpecification.defaultMutationTypeName), configure)
 
 	@SchemaBuilderType
-	fun Mutation(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
+	fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
+	fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(named: InterfacesForObject, configure: ObjectDefinitionBuilder.() -> Unit)
+	fun Object(named: InterfacesForObject, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Query(configure: ObjectDefinitionBuilder.() -> Unit) =
+	fun Query(configure: ObjectTypeDefinitionBuilder.() -> Unit) =
 		Query(type(GSpecification.defaultQueryTypeName), configure)
 
 	@SchemaBuilderType
-	fun Query(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
+	fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Scalar(type: GNamedTypeRef, configure: ScalarBuilder.() -> Unit = {})
+	fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderType
-	fun Subscription(configure: ObjectDefinitionBuilder.() -> Unit) =
+	fun Subscription(configure: ObjectTypeDefinitionBuilder.() -> Unit) =
 		Subscription(type(GSpecification.defaultSubscriptionTypeName), configure)
 
 	@SchemaBuilderType
-	fun Subscription(type: GNamedTypeRef, configure: ObjectDefinitionBuilder.() -> Unit)
+	fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Union(named: TypesForUnion, configure: UnionDefinitionBuilder.() -> Unit = {})
+	fun Union(named: TypesForUnion, configure: UnionTypeDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderKeywordB
 	infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): InterfacesForObject
@@ -221,7 +221,7 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface EnumDefinitionBuilder : DescriptionContainer, DirectiveContainer {
+	interface EnumTypeDefinitionBuilder : DescriptionContainer, DirectiveContainer {
 
 		@SchemaBuilderKeywordB
 		fun value(name: String, configure: ValueBuilder.() -> Unit = {})
@@ -255,11 +255,11 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface InputObjectDefinitionBuilder : ArgumentDefinitionContainer, DescriptionContainer, DirectiveContainer
+	interface InputObjectTypeDefinitionBuilder : ArgumentDefinitionContainer, DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
-	interface InterfaceDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
+	interface InterfaceTypeDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
 
 
 	interface InterfacesForObject {
@@ -278,11 +278,11 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface ObjectDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
+	interface ObjectTypeDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
 
 
 	@SchemaBuilderDsl
-	interface ScalarBuilder : DescriptionContainer, DirectiveContainer
+	interface ScalarTypeDefinitionBuilder : DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
@@ -329,7 +329,7 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface UnionDefinitionBuilder : DescriptionContainer, DirectiveContainer
+	interface UnionTypeDefinitionBuilder : DescriptionContainer, DirectiveContainer
 }
 
 

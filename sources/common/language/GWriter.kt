@@ -1,7 +1,7 @@
 package io.fluidsonic.graphql
 
 
-// FIXME deprecation
+// FIXME get rid of this
 class GWriter(
 	val indent: String = "\t"
 ) {
@@ -216,7 +216,7 @@ fun GWriter.writeDirectiveDefinitions(definitions: Collection<GDirectiveDefiniti
 }
 
 
-fun GWriter.writeEnumDefinition(definition: GEnumType) {
+fun GWriter.writeEnumTypeDefinition(definition: GEnumType) {
 	writeDescription(definition.description)
 	writeRaw("enum ")
 	writeName(definition.name)
@@ -289,7 +289,7 @@ fun GWriter.writeInputFieldDefinitions(definitions: Collection<GArgumentDefiniti
 }
 
 
-fun GWriter.writeInputObjectDefinition(definition: GInputObjectType) {
+fun GWriter.writeInputObjectTypeDefinition(definition: GInputObjectType) {
 	writeDescription(definition.description)
 	writeRaw("input ")
 	writeName(definition.name)
@@ -298,7 +298,7 @@ fun GWriter.writeInputObjectDefinition(definition: GInputObjectType) {
 }
 
 
-fun GWriter.writeInterfaceDefinition(definition: GInterfaceType) {
+fun GWriter.writeInterfaceTypeDefinition(definition: GInterfaceType) {
 	writeDescription(definition.description)
 	writeRaw("interface ")
 	writeName(definition.name)
@@ -313,7 +313,7 @@ fun GWriter.writeName(name: String) {
 }
 
 
-fun GWriter.writeObjectDefinition(definition: GObjectType) {
+fun GWriter.writeObjectTypeDefinition(definition: GObjectType) {
 	writeDescription(definition.description)
 	writeRaw("type ")
 	writeName(definition.name)
@@ -324,7 +324,7 @@ fun GWriter.writeObjectDefinition(definition: GObjectType) {
 }
 
 
-fun GWriter.writeScalarDefinition(type: GScalarType) {
+fun GWriter.writeScalarTypeDefinition(type: GScalarType) {
 	writeDescription(type.description)
 	writeRaw("scalar ")
 	writeName(type.name)
@@ -402,7 +402,7 @@ fun GWriter.writeSelection(selection: GSelection) {
 			writeLinebreak()
 		}
 
-		is GFragmentSpreadSelection -> {
+		is GFragmentSelection -> {
 			writeRaw("...")
 			writeName(selection.name)
 			writeDirectives(selection.directives)
@@ -456,12 +456,12 @@ fun GWriter.writeTypeCondition(condition: GNamedTypeRef) {
 fun GWriter.writeTypeDefinition(type: GNamedType) {
 	@Suppress("UNUSED_VARIABLE")
 	val exhaustive = when (type) {
-		is GEnumType -> writeEnumDefinition(type)
-		is GInputObjectType -> writeInputObjectDefinition(type)
-		is GInterfaceType -> writeInterfaceDefinition(type)
-		is GObjectType -> writeObjectDefinition(type)
-		is GScalarType -> writeScalarDefinition(type)
-		is GUnionType -> writeUnionDefinition(type)
+		is GEnumType -> writeEnumTypeDefinition(type)
+		is GInputObjectType -> writeInputObjectTypeDefinition(type)
+		is GInterfaceType -> writeInterfaceTypeDefinition(type)
+		is GObjectType -> writeObjectTypeDefinition(type)
+		is GScalarType -> writeScalarTypeDefinition(type)
+		is GUnionType -> writeUnionTypeDefinition(type)
 	}
 }
 
@@ -518,7 +518,7 @@ fun GWriter.writeTypeRef(ref: GTypeRef) {
 }
 
 
-fun GWriter.writeUnionDefinition(type: GUnionType) {
+fun GWriter.writeUnionTypeDefinition(type: GUnionType) {
 	writeDescription(type.description)
 	writeRaw("union ")
 	writeName(type.name)

@@ -196,7 +196,7 @@ interface GExecutor {
 					groupedFields.getOrPut(responseKey) { mutableListOf() } += selection
 				}
 
-				is GFragmentSpreadSelection -> {
+				is GFragmentSelection -> {
 					val fragmentName = selection.name
 					if (visitedFragments.contains(fragmentName))
 						continue@loop
@@ -496,13 +496,7 @@ interface GExecutor {
 				get() = context.schema
 		}
 
-		println("RESOLVE: ${fieldSelection.name} on $objectValue")
-
-		val x = with(resolver) { resolverContext.resolve(objectValue) }
-
-		println("to: $x")
-
-		return x
+		return with(resolver) { resolverContext.resolve(objectValue) }
 	}
 
 

@@ -9,11 +9,5 @@ fluidLibrary(name = "graphql", version = "0.9.0")
 fluidLibraryVariant {
 	description = "GraphQL stuff"
 
-	common {
-		dependencies {
-			implementation(kotlinx("serialization-runtime", "0.14.0"))
-		}
-	}
-
 	jvm(JvmTarget.jdk8)
 }
