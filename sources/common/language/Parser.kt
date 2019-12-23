@@ -55,11 +55,17 @@ internal class Parser private constructor(
 
 
 	private fun makeOrigin(startToken: Token, endToken: Token = lexer.previousToken) =
-		Origin(
-			source = lexer.source,
-			startToken = startToken,
-			endToken = endToken
+		lexer.source.makeOrigin(
+			startPosition = startToken.startPosition,
+			endPosition = endToken.endPosition,
+			column = startToken.startPosition - startToken.linePosition + 1,
+			line = startToken.lineNumber
 		)
+			?: Origin(
+				source = lexer.source,
+				startToken = startToken,
+				endToken = endToken
+			)
 
 
 	private inline fun <T> many(
@@ -216,10 +222,15 @@ internal class Parser private constructor(
 	}
 
 
-	private fun parseDirectiveLocation() =
-		parseName()
-			.takeIf { name -> GDirectiveLocation.values().any { it.name == name.value } }
-			?: unexpectedTokenError()
+	private fun parseDirectiveLocation(): Name {
+		val token = lexer.currentToken
+		val name = parseName()
+
+		if (GDirectiveLocation.values().none { it.name == name.value })
+			unexpectedTokenError(token = token)
+
+		return name
+	}
 
 
 	private fun parseDirectiveLocations(): List<Name> {
@@ -1069,7 +1080,7 @@ internal class Parser private constructor(
 	}
 
 
-	private class Origin(
+	private data class Origin(
 		override val source: GSource,
 		val startToken: Token,
 		val endToken: Token
@@ -1089,5 +1100,9 @@ internal class Parser private constructor(
 
 		override val startPosition
 			get() = startToken.startPosition
+
+
+		override fun toString() =
+			"$startPosition .. ${endPosition - 1}"
 	}
 }

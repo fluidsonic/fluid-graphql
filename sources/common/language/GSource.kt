@@ -10,6 +10,10 @@ interface GSource {
 	interface Parsable : GSource {
 
 		override val content: String
+
+
+		fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int): GOrigin? =
+			null
 	}
 
 

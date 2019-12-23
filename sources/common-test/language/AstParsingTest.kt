@@ -149,7 +149,7 @@ class AstParsingTest {
 						selectionSet.assert {
 							assertAt(16 .. 38)
 
-							selections.assert(2) {
+							selections.assertMany(2) {
 
 								get(0).assertOf<Selection.Field> {
 									assertAt(22 .. 24)
@@ -274,7 +274,7 @@ class AstParsingTest {
 		parseValue("""[123 "abc"]""").assertOf<Value.List> {
 			assertAt(0 .. 11)
 
-			elements.assert(2) {
+			elements.assertMany(2) {
 
 				get(0).assertOf<Value.Int> {
 					assertAt(1 .. 4)
@@ -296,7 +296,7 @@ class AstParsingTest {
 		parseValue("[\"\"\"long\"\"\" \"short\"]").assertOf<Value.List> {
 			assertAt(0 .. 20)
 
-			elements.assert(2) {
+			elements.assertMany(2) {
 
 				get(0).assertOf<Value.String> {
 					assertAt(1 .. 11)
@@ -395,6 +395,33 @@ class AstParsingTest {
 	}
 
 
+	@Test
+	fun `produces correct line number`() {
+		val ast = assertAst("""
+		|
+		|# foo
+		|scalar Test
+		""")
+		assertEquals(expected = 3, actual = (ast.definitions.first() as Definition.TypeSystem.Type.Scalar).name.origin.line)
+	}
+
+
+	@Test
+	fun `produces correct line number after block string`() {
+		val ast = assertAst("""
+		|
+		|# foo
+		|""${'"'}
+		|description
+		|line
+		|line
+		|""${'"'}
+		|scalar Test
+		""")
+		assertEquals(expected = 8, actual = (ast.definitions.first() as Definition.TypeSystem.Type.Scalar).name.origin.line)
+	}
+
+
 	private fun parseDocument(content: String, name: String = "<test>") =
 		GAst.parseDocument(content.trimMargin(), name = name)
 
@@ -405,59 +432,4 @@ class AstParsingTest {
 
 	private fun parseValue(content: String, name: String = "<test>") =
 		GAst.parseValue(content.trimMargin(), name = name)
-
-
-	private fun GAst.assertAt(range: IntRange) =
-		assertEquals(expected = origin.startPosition .. origin.endPosition, actual = range)
-
-
-	private fun Definition.asOperation() =
-		this as Definition.Operation
-
-
-	private inline fun <T : GAst> T?.assert(block: T.() -> Unit) {
-		assertNotNull(this)
-
-		block()
-	}
-
-
-	private inline fun <T : GAst> List<T>.assert(count: Int, block: List<T>.() -> Unit) {
-		assertEquals(expected = count, actual = size)
-
-		block()
-	}
-
-
-	private inline fun <reified T : GAst> GAst?.assertOf(block: T.() -> Unit) {
-		assertNotNull(this)
-		assertTrue { this is T }
-
-		(this as T).block()
-	}
-
-
-	private inline fun <T> List<T>.assertOne(block: T.() -> Unit) {
-		assertEquals(expected = 1, actual = size)
-
-		single().block()
-	}
-
-
-	private inline fun <reified T : GAst> List<*>.assertOneOf(block: T.() -> Unit) {
-		assertEquals(expected = 1, actual = size)
-
-		val single = single()
-		assertTrue { single is T }
-
-		(single as T).block()
-	}
-
-
-	private fun Selection.asFieldSelection() =
-		this as Selection.Field
-
-
-	private fun Value.asString() =
-		this as Value.String
 }

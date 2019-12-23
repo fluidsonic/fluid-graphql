@@ -52,7 +52,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects fragments named "on"`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = "fragment on on on { on }",
 			message = """Syntax Error: Unexpected Name "on".""",
 			line = 1, column = 10
@@ -62,7 +62,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects fragment spreads of "on"`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = "{ ...on }",
 			message = """Syntax Error: Expected Name, found "}".""",
 			line = 1, column = 9
@@ -72,7 +72,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects missing 'on' in fragment definition`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = """
 				|
 				|{ ...MissingOn }
@@ -87,7 +87,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects missing field name after alias`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = "{ field: {} }",
 			message = """Syntax Error: Expected Name, found "{".""",
 			line = 1, column = 10
@@ -97,7 +97,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects non-existent operation name`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = "notanoperation Foo { field }",
 			message = """Syntax Error: Unexpected Name "notanoperation".""",
 			line = 1, column = 1
@@ -107,7 +107,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects top-level spread`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = "...",
 			message = """Syntax Error: Unexpected "...".""",
 			line = 1, column = 1
@@ -117,7 +117,7 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects string as field key`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = """
 				|{ ""
 			""",
@@ -129,23 +129,10 @@ class AstParsingErrorTest {
 
 	@Test
 	fun `rejects non-constant default values`() {
-		expectSyntaxError(
+		assertSyntaxError(
 			content = "query Foo(\$x: Complex = { a: { b: [ \$var ] } }) { field }",
 			message = """Syntax Error: Unexpected "$".""",
 			line = 1, column = 37
 		)
-	}
-
-
-	private fun expectSyntaxError(
-		content: String,
-		message: String,
-		line: Int,
-		column: Int
-	) {
-		val error = assertFailsWith<GError> { GAst.parseDocument(content.trimMargin()) }
-		assertEquals(expected = message, actual = error.message)
-		assertEquals(expected = line, actual = error.origins.first().line)
-		assertEquals(expected = column, actual = error.origins.first().column)
 	}
 }

@@ -80,7 +80,7 @@ internal class Lexer(
 					++position
 
 				++lookaheadLineNumber
-				lookaheadPosition = position
+				lookaheadLinePosition = position
 			}
 			else if (
 				char eq '\\' &&
