@@ -348,7 +348,7 @@ interface GExecutor {
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	fun executeQuery(
 		context: GExecutionContext
-	): Map<String, Any>? {
+	): Map<String, Any?>? {
 		val rootType = context.schema.rootTypeForOperationType(context.operation.type) ?: run {
 			context.errors += GError("Schema is not configured for ${context.operation.type} operations.")
 			return null
@@ -388,23 +388,21 @@ interface GExecutor {
 		selectionSet: GSelectionSet,
 		objectType: GObjectType,
 		objectValue: Any
-	): Map<String, Any> {
+	): Map<String, Any?> {
 		val groupedFieldSet = collectFields(
 			context = context,
 			objectType = objectType,
 			selectionSet = selectionSet
 		)
 
-		val resultMap = mutableMapOf<String, Any>()
+		val resultMap = mutableMapOf<String, Any?>()
 		for ((responseKey, fields) in groupedFieldSet) {
-			val fieldName = fields.first().name
-
 			val responseValue = executeField(
 				context = context,
 				objectType = objectType,
 				objectValue = objectValue,
 				fields = fields
-			) ?: continue
+			)
 
 			resultMap[responseKey] = responseValue
 		}
@@ -462,8 +460,24 @@ interface GExecutor {
 		abstractType: GType,
 		objectValue: Any
 	): GObjectType {
-		return context.schema.resolveType("Human") as GObjectType
-		// FIXME
+		val possibleTypes = when (abstractType) { // FIXME generalize
+			is GInterfaceType ->
+				// TODO probably inefficient
+				context.schema.types.values
+					.filterIsInstance<GObjectType>()
+					.filter { it.interfaces.contains(abstractType) }
+
+			is GUnionType ->
+				abstractType.types
+
+			else ->
+				error("What to do?") // FIXME
+		}
+
+		val actualType = possibleTypes.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false }
+			?: error("FIXME")
+
+		return actualType
 	}
 
 

@@ -44,31 +44,61 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
-		types += InterfaceTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		types += InterfaceTypeDefinitionBuilderImpl(
+			name = type.name,
+			interfaces = emptyList()
+		).apply(configure).build()
 	}
 
 
-	override fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	override fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
+		named as InterfacesImpl
+
+		types += InterfaceTypeDefinitionBuilderImpl(
+			name = named.name,
+			interfaces = named.interfaces
+		).apply(configure).build()
+	}
+
+
+	override fun Mutation(type: GNamedTypeRef) {
+		mutationType = type
+	}
+
+
+	override fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) {
 		mutationType = type
 
 		Object(type, configure)
 	}
 
 
-	override fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	override fun <T : Any> Object(type: GNamedTypeRef, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
 		types += ObjectTypeDefinitionBuilderImpl(
 			name = type.name,
-			interfaceType = null
+			interfaces = emptyList(),
+			kotlinType = kotlinType
 		).apply(configure).build()
 	}
 
 
-	override fun Object(named: InterfacesForObject, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
-		types += (named as ObjectTypeDefinitionBuilderImpl).apply(configure).build()
+	override fun <T : Any> Object(named: Interfaces, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
+		named as InterfacesImpl
+
+		types += ObjectTypeDefinitionBuilderImpl(
+			name = named.name,
+			interfaces = named.interfaces,
+			kotlinType = kotlinType
+		).apply(configure).build()
 	}
 
 
-	override fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	override fun Query(type: GNamedTypeRef) {
+		queryType = type
+	}
+
+
+	override fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) {
 		queryType = type
 
 		Object(type, configure)
@@ -80,26 +110,31 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	override fun Subscription(type: GNamedTypeRef) {
+		subscriptionType = type
+	}
+
+
+	override fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) {
 		subscriptionType = type
 
 		Object(type, configure)
 	}
 
 
-	override fun Union(named: TypesForUnion, configure: UnionTypeDefinitionBuilder.() -> Unit) {
+	override fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit) {
 		types += (named as UnionTypeDefinitionBuilderImpl).apply(configure).build()
 	}
 
 
-	override fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): InterfacesForObject =
-		ObjectTypeDefinitionBuilderImpl(
+	override fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): Interfaces =
+		InterfacesImpl(
 			name = name,
 			interfaceType = interfaceType
 		)
 
 
-	override fun GNamedTypeRef.with(possibleType: GNamedTypeRef): TypesForUnion =
+	override fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes =
 		UnionTypeDefinitionBuilderImpl(
 			name = name,
 			possibleType = possibleType
@@ -158,7 +193,6 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		protected val arguments = mutableListOf<GArgument>()
 		protected var description: String? = null
 		protected val directives = mutableListOf<GDirective>()
-		protected val fieldDefinitions = mutableListOf<GFieldDefinition.Unresolved>()
 
 
 		override fun argument(name: ArgumentContainer.NameAndValue) {
@@ -201,17 +235,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		}
 
 
-		fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.() -> Unit) {
-			fieldDefinitions += (name as FieldDefinitionBuilderImpl).apply(configure).build()
-		}
-
-
 		fun String.ofArgumentDefinitionType(type: GTypeRef) =
 			ArgumentDefinitionBuilderImpl(name = this, type = type)
 
 
 		fun String.ofFieldDefinitionType(type: GTypeRef) =
-			FieldDefinitionBuilderImpl(name = this, type = type)
+			FieldDefinitionBuilderImpl<Any>(name = this, type = type)
 
 
 		override fun String.with(value: Any?) =
@@ -357,11 +386,11 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class FieldDefinitionBuilderImpl(
+	private class FieldDefinitionBuilderImpl<Parent : Any>(
 		var name: String,
 		var type: GTypeRef
 	) : ContainerImpl(),
-		FieldDefinitionBuilder,
+		FieldDefinitionBuilder.Resolvable<Parent>,
 		FieldDefinitionContainer.NameAndType {
 
 		private var resolver: GFieldResolver<*>? = null
@@ -378,7 +407,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			)
 
 
-		override fun <Parent : Any> resolve(parentClass: KClass<out Parent>, resolver: GFieldResolver.Context.(parent: Parent) -> Any?) {
+		override fun resolve(resolver: GFieldResolver.Context.(parent: Parent) -> Any?) {
 			this.resolver = GFieldResolver.of(resolver)
 		}
 
@@ -408,17 +437,28 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	private class InterfaceTypeDefinitionBuilderImpl(
-		val name: String
+		val name: String,
+		val interfaces: List<GNamedTypeRef>
 	) : ContainerImpl(),
 		InterfaceTypeDefinitionBuilder {
+
+		private val fieldDefinitions = mutableListOf<GFieldDefinition.Unresolved>()
+
 
 		fun build() =
 			GInterfaceType.Unresolved(
 				name = name,
-				fields = fieldDefinitions,
 				description = description,
-				directives = directives
+				directives = directives,
+				fields = fieldDefinitions,
+				interfaces = interfaces
 			)
+
+
+		@Suppress("UNCHECKED_CAST")
+		override fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.() -> Unit) {
+			fieldDefinitions += (name as FieldDefinitionBuilderImpl<Unit>).apply(configure).build()
+		}
 
 
 		override fun String.of(type: GTypeRef) =
@@ -426,30 +466,45 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class ObjectTypeDefinitionBuilderImpl(
+	private class InterfacesImpl(
 		val name: String,
-		val interfaceType: GNamedTypeRef?
-	) : ContainerImpl(),
-		ObjectTypeDefinitionBuilder,
-		InterfacesForObject {
+		interfaceType: GNamedTypeRef?
+	) : Interfaces {
 
-		private val interfaces = interfaceType?.let { mutableListOf(it) } ?: mutableListOf()
-
-
-		fun build() =
-			GObjectType.Unresolved(
-				name = name,
-				fields = fieldDefinitions,
-				interfaces = interfaces,
-				description = description,
-				directives = directives
-			)
+		val interfaces = interfaceType?.let { mutableListOf(it) } ?: mutableListOf()
 
 
 		override fun and(type: GNamedTypeRef) = apply {
 			interfaces += type
 		}
+	}
 
+
+	private class ObjectTypeDefinitionBuilderImpl<T : Any>(
+		val name: String,
+		val interfaces: List<GNamedTypeRef>,
+		val kotlinType: KClass<out T>?
+	) : ContainerImpl(),
+		ObjectTypeDefinitionBuilder<T> {
+
+		private val fieldDefinitions = mutableListOf<GFieldDefinition.Unresolved>()
+
+
+		fun build() =
+			GObjectType.Unresolved(
+				name = name,
+				description = description,
+				directives = directives,
+				fields = fieldDefinitions,
+				interfaces = interfaces,
+				kotlinType = kotlinType
+			)
+
+
+		@Suppress("UNCHECKED_CAST")
+		override fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.Resolvable<T>.() -> Unit) {
+			fieldDefinitions += (name as FieldDefinitionBuilderImpl<T>).apply(configure).build()
+		}
 
 		override fun String.of(type: GTypeRef) =
 			ofFieldDefinitionType(type)
@@ -474,7 +529,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		val name: String,
 		possibleType: GNamedTypeRef
 	) : ContainerImpl(),
-		TypesForUnion,
+		PossibleTypes,
 		UnionTypeDefinitionBuilder {
 
 		private val types = mutableListOf(possibleType)

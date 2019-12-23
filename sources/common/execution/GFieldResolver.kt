@@ -27,6 +27,8 @@ interface GFieldResolver<in Parent : Any> {
 }
 
 
+// FIXME improve this
+
 fun GFieldResolver.Context.booleanArgument(name: String) =
 	arguments[name] as Boolean
 

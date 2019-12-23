@@ -468,6 +468,10 @@ sealed class GAst {
 
 	sealed class Value : GAst() {
 
+		// FIXME too naive (what about enum values, variables and type conversions?)
+		abstract fun toKotlin(): Any?
+
+
 		data class Boolean(
 			override val origin: GOrigin,
 			val value: kotlin.Boolean
@@ -475,6 +479,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitBooleanValue(this, data)
+
+
+			override fun toKotlin() =
+				value
 		}
 
 
@@ -485,6 +493,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitEnumValue(this, data)
+
+
+			override fun toKotlin() =
+				name
 		}
 
 
@@ -495,6 +507,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitFloatValue(this, data)
+
+
+			override fun toKotlin() =
+				value
 		}
 
 
@@ -505,6 +521,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitIntValue(this, data)
+
+
+			override fun toKotlin() =
+				value
 		}
 
 
@@ -515,6 +535,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitListValue(this, data)
+
+
+			override fun toKotlin() =
+				elements.map(Value::toKotlin)
 		}
 
 
@@ -524,6 +548,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitNullValue(this, data)
+
+
+			override fun toKotlin(): Nothing? =
+				null
 		}
 
 
@@ -534,6 +562,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitObjectValue(this, data)
+
+
+			override fun toKotlin() =
+				fields.associate { field -> field.name to field.value.toKotlin() }
 
 
 			data class Field(
@@ -556,6 +588,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitStringValue(this, data)
+
+
+			override fun toKotlin() =
+				value
 		}
 
 
@@ -566,6 +602,10 @@ sealed class GAst {
 
 			override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 				visitor.visitVariableValue(this, data)
+
+
+			override fun toKotlin() =
+				"$$name"
 		}
 	}
 

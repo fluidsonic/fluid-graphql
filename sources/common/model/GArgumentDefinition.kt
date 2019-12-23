@@ -27,7 +27,7 @@ class GArgumentDefinition(
 
 		fun from(ast: GAst.ArgumentDefinition) =
 			Unresolved(
-				defaultValue = ast.defaultValue, // FIXME
+				defaultValue = ast.defaultValue?.toKotlin() ?: GNullValue,
 				description = ast.description?.value,
 				directives = ast.directives.map { GDirective.from(it) },
 				name = ast.name.value,

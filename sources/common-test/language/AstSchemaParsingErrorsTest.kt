@@ -4,7 +4,7 @@ import kotlin.test.*
 
 
 // https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/schema-parser-test.js
-class AstSchemaParsingErrorTest {
+class AstSchemaParsingErrorsTest {
 
 	@Test
 	fun `rejects directive with incorrect location`() {

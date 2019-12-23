@@ -27,7 +27,7 @@ object GIntrospection {
 		val __Type = type(typeMetaName)
 		val __TypeKind = type(typeKindMetaName)
 
-		Object(__Schema) {
+		Object<GSchema>(__Schema) {
 			description(
 				"A GraphQL Schema defines the capabilities of a GraphQL server. " +
 					"It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations."
@@ -35,31 +35,31 @@ object GIntrospection {
 
 			field("types" of !List(!__Type)) {
 				description("A list of all types supported by this server.")
-				resolve<GSchema> { it.types.values } // FIXME move generic to obj def?
+				resolve { it.types.values } // FIXME move generic to obj def?
 			}
 
 			field("queryType" of !__Type) {
 				description("The type that query operations will be rooted at.")
-				resolve<GSchema> { it.queryType }
+				resolve { it.queryType }
 			}
 
 			field("mutationType" of __Type) {
 				description("If this server supports mutation, the type that mutation operations will be rooted at.")
-				resolve<GSchema> { it.mutationType }
+				resolve { it.mutationType }
 			}
 
 			field("subscriptionType" of __Type) {
 				description("If this server support subscription, the type that subscription operations will be rooted at.")
-				resolve<GSchema> { it.subscriptionType }
+				resolve { it.subscriptionType }
 			}
 
 			field("directives" of !List(!__Directive)) {
 				description("A list of all directives supported by this server.")
-				resolve<GSchema> { it.directives }
+				resolve { it.directives }
 			}
 		}
 
-		Object(__Type) {
+		Object<GType>(__Type) {
 			description(
 				"The fundamental unit of any GraphQL Schema is the type. " +
 					"There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\n" +
@@ -71,21 +71,21 @@ object GIntrospection {
 			)
 
 			field("kind" of !__TypeKind) {
-				resolve<GType> { it.kind.name }
+				resolve { it.kind.name }
 			}
 
 			field("name" of String) {
-				resolve<GType> { (it as? GNamedType)?.name }
+				resolve { (it as? GNamedType)?.name }
 			}
 
 			field("description" of String) {
-				resolve<GType> { (it as? GNamedType)?.description }
+				resolve { (it as? GNamedType)?.description }
 			}
 
 			field("fields" of List(!__Field)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve<GType> { type ->
+				resolve { type ->
 					if (type !is GType.WithFields)
 						return@resolve null
 
@@ -98,17 +98,32 @@ object GIntrospection {
 			}
 
 			field("interfaces" of List(!__Type)) {
-				resolve<GType> { (it as? GType.WithInterfaces)?.interfaces }
+				resolve { (it as? GType.WithInterfaces)?.interfaces }
 			}
 
 			field("possibleTypes" of List(!__Type)) {
-				// FIXME resolve
+				// FIXME generalize
+				resolve { type ->
+					when (type) {
+						is GInterfaceType ->
+							// TODO probably inefficient
+							schema.types.values
+								.filterIsInstance<GType.WithInterfaces>() // FIXME list interfaces?
+								.filter { it.interfaces.contains(type) }
+
+						is GUnionType ->
+							type.types
+
+						else ->
+							null
+					}
+				}
 			}
 
 			field("enumValues" of List(!__EnumValue)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve<GType> { type ->
+				resolve { type ->
 					if (type !is GEnumType)
 						return@resolve null
 
@@ -121,42 +136,42 @@ object GIntrospection {
 			}
 
 			field("inputFields" of List(!__InputValue)) {
-				resolve<GType> { (it as? GType.WithArguments)?.arguments?.values }
+				resolve { (it as? GType.WithArguments)?.arguments?.values }
 			}
 
 			field("ofType" of __Type) {
-				resolve<GType> { (it as? GWrappingType)?.ofType }
+				resolve { (it as? GWrappingType)?.ofType }
 			}
 		}
 
-		Object(__Field) {
+		Object<GFieldDefinition>(__Field) {
 			description(
 				"Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, " +
 					"and a return type."
 			)
 
 			field("name" of !String) {
-				resolve<GFieldDefinition> { it.name }
+				resolve { it.name }
 			}
 
 			field("description" of String) {
-				resolve<GFieldDefinition> { it.description }
+				resolve { it.description }
 			}
 
 			field("args" of !List(!__InputValue)) {
-				resolve<GFieldDefinition> { it.arguments.values }
+				resolve { it.arguments.values }
 			}
 
 			field("type" of !__Type) {
-				resolve<GFieldDefinition> { it.type }
+				resolve { it.type }
 			}
 
 			field("isDeprecated" of !Boolean) {
-				resolve<GFieldDefinition> { it.isDeprecated }
+				resolve { it.isDeprecated }
 			}
 
 			field("deprecationReason" of String) {
-				resolve<GFieldDefinition> { it.deprecationReason }
+				resolve { it.deprecationReason }
 			}
 
 		}

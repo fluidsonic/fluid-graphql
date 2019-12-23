@@ -16,7 +16,7 @@ class GArgument(
 		fun from(ast: GAst.Argument) =
 			GArgument(
 				name = ast.name.value,
-				value = ast.value // FIXME
+				value = ast.value.toKotlin() ?: GNullValue
 			)
 	}
 }

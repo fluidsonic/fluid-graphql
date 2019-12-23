@@ -44,43 +44,63 @@ interface GSchemaBuilder {
 	fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Mutation(configure: ObjectTypeDefinitionBuilder.() -> Unit) =
+	fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
+
+	@SchemaBuilderType
+	fun Mutation(configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) =
 		Mutation(type(GSpecification.defaultMutationTypeName), configure)
 
 	@SchemaBuilderType
-	fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	fun Mutation(type: GNamedTypeRef)
 
 	@SchemaBuilderType
-	fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(named: InterfacesForObject, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Any>.() -> Unit) =
+		Object(type = type, kotlinType = Any::class, configure = configure)
 
 	@SchemaBuilderType
-	fun Query(configure: ObjectTypeDefinitionBuilder.() -> Unit) =
+	fun <T : Any> Object(type: GNamedTypeRef, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit)
+
+	@SchemaBuilderType
+	fun Object(named: Interfaces, configure: ObjectTypeDefinitionBuilder<Any>.() -> Unit) =
+		Object(named = named, kotlinType = Any::class, configure = configure)
+
+	@SchemaBuilderType
+	fun <T : Any> Object(named: Interfaces, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit)
+
+	@SchemaBuilderType
+	fun Query(configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) =
 		Query(type(GSpecification.defaultQueryTypeName), configure)
 
 	@SchemaBuilderType
-	fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	fun Query(type: GNamedTypeRef)
+
+	@SchemaBuilderType
+	fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit)
 
 	@SchemaBuilderType
 	fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderType
-	fun Subscription(configure: ObjectTypeDefinitionBuilder.() -> Unit) =
+	fun Subscription(configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) =
 		Subscription(type(GSpecification.defaultSubscriptionTypeName), configure)
 
 	@SchemaBuilderType
-	fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	fun Subscription(type: GNamedTypeRef)
 
 	@SchemaBuilderType
-	fun Union(named: TypesForUnion, configure: UnionTypeDefinitionBuilder.() -> Unit = {})
+	fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit)
+
+	@SchemaBuilderType
+	fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit = {})
 
 	@SchemaBuilderKeywordB
-	infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): InterfacesForObject
+	infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): Interfaces
 
 	@SchemaBuilderKeywordB
-	infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): TypesForUnion
+	infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes
 
 
 	companion object
@@ -235,8 +255,12 @@ interface GSchemaBuilder {
 	@SchemaBuilderDsl
 	interface FieldDefinitionBuilder : ArgumentDefinitionContainer, DeprecationContainer, DescriptionContainer, DirectiveContainer {
 
-		@SchemaBuilderKeywordB
-		fun <Parent : Any> resolve(parentClass: KClass<out Parent>, resolver: GFieldResolver.Context.(parent: Parent) -> Any?)
+		@SchemaBuilderDsl
+		interface Resolvable<out Parent : Any> : FieldDefinitionBuilder {
+
+			@SchemaBuilderKeywordB
+			fun resolve(resolver: GFieldResolver.Context.(parent: Parent) -> Any?)
+		}
 	}
 
 
@@ -244,13 +268,26 @@ interface GSchemaBuilder {
 	interface FieldDefinitionContainer : TypeRefContainer {
 
 		@SchemaBuilderKeywordB
-		fun field(name: NameAndType, configure: FieldDefinitionBuilder.() -> Unit = {})
-
-		@SchemaBuilderKeywordB
 		infix fun String.of(type: GTypeRef): NameAndType
 
 
 		interface NameAndType
+
+
+		@SchemaBuilderDsl
+		interface Resolvable<out Parent : Any> : FieldDefinitionContainer {
+
+			@SchemaBuilderKeywordB
+			fun field(name: NameAndType, configure: FieldDefinitionBuilder.Resolvable<Parent>.() -> Unit = {})
+		}
+
+
+		@SchemaBuilderDsl
+		interface Unresolvable : FieldDefinitionContainer {
+
+			@SchemaBuilderKeywordB
+			fun field(name: NameAndType, configure: FieldDefinitionBuilder.() -> Unit = {})
+		}
 	}
 
 
@@ -259,13 +296,17 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface InterfaceTypeDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
+	interface InterfaceTypeDefinitionBuilder :
+		DeprecationContainer,
+		DescriptionContainer,
+		DirectiveContainer,
+		FieldDefinitionContainer.Unresolvable
 
 
-	interface InterfacesForObject {
+	interface Interfaces {
 
 		@SchemaBuilderKeywordB
-		infix fun and(type: GNamedTypeRef): InterfacesForObject
+		infix fun and(type: GNamedTypeRef): Interfaces
 	}
 
 
@@ -278,7 +319,18 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface ObjectTypeDefinitionBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer, FieldDefinitionContainer
+	interface ObjectTypeDefinitionBuilder<out T : Any> :
+		DeprecationContainer,
+		DescriptionContainer,
+		DirectiveContainer,
+		FieldDefinitionContainer.Resolvable<T>
+
+
+	interface PossibleTypes {
+
+		@SchemaBuilderKeywordB
+		infix fun or(type: GNamedTypeRef): PossibleTypes
+	}
 
 
 	@SchemaBuilderDsl
@@ -321,18 +373,16 @@ interface GSchemaBuilder {
 	}
 
 
-	interface TypesForUnion {
-
-		@SchemaBuilderKeywordB
-		infix fun or(type: GNamedTypeRef): TypesForUnion
-	}
-
-
 	@SchemaBuilderDsl
 	interface UnionTypeDefinitionBuilder : DescriptionContainer, DirectiveContainer
 }
 
 
-@SchemaBuilderKeywordB
-inline fun <reified Parent : Any> GSchemaBuilder.FieldDefinitionBuilder.resolve(noinline resolver: GFieldResolver.Context.(parent: Parent) -> Any?) =
-	resolve(parentClass = Parent::class, resolver = resolver)
+@SchemaBuilderType
+inline fun <reified T : Any> GSchemaBuilder.Object(type: GNamedTypeRef, noinline configure: GSchemaBuilder.ObjectTypeDefinitionBuilder<T>.() -> Unit) =
+	Object(type = type, kotlinType = T::class, configure = configure)
+
+
+@SchemaBuilderType
+inline fun <reified T : Any> GSchemaBuilder.Object(named: GSchemaBuilder.Interfaces, noinline configure: GSchemaBuilder.ObjectTypeDefinitionBuilder<T>.() -> Unit) =
+	Object(named = named, kotlinType = T::class, configure = configure)

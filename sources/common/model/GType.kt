@@ -1,5 +1,7 @@
 package io.fluidsonic.graphql
 
+import kotlin.reflect.*
+
 
 // Note that equality of `GNamedType` instance is based on identity and `GWrappedType` based on the type of wrapping and the equality of the wrapped type.
 // Each schema (or any construction that created types using `.Unresolved` variants) has its own instances and there is exactly one instance per named type.
@@ -53,6 +55,41 @@ sealed class GType(
 				is GAst.Definition.TypeSystem.Type.Scalar -> GCustomScalarType.from(ast)
 				is GAst.Definition.TypeSystem.Type.Union -> GUnionType.from(ast)
 			}
+
+
+		internal fun requireImplementationOfInterface(implementingTypeName: String, iface: GInterfaceType, fields: List<GFieldDefinition>) {
+			for (expectedField in iface.fields.values) {
+				val implementedField = fields.firstOrNull { it.name == expectedField.name }
+				requireNotNull(implementedField) {
+					"'fields' in object '$implementingTypeName' must contain an element named '${expectedField.name}' as required by interface '${iface.name}': $fields"
+				}
+				require(implementedField.type.isSubtypeOf(expectedField.type)) {
+					"'fields' element '${implementedField.name}' in object '$implementingTypeName' must be a subtype of '${expectedField.type}' " +
+						"as required by interface '${iface.name}': $fields"
+				}
+
+				for (expectedArg in expectedField.arguments.values) {
+					val implementedArg = implementedField.arguments.values.firstOrNull { it.name == expectedArg.name }
+					requireNotNull(implementedArg) {
+						"'fields' element '${implementedField.name}' in object '$implementingTypeName' must accept an argument named '${expectedArg.name}' " +
+							"as required by interface '${iface.name}': $fields"
+					}
+					require(implementedArg.type == expectedArg.type) {
+						"'fields' element '${implementedField.name}' argument '${implementedArg.name}' in object '$implementingTypeName' must be of type '${expectedArg.type}' " +
+							"as required by interface '${iface.name}': $fields"
+					}
+				}
+
+				for (implementedArg in implementedField.arguments.values) {
+					if (expectedField.arguments.values.none { it.name == implementedArg.name }) {
+						require(implementedArg.type !is GNonNullType) {
+							"'fields' element '${implementedField.name}' argument '${implementedArg.name}' in object '$implementingTypeName' must be of a nullable type " +
+								"as interface '${iface.name}' doesn't require it: $fields"
+						}
+					}
+				}
+			}
+		}
 	}
 
 
@@ -288,6 +325,8 @@ class GInterfaceType private constructor(
 	directives: List<GDirective>,
 	fields: List<GFieldDefinition>?,
 	fieldsToResolve: List<GFieldDefinition.Unresolved>?,
+	interfaces: List<GInterfaceType>?,
+	interfacesToResolve: List<GNamedTypeRef>?,
 	name: String
 ) :
 	GNamedType(
@@ -297,14 +336,17 @@ class GInterfaceType private constructor(
 		kind = Kind.INTERFACE,
 		name = name
 	),
-	GType.WithFields {
+	GType.WithFields,
+	GType.WithInterfaces {
 
 	override val fields: Map<String, GFieldDefinition>
+	override val interfaces: List<GInterfaceType>
 
 
 	constructor(
 		name: String,
 		fields: List<GFieldDefinition>,
+		interfaces: List<GInterfaceType> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList()
 	) : this(
@@ -313,6 +355,8 @@ class GInterfaceType private constructor(
 		directives = directives,
 		fields = fields,
 		fieldsToResolve = null,
+		interfaces = interfaces,
+		interfacesToResolve = null,
 		name = name
 	)
 
@@ -327,24 +371,36 @@ class GInterfaceType private constructor(
 			"'fields' in '$name' must not contain multiple elements with the same name: ${fields ?: fieldsToResolve}"
 		}
 
+		val resolvedInterfaces = interfaces
+			?: typeRegistry?.let { interfacesToResolve?.map { typeRegistry.resolveKind<GInterfaceType>(it) } }
+			?: error("impossible")
+
+		require(resolvedInterfaces.size <= 1 || resolvedInterfaces.mapTo(hashSetOf()) { it.name }.size == resolvedInterfaces.size) {
+			"'interfaces' must not contain multiple elements with the same name: ${interfaces ?: interfacesToResolve}"
+		}
+
 		this.fields = resolvedFields.associateBy { it.name }
+		this.interfaces = resolvedInterfaces
+
+		// Validate AFTER all properties have been set due to cyclic references
+		resolvedInterfaces.forEach { requireImplementationOfInterface(implementingTypeName = name, iface = it, fields = resolvedFields) }
 	}
 
 
 	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
-			(other is GObjectType && other.interfaces.contains(this)) ||
+			(other is WithInterfaces && other.interfaces.contains(this)) ||
 			(other is GNonNullType && isSupertypeOf(other.ofType))
 
 
 	companion object {
 
-		// FIXME implements
 		fun from(ast: GAst.Definition.TypeSystem.Type.Interface) =
 			Unresolved(
 				description = ast.description?.value,
 				directives = ast.directives.map { GDirective.from(it) },
 				fields = ast.fields.map { GFieldDefinition.from(it) },
+				interfaces = ast.interfaces.map { GNamedTypeRef.from(it) },
 				name = ast.name.value
 			)
 	}
@@ -353,6 +409,7 @@ class GInterfaceType private constructor(
 	class Unresolved(
 		override val name: String,
 		val fields: List<GFieldDefinition.Unresolved>,
+		val interfaces: List<GNamedTypeRef> = emptyList(),
 		val description: String? = null,
 		override val directives: List<GDirective> = emptyList()
 	) : GNamedType.Unresolved() {
@@ -363,6 +420,8 @@ class GInterfaceType private constructor(
 			directives = directives,
 			fields = null,
 			fieldsToResolve = fields,
+			interfaces = null,
+			interfacesToResolve = interfaces,
 			name = name
 		)
 
@@ -479,7 +538,8 @@ class GObjectType private constructor(
 	fieldsToResolve: List<GFieldDefinition.Unresolved>?,
 	interfaces: List<GInterfaceType>?,
 	interfacesToResolve: List<GNamedTypeRef>?,
-	name: String
+	name: String,
+	val kotlinType: KClass<*>? = null
 ) :
 	GNamedType(
 		typeRegistry = typeRegistry,
@@ -498,6 +558,7 @@ class GObjectType private constructor(
 	constructor(
 		name: String,
 		fields: List<GFieldDefinition>,
+		kotlinType: KClass<*>,
 		interfaces: List<GInterfaceType> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList()
@@ -509,6 +570,7 @@ class GObjectType private constructor(
 		fieldsToResolve = null,
 		interfaces = interfaces,
 		interfacesToResolve = null,
+		kotlinType = kotlinType,
 		name = name
 	)
 
@@ -531,10 +593,11 @@ class GObjectType private constructor(
 			"'interfaces' must not contain multiple elements with the same name: ${interfaces ?: interfacesToResolve}"
 		}
 
-		resolvedInterfaces.forEach { requireImplementationOfInterface(name = name, iface = it, fields = resolvedFields) }
-
 		this.fields = resolvedFields.associateBy { it.name }
 		this.interfaces = resolvedInterfaces
+
+		// Validate AFTER all properties have been set due to cyclic references
+		resolvedInterfaces.forEach { requireImplementationOfInterface(implementingTypeName = name, iface = it, fields = resolvedFields) }
 	}
 
 
@@ -553,41 +616,6 @@ class GObjectType private constructor(
 				interfaces = ast.interfaces.map { GNamedTypeRef.from(it) },
 				name = ast.name.value
 			)
-
-
-		private fun requireImplementationOfInterface(name: String, iface: GInterfaceType, fields: List<GFieldDefinition>) {
-			for (expectedField in iface.fields.values) {
-				val implementedField = fields.firstOrNull { it.name == expectedField.name }
-				requireNotNull(implementedField) {
-					"'fields' in object '$name' must contain an element named '${expectedField.name}' as required by interface '${iface.name}': $fields"
-				}
-				require(implementedField.type.isSubtypeOf(expectedField.type)) {
-					"'fields' element '${implementedField.name}' in object '$name' must be a subtype of '${expectedField.type}' " +
-						"as required by interface '${iface.name}': $fields"
-				}
-
-				for (expectedArg in expectedField.arguments.values) {
-					val implementedArg = implementedField.arguments.values.firstOrNull { it.name == expectedArg.name }
-					requireNotNull(implementedArg) {
-						"'fields' element '${implementedField.name}' in object '$name' must accept an argument named '${expectedArg.name}' " +
-							"as required by interface '${iface.name}': $fields"
-					}
-					require(implementedArg.type == expectedArg.type) {
-						"'fields' element '${implementedField.name}' argument '${implementedArg.name}' in object '$name' must be of type '${expectedArg.type}' " +
-							"as required by interface '${iface.name}': $fields"
-					}
-				}
-
-				for (implementedArg in implementedField.arguments.values) {
-					if (expectedField.arguments.values.none { it.name == implementedArg.name }) {
-						require(implementedArg.type !is GNonNullType) {
-							"'fields' element '${implementedField.name}' argument '${implementedArg.name}' in object '$name' must be of a nullable type " +
-								"as interface '${iface.name}' doesn't require it: $fields"
-						}
-					}
-				}
-			}
-		}
 	}
 
 
@@ -596,7 +624,8 @@ class GObjectType private constructor(
 		val fields: List<GFieldDefinition.Unresolved>,
 		val interfaces: List<GNamedTypeRef> = emptyList(),
 		val description: String? = null,
-		override val directives: List<GDirective> = emptyList()
+		override val directives: List<GDirective> = emptyList(),
+		val kotlinType: KClass<*>? = null
 	) : GNamedType.Unresolved() {
 
 		override fun resolve(typeRegistry: GTypeRegistry) = GObjectType(
@@ -607,6 +636,7 @@ class GObjectType private constructor(
 			fieldsToResolve = fields,
 			interfaces = null,
 			interfacesToResolve = interfaces,
+			kotlinType = kotlinType,
 			name = name
 		)
 

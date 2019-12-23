@@ -5,7 +5,7 @@ import kotlin.test.*
 
 
 // https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/parser-test.js
-class AstParsingErrorTest {
+class AstParsingErrorsTest {
 
 	@Test
 	fun `provides useful origin`() {
