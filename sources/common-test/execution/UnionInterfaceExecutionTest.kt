@@ -274,6 +274,103 @@ class UnionInterfaceExecutionTest {
 	}
 
 
+	@Test
+	fun `accepts fragment conditions of abstract types`() {
+		val document = GDocument.parse("""
+			|{
+			|  __typename
+			|  name
+			|  pets {
+			|    ...PetFields,
+			|    ...on Mammal {
+			|      mother {
+			|        ...ProgenyFields
+			|      }
+			|    }
+			|  }
+			|  friends { ...FriendFields }
+			|}
+			|
+			|fragment PetFields on Pet {
+			|  __typename
+			|  ... on Dog {
+			|    name
+			|    barks
+			|  }
+			|  ... on Cat {
+			|    name
+			|    meows
+			|  }
+			|}
+			|
+			|fragment FriendFields on Named {
+			|  __typename
+			|  name
+			|  ... on Dog {
+			|    barks
+			|  }
+			|  ... on Cat {
+			|    meows
+			|  }
+			|}
+			|
+			|fragment ProgenyFields on Life {
+			|  progeny {
+			|    __typename
+			|  }
+			|}
+		""".trimMargin())
+
+		// FIXME simplify
+		val context = GExecutor.default.createContext(
+			schema = schema,
+			document = document,
+			rootValue = john
+		).value!!
+
+		val result = GExecutor.default.executeRequest(context = context)
+
+		assertEquals(
+			expected = mapOf(
+				"data" to mapOf(
+					"__typename" to "Person",
+					"name" to "John",
+					"pets" to listOf(
+						mapOf(
+							"__typename" to "Cat",
+							"name" to "Garfield",
+							"meows" to false,
+							"mother" to mapOf(
+								"progeny" to listOf(mapOf("__typename" to "Cat"))
+							)
+						),
+						mapOf(
+							"__typename" to "Dog",
+							"name" to "Odie",
+							"barks" to true,
+							"mother" to mapOf(
+								"progeny" to listOf(mapOf("__typename" to "Dog"))
+							)
+						)
+					),
+					"friends" to listOf(
+						mapOf(
+							"__typename" to "Person",
+							"name" to "Liz"
+						),
+						mapOf(
+							"__typename" to "Dog",
+							"name" to "Odie",
+							"barks" to true
+						)
+					)
+				)
+			),
+			actual = result
+		)
+	}
+
+
 	companion object {
 
 		private val garfield = Cat(
@@ -320,22 +417,22 @@ class UnionInterfaceExecutionTest {
 
 			Object<Person>(Person implements Named and Mammal and Life) {
 				field("name" of String) {
-					resolve { it.name }
+					resolve { name }
 				}
 				field("pets" of List(Pet)) {
-					resolve { it.pets }
+					resolve { pets }
 				}
 				field("friends" of List(Named)) {
-					resolve { it.friends }
+					resolve { friends }
 				}
 				field("progeny" of List(Person)) {
-					resolve { it.progeny }
+					resolve { progeny }
 				}
 				field("mother" of Person) {
-					resolve { it.mother }
+					resolve { mother }
 				}
 				field("father" of Person) {
-					resolve { it.father }
+					resolve { father }
 				}
 			}
 
@@ -355,37 +452,37 @@ class UnionInterfaceExecutionTest {
 
 			Object<Dog>(Dog implements Mammal and Life and Named) {
 				field("name" of String) {
-					resolve { it.name }
+					resolve { name }
 				}
 				field("barks" of Boolean) {
-					resolve { it.barks }
+					resolve { barks }
 				}
 				field("progeny" of List(Dog)) {
-					resolve { it.progeny }
+					resolve { progeny }
 				}
 				field("mother" of Dog) {
-					resolve { it.mother }
+					resolve { mother }
 				}
 				field("father" of Dog) {
-					resolve { it.father }
+					resolve { father }
 				}
 			}
 
 			Object<Cat>(Cat implements Mammal and Life and Named) {
 				field("name" of String) {
-					resolve { it.name }
+					resolve { name }
 				}
 				field("meows" of Boolean) {
-					resolve { it.meows }
+					resolve { meows }
 				}
 				field("progeny" of List(Cat)) {
-					resolve { it.progeny }
+					resolve { progeny }
 				}
 				field("mother" of Cat) {
-					resolve { it.mother }
+					resolve { mother }
 				}
 				field("father" of Cat) {
-					resolve { it.father }
+					resolve { father }
 				}
 			}
 
@@ -394,7 +491,7 @@ class UnionInterfaceExecutionTest {
 	}
 
 
-	class Cat(
+	private class Cat(
 		var name: String,
 		var meows: Boolean,
 		var mother: Cat? = null,
@@ -413,7 +510,7 @@ class UnionInterfaceExecutionTest {
 	}
 
 
-	class Dog(
+	private class Dog(
 		var name: String,
 		var barks: Boolean,
 		var mother: Dog? = null,
@@ -432,7 +529,7 @@ class UnionInterfaceExecutionTest {
 	}
 
 
-	class Person(
+	private class Person(
 		var name: String,
 		var pets: List<Any> = emptyList(),
 		var friends: List<Any> = emptyList(),

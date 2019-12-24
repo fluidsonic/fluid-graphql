@@ -471,6 +471,8 @@ sealed class GAst {
 		// FIXME too naive (what about enum values, variables and type conversions?)
 		abstract fun toKotlin(): Any?
 
+		abstract val type: Type
+
 
 		data class Boolean(
 			override val origin: GOrigin,
@@ -483,6 +485,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				value
+
+
+			override val type
+				get() = Type.BOOLEAN
 		}
 
 
@@ -497,6 +503,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				name
+
+
+			override val type
+				get() = Type.ENUM
 		}
 
 
@@ -511,6 +521,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				value
+
+
+			override val type
+				get() = Type.FLOAT
 		}
 
 
@@ -525,6 +539,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				value
+
+
+			override val type
+				get() = Type.INT
 		}
 
 
@@ -539,6 +557,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				elements.map(Value::toKotlin)
+
+
+			override val type
+				get() = Type.FLOAT
 		}
 
 
@@ -552,6 +574,10 @@ sealed class GAst {
 
 			override fun toKotlin(): Nothing? =
 				null
+
+
+			override val type
+				get() = Type.NULL
 		}
 
 
@@ -566,6 +592,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				fields.associate { field -> field.name to field.value.toKotlin() }
+
+
+			override val type
+				get() = Type.OBJECT
 
 
 			data class Field(
@@ -592,6 +622,10 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				value
+
+
+			override val type
+				get() = Type.STRING
 		}
 
 
@@ -606,6 +640,35 @@ sealed class GAst {
 
 			override fun toKotlin() =
 				"$$name"
+
+
+			override val type
+				get() = Type.VARIABLE
+		}
+
+
+		enum class Type {
+
+			BOOLEAN,
+			ENUM,
+			FLOAT,
+			INT,
+			NULL,
+			OBJECT,
+			STRING,
+			VARIABLE;
+
+
+			override fun toString() = when (this) {
+				BOOLEAN -> "boolean"
+				ENUM -> "enum value"
+				FLOAT -> "float"
+				INT -> "int"
+				NULL -> "null"
+				OBJECT -> "input object"
+				STRING -> "string"
+				VARIABLE -> "variable"
+			}
 		}
 	}
 

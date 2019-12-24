@@ -8,17 +8,17 @@ interface GExecutor {
 		document: GDocument,
 		rootValue: Any,
 		operationName: String? = null,
-		variableValues: GVariableValues = emptyMap(),
+		variableValues: Map<String, Any?> = emptyMap(),
 		externalContext: Any? = null,
 		defaultResolver: GFieldResolver<*>? = null
-	): GResult<GExecutionContext> {
-		val operation = getOperation(document, operationName)
-			.onFailure { return it }
+	): GResult<GExecutionContext> = GResult {
+		val operation = getOperation(document = document, name = operationName) // FIXME check type
+			.or { return it }
 
-		val coercedVariableValues = coerceVariableValues(schema, operation, variableValues)
-			.onFailure { return it }
+		val coercedVariableValues = valueCoercer.coerceVariableValues(schema, operation, variableValues)
+			.or { return it }
 
-		return GResult.Success(GExecutionContext(
+		GExecutionContext(
 			defaultResolver = defaultResolver,
 			document = document,
 			externalContext = externalContext,
@@ -26,170 +26,48 @@ interface GExecutor {
 			rootValue = rootValue,
 			schema = schema,
 			variableValues = coercedVariableValues
-		))
+		)
 	}
 
 
-	// https://graphql.github.io/graphql-spec/draft/#CoerceArgumentValues()
-	fun coerceArgumentValues(
+	// FIXME move?
+	// FIXME rework - this is wrong on so many levels
+	private fun List<GDirective>.getArgumentValue(
 		context: GExecutionContext,
-		fieldDefinition: GFieldDefinition,
-		fieldSelection: GFieldSelection
-	): Map<String, Any> {
-		val coercedValues = mutableMapOf<String, Any>()
-		val argumentValues = fieldSelection.arguments.associate { it.name to it.value }
-
-		val argumentDefinitions = fieldDefinition.arguments.values
-		for (argumentDefinition in argumentDefinitions) {
-			val argumentName = argumentDefinition.name
-			val argumentType = argumentDefinition.type
-
-			val argumentValue = argumentValues[argumentName]
-			if (argumentValue == null) {
-				val defaultValue = argumentDefinition.defaultValue
-				if (defaultValue != null)
-					coercedValues[argumentName] = defaultValue
-				else if (argumentType is GNonNullType)
-					context.errors += GError("Required argument '$argumentName' of type $argumentType was not provided.")
-
-				continue
-			}
-
-			if (argumentValue is GVariableReference) {
-				val variableName = argumentValue.name
-
-				val variableValue = context.variableValues[variableName]
-				if (variableValue == null) {
-					val defaultValue = argumentDefinition.defaultValue
-					if (defaultValue != null)
-						coercedValues[argumentName] = defaultValue
-					else if (argumentType is GNonNullType)
-						context.errors += GError(
-							message = "Required argument '$argumentName' of type $argumentType is set to variable " +
-								"$$variableName, but no value was provided."
-						)
-				}
-				else
-					coercedValues[argumentName] = variableValue
-
-				continue
-			}
-
-			if (coercedValues[argumentName] == GNullValue && argumentType is GNonNullType)
-				context.errors += GError("Required argument '$argumentName' of type $argumentType must not be null.")
-
-			// FIXME actually coerce input
-			coercedValues[argumentName] = argumentValue
-		}
-
-		return coercedValues
-	}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#CoerceVariableValues()
-	fun coerceVariableValues(
-		schema: GSchema,
-		operation: GOperationDefinition,
-		variableValues: GVariableValues
-	) = GResult.collect { addError ->
-		val coercedValues = hashMapOf<String, Any>()
-
-		for (variableDefinition in operation.variableDefinitions) {
-			val variableName = variableDefinition.name
-			val variableType = schema.resolveType(variableDefinition.type)
-			if (variableType == null) {
-				addError("Variable $$variableName references unknown type ${variableDefinition.type}.")
-				continue
-			}
-
-			if (!variableType.isInputType()) {
-				addError("Variable $$variableName expects a value of type $variableType which cannot be used as an input type.")
-				continue
-			}
-
-			val value = variableValues[variableName]
-			if (value == null) {
-				val defaultValue = variableDefinition.defaultValue
-				if (defaultValue != null)
-					coercedValues[variableName] = defaultValue
-				else if (variableType is GNonNullType)
-					addError("A value for required variable $$variableName of type $variableType was not provided.")
-
-				continue
-			}
-
-			if (value == GNullValue && variableType is GNonNullType) {
-				addError("Variable $$variableName of type $variableType must not be null.")
-				continue
-			}
-
-			// FIXME actually coerce input
-			coercedValues[variableName] = value
-		}
-
-		coercedValues
-	}
-
-
-	fun List<GDirective>.getArgumentValue(
-		context: GExecutionContext,
-		directive: String,
+		directive: GDirectiveDefinition,
 		argument: String
-	) = this
-		.firstOrNull { it.name == directive }
-		?.arguments
-		?.get(argument)
-		?.value
-		?.let { value ->
-			if (value is GVariableReference)
-				context.variableValues[value.name]
-			else
-				value
-		}
+	): GResult<Any?> = GResult {
+		this@getArgumentValue
+			.firstOrNull { it.name == directive.name }
+			?.arguments
+			?.get(argument)
+			?.value
+			?.let { value ->
+				val directiveArgument = directive.arguments[argument]!!
 
-
-	private fun getFieldDefinition(
-		schema: GSchema,
-		parentType: GType,
-		name: String
-	) =
-		when (name) {
-			"__schema" ->
-				if (parentType === schema.queryType)
-					GIntrospection.schemaField
-				else
-					null
-
-			"__type" ->
-				if (parentType === schema.queryType)
-					GIntrospection.typeField
-				else
-					null
-
-			"__typename" ->
-				GIntrospection.typenameField
-
-			else ->
-				when (parentType) {
-					is GInterfaceType -> parentType.fields[name]
-					is GObjectType -> parentType.fields[name]
-					else -> null
-				}
-		}
+				valueCoercer.coerceArgumentValue(
+					value = value,
+					type = directive.arguments[argument]!!.type,
+					defaultValue = directiveArgument.defaultValue?.value,
+					variableValues = context.variableValues
+				).orNull()
+			}
+	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
 	fun collectFields(
-		context: GExecutionContext,
+		context: GExecutionContext, // FIXME make executors instances instead of passing context everywhere?
 		objectType: GObjectType,
 		selectionSet: GSelectionSet,
 		groupedFields: MutableMap<String, MutableList<GFieldSelection>> = mutableMapOf(),
 		visitedFragments: MutableSet<String> = mutableSetOf()
 	): Map<String, List<GFieldSelection>> {
 		loop@ for (selection in selectionSet.selections) {
-			if (!shouldIncludeSelection(context, selection))
+			if (!shouldIncludeSelection(selection, context = context))
 				continue
 
+			// FIXME error handling
 			when (selection) {
 				is GFieldSelection -> {
 					val responseKey = selection.alias ?: selection.name
@@ -207,15 +85,15 @@ interface GExecutor {
 						?: continue@loop
 
 					val fragmentType = context.schema.resolveType(fragment.typeCondition)
-					if (fragmentType == null || !doesFragmentTypeApply(objectType, fragmentType))
+					if (fragmentType == null || !doesFragmentTypeApply(fragmentType, to = objectType))
 						continue@loop
 
 					collectFields(
-						context,
-						objectType,
-						fragment.selectionSet,
-						groupedFields,
-						visitedFragments
+						context = context,
+						objectType = objectType,
+						selectionSet = fragment.selectionSet,
+						groupedFields = groupedFields,
+						visitedFragments = visitedFragments
 					)
 				}
 
@@ -223,16 +101,16 @@ interface GExecutor {
 					val fragmentTypeCondition = selection.typeCondition
 					if (fragmentTypeCondition != null) {
 						val fragmentType = context.schema.resolveType(fragmentTypeCondition)
-						if (fragmentType == null || !doesFragmentTypeApply(objectType, fragmentType))
+						if (fragmentType == null || !doesFragmentTypeApply(fragmentType, to = objectType))
 							continue@loop
 					}
 
 					collectFields(
-						context,
-						objectType,
-						selection.selectionSet,
-						groupedFields,
-						visitedFragments
+						context = context,
+						objectType = objectType,
+						selectionSet = selection.selectionSet,
+						groupedFields = groupedFields,
+						visitedFragments = visitedFragments
 					)
 				}
 			}
@@ -248,20 +126,20 @@ interface GExecutor {
 		fieldType: GType,
 		fields: List<GFieldSelection>,
 		result: Any?
-	): Any? {
+	): GResult<Any?> = GResult {
 		val fieldName = fields.first().name
 
 		if (result == null) {
 			if (fieldType is GNonNullType)
-				context.errors += GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value.")
+				collectError(GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value."))
 
-			return null
+			return@GResult null
 		}
 
 		when (fieldType) {
 			is GEnumType,
 			is GScalarType -> {
-				return result // FIXME coerced(result) ?: GValue.Null
+				return@GResult result // FIXME coerced(result) ?: GValue.Null
 			}
 
 			is GInterfaceType,
@@ -279,7 +157,7 @@ interface GExecutor {
 
 				val subSelectionSet = mergeSelectionSets(fields)
 
-				return executeSelectionSet(
+				return@GResult executeSelectionSet(
 					context = context,
 					selectionSet = subSelectionSet,
 					objectType = objectType,
@@ -290,23 +168,23 @@ interface GExecutor {
 			is GListType -> {
 				val elementType = fieldType.ofType
 
-				return (result as Collection<*>).map { element ->
+				return@GResult (result as Collection<*>).map { element ->
 					completeValue(
 						context,
 						elementType,
 						fields,
 						element
-					)
+					).orNull()
 				}
 			}
 
 			is GNonNullType -> {
 				val nullableType = fieldType.ofType
 				val completedResult = completeValue(context, nullableType, fields, result)
-				if (completedResult == null)
-					context.errors += GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value.")
+				if (completedResult is GResult.Success && completedResult.value === null)
+					collectError(GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value."))
 
-				return completedResult
+				return@GResult completedResult.orNull()
 			}
 
 			is GInputObjectType ->
@@ -321,11 +199,10 @@ interface GExecutor {
 		objectType: GObjectType,
 		objectValue: Any,
 		fields: List<GFieldSelection>
-	): Any? {
+	): GResult<Any?> = GResult {
 		val fieldSelection = fields.first()
-
-		val fieldDefinition = getFieldDefinition(schema = context.schema, parentType = objectType, name = fieldSelection.name)
-			?: return null
+		val fieldDefinition = context.schema.getFieldDefinition(type = objectType, name = fieldSelection.name)
+			?: error("Field '${fieldSelection.name}' cannot be selected on '$objectType'. Validate the operation before executing it.")
 
 		val resolvedValue = resolveFieldValue(
 			context = context,
@@ -333,32 +210,32 @@ interface GExecutor {
 			objectValue = objectValue,
 			fieldDefinition = fieldDefinition,
 			fieldSelection = fieldSelection
-		)
-			?: return null
+		).or { return it }
 
-		return completeValue(
+		completeValue(
 			context = context,
 			fieldType = fieldDefinition.type,
 			fields = fields,
 			result = resolvedValue
-		)
+		).or { return it }
 	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	fun executeQuery(
 		context: GExecutionContext
-	): Map<String, Any?>? {
-		val rootType = context.schema.rootTypeForOperationType(context.operation.type) ?: run {
-			context.errors += GError("Schema is not configured for ${context.operation.type} operations.")
-			return null
+	): GPartialResult<Map<String, Any?>> = GPartialResult {
+		val rootType: GObjectType = context.schema.rootTypeForOperationType(context.operation.type) ?: run {
+			collectError(GError("Schema is not configured for ${context.operation.type} operations."))
+
+			return@GPartialResult emptyMap<String, Any?>()
 		}
 
 		return executeSelectionSet(
-			context,
-			context.operation.selectionSet,
-			rootType,
-			context.rootValue
+			context = context,
+			selectionSet = context.operation.selectionSet,
+			objectType = rootType,
+			objectValue = context.rootValue
 		)
 	}
 
@@ -366,19 +243,17 @@ interface GExecutor {
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
 	fun executeRequest(
 		context: GExecutionContext
-	): Any {
-		context.errors.clear()
-
-		val data = when (context.operation.type) {
+	): Map<String, Any?> {
+		val result = when (context.operation.type) {
 			GOperationType.query -> executeQuery(context)
 			GOperationType.mutation -> TODO() // executeMutation(operation, schema, coercedVariableValues, initialValue)
 			GOperationType.subscription -> TODO() // subscribe(operation, schema, coercedVariableValues, initialValue)
 		}
 
-		return if (context.errors.isNotEmpty())
-			mapOf("errors" to context.errors, "data" to data)
+		return if (result.errors.isNotEmpty())
+			mapOf("errors" to result.errors, "data" to result.value)
 		else
-			mapOf("data" to data)
+			mapOf("data" to result.value)
 	}
 
 
@@ -388,56 +263,46 @@ interface GExecutor {
 		selectionSet: GSelectionSet,
 		objectType: GObjectType,
 		objectValue: Any
-	): Map<String, Any?> {
-		val groupedFieldSet = collectFields(
+	): GPartialResult<Map<String, Any?>> = GPartialResult {
+		val groupedFieldSets = collectFields(
 			context = context,
 			objectType = objectType,
 			selectionSet = selectionSet
 		)
 
-		val resultMap = mutableMapOf<String, Any?>()
-		for ((responseKey, fields) in groupedFieldSet) {
-			val responseValue = executeField(
+		groupedFieldSets.mapValues { (_, fields) ->
+			executeField(
 				context = context,
 				objectType = objectType,
 				objectValue = objectValue,
 				fields = fields
-			)
-
-			resultMap[responseKey] = responseValue
+			).orNull()
 		}
-
-		return resultMap
 	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#DoesFragmentTypeApply()
 	fun doesFragmentTypeApply(
-		objectType: GObjectType,
-		fragmentType: GType
+		fragmentType: GType,
+		to: GObjectType
 	) =
-		objectType.isSubtypeOf(fragmentType)
+		to.isSubtypeOf(fragmentType)
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
-	fun getOperation(document: GDocument, operationName: String?): GResult<GOperationDefinition> {
-		if (operationName == null) {
+	fun getOperation(
+		document: GDocument,
+		name: String?
+	): GResult<GOperationDefinition> = GResult {
+		if (name != null)
+			document.operations.firstOrNull { it.name == name }
+				?: return failWith(GError("There is no operation named '$name' in the document."))
+		else
 			document.operations.singleOrNull()
-				?.let { return GResult.Success(it) }
-
-			return GResult.Failure(GError(
-				if (document.operations.isEmpty())
-					"There are no operations in the document."
-				else
-					"There are multiple operations in the document. You must specify one by name."
-			))
-		}
-		else {
-			document.operations.firstOrNull { it.name == operationName }
-				?.let { return GResult.Success(it) }
-
-			return GResult.Failure(GError("There is no operation named '$operationName' in the document."))
-		}
+				?: return failWith(GError(
+					if (document.operations.isEmpty()) "There are no operations in the document."
+					else "There are multiple operations in the document. You must specify the name explicitly."
+				))
 	}
 
 
@@ -488,19 +353,19 @@ interface GExecutor {
 		objectValue: Any,
 		fieldDefinition: GFieldDefinition,
 		fieldSelection: GFieldSelection
-	): Any? {
-		val argumentValues = coerceArgumentValues(
+	): GResult<Any?> = GResult {
+		val argumentValues = valueCoercer.coerceArgumentValues(
 			context = context,
 			fieldDefinition = fieldDefinition,
 			fieldSelection = fieldSelection
-		)
+		).or { return it }
 
 		val resolver = fieldDefinition.resolver as GFieldResolver<Any>?
-			?: return null
+			?: error("No resolver registered for '$objectType.${fieldDefinition.name}'.")
 
 		val resolverContext = object : GFieldResolver.Context {
 
-			override val arguments: Map<String, Any>
+			override val arguments: Map<String, Any?>
 				get() = argumentValues
 
 			override val parentType: GNamedType
@@ -510,19 +375,35 @@ interface GExecutor {
 				get() = context.schema
 		}
 
-		return with(resolver) { resolverContext.resolve(objectValue) }
+		try {
+			with(resolver) { objectValue.resolve(resolverContext) }
+		}
+		catch (cause: Throwable) {
+			collectError(GError(
+				message = "Resolving the field value was not possible.", // FIXME don't re-wrap GError
+				cause = cause
+			))
+		}
 	}
 
 
-	fun shouldIncludeSelection(context: GExecutionContext, selection: GSelection): Boolean {
-		val skip = selection.directives.getArgumentValue(context, "skip", "if") == true
+	fun shouldIncludeSelection(selection: GSelection, context: GExecutionContext): Boolean {
+		val skip = selection.directives.getArgumentValue(context, GSpecification.defaultSkipDirective, "if")
+			.or { error("FIXME needs validation: $it") }
+			as Boolean
 		if (skip)
 			return false
 
-		val include = selection.directives.getArgumentValue(context, "include", "if") != false
+		val include = selection.directives.getArgumentValue(context, GSpecification.defaultIncludeDirective, "if")
+			.or { error("FIXME needs validation: $it") }
+			as Boolean
 
 		return include
 	}
+
+
+	val valueCoercer: GValueCoercer
+		get() = GValueCoercer.default
 
 
 	companion object {

@@ -1,9 +1,6 @@
 package io.fluidsonic.graphql
 
 
-typealias GVariableValues = Map<String, Any>
-
-
 // FIXME remove
 // https://graphql.github.io/graphql-spec/June2018/
 object GSpecification {
@@ -27,7 +24,7 @@ object GSpecification {
 				type = GStringType,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
 					"Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).",
-				defaultValue = "No longer supported"
+				defaultValue = Optional("No longer supported")
 			)
 		),
 		description = "Marks an element of a GraphQL schema as no longer supported.",

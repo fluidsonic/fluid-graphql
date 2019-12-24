@@ -407,7 +407,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			)
 
 
-		override fun resolve(resolver: GFieldResolver.Context.(parent: Parent) -> Any?) {
+		override fun resolve(resolver: Parent.(context: GFieldResolver.Context) -> Any?) {
 			this.resolver = GFieldResolver.of(resolver)
 		}
 

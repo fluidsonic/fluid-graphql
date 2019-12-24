@@ -3,16 +3,16 @@ package io.fluidsonic.graphql
 
 interface GFieldResolver<in Parent : Any> {
 
-	fun Context.resolve(parent: Parent): Any?
+	fun Parent.resolve(context: Context): Any?
 
 
 	companion object {
 
-		fun <Parent : Any> of(resolver: Context.(parent: Parent) -> Any?) =
+		fun <Parent : Any> of(resolver: Parent.(context: Context) -> Any?) =
 			object : GFieldResolver<Parent> {
 
-				override fun Context.resolve(parent: Parent) =
-					resolver(parent)
+				override fun Parent.resolve(context: Context) =
+					resolver(context)
 			}
 	}
 
@@ -20,7 +20,7 @@ interface GFieldResolver<in Parent : Any> {
 	@SchemaBuilderDsl
 	interface Context {
 
-		val arguments: Map<String, Any>
+		val arguments: Map<String, Any?>
 		val parentType: GNamedType
 		val schema: GSchema
 	}
@@ -31,6 +31,10 @@ interface GFieldResolver<in Parent : Any> {
 
 fun GFieldResolver.Context.booleanArgument(name: String) =
 	arguments[name] as Boolean
+
+
+fun GFieldResolver.Context.intArgument(name: String) =
+	arguments[name] as Int
 
 
 fun GFieldResolver.Context.stringArgument(name: String) =

@@ -10,6 +10,35 @@ class GSchema private constructor(
 	val types: Map<String, GNamedType>
 ) {
 
+	fun getFieldDefinition(
+		type: GType,
+		name: String
+	) =
+		when (name) {
+			"__schema" ->
+				if (type === queryType)
+					GIntrospection.schemaField
+				else
+					null
+
+			"__type" ->
+				if (type === queryType)
+					GIntrospection.typeField
+				else
+					null
+
+			"__typename" ->
+				GIntrospection.typenameField
+
+			else ->
+				when (type) {
+					is GInterfaceType -> type.fields[name]
+					is GObjectType -> type.fields[name]
+					else -> null
+				}
+		}
+
+
 	fun resolveType(ref: GTypeRef): GType? {
 		TODO()
 	}

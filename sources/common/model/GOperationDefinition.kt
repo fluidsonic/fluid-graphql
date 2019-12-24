@@ -6,7 +6,7 @@ class GOperationDefinition(
 	val name: String? = null,
 	val selectionSet: GSelectionSet,
 	val directives: List<GDirective> = emptyList(),
-	val variableDefinitions: List<GVariableDefinition> = emptyList()
+	val variableDefinitions: List<GVariableDefinition> = emptyList() // FIXME should be a map?
 ) {
 
 	companion object {

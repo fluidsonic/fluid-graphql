@@ -1,12 +1,16 @@
 package io.fluidsonic.graphql
 
 
+// FIXME check all call-sites for whether they can provide more context than they currently do
 class GError(
 	message: String,
+	val path: GPath? = null, // FIXME set path only for RESULT fields & consider aliases
 	val nodes: List<GAst> = emptyList(),
-	val origins: List<GOrigin> = nodes.ifEmpty { null }?.map { it.origin }.orEmpty()
+	val origins: List<GOrigin> = nodes.ifEmpty { null }?.map { it.origin }.orEmpty(),
+	cause: Throwable? = null
 ) : Exception(
-	message
+	message,
+	cause
 ) {
 
 	fun describe() = buildString {

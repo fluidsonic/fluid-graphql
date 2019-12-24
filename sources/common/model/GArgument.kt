@@ -4,7 +4,7 @@ package io.fluidsonic.graphql
 // https://graphql.github.io/graphql-spec/June2018/#Argument
 class GArgument(
 	val name: String,
-	val value: Any?
+	val value: GAst.Value // FIXME full AST or no AST - don't mix!
 ) {
 
 	override fun toString() =
@@ -16,7 +16,7 @@ class GArgument(
 		fun from(ast: GAst.Argument) =
 			GArgument(
 				name = ast.name.value,
-				value = ast.value.toKotlin() ?: GNullValue
+				value = ast.value
 			)
 	}
 }

@@ -35,27 +35,27 @@ object GIntrospection {
 
 			field("types" of !List(!__Type)) {
 				description("A list of all types supported by this server.")
-				resolve { it.types.values } // FIXME move generic to obj def?
+				resolve { types.values } // FIXME move generic to obj def?
 			}
 
 			field("queryType" of !__Type) {
 				description("The type that query operations will be rooted at.")
-				resolve { it.queryType }
+				resolve { queryType }
 			}
 
 			field("mutationType" of __Type) {
 				description("If this server supports mutation, the type that mutation operations will be rooted at.")
-				resolve { it.mutationType }
+				resolve { mutationType }
 			}
 
 			field("subscriptionType" of __Type) {
 				description("If this server support subscription, the type that subscription operations will be rooted at.")
-				resolve { it.subscriptionType }
+				resolve { subscriptionType }
 			}
 
 			field("directives" of !List(!__Directive)) {
 				description("A list of all directives supported by this server.")
-				resolve { it.directives }
+				resolve { directives }
 			}
 		}
 
@@ -71,26 +71,26 @@ object GIntrospection {
 			)
 
 			field("kind" of !__TypeKind) {
-				resolve { it.kind.name }
+				resolve { kind.name }
 			}
 
 			field("name" of String) {
-				resolve { (it as? GNamedType)?.name }
+				resolve { (this as? GNamedType)?.name }
 			}
 
 			field("description" of String) {
-				resolve { (it as? GNamedType)?.description }
+				resolve { (this as? GNamedType)?.description }
 			}
 
 			field("fields" of List(!__Field)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve { type ->
-					if (type !is GType.WithFields)
+				resolve { context ->
+					if (this !is GType.WithFields)
 						return@resolve null
 
-					var fields = type.fields.values
-					if (booleanArgument("includeDeprecated"))
+					var fields = fields.values
+					if (context.booleanArgument("includeDeprecated"))
 						fields = fields.filterNot { it.isDeprecated }
 
 					return@resolve fields
@@ -103,16 +103,16 @@ object GIntrospection {
 
 			field("possibleTypes" of List(!__Type)) {
 				// FIXME generalize
-				resolve { type ->
-					when (type) {
+				resolve { context ->
+					when (this) {
 						is GInterfaceType ->
 							// TODO probably inefficient
-							schema.types.values
+							context.schema.types.values
 								.filterIsInstance<GType.WithInterfaces>() // FIXME list interfaces?
-								.filter { it.interfaces.contains(type) }
+								.filter { it.interfaces.contains(this) }
 
 						is GUnionType ->
-							type.types
+							types
 
 						else ->
 							null
@@ -123,12 +123,12 @@ object GIntrospection {
 			field("enumValues" of List(!__EnumValue)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve { type ->
-					if (type !is GEnumType)
+				resolve { context ->
+					if (this !is GEnumType)
 						return@resolve null
 
-					var values = type.values.values
-					if (booleanArgument("includeDeprecated"))
+					var values = values.values
+					if (context.booleanArgument("includeDeprecated"))
 						values = values.filterNot { it.isDeprecated }
 
 					return@resolve values
@@ -151,27 +151,27 @@ object GIntrospection {
 			)
 
 			field("name" of !String) {
-				resolve { it.name }
+				resolve { name }
 			}
 
 			field("description" of String) {
-				resolve { it.description }
+				resolve { description }
 			}
 
 			field("args" of !List(!__InputValue)) {
-				resolve { it.arguments.values }
+				resolve { arguments.values }
 			}
 
 			field("type" of !__Type) {
-				resolve { it.type }
+				resolve { type }
 			}
 
 			field("isDeprecated" of !Boolean) {
-				resolve { it.isDeprecated }
+				resolve { isDeprecated }
 			}
 
 			field("deprecationReason" of String) {
-				resolve { it.deprecationReason }
+				resolve { deprecationReason }
 			}
 
 		}
@@ -318,7 +318,7 @@ object GIntrospection {
 		name = schemaFieldName,
 		type = GNonNullType(Schema),
 		description = "Access the current type schema of this server.",
-		resolver = GFieldResolver.of<Any> { schema }
+		resolver = GFieldResolver.of<GType> { schema }
 	)
 
 	val typeField = GFieldDefinition(
@@ -331,13 +331,13 @@ object GIntrospection {
 				type = GNonNullType(GStringType)
 			)
 		),
-		resolver = GFieldResolver.of<Any> { schema.resolveType(stringArgument("name")) }
+		resolver = GFieldResolver.of<GType> { schema.resolveType(it.stringArgument("name")) }
 	)
 
 	val typenameField = GFieldDefinition(
 		name = typenameFieldName,
 		type = GNonNullType(GStringType),
 		description = "The name of the current Object type at runtime.",
-		resolver = GFieldResolver.of<Any> { parentType.name }
+		resolver = GFieldResolver.of<Nothing> { it.parentType.name }
 	)
 }
