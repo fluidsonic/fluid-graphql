@@ -2,169 +2,52 @@ package io.fluidsonic.graphql
 
 
 // TODO It may be okay to widen the transformation result type for some node types
-// FIXME pretty useless unless we glue all changes together
 abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 
-	open fun <Node : GAst> transformNode(node: Node, data: Data) =
-		node
-
-
-	open fun transformArgument(argument: GArgument, data: Data) =
-		transformNode(argument, data)
-
-	open fun transformArgumentDefinition(definition: GArgumentDefinition, data: Data) =
-		transformNode(definition, data)
-
-	open fun transformBooleanValue(value: GValue.Boolean, data: Data) =
-		transformValue(value, data)
-
-	open fun <Node : GDefinition> transformDefinition(definition: Node, data: Data) =
-		transformNode(definition, data)
-
-	open fun transformDirective(directive: GDirective, data: Data) =
-		transformNode(directive, data)
-
-	open fun transformDirectiveDefinition(definition: GDirectiveDefinition, data: Data) =
-		transformTypeSystemDefinition(definition, data)
-
-	open fun transformDocument(document: GDocument, data: Data) =
-		transformNode(document, data)
-
-	open fun transformEnumType(type: GEnumType, data: Data) =
-		transformType(type, data)
-
-	open fun transformEnumTypeExtension(extension: GEnumTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	open fun transformEnumValue(value: GValue.Enum, data: Data) =
-		transformValue(value, data)
-
-	open fun transformEnumValueDefinition(definition: GEnumValueDefinition, data: Data) =
-		transformNode(definition, data)
-
-	open fun transformFieldDefinition(definition: GFieldDefinition, data: Data) =
-		transformNode(definition, data)
-
-	open fun transformFieldSelection(selection: GFieldSelection, data: Data) =
-		transformSelection(selection, data)
-
-	open fun transformFloatValue(value: GValue.Float, data: Data) =
-		transformValue(value, data)
-
-	open fun transformFragmentDefinition(definition: GFragmentDefinition, data: Data) =
-		transformDefinition(definition, data)
-
-	open fun transformFragmentSelection(selection: GFragmentSelection, data: Data) =
-		transformSelection(selection, data)
-
-	open fun transformInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data) =
-		transformSelection(selection, data)
-
-	open fun transformInputObjectType(type: GInputObjectType, data: Data) =
-		transformType(type, data)
-
-	open fun transformInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	open fun transformIntValue(value: GValue.Int, data: Data) =
-		transformValue(value, data)
-
-	open fun transformInterfaceType(type: GInterfaceType, data: Data) =
-		transformType(type, data)
-
-	open fun transformInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	open fun transformListValue(value: GValue.List, data: Data) =
-		transformValue(value, data)
-
-	open fun transformListTypeRef(ref: GListTypeRef, data: Data) =
-		transformTypeRef(ref, data)
-
-	open fun transformName(name: GName, data: Data) =
-		transformNode(name, data)
-
-	open fun transformNamedTypeRef(ref: GNamedTypeRef, data: Data) =
-		transformTypeRef(ref, data)
-
-	open fun transformNonNullTypeRef(ref: GNonNullTypeRef, data: Data) =
-		transformTypeRef(ref, data)
-
-	open fun transformNullValue(value: GValue.Null, data: Data) =
-		transformValue(value, data)
-
-	open fun transformObjectType(type: GObjectType, data: Data) =
-		transformType(type, data)
-
-	open fun transformObjectTypeExtension(extension: GObjectTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	open fun transformObjectValue(value: GValue.Object, data: Data) =
-		transformValue(value, data)
-
-	open fun transformObjectValueField(field: GObjectValueField, data: Data) =
-		transformNode(field, data)
-
-	open fun transformOperationDefinition(definition: GOperationDefinition, data: Data) =
-		transformDefinition(definition, data)
-
-	open fun transformOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data) =
-		transformNode(definition, data)
-
-	open fun transformScalarType(type: GScalarType, data: Data) =
-		transformType(type, data)
-
-	open fun transformScalarTypeExtension(extension: GScalarTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	open fun transformSchemaDefinition(definition: GSchemaDefinition, data: Data) =
-		transformTypeSystemDefinition(definition, data)
-
-	open fun transformSchemaExtension(extension: GSchemaExtensionDefinition, data: Data) =
-		transformTypeSystemExtensionDefinition(extension, data)
-
-	open fun <Node : GSelection> transformSelection(selection: Node, data: Data) =
-		transformNode(selection, data)
-
-	open fun transformSelectionSet(set: GSelectionSet, data: Data) =
-		transformNode(set, data)
-
-	open fun transformStringValue(value: GValue.String, data: Data) =
-		transformValue(value, data)
-
-	open fun <Node : GType> transformType(type: Node, data: Data) =
-		transformTypeSystemDefinition(type, data)
-
-	open fun <Node : GTypeExtension> transformTypeExtension(extension: Node, data: Data) =
-		transformTypeSystemExtensionDefinition(extension, data)
-
-	open fun <Node : GTypeRef> transformTypeRef(reference: Node, data: Data) =
-		transformNode(reference, data)
-
-	open fun <Node : GTypeSystemDefinition> transformTypeSystemDefinition(definition: Node, data: Data) =
-		transformDefinition(definition, data)
-
-	open fun <Node : GTypeSystemExtensionDefinition> transformTypeSystemExtensionDefinition(definition: Node, data: Data) =
-		transformDefinition(definition, data)
-
-	open fun transformUnionType(type: GUnionType, data: Data) =
-		transformType(type, data)
-
-	open fun transformUnionTypeExtension(extension: GUnionTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	open fun <Node : GValue> transformValue(value: Node, data: Data) =
-		transformNode(value, data)
-
-	open fun transformVariableDefinition(value: GVariableDefinition, data: Data) =
-		transformNode(value, data)
-
-	open fun transformVariableValue(value: GValue.Variable, data: Data) =
-		transformValue(value, data)
-
-
-	final override fun visitNode(node: GAst, data: Data) =
-		transformNode(node, data)
+	abstract fun transformArgument(argument: GArgument, data: Data): GArgument
+	abstract fun transformArgumentDefinition(definition: GArgumentDefinition, data: Data): GArgumentDefinition
+	abstract fun transformBooleanValue(value: GValue.Boolean, data: Data): GValue.Boolean
+	abstract fun transformDirective(directive: GDirective, data: Data): GDirective
+	abstract fun transformDirectiveDefinition(definition: GDirectiveDefinition, data: Data): GDirectiveDefinition
+	abstract fun transformDocument(document: GDocument, data: Data): GDocument
+	abstract fun transformEnumType(type: GEnumType, data: Data): GEnumType
+	abstract fun transformEnumTypeExtension(extension: GEnumTypeExtension, data: Data): GEnumTypeExtension
+	abstract fun transformEnumValue(value: GValue.Enum, data: Data): GValue.Enum
+	abstract fun transformEnumValueDefinition(definition: GEnumValueDefinition, data: Data): GEnumValueDefinition
+	abstract fun transformFieldDefinition(definition: GFieldDefinition, data: Data): GFieldDefinition
+	abstract fun transformFieldSelection(selection: GFieldSelection, data: Data): GFieldSelection
+	abstract fun transformFloatValue(value: GValue.Float, data: Data): GValue.Float
+	abstract fun transformFragmentDefinition(definition: GFragmentDefinition, data: Data): GFragmentDefinition
+	abstract fun transformFragmentSelection(selection: GFragmentSelection, data: Data): GFragmentSelection
+	abstract fun transformInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data): GInlineFragmentSelection
+	abstract fun transformInputObjectType(type: GInputObjectType, data: Data): GInputObjectType
+	abstract fun transformInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data): GInputObjectTypeExtension
+	abstract fun transformIntValue(value: GValue.Int, data: Data): GValue.Int
+	abstract fun transformInterfaceType(type: GInterfaceType, data: Data): GInterfaceType
+	abstract fun transformInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data): GInterfaceTypeExtension
+	abstract fun transformListTypeRef(ref: GListTypeRef, data: Data): GListTypeRef
+	abstract fun transformListValue(value: GValue.List, data: Data): GValue.List
+	abstract fun transformName(name: GName, data: Data): GName
+	abstract fun transformNamedTypeRef(ref: GNamedTypeRef, data: Data): GNamedTypeRef
+	abstract fun transformNonNullTypeRef(ref: GNonNullTypeRef, data: Data): GNonNullTypeRef
+	abstract fun transformNullValue(value: GValue.Null, data: Data): GValue.Null
+	abstract fun transformObjectType(type: GObjectType, data: Data): GObjectType
+	abstract fun transformObjectTypeExtension(extension: GObjectTypeExtension, data: Data): GObjectTypeExtension
+	abstract fun transformObjectValue(value: GValue.Object, data: Data): GValue.Object
+	abstract fun transformObjectValueField(field: GObjectValueField, data: Data): GObjectValueField
+	abstract fun transformOperationDefinition(definition: GOperationDefinition, data: Data): GOperationDefinition
+	abstract fun transformOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data): GOperationTypeDefinition
+	abstract fun transformScalarType(type: GScalarType, data: Data): GScalarType
+	abstract fun transformScalarTypeExtension(extension: GScalarTypeExtension, data: Data): GScalarTypeExtension
+	abstract fun transformSchemaDefinition(definition: GSchemaDefinition, data: Data): GSchemaDefinition
+	abstract fun transformSchemaExtensionDefinition(definition: GSchemaExtensionDefinition, data: Data): GSchemaExtensionDefinition
+	abstract fun transformSelectionSet(set: GSelectionSet, data: Data): GSelectionSet
+	abstract fun transformStringValue(value: GValue.String, data: Data): GValue.String
+	abstract fun transformSyntheticNode(node: GAst, data: Data): GAst
+	abstract fun transformUnionType(type: GUnionType, data: Data): GUnionType
+	abstract fun transformUnionTypeExtension(extension: GUnionTypeExtension, data: Data): GUnionTypeExtension
+	abstract fun transformVariableDefinition(definition: GVariableDefinition, data: Data): GVariableDefinition
+	abstract fun transformVariableValue(value: GValue.Variable, data: Data): GValue.Variable
 
 
 	final override fun visitArgument(argument: GArgument, data: Data) =
@@ -175,9 +58,6 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 
 	final override fun visitBooleanValue(value: GValue.Boolean, data: Data) =
 		transformBooleanValue(value, data)
-
-	final override fun visitDefinition(definition: GDefinition, data: Data) =
-		transformDefinition(definition, data)
 
 	final override fun visitDirective(directive: GDirective, data: Data) =
 		transformDirective(directive, data)
@@ -233,11 +113,11 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 	final override fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data) =
 		transformInterfaceTypeExtension(extension, data)
 
-	final override fun visitListValue(value: GValue.List, data: Data) =
-		transformListValue(value, data)
-
 	final override fun visitListTypeRef(ref: GListTypeRef, data: Data) =
 		transformListTypeRef(ref, data)
+
+	final override fun visitListValue(value: GValue.List, data: Data) =
+		transformListValue(value, data)
 
 	final override fun visitName(name: GName, data: Data) =
 		transformName(name, data)
@@ -278,11 +158,8 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 	final override fun visitSchemaDefinition(definition: GSchemaDefinition, data: Data) =
 		transformSchemaDefinition(definition, data)
 
-	final override fun visitSchemaExtension(extension: GSchemaExtensionDefinition, data: Data) =
-		transformSchemaExtension(extension, data)
-
-	final override fun visitSelection(selection: GSelection, data: Data) =
-		transformSelection(selection, data)
+	final override fun visitSchemaExtensionDefinition(definition: GSchemaExtensionDefinition, data: Data) =
+		transformSchemaExtensionDefinition(definition, data)
 
 	final override fun visitSelectionSet(set: GSelectionSet, data: Data) =
 		transformSelectionSet(set, data)
@@ -290,20 +167,8 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 	final override fun visitStringValue(value: GValue.String, data: Data) =
 		transformStringValue(value, data)
 
-	final override fun visitType(type: GType, data: Data) =
-		transformType(type, data)
-
-	final override fun visitTypeExtension(extension: GTypeExtension, data: Data) =
-		transformTypeExtension(extension, data)
-
-	final override fun visitTypeRef(ref: GTypeRef, data: Data) =
-		transformTypeRef(ref, data)
-
-	final override fun visitTypeSystemDefinition(definition: GTypeSystemDefinition, data: Data) =
-		transformTypeSystemDefinition(definition, data)
-
-	final override fun visitTypeSystemExtensionDefinition(definition: GTypeSystemExtensionDefinition, data: Data) =
-		transformTypeSystemExtensionDefinition(definition, data)
+	final override fun visitSyntheticNode(node: GAst, data: Data) =
+		transformSyntheticNode(node, data)
 
 	final override fun visitUnionType(type: GUnionType, data: Data) =
 		transformUnionType(type, data)
@@ -311,12 +176,178 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 	final override fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Data) =
 		transformUnionTypeExtension(extension, data)
 
-	final override fun visitValue(value: GValue, data: Data) =
-		transformValue(value, data)
-
-	final override fun visitVariableDefinition(value: GVariableDefinition, data: Data) =
-		transformVariableDefinition(value, data)
+	final override fun visitVariableDefinition(definition: GVariableDefinition, data: Data) =
+		transformVariableDefinition(definition, data)
 
 	final override fun visitVariableValue(value: GValue.Variable, data: Data) =
 		transformVariableValue(value, data)
+
+
+	abstract class WithDefaults<in Data> : GAstTransformer<Data>() {
+
+		open fun <Type : GAbstractType> transformAbstractType(type: Type, data: Data) =
+			transformNamedType(type, data)
+
+		override fun transformArgument(argument: GArgument, data: Data) =
+			transformNode(argument, data)
+
+		override fun transformArgumentDefinition(definition: GArgumentDefinition, data: Data) =
+			transformNode(definition, data)
+
+		override fun transformBooleanValue(value: GValue.Boolean, data: Data) =
+			transformValue(value, data)
+
+		open fun transformCustomScalarType(type: GCustomScalarType, data: Data) =
+			transformScalarType(type, data)
+
+		open fun <Definition : GDefinition> transformDefinition(definition: Definition, data: Data) =
+			transformNode(definition, data)
+
+		override fun transformDirective(directive: GDirective, data: Data) =
+			transformNode(directive, data)
+
+		override fun transformDirectiveDefinition(definition: GDirectiveDefinition, data: Data) =
+			transformTypeSystemDefinition(definition, data)
+
+		override fun transformDocument(document: GDocument, data: Data) =
+			transformNode(document, data)
+
+		override fun transformEnumType(type: GEnumType, data: Data) =
+			transformNamedType(type, data)
+
+		override fun transformEnumTypeExtension(extension: GEnumTypeExtension, data: Data) =
+			transformTypeExtension(extension, data)
+
+		override fun transformEnumValue(value: GValue.Enum, data: Data) =
+			transformValue(value, data)
+
+		override fun transformEnumValueDefinition(definition: GEnumValueDefinition, data: Data) =
+			transformNode(definition, data)
+
+		override fun transformFieldDefinition(definition: GFieldDefinition, data: Data) =
+			transformNode(definition, data)
+
+		override fun transformFieldSelection(selection: GFieldSelection, data: Data) =
+			transformSelection(selection, data)
+
+		override fun transformFloatValue(value: GValue.Float, data: Data) =
+			transformValue(value, data)
+
+		override fun transformFragmentDefinition(definition: GFragmentDefinition, data: Data) =
+			transformDefinition(definition, data)
+
+		override fun transformFragmentSelection(selection: GFragmentSelection, data: Data) =
+			transformSelection(selection, data)
+
+		override fun transformInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data) =
+			transformSelection(selection, data)
+
+		override fun transformInputObjectType(type: GInputObjectType, data: Data) =
+			transformNamedType(type, data)
+
+		override fun transformInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data) =
+			transformTypeExtension(extension, data)
+
+		override fun transformIntValue(value: GValue.Int, data: Data) =
+			transformValue(value, data)
+
+		override fun transformInterfaceType(type: GInterfaceType, data: Data) =
+			transformAbstractType(type, data)
+
+		override fun transformInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data) =
+			transformTypeExtension(extension, data)
+
+		override fun transformListTypeRef(ref: GListTypeRef, data: Data) =
+			transformTypeRef(ref, data)
+
+		override fun transformListValue(value: GValue.List, data: Data) =
+			transformValue(value, data)
+
+		override fun transformName(name: GName, data: Data) =
+			transformNode(name, data)
+
+		open fun <Type : GNamedType> transformNamedType(type: Type, data: Data) =
+			transformTypeSystemDefinition(type, data)
+
+		override fun transformNamedTypeRef(ref: GNamedTypeRef, data: Data) =
+			transformTypeRef(ref, data)
+
+		open fun <Node : GAst> transformNode(node: Node, data: Data) =
+			node
+
+		override fun transformNonNullTypeRef(ref: GNonNullTypeRef, data: Data) =
+			transformTypeRef(ref, data)
+
+		override fun transformNullValue(value: GValue.Null, data: Data) =
+			transformValue(value, data)
+
+		override fun transformObjectType(type: GObjectType, data: Data) =
+			transformNamedType(type, data)
+
+		override fun transformObjectTypeExtension(extension: GObjectTypeExtension, data: Data) =
+			transformTypeExtension(extension, data)
+
+		override fun transformObjectValue(value: GValue.Object, data: Data) =
+			transformValue(value, data)
+
+		override fun transformObjectValueField(field: GObjectValueField, data: Data) =
+			transformNode(field, data)
+
+		override fun transformOperationDefinition(definition: GOperationDefinition, data: Data) =
+			transformDefinition(definition, data)
+
+		override fun transformOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data) =
+			transformNode(definition, data)
+
+		override fun transformScalarType(type: GScalarType, data: Data) =
+			transformNamedType(type, data)
+
+		override fun transformScalarTypeExtension(extension: GScalarTypeExtension, data: Data) =
+			transformTypeExtension(extension, data)
+
+		override fun transformSchemaDefinition(definition: GSchemaDefinition, data: Data) =
+			transformTypeSystemDefinition(definition, data)
+
+		override fun transformSchemaExtensionDefinition(definition: GSchemaExtensionDefinition, data: Data) =
+			transformTypeSystemExtensionDefinition(definition, data)
+
+		open fun <Selection : GSelection> transformSelection(selection: Selection, data: Data) =
+			transformNode(selection, data)
+
+		override fun transformSelectionSet(set: GSelectionSet, data: Data) =
+			transformNode(set, data)
+
+		override fun transformStringValue(value: GValue.String, data: Data) =
+			transformValue(value, data)
+
+		override fun transformSyntheticNode(node: GAst, data: Data) =
+			transformNode(node, data)
+
+		open fun <Extension : GTypeExtension> transformTypeExtension(extension: Extension, data: Data) =
+			transformTypeSystemExtensionDefinition(extension, data)
+
+		open fun <Ref : GTypeRef> transformTypeRef(ref: Ref, data: Data) =
+			transformNode(ref, data)
+
+		open fun <Definition : GTypeSystemDefinition> transformTypeSystemDefinition(definition: Definition, data: Data) =
+			transformDefinition(definition, data)
+
+		open fun <Definition : GTypeSystemExtensionDefinition> transformTypeSystemExtensionDefinition(definition: Definition, data: Data) =
+			transformDefinition(definition, data)
+
+		override fun transformUnionType(type: GUnionType, data: Data) =
+			transformAbstractType(type, data)
+
+		override fun transformUnionTypeExtension(extension: GUnionTypeExtension, data: Data) =
+			transformTypeExtension(extension, data)
+
+		open fun <Value : GValue> transformValue(value: Value, data: Data) =
+			transformNode(value, data)
+
+		override fun transformVariableDefinition(definition: GVariableDefinition, data: Data) =
+			transformNode(definition, data)
+
+		override fun transformVariableValue(value: GValue.Variable, data: Data) =
+			transformValue(value, data)
+	}
 }

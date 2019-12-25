@@ -1,16 +1,17 @@
 package io.fluidsonic.graphql
 
 
-object GIntrospection {
+// Internal for now. Review API before making it public.
+internal object GIntrospection {
 
-	val Directive = GTypeRef("__Directive")
-	val DirectiveLocation = GTypeRef("__DirectiveLocation")
-	val EnumValue = GTypeRef("___EnumValue")
-	val Field = GTypeRef("__Field")
-	val InputValue = GTypeRef("__InputValue")
-	val Schema = GTypeRef("__Schema")
-	val Type = GTypeRef("__Type")
-	val TypeKind = GTypeRef("__TypeKind")
+	private val Directive = GTypeRef("__Directive")
+	private val DirectiveLocation = GTypeRef("__DirectiveLocation")
+	private val EnumValue = GTypeRef("___EnumValue")
+	private val Field = GTypeRef("__Field")
+	private val InputValue = GTypeRef("__InputValue")
+	private val Schema = GTypeRef("__Schema")
+	private val Type = GTypeRef("__Type")
+	private val TypeKind = GTypeRef("__TypeKind")
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
@@ -29,7 +30,7 @@ object GIntrospection {
 
 			field("queryType" of !Type) {
 				description("The type that query operations will be rooted at.")
-				resolve<GType> { queryType!! } // FIME
+				resolve<GType> { queryType!! } // FIXME optional or not?
 			}
 
 			field("mutationType" of Type) {

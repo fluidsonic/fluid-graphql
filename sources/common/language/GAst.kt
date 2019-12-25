@@ -1501,7 +1501,7 @@ class GSchemaExtensionDefinition(
 
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
-		visitor.visitSchemaExtension(this, data)
+		visitor.visitSchemaExtensionDefinition(this, data)
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
