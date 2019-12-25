@@ -1,407 +1,430 @@
 package io.fluidsonic.graphql
 
 
-interface GExecutor {
+internal class GExecutor private constructor(
+	private val defaultResolver: GFieldResolver<*>? = null,
+	private val document: GDocument,
+	private val externalContext: Any? = null,
+	private val operation: GOperationDefinition,
+	private val pathBuilder: GPath.Builder, // FIXME may not work as class property with later parallelization
+	private val rootValue: Any,
+	private val schema: GSchema,
+	private val valueCoercer: GValueCoercer
+) {
 
-	fun createContext(
-		schema: GSchema,
-		document: GDocument,
-		rootValue: Any,
-		operationName: String? = null,
-		variableValues: Map<String, Any?> = emptyMap(),
-		externalContext: Any? = null,
-		defaultResolver: GFieldResolver<*>? = null
-	): GResult<GExecutionContext> = GResult {
-		val operation = getOperation(document = document, name = operationName) // FIXME check type
-			.or { return it }
-
-		val coercedVariableValues = valueCoercer.coerceVariableValues(schema, operation, variableValues)
-			.or { return it }
-
-		GExecutionContext(
-			defaultResolver = defaultResolver,
-			document = document,
-			externalContext = externalContext,
-			operation = operation,
-			rootValue = rootValue,
-			schema = schema,
-			variableValues = coercedVariableValues
-		)
-	}
-
-
-	// FIXME move?
-	// FIXME rework - this is wrong on so many levels
-	private fun List<GDirective>.getArgumentValue(
-		context: GExecutionContext,
-		directive: GDirectiveDefinition,
-		argument: String
-	): GResult<Any?> = GResult {
-		this@getArgumentValue
-			.firstOrNull { it.name == directive.name }
-			?.argumentsByName
-			?.get(argument)
-			?.let { argument ->
-				val definition = directive.argumentsByName[argument.name]!!
-
-				valueCoercer.coerceArgumentValue(
-					value = argument.value,
-					typeRef = definition.type,
-					schema = context.schema,
-					defaultValue = definition.defaultValue,
-					variableValues = context.variableValues
-				).orNull()
+	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
+	private fun collectFieldSelections(
+		selection: GSelection,
+		parentType: GObjectType,
+		fieldSelectionsByResponseKey: MutableMap<String, MutableList<GFieldSelection>>,
+		visitedFragmentNames: MutableSet<String>
+	) {
+		when (selection) {
+			is GFieldSelection -> {
+				val responseKey = selection.alias ?: selection.name
+				fieldSelectionsByResponseKey.getOrPut(responseKey) { mutableListOf() } += selection
 			}
+
+			is GFragmentSelection -> {
+				val fragmentName = selection.name
+				if (!visitedFragmentNames.add(fragmentName))
+					return
+
+				val fragment = document.fragmentsByName[fragmentName]
+					?: invalidOperationError("A fragment with name '$fragmentName' is referenced but not defined.")
+
+				val fragmentType = schema.resolveType(fragment.typeCondition)
+					?: invalidOperationError("Cannot resolve type '${fragment.typeCondition}' in condition of fragment '$fragmentName'.")
+
+				if (!doesFragmentTypeApply(fragmentType, to = parentType))
+					return
+
+				collectFieldSelections(
+					selectionSet = fragment.selectionSet,
+					parentType = parentType,
+					fieldSelectionsByResponseKey = fieldSelectionsByResponseKey,
+					visitedFragments = visitedFragmentNames
+				)
+			}
+
+			is GInlineFragmentSelection -> {
+				val fragmentTypeCondition = selection.typeCondition
+				if (fragmentTypeCondition !== null) {
+					val fragmentType = schema.resolveType(fragmentTypeCondition)
+						?: invalidOperationError("Cannot resolve type '${fragmentTypeCondition}' in condition of inline fragment.")
+
+					if (!doesFragmentTypeApply(fragmentType, to = parentType))
+						return
+				}
+
+				collectFieldSelections(
+					selectionSet = selection.selectionSet,
+					parentType = parentType,
+					fieldSelectionsByResponseKey = fieldSelectionsByResponseKey,
+					visitedFragments = visitedFragmentNames
+				)
+			}
+		}
 	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
-	fun collectFields(
-		context: GExecutionContext, // FIXME make executors instances instead of passing context everywhere?
-		objectType: GObjectType,
+	private fun collectFieldSelections(
 		selectionSet: GSelectionSet,
-		groupedFields: MutableMap<String, MutableList<GFieldSelection>> = mutableMapOf(),
+		parentType: GObjectType,
+		fieldSelectionsByResponseKey: MutableMap<String, MutableList<GFieldSelection>> = mutableMapOf(),
 		visitedFragments: MutableSet<String> = mutableSetOf()
 	): Map<String, List<GFieldSelection>> {
-		loop@ for (selection in selectionSet.selections) {
-			if (!shouldIncludeSelection(selection, context = context))
-				continue
-
-			// FIXME error handling
-			when (selection) {
-				is GFieldSelection -> {
-					val responseKey = selection.alias ?: selection.name
-					groupedFields.getOrPut(responseKey) { mutableListOf() } += selection
-				}
-
-				is GFragmentSelection -> {
-					val fragmentName = selection.name
-					if (visitedFragments.contains(fragmentName))
-						continue@loop
-
-					visitedFragments += fragmentName
-
-					val fragment = context.document.fragmentsByName[fragmentName]
-						?: continue@loop
-
-					val fragmentType = context.schema.resolveType(fragment.typeCondition)
-					if (fragmentType == null || !doesFragmentTypeApply(fragmentType, to = objectType))
-						continue@loop
-
-					collectFields(
-						context = context,
-						objectType = objectType,
-						selectionSet = fragment.selectionSet,
-						groupedFields = groupedFields,
-						visitedFragments = visitedFragments
-					)
-				}
-
-				is GInlineFragmentSelection -> {
-					val fragmentTypeCondition = selection.typeCondition
-					if (fragmentTypeCondition != null) {
-						val fragmentType = context.schema.resolveType(fragmentTypeCondition)
-						if (fragmentType == null || !doesFragmentTypeApply(fragmentType, to = objectType))
-							continue@loop
-					}
-
-					collectFields(
-						context = context,
-						objectType = objectType,
-						selectionSet = selection.selectionSet,
-						groupedFields = groupedFields,
-						visitedFragments = visitedFragments
-					)
-				}
+		selectionSet.selections
+			.filter { it.isRequested() }
+			.forEach { selection ->
+				collectFieldSelections(
+					selection = selection,
+					parentType = parentType,
+					fieldSelectionsByResponseKey = fieldSelectionsByResponseKey,
+					visitedFragmentNames = visitedFragments
+				)
 			}
-		}
 
-		return groupedFields
+		return fieldSelectionsByResponseKey
 	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#CompleteValue()
-	fun completeValue(
-		context: GExecutionContext,
+	private fun completeValue(
+		value: Any?,
 		fieldType: GType,
-		fields: List<GFieldSelection>,
-		result: Any?
+		fieldSelections: List<GFieldSelection>,
+		parentType: GObjectType,
+		pathBuilder: GPath.Builder
 	): GResult<Any?> = GResult {
-		val fieldName = fields.first().name
+		val fieldName = fieldSelections.first().name
 
-		if (result == null) {
+		if (value == null) {
 			if (fieldType is GNonNullType)
-				collectError(GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value."))
+				collectError(GError(
+					message = "Non-null field '$fieldName' with type '${fieldType.name}' has resulted in a null value.",
+					nodes = fieldSelections,
+					path = pathBuilder.snapshot()
+				))
 
 			return@GResult null
 		}
 
-		return@GResult when (fieldType) {
+		// FIXME type checks & coercing
+		when (fieldType) {
 			is GAbstractType ->
 				executeSelectionSet(
-					context = context,
-					selectionSet = mergeSelectionSets(fields),
-					objectType = resolveAbstractType(context, fieldType, result),
-					objectValue = result
+					selectionSet = mergeSelectionSets(fieldSelections),
+					objectType = resolveAbstractType(abstractType = fieldType, objectValue = value),
+					objectValue = value,
+					pathBuilder = pathBuilder
 				).consumeErrors()
 
-			is GEnumType,
-			is GScalarType -> {
-				result // FIXME coerced(result) ?: GValue.Null
-			}
+			is GEnumType ->
+				value
 
-			is GObjectType -> {
-				// FIXME
-//				if (result !is GObjectValue) {
-//					context.errors += GError("Field '$fieldName' of type $fieldType has resulted in a value of an incorrect type: $result")
-//
-//					return GNullValue
-//				}
-
-				executeSelectionSet(
-					context = context,
-					selectionSet = mergeSelectionSets(fields),
-					objectType = fieldType,
-					objectValue = result
-				).consumeErrors()
-			}
+			is GInputObjectType ->
+				invalidOperationError(
+					message = "Field '$fieldName' of object '${parentType.name}' must have an output type but has input type '${fieldType.name}'."
+				)
 
 			is GListType ->
-				// FIXME type check
-				(result as Collection<*>).map { element ->
-					completeValue(
-						context = context,
-						fieldType = fieldType.elementType,
-						fields = fields,
-						result = element
-					).orNull()
+				(value as Collection<*>).mapIndexed { index, element ->
+					pathBuilder.withListIndex(index) {
+						completeValue(
+							value = element,
+							fieldType = fieldType.elementType,
+							fieldSelections = fieldSelections,
+							parentType = parentType,
+							pathBuilder = pathBuilder
+						).orNull()
+					}
 				}
+
+			is GObjectType ->
+				executeSelectionSet(
+					selectionSet = mergeSelectionSets(fieldSelections),
+					objectType = fieldType,
+					objectValue = value,
+					pathBuilder = pathBuilder
+				).consumeErrors()
 
 			is GNonNullType -> {
 				val completedResult = completeValue(
-					context = context,
+					value = value,
 					fieldType = fieldType.nullableType,
-					fields = fields,
-					result = result
+					fieldSelections = fieldSelections,
+					parentType = parentType,
+					pathBuilder = pathBuilder
 				)
 				if (completedResult is GResult.Success && completedResult.value === null)
-					collectError(GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value."))
+					collectError(GError(
+						message = "Non-null field '$fieldName' of type '${fieldType.name}' has resulted in a null value.",
+						nodes = fieldSelections,
+						path = pathBuilder.snapshot()
+					))
 
 				completedResult.orNull()
 			}
 
-			is GInputObjectType ->
-				error("Unexpected input object in result")
-		}
-	}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
-	fun executeField(
-		context: GExecutionContext,
-		objectType: GObjectType,
-		objectValue: Any,
-		fields: List<GFieldSelection>
-	): GResult<Any?> = GResult {
-		val fieldSelection = fields.first()
-		val fieldDefinition = context.schema.getFieldDefinition(type = objectType, name = fieldSelection.name)
-			?: error("Field '${fieldSelection.name}' cannot be selected on '${objectType.name}'. Validate the operation before executing it.")
-		val fieldType = context.schema.resolveType(fieldDefinition.type)
-			?: error("FIXME validation message ${fieldDefinition.type} for '${fieldDefinition.name}' in '${objectType.name}'") // FIXME
-
-		val resolvedValue = resolveFieldValue(
-			context = context,
-			objectType = objectType,
-			objectValue = objectValue,
-			fieldDefinition = fieldDefinition,
-			fieldSelection = fieldSelection
-		).or { return it }
-
-		completeValue(
-			context = context,
-			fieldType = fieldType,
-			fields = fields,
-			result = resolvedValue
-		).or { return it }
-	}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
-	fun executeQuery(
-		context: GExecutionContext
-	): GPartialResult<Map<String, Any?>> = GPartialResult {
-		val rootType: GObjectType = context.schema.rootTypeForOperationType(context.operation.type) ?: run {
-			collectError(GError("Schema is not configured for ${context.operation.type} operations."))
-
-			return@GPartialResult emptyMap<String, Any?>()
-		}
-
-		return executeSelectionSet(
-			context = context,
-			selectionSet = context.operation.selectionSet,
-			objectType = rootType,
-			objectValue = context.rootValue
-		)
-	}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
-	fun executeRequest(
-		context: GExecutionContext
-	): Map<String, Any?> {
-		val result = when (context.operation.type) {
-			GOperationType.query -> executeQuery(context)
-			GOperationType.mutation -> TODO() // executeMutation(operation, schema, coercedVariableValues, initialValue)
-			GOperationType.subscription -> TODO() // subscribe(operation, schema, coercedVariableValues, initialValue)
-		}
-
-		return if (result.errors.isNotEmpty())
-			mapOf("errors" to result.errors, "data" to result.value)
-		else
-			mapOf("data" to result.value)
-	}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#ExecuteSelectionSet()
-	fun executeSelectionSet(
-		context: GExecutionContext,
-		selectionSet: GSelectionSet,
-		objectType: GObjectType,
-		objectValue: Any
-	): GPartialResult<Map<String, Any?>> = GPartialResult {
-		val groupedFieldSets = collectFields(
-			context = context,
-			objectType = objectType,
-			selectionSet = selectionSet
-		)
-
-		groupedFieldSets.mapValues { (_, fields) ->
-			executeField(
-				context = context,
-				objectType = objectType,
-				objectValue = objectValue,
-				fields = fields
-			).orNull()
+			is GScalarType ->
+				value
 		}
 	}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#DoesFragmentTypeApply()
-	fun doesFragmentTypeApply(
+	private fun doesFragmentTypeApply(
 		fragmentType: GType,
 		to: GObjectType
 	) =
 		to.isSubtypeOf(fragmentType)
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
-	fun getOperation(
-		document: GDocument,
-		name: String?
-	): GResult<GOperationDefinition> = GResult {
-		when {
-			name != null ->
-				document.operationsByName[name]
-					?: return failWith(GError("There is no operation named '$name' in the document."))
+	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
+	fun execute(): Map<String, Any?> {
+		val result = when (operation.type) {
+			GOperationType.query -> executeQuery()
+			GOperationType.mutation -> TODO() // FIXME
+			GOperationType.subscription -> TODO() // FIXME
+		}
 
-			document.operationsByName.isEmpty() ->
-				return failWith(GError("There are no operations in the document."))
+		return if (result.errors.isEmpty())
+			mapOf("data" to result.value)
+		else
+			mapOf("errors" to result.errors, "data" to result.value)
+	}
 
-			document.operationsByName.size > 1 ->
-				return failWith(GError("There are multiple operations in the document. You must specify the name explicitly."))
 
-			else ->
-				document.operationsByName.values.single()
+	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
+	private fun executeField(
+		objectType: GObjectType,
+		objectValue: Any,
+		fieldSelections: List<GFieldSelection>,
+		pathBuilder: GPath.Builder
+	): GResult<Any?> = GResult {
+		val fieldSelection = fieldSelections.first()
+		val fieldDefinition = schema.getFieldDefinition(type = objectType, name = fieldSelection.name)
+			?: invalidOperationError("There is no field named '${fieldSelection.name}' on type '${objectType.name}'.")
+		val fieldType = schema.resolveType(fieldDefinition.type)
+			?: invalidOperationError("Cannot resolve type '${fieldDefinition.type}' for field '${fieldDefinition.name}' of '${objectType.name}'.")
+
+		val resolvedValue = resolveFieldValue(
+			fieldDefinition = fieldDefinition,
+			fieldSelections = fieldSelections,
+			objectType = objectType,
+			objectValue = objectValue,
+			pathBuilder = pathBuilder
+		).or { return it }
+
+		completeValue(
+			value = resolvedValue,
+			fieldType = fieldType,
+			fieldSelections = fieldSelections,
+			parentType = objectType,
+			pathBuilder = pathBuilder
+		).or { return it }
+	}
+
+
+	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
+	private fun executeQuery(): GPartialResult<Map<String, Any?>> = GPartialResult {
+		val rootType = schema.rootTypeForOperationType(operation.type) ?: run {
+			collectError(GError("Schema is not configured for ${operation.type} operations."))
+
+			return@GPartialResult emptyMap<String, Any?>()
+		}
+
+		return executeSelectionSet(
+			selectionSet = operation.selectionSet,
+			objectType = rootType,
+			objectValue = rootValue,
+			pathBuilder = GPath.Builder()
+		)
+	}
+
+
+	// https://graphql.github.io/graphql-spec/June2018/#ExecuteSelectionSet()
+	private fun executeSelectionSet(
+		selectionSet: GSelectionSet,
+		objectType: GObjectType,
+		objectValue: Any,
+		pathBuilder: GPath.Builder
+	): GPartialResult<Map<String, Any?>> = GPartialResult {
+		val fieldSelectionsByResponseKey = collectFieldSelections(
+			parentType = objectType,
+			selectionSet = selectionSet
+		)
+
+		fieldSelectionsByResponseKey.mapValues { (_, fields) ->
+			executeField(
+				objectType = objectType,
+				objectValue = objectValue,
+				fieldSelections = fields,
+				pathBuilder = pathBuilder
+			).orNull()
 		}
 	}
 
 
 	// https://graphql.github.io/graphql-spec/draft/#MergeSelectionSets()
-	fun mergeSelectionSets(fields: List<GFieldSelection>): GSelectionSet {
-		val selections = mutableListOf<GSelection>()
-		for (field in fields) {
-			val fieldSelectionSet = field.selectionSet?.selections.orEmpty()
-			if (fieldSelectionSet.isNotEmpty())
-				selections += fieldSelectionSet
-		}
-
-		return GSelectionSet(selections = selections)
-	}
+	private fun mergeSelectionSets(fieldSelections: List<GFieldSelection>) =
+		GSelectionSet(
+			selections = fieldSelections.flatMap { it.selectionSet?.selections.orEmpty() }
+		)
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveAbstractType()
-	fun resolveAbstractType(
-		context: GExecutionContext,
+	private fun resolveAbstractType(
 		abstractType: GAbstractType,
 		objectValue: Any
 	) =
-		context.schema.getPossibleTypes(abstractType).firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false }
-			?: error("FIXME") // FIXME
+		schema.getPossibleTypes(abstractType)
+			.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false }
+			?: invalidOperationError("Cannot resolve abstract type '${abstractType.name}' for ${objectValue::class}: $objectValue")
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
-	fun resolveFieldValue(
-		context: GExecutionContext,
+	private fun resolveFieldValue(
+		fieldDefinition: GFieldDefinition,
+		fieldSelections: List<GFieldSelection>,
 		objectType: GObjectType,
 		objectValue: Any,
-		fieldDefinition: GFieldDefinition,
-		fieldSelection: GFieldSelection
+		pathBuilder: GPath.Builder
 	): GResult<Any?> = GResult {
 		val argumentValues = valueCoercer.coerceArgumentValues(
-			context = context,
-			fieldDefinition = fieldDefinition,
-			fieldSelection = fieldSelection
-		).or { return it }
+			arguments = fieldSelections.first().arguments,
+			argumentDefinitions = fieldDefinition.arguments
+		).or { return it } // FIXME possible if validated?
 
+		// FIXME type safety
+		// FIXME fallback resolver
 		val resolver = fieldDefinition.resolver as GFieldResolver<Any>?
 			?: error("No resolver registered for '${objectType.name}.${fieldDefinition.name}'.")
 
 		val resolverContext = object : GFieldResolver.Context {
 
-			override val arguments: Map<String, Any?>
-				get() = argumentValues
-
-			override val parentType: GNamedType
-				get() = objectType
-
-			override val schema: GSchema
-				get() = context.schema
+			override val arguments get() = argumentValues
+			override val parentType get() = objectType
+			override val schema get() = this@GExecutor.schema
 		}
-
 
 		try {
 			with(resolver) { objectValue.resolve(resolverContext) }
 		}
+		catch (cause: GError) {
+			collectError(cause.copy(
+				cause = cause,
+				nodes = fieldSelections,
+				path = pathBuilder.snapshot()
+			))
+		}
 		catch (cause: Throwable) {
 			collectError(GError(
-				message = "Resolving the value for field '${fieldDefinition.name}' of type '${fieldDefinition.type}' in object '${objectType.name}' was not possible.", // FIXME don't re-wrap GError
-				cause = cause
+				message = "The field value is not available at the moment.",
+				cause = cause,
+				nodes = fieldSelections,
+				path = pathBuilder.snapshot()
 			))
 		}
 	}
 
 
-	fun shouldIncludeSelection(selection: GSelection, context: GExecutionContext): Boolean {
-		val skip = selection.directives.getArgumentValue(context, GSpecification.defaultSkipDirective, "if")
-			.or { error("FIXME needs validation: $it") }
-			as Boolean? ?: false
+	private fun GAst.WithDirectives.getDirectiveValues(definition: GDirectiveDefinition): Map<String, Any?>? =
+		directives.firstOrNull { it.name == definition.name }
+			?.let { directive ->
+				valueCoercer.coerceArgumentValues(
+					arguments = directive.arguments,
+					argumentDefinitions = definition.arguments
+				).or { failure ->
+					invalidOperationError(
+						message = "Invalid '${definition.name}' directive arguments.",
+						errors = failure.errors
+					)
+				}
+			}
+
+
+	private fun invalidOperationError(message: String, errors: List<GError> = emptyList()): Nothing =
+		invalidOperationError(document = document, schema = schema, message = message, errors = errors)
+
+
+	// FIXME type casting
+	private fun GSelection.isRequested(): Boolean {
+		val skip = getDirectiveValues(GSpecification.defaultSkipDirective)?.get("if") as Boolean? ?: false
 		if (skip)
 			return false
 
-		val include = selection.directives.getArgumentValue(context, GSpecification.defaultIncludeDirective, "if")
-			.or { error("FIXME needs validation: $it") }
-			as Boolean? ?: true
+		val include = getDirectiveValues(GSpecification.defaultIncludeDirective)?.get("if") as Boolean? ?: true
+		if (!include)
+			return false
 
-		return include
+		return true
 	}
-
-
-	val valueCoercer: GValueCoercer
-		get() = GValueCoercer.default
 
 
 	companion object {
 
-		val default = object : GExecutor {}
+		fun create(
+			schema: GSchema,
+			document: GDocument,
+			rootValue: Any,
+			operationName: String? = null,
+			variableValues: Map<String, Any?> = emptyMap(),
+			externalContext: Any? = null,
+			defaultResolver: GFieldResolver<*>? = null
+		): GResult<GExecutor> = GResult {
+			// FIXME check type
+			val operation = getOperation(
+				document = document,
+				name = operationName
+			).or { return it }
+
+			val pathBuilder = GPath.Builder()
+
+			val valueCoercer = GValueCoercer.create(
+				document = document,
+				schema = schema,
+				variableValues = variableValues,
+				pathBuilder = pathBuilder
+			).or { return it }
+
+			GExecutor(
+				defaultResolver = defaultResolver,
+				document = document,
+				externalContext = externalContext,
+				operation = operation,
+				pathBuilder = pathBuilder,
+				rootValue = rootValue,
+				schema = schema,
+				valueCoercer = valueCoercer
+			)
+		}
+
+
+		// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
+		private fun getOperation(
+			document: GDocument,
+			name: String?
+		): GResult<GOperationDefinition> = GResult {
+			when {
+				name != null ->
+					document.operationsByName[name]
+						?: return failWith(GError("There is no operation named '$name' in the document."))
+
+				document.operationsByName.isEmpty() ->
+					return failWith(GError("There are no operations in the document."))
+
+				document.operationsByName.size > 1 ->
+					return failWith(GError(
+						message = "There are multiple operations in the document. " +
+							"You must specify the name of the operation to be executed explicitly."
+					))
+
+				else ->
+					document.operationsByName.values.single()
+			}
+		}
 	}
 }

@@ -175,13 +175,10 @@ fun main() {
 		)
 	)
 
-	val con = GExecutor.default.createContext(
+	val r = req.execute(
 		schema = gql,
-		document = req,
 		rootValue = mapOf("id" to "Hey")
-	).value!!
-
-	val r = GExecutor.default.executeRequest(con)
+	)
 
 //	println(r)
 

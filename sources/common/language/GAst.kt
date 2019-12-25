@@ -35,11 +35,16 @@ sealed class GAst(
 	}
 
 
-	interface Depreciable {
+	interface Depreciable : WithDirectives {
 
 		val deprecationReason: String?
-		val directives: List<GDirective>
 		val isDeprecated: Boolean
+	}
+
+
+	interface WithDirectives {
+
+		val directives: List<GDirective>
 	}
 }
 
@@ -123,9 +128,11 @@ class GArgumentDefinition(
 	val type: GTypeRef,
 	val defaultValue: GValue? = null,
 	description: GValue.String? = null,
-	val directives: List<GDirective> = emptyList(),
+	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) :
+	GAst(origin = origin),
+	GAst.WithDirectives {
 
 	val description get() = descriptionNode?.value?.ifEmpty { null }
 	val descriptionNode = description
@@ -308,10 +315,7 @@ class GDocument(
 		.filterIsInstance<GOperationDefinition>()
 		.associateBy { it.name }
 
-	val schema = definitions
-		.filterIsInstance<GTypeSystemDefinition>()
-		.ifEmpty { null }
-		?.let { GSchema(it) } // FIXME
+	val schema = GSchema(document = this) // FIXME check if cyclic reference is OK here
 
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -326,7 +330,28 @@ class GDocument(
 			)
 
 
-	companion object { // FIXME more companions
+	fun execute(
+		schema: GSchema,
+		rootValue: Any,
+		operationName: String? = null,
+		variableValues: Map<String, Any?> = emptyMap(),
+		externalContext: Any? = null,
+		defaultResolver: GFieldResolver<*>? = null
+	) =
+		GExecutor.create(
+			schema = schema,
+			document = this,
+			rootValue = rootValue,
+			operationName = operationName,
+			variableValues = variableValues,
+			externalContext = externalContext,
+			defaultResolver = defaultResolver
+		)
+			.consumeErrors { throw it.errors.first() }
+			.execute()
+
+
+	companion object {
 
 		fun parse(source: GSource.Parsable) =
 			Parser.parseDocument(source)
@@ -617,9 +642,11 @@ class GFragmentDefinition(
 	val typeCondition: GNamedTypeRef,
 	val selectionSet: GSelectionSet,
 	val variableDefinitions: List<GVariableDefinition> = emptyList(),
-	val directives: List<GDirective> = emptyList(),
+	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GDefinition(origin = origin) {
+) :
+	GDefinition(origin = origin),
+	GAst.WithDirectives {
 
 	val name get() = nameNode.value
 	val nameNode = name
@@ -951,6 +978,8 @@ class GListType(
 
 	val elementType get() = wrappedType
 
+	override val name get() = "[${elementType.name}]"
+
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
@@ -1016,19 +1045,22 @@ class GName(
 
 sealed class GNamedType(
 	description: GValue.String?,
-	val directives: List<GDirective>,
+	override val directives: List<GDirective>,
 	kind: GTypeKind,
 	name: GName,
 	origin: GOrigin?
-) : GType(
-	kind = kind,
-	origin = origin
-) {
+) :
+	GType(
+		kind = kind,
+		origin = origin
+	),
+	GAst.WithDirectives {
 
 	val description get() = descriptionNode?.value?.ifEmpty { null }
 	val descriptionNode = description
-	val name get() = nameNode.value
 	val nameNode = name
+
+	override val name get() = nameNode.value
 
 
 	companion object
@@ -1079,6 +1111,8 @@ class GNonNullType(
 ) {
 
 	val nullableType get() = wrappedType
+
+	override val name get() = "${nullableType.name}!"
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1270,9 +1304,11 @@ class GOperationDefinition(
 	name: GName? = null,
 	val selectionSet: GSelectionSet,
 	val variableDefinitions: List<GVariableDefinition> = emptyList(),
-	val directives: List<GDirective> = emptyList(),
+	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GDefinition(origin = origin) {
+) :
+	GDefinition(origin = origin),
+	GAst.WithDirectives {
 
 	val name get() = nameNode?.value
 	val nameNode = name
@@ -1482,9 +1518,11 @@ class GSchemaExtensionDefinition(
 
 
 sealed class GSelection(
-	val directives: List<GDirective>,
+	override val directives: List<GDirective>,
 	origin: GOrigin?
-) : GAst(origin = origin)
+) :
+	GAst(origin = origin),
+	GAst.WithDirectives
 
 
 class GSelectionSet(
@@ -1515,6 +1553,9 @@ sealed class GType(
 	val kind: GTypeKind,
 	origin: GOrigin?
 ) : GTypeSystemDefinition(origin = origin) {
+
+	abstract val name: String
+
 
 	// https://graphql.github.io/graphql-spec/June2018/#IsInputType()
 	fun isInputType(): Boolean =
@@ -1575,10 +1616,12 @@ sealed class GType(
 
 
 sealed class GTypeExtension(
-	val directives: List<GDirective>,
+	override val directives: List<GDirective>,
 	name: GName,
 	origin: GOrigin?
-) : GTypeSystemExtensionDefinition(origin = origin) {
+) :
+	GTypeSystemExtensionDefinition(origin = origin),
+	GAst.WithDirectives {
 
 	val name get() = nameNode.value
 	val nameNode = name
@@ -2068,9 +2111,11 @@ class GVariableDefinition(
 	val variable: GValue.Variable,
 	val type: GTypeRef,
 	val defaultValue: GValue? = null,
-	val directives: List<GDirective> = emptyList(),
+	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) :
+	GAst(origin = origin),
+	GAst.WithDirectives {
 
 	val name get() = variable.name
 

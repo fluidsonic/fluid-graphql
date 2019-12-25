@@ -1,7 +1,8 @@
 package io.fluidsonic.graphql
 
 
-sealed class GResult<out Value> {
+// Internal for now. Review API before making it public.
+internal sealed class GResult<out Value> {
 
 	abstract val errors: List<GError>
 	abstract val value: Value?
@@ -64,8 +65,7 @@ sealed class GResult<out Value> {
 
 	class Builder {
 
-		@PublishedApi
-		internal var errors: MutableList<GError>? = null
+		private var errors: MutableList<GError>? = null
 
 
 		fun collectError(error: GError): Nothing? {
@@ -145,25 +145,25 @@ sealed class GResult<out Value> {
 }
 
 
-inline fun <Value> GResult(block: GResult.Builder.() -> Value) =
+internal inline fun <Value> GResult(block: GResult.Builder.() -> Value) =
 	GResult.Builder().run(block)
 
 
-inline fun <Value> GResult<Value>.consumeErrors(block: (failure: GResult.Failure) -> Nothing): Value =
+internal inline fun <Value> GResult<Value>.consumeErrors(block: (failure: GResult.Failure) -> Nothing): Value =
 	when (this) {
 		is GResult.Failure -> block(this)
 		is GResult.Success -> value
 	}
 
 
-inline fun <Value> GResult<Value>.map(block: (value: Value) -> GResult<Value>): GResult<Value> =
+internal inline fun <Value> GResult<Value>.map(block: (value: Value) -> GResult<Value>): GResult<Value> =
 	when (this) {
 		is GResult.Failure -> this
 		is GResult.Success -> block(value)
 	}
 
 
-inline fun <Value> GResult<Value>.or(block: (failure: GResult.Failure) -> Nothing): Value =
+internal inline fun <Value> GResult<Value>.or(block: (failure: GResult.Failure) -> Nothing): Value =
 	when (this) {
 		is GResult.Success -> value
 		is GResult.Failure -> block(this)

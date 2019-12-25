@@ -24,10 +24,10 @@ class GPath(elements: List<Element> = emptyList()) {
 	}
 
 
-	class Builder {
+	// Internal for now. Review API before making it public.
+	internal class Builder {
 
-		@PublishedApi
-		internal val stack = mutableListOf<Any>()
+		private val stack = mutableListOf<Any>()
 
 
 		fun snapshot() =
@@ -101,3 +101,13 @@ class GPath(elements: List<Element> = emptyList()) {
 		}
 	}
 }
+
+
+internal inline fun <R> GPath.Builder?.withFieldName(name: String, block: () -> R) =
+	if (this !== null) withFieldName(name, block)
+	else block()
+
+
+internal inline fun <R> GPath.Builder?.withListIndex(index: Int, block: () -> R) =
+	if (this !== null) withListIndex(index, block)
+	else block()

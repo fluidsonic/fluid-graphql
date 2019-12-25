@@ -6,12 +6,28 @@ class GError(
 	message: String,
 	val path: GPath? = null, // FIXME set path only for RESULT fields & consider aliases
 	val nodes: List<GAst> = emptyList(),
-	val origins: List<GOrigin> = nodes.ifEmpty { null }?.mapNotNull { it.origin }.orEmpty(),
+	val origins: List<GOrigin> = emptyList(),
 	cause: Throwable? = null
 ) : Exception(
 	message,
 	cause
 ) {
+
+	fun copy(
+		message: String = this.message.orEmpty(),
+		path: GPath? = this.path,
+		nodes: List<GAst> = this.nodes,
+		origins: List<GOrigin> = this.origins,
+		cause: Throwable? = this.cause
+	) =
+		GError(
+			message = message,
+			path = path,
+			nodes = nodes,
+			origins = origins,
+			cause = cause
+		)
+
 
 	fun describe() = buildString {
 		append(message)
@@ -23,7 +39,6 @@ class GError(
 			}
 		}
 
-		val origins = origins.filter { origin -> nodes.none { it.origin === origin } }
 		for (origin in origins) {
 			append("\n\n")
 			append(origin.describe())

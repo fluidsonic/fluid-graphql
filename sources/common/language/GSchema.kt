@@ -1,13 +1,15 @@
 package io.fluidsonic.graphql
 
 
+// FIXME toString()
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
-class GSchema(
-	types: List<GNamedType>,
+class GSchema internal constructor(
+	val directives: List<GDirectiveDefinition>,
+	val document: GDocument,
 	queryType: GNamedTypeRef? = null,
 	mutationType: GNamedTypeRef? = null,
 	subscriptionType: GNamedTypeRef? = null,
-	val directives: List<GDirectiveDefinition> = emptyList()
+	types: List<GNamedType>
 ) {
 
 	val types = types + GType.defaultTypes
@@ -15,11 +17,8 @@ class GSchema(
 	val typesByName = this.types.associateBy { it.name }
 
 	val queryType = queryType?.let { typesByName[it.name] as? GObjectType }
-	val queryTypeRef = queryType
 	val mutationType = mutationType?.let { typesByName[it.name] as? GObjectType }
-	val mutationTypeRef = mutationType
 	val subscriptionType = subscriptionType?.let { typesByName[it.name] as? GObjectType }
-	val subscriptionTypeRef = subscriptionType
 
 	private val possibleTypesByType: Map<String, List<GObjectType>> =
 		types
@@ -97,15 +96,25 @@ class GSchema(
 		}
 
 
+	override fun toString() =
+		GDocument(
+			definitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
+		).toString()
+
+
 	companion object
 }
 
 
-fun GSchema(definitions: List<GTypeSystemDefinition>): GSchema {
-	val directiveDefinitions = definitions.filterIsInstance<GDirectiveDefinition>()
-	val schemaDefinitions = definitions.filterIsInstance<GSchemaDefinition>()
+fun GSchema(document: GDocument): GSchema? {
+	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
+		.ifEmpty { null }
+		?: return null
+
+	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>()
+	val schemaDefinitions = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()
 		.singleOrNull() // FIXME
-	val typeDefinitions = definitions.filterIsInstance<GNamedType>()
+	val typeDefinitions = typeSystemDefinitions.filterIsInstance<GNamedType>()
 
 	val mutationType = schemaDefinitions?.operationTypes
 		?.firstOrNull { it.operation == GOperationType.mutation }
@@ -121,6 +130,7 @@ fun GSchema(definitions: List<GTypeSystemDefinition>): GSchema {
 
 	return GSchema(
 		directives = directiveDefinitions,
+		document = document,
 		mutationType = mutationType,
 		queryType = queryType,
 		subscriptionType = subscriptionType,

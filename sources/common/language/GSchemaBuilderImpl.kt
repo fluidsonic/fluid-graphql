@@ -4,6 +4,7 @@ import io.fluidsonic.graphql.GSchemaBuilder.*
 import kotlin.reflect.*
 
 
+// FIXME change to schemaDocument as schema will be needed within for directives & op type definitions
 @SchemaBuilderKeywordB
 fun schema(configure: GSchemaBuilder.() -> Unit) =
 	GSchemaBuilderImpl().apply(configure).build()
@@ -11,39 +12,51 @@ fun schema(configure: GSchemaBuilder.() -> Unit) =
 
 internal class GSchemaBuilderImpl : GSchemaBuilder {
 
-	private val directives = mutableListOf<GDirectiveDefinition>()
+	private val definitions = mutableListOf<GTypeSystemDefinition>()
 	private var mutationType: GNamedTypeRef? = null
 	private var queryType: GNamedTypeRef? = null
 	private var subscriptionType: GNamedTypeRef? = null
-	private val types = mutableListOf<GNamedType>()
 
 
-	fun build() = GSchema(
-		directives = directives,
-		mutationType = mutationType,
-		queryType = queryType,
-		subscriptionType = subscriptionType,
-		types = types
-	)
+	fun build(): GSchema {
+		if (definitions.isEmpty())
+			error("Cannot create an empty schema.")
+
+		val definitions = definitions.toMutableList()
+		if (mutationType !== null || queryType !== null || subscriptionType !== null)
+			definitions.add(0, GSchemaDefinition(
+				operationTypes = listOfNotNull(
+					queryType?.let { GOperationTypeDefinition(operation = GOperationType.query, type = it) },
+					mutationType?.let { GOperationTypeDefinition(operation = GOperationType.mutation, type = it) },
+					subscriptionType?.let { GOperationTypeDefinition(operation = GOperationType.subscription, type = it) }
+				)
+			))
+
+		return GSchema(
+			document = GDocument(
+				definitions = definitions
+			)
+		)!! // Can only be `null` if there are no type definitions, but we've for checked that above.
+	}
 
 
 	override fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit) {
-		directives += DirectiveDefinitionBuilderImpl(name = name).apply(configure).build()
+		definitions += DirectiveDefinitionBuilderImpl(name = name).apply(configure).build()
 	}
 
 
 	override fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit) {
-		types += EnumTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		definitions += EnumTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
 	override fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit) {
-		types += InputObjectTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		definitions += InputObjectTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
 	override fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
-		types += InterfaceTypeDefinitionBuilderImpl(
+		definitions += InterfaceTypeDefinitionBuilderImpl(
 			interfaces = emptyList(),
 			name = type.name
 		).apply(configure).build()
@@ -53,7 +66,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	override fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
 		named as InterfacesImpl
 
-		types += InterfaceTypeDefinitionBuilderImpl(
+		definitions += InterfaceTypeDefinitionBuilderImpl(
 			interfaces = named.interfaces,
 			name = named.name
 		).apply(configure).build()
@@ -73,7 +86,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun <T : Any> Object(type: GNamedTypeRef, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
-		types += ObjectTypeDefinitionBuilderImpl(
+		definitions += ObjectTypeDefinitionBuilderImpl(
 			interfaces = emptyList(),
 			kotlinType = kotlinType,
 			name = type.name
@@ -84,7 +97,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	override fun <T : Any> Object(named: Interfaces, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
 		named as InterfacesImpl
 
-		types += ObjectTypeDefinitionBuilderImpl(
+		definitions += ObjectTypeDefinitionBuilderImpl(
 			interfaces = named.interfaces,
 			kotlinType = kotlinType,
 			name = named.name
@@ -105,7 +118,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit) {
-		types += ScalarTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		definitions += ScalarTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
 	}
 
 
@@ -122,7 +135,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit) {
-		types += (named as UnionTypeDefinitionBuilderImpl).apply(configure).build()
+		definitions += (named as UnionTypeDefinitionBuilderImpl).apply(configure).build()
 	}
 
 

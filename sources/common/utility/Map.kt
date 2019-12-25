@@ -2,6 +2,7 @@ package io.fluidsonic.graphql
 
 
 // FIXME fluid-stdlib?
+// https://youtrack.jetbrains.com/issue/KT-21392
 @Suppress("UNCHECKED_CAST")
 internal inline fun <K, V> Map<out K, V>.getOrElseNullable(key: K, defaultValue: () -> V): V {
 	val value = get(key)

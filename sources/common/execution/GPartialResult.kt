@@ -1,7 +1,8 @@
 package io.fluidsonic.graphql
 
 
-class GPartialResult<out Value>(
+// Internal for now. Review API before making it public.
+internal class GPartialResult<out Value>(
 	errors: List<GError>,
 	val value: Value
 ) {
@@ -29,8 +30,7 @@ class GPartialResult<out Value>(
 
 	class Builder {
 
-		@PublishedApi
-		internal var errors: MutableList<GError>? = null
+		private var errors: MutableList<GError>? = null
 
 
 		fun collectError(error: GError): Nothing? {
@@ -87,11 +87,11 @@ class GPartialResult<out Value>(
 }
 
 
-inline fun <Value> GPartialResult(block: GPartialResult.Builder.() -> Value) =
+internal inline fun <Value> GPartialResult(block: GPartialResult.Builder.() -> Value) =
 	GPartialResult.Builder().build(block)
 
 
-inline fun <Value> GPartialResult<Value>.consumeErrors(block: (failure: GPartialResult<Value>) -> Unit): Value {
+internal inline fun <Value> GPartialResult<Value>.consumeErrors(block: (failure: GPartialResult<Value>) -> Unit): Value {
 	if (errors.isNotEmpty())
 		block(this)
 

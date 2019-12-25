@@ -43,14 +43,10 @@ class SchemaTest {
 			|}
 		""".trimMargin())
 
-		// FIXME simplify
-		val context = GExecutor.default.createContext(
+		val result = document.execute(
 			schema = schema,
-			document = document,
 			rootValue = Unit
-		).value!!
-
-		val result = GExecutor.default.executeRequest(context = context)
+		)
 
 		assertEquals(
 			expected = mapOf(
