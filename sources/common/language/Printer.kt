@@ -1,7 +1,5 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GAst.*
-
 
 internal object Printer {
 
@@ -17,16 +15,16 @@ internal object Printer {
 		private val writer: GWriter
 	) : GAstVoidVisitor() {
 
-		override fun visitArgument(argument: Argument) = writer {
-			writeAst(argument.name)
+		override fun visitArgument(argument: GArgument) = writer {
+			writeAst(argument.nameNode)
 			writeRaw(": ")
 			writeAst(argument.value)
 		}
 
 
-		override fun visitArgumentDefinition(definition: ArgumentDefinition) = writer {
-			writeAst(definition.description)
-			writeAst(definition.name)
+		override fun visitArgumentDefinition(definition: GArgumentDefinition) = writer {
+			writeAst(definition.descriptionNode)
+			writeAst(definition.nameNode)
 			writeRaw(": ")
 			writeAst(definition.type)
 
@@ -39,25 +37,25 @@ internal object Printer {
 		}
 
 
-		override fun visitBooleanValue(value: Value.Boolean) = writer {
+		override fun visitBooleanValue(value: GValue.Boolean) = writer {
 			writeRaw(if (value.value) "true" else "false")
 		}
 
 
-		override fun visitDirective(directive: Directive) = writer {
+		override fun visitDirective(directive: GDirective) = writer {
 			writeRaw("@")
-			writeAst(directive.name)
+			writeAst(directive.nameNode)
 			writeArguments(directive.arguments)
 		}
 
 
-		override fun visitDirectiveDefinition(definition: Definition.TypeSystem.Directive) = writer {
-			writeAst(definition.description)
+		override fun visitDirectiveDefinition(definition: GDirectiveDefinition) = writer {
+			writeAst(definition.descriptionNode)
 			writeRaw("directive @")
-			writeAst(definition.name)
+			writeAst(definition.nameNode)
 			writeArgumentDefinitions(definition.arguments)
 			writeRaw(" on ")
-			definition.locations.forEachIndexed { index, location ->
+			definition.locationNodes.forEachIndexed { index, location ->
 				if (index > 0)
 					writeRaw(" | ")
 
@@ -66,7 +64,7 @@ internal object Printer {
 		}
 
 
-		override fun visitDocument(document: Document) = writer {
+		override fun visitDocument(document: GDocument) = writer {
 			document.definitions.forEachIndexed { index, definition ->
 				if (index > 0)
 					writeLinebreak()
@@ -76,31 +74,31 @@ internal object Printer {
 		}
 
 
-		override fun visitEnumTypeDefinition(definition: Definition.TypeSystem.Type.Enum) = writer {
-			writeAst(definition.description)
+		override fun visitEnumType(type: GEnumType) = writer {
+			writeAst(type.descriptionNode)
 			writeRaw("enum ")
-			writeAst(definition.name)
+			writeAst(type.nameNode)
 			writeRaw(" ")
-			writeEnumValueDefinitions(definition.values)
+			writeEnumValueDefinitions(type.values)
 			writeLinebreak()
 		}
 
 
-		override fun visitEnumValue(value: Value.Enum) = writer {
+		override fun visitEnumValue(value: GValue.Enum) = writer {
 			writeRaw(value.name)
 		}
 
 
-		override fun visitEnumValueDefinition(definition: EnumValueDefinition) = writer {
-			writeAst(definition.description)
-			writeAst(definition.name)
+		override fun visitEnumValueDefinition(definition: GEnumValueDefinition) = writer {
+			writeAst(definition.descriptionNode)
+			writeAst(definition.nameNode)
 			writeDirectives(definition.directives)
 		}
 
 
-		override fun visitFieldDefinition(definition: FieldDefinition) = writer {
-			writeAst(definition.description)
-			writeAst(definition.name)
+		override fun visitFieldDefinition(definition: GFieldDefinition) = writer {
+			writeAst(definition.descriptionNode)
+			writeAst(definition.nameNode)
 			writeArgumentDefinitions(definition.arguments)
 			writeRaw(": ")
 			writeAst(definition.type)
@@ -108,12 +106,12 @@ internal object Printer {
 		}
 
 
-		override fun visitFieldSelection(selection: Selection.Field) = writer {
-			selection.alias?.let { alias ->
+		override fun visitFieldSelection(selection: GFieldSelection) = writer {
+			selection.aliasNode?.let { alias ->
 				writeAst(alias)
 				writeRaw(": ")
 			}
-			writeAst(selection.name)
+			writeAst(selection.nameNode)
 			writeArguments(selection.arguments)
 			writeDirectives(selection.directives)
 			writeAst(selection.selectionSet)
@@ -121,29 +119,29 @@ internal object Printer {
 		}
 
 
-		override fun visitFloatValue(value: Value.Float) = writer {
+		override fun visitFloatValue(value: GValue.Float) = writer {
 			writeRaw(value.value)
 		}
 
 
-		override fun visitFragmentSelection(selection: Selection.Fragment) = writer {
+		override fun visitFragmentSelection(selection: GFragmentSelection) = writer {
 			writeRaw("...")
-			writeAst(selection.name)
+			writeAst(selection.nameNode)
 			writeDirectives(selection.directives)
 		}
 
 
-		override fun visitInputObjectTypeDefinition(definition: Definition.TypeSystem.Type.InputObject) = writer {
-			writeAst(definition.description)
+		override fun visitInputObjectType(type: GInputObjectType) = writer {
+			writeAst(type.descriptionNode)
 			writeRaw("input ")
-			writeAst(definition.name)
+			writeAst(type.nameNode)
 			writeRaw(" ")
-			writeInputObjectTypeArguments(definition.arguments)
+			writeInputObjectTypeArguments(type.arguments)
 			writeLinebreak()
 		}
 
 
-		override fun visitInlineFragmentSelection(selection: Selection.InlineFragment) = writer {
+		override fun visitInlineFragmentSelection(selection: GInlineFragmentSelection) = writer {
 			writeRaw("...")
 			selection.typeCondition?.let { typeCondition ->
 				writeRaw(" on")
@@ -155,22 +153,22 @@ internal object Printer {
 		}
 
 
-		override fun visitIntValue(value: Value.Int) = writer {
+		override fun visitIntValue(value: GValue.Int) = writer {
 			writeRaw(value.value)
 		}
 
 
-		override fun visitInterfaceTypeDefinition(definition: Definition.TypeSystem.Type.Interface) = writer {
-			writeAst(definition.description)
+		override fun visitInterfaceType(type: GInterfaceType) = writer {
+			writeAst(type.descriptionNode)
 			writeRaw("interface ")
-			writeAst(definition.name)
+			writeAst(type.nameNode)
 			writeRaw(" ")
-			writeFieldDefinitions(definition.fields)
+			writeFieldDefinitions(type.fields)
 			writeLinebreak()
 		}
 
 
-		override fun visitListValue(value: Value.List) = writer {
+		override fun visitListValue(value: GValue.List) = writer {
 			writeRaw("[")
 			value.elements.forEachIndexed { index, element ->
 				if (index > 0)
@@ -182,70 +180,70 @@ internal object Printer {
 		}
 
 
-		override fun visitListTypeReference(reference: TypeReference.List) = writer {
+		override fun visitListTypeRef(ref: GListTypeRef) = writer {
 			writeRaw("[")
-			writeAst(reference.elementType)
+			writeAst(ref.elementType)
 			writeRaw("]")
 		}
 
 
-		override fun visitName(name: Name) = writer {
+		override fun visitName(name: GName) = writer {
 			writeRaw(name.value)
 		}
 
 
-		override fun visitNamedTypeReference(reference: TypeReference.Named) = writer {
-			writeAst(reference.name)
+		override fun visitNamedTypeRef(ref: GNamedTypeRef) = writer {
+			writeAst(ref.nameNode)
 		}
 
 
-		override fun visitNonNullTypeReference(reference: TypeReference.NonNull) = writer {
-			writeAst(reference.nullableType)
+		override fun visitNonNullTypeRef(ref: GNonNullTypeRef) = writer {
+			writeAst(ref.nullableType)
 			writeRaw("!")
 		}
 
 
-		override fun visitNullValue(value: Value.Null) = writer {
+		override fun visitNullValue(value: GValue.Null) = writer {
 			writeRaw("null")
 		}
 
 
-		override fun visitObjectTypeDefinition(definition: Definition.TypeSystem.Type.Object) = writer {
-			writeAst(definition.description)
+		override fun visitObjectType(type: GObjectType) = writer {
+			writeAst(type.descriptionNode)
 			writeRaw("type ")
-			writeAst(definition.name)
-			writeImplementedInterfaces(definition.interfaces)
+			writeAst(type.nameNode)
+			writeImplementedInterfaces(type.interfaces)
 			writeRaw(" ")
-			writeFieldDefinitions(definition.fields)
+			writeFieldDefinitions(type.fields)
 			writeLinebreak()
 		}
 
 
-		override fun visitOperationTypeDefinition(definition: OperationTypeDefinition) = writer {
+		override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition) = writer {
 			writeRaw(definition.operation.name)
 			writeRaw(": ")
 			writeAst(definition.type)
 		}
 
 
-		override fun visitScalarTypeDefinition(definition: Definition.TypeSystem.Type.Scalar) = writer {
-			writeAst(definition.description)
+		override fun visitScalarType(type: GScalarType) = writer {
+			writeAst(type.descriptionNode)
 			writeRaw("scalar ")
-			writeAst(definition.name)
+			writeAst(type.nameNode)
 			writeLinebreak()
 		}
 
 
 		// FIXME directives - everywhere
-		override fun visitSchemaDefinition(definition: Definition.TypeSystem.Schema) = writer {
+		override fun visitSchemaDefinition(definition: GSchemaDefinition) = writer {
 			val queryOperation = definition.operationTypes.firstOrNull { it.operation == GOperationType.query }
-				?.takeIf { it.type.name.value != GSpecification.defaultQueryTypeName }
+				?.takeIf { it.type.name != GSpecification.defaultQueryTypeName }
 
 			val mutationOperation = definition.operationTypes.firstOrNull { it.operation == GOperationType.mutation }
-				?.takeIf { it.type.name.value != GSpecification.defaultMutationTypeName }
+				?.takeIf { it.type.name != GSpecification.defaultMutationTypeName }
 
 			val subscriptionOperation = definition.operationTypes.firstOrNull { it.operation == GOperationType.subscription }
-				?.takeIf { it.type.name.value != GSpecification.defaultSubscriptionTypeName }
+				?.takeIf { it.type.name != GSpecification.defaultSubscriptionTypeName }
 
 			if (queryOperation == null && mutationOperation == null && subscriptionOperation == null)
 				return
@@ -271,13 +269,13 @@ internal object Printer {
 		}
 
 
-		override fun visitVariableValue(value: Value.Variable) = writer {
+		override fun visitVariableValue(value: GValue.Variable) = writer {
 			writeRaw("$")
-			writeAst(value.name)
+			writeAst(value.nameNode)
 		}
 
 
-		override fun visitSelectionSet(set: SelectionSet) = writer {
+		override fun visitSelectionSet(set: GSelectionSet) = writer {
 			writeBlock {
 				set.selections.forEach { selection ->
 					writeAst(selection)
@@ -289,7 +287,7 @@ internal object Printer {
 
 
 		// FIXME escaping, line wrapping, indentation
-		override fun visitStringValue(value: Value.String) = writer {
+		override fun visitStringValue(value: GValue.String) = writer {
 			val string = value.value
 
 			if (value.isBlock) {
@@ -313,16 +311,16 @@ internal object Printer {
 		}
 
 
-		override fun visitUnionTypeDefinition(definition: Definition.TypeSystem.Type.Union) = writer {
-			writeAst(definition.description)
+		override fun visitUnionType(type: GUnionType) = writer {
+			writeAst(type.descriptionNode)
 			writeRaw("union ")
-			writeAst(definition.name)
+			writeAst(type.nameNode)
 			writeRaw(" = ")
-			definition.types.forEachIndexed { index, type ->
+			type.possibleTypes.forEachIndexed { index, type ->
 				if (index > 0)
 					writeRaw(" | ")
 
-				writeAst(type.name)
+				writeAst(type.nameNode)
 			}
 			writeLinebreak()
 		}
@@ -341,7 +339,7 @@ internal object Printer {
 			block()
 
 
-		private fun GWriter.writeArguments(arguments: Collection<Argument>) {
+		private fun GWriter.writeArguments(arguments: Collection<GArgument>) {
 			if (arguments.isEmpty())
 				return
 
@@ -356,7 +354,7 @@ internal object Printer {
 		}
 
 
-		private fun GWriter.writeArgumentDefinitions(definitions: List<ArgumentDefinition>) {
+		private fun GWriter.writeArgumentDefinitions(definitions: List<GArgumentDefinition>) {
 			if (definitions.isEmpty())
 				return
 
@@ -402,7 +400,7 @@ internal object Printer {
 		}
 
 
-		private fun GWriter.writeDirectives(directives: List<Directive>) {
+		private fun GWriter.writeDirectives(directives: List<GDirective>) {
 			if (directives.isEmpty())
 				return
 
@@ -413,7 +411,7 @@ internal object Printer {
 		}
 
 
-		private fun GWriter.writeEnumValueDefinitions(definitions: List<EnumValueDefinition>) {
+		private fun GWriter.writeEnumValueDefinitions(definitions: List<GEnumValueDefinition>) {
 			writeBlock {
 				definitions.forEachIndexed { index, definition ->
 					if (index > 0) {
@@ -432,14 +430,14 @@ internal object Printer {
 		}
 
 
-		private fun GWriter.writeFieldDefinitions(definitions: List<FieldDefinition>) {
+		private fun GWriter.writeFieldDefinitions(definitions: List<GFieldDefinition>) {
 			writeBlock {
 				definitions.forEachIndexed { index, definition ->
 					if (index > 0) {
 						if (
-							definition.description != null ||
-							definitions[index - 1].description != null ||
-							definitions.getOrNull(index + 1)?.description != null
+							definition.descriptionNode != null ||
+							definitions[index - 1].descriptionNode != null ||
+							definitions.getOrNull(index + 1)?.descriptionNode != null
 						)
 							writeLinebreak()
 					}
@@ -451,7 +449,7 @@ internal object Printer {
 		}
 
 
-		private fun GWriter.writeImplementedInterfaces(interfaces: List<TypeReference.Named>) {
+		private fun GWriter.writeImplementedInterfaces(interfaces: List<GNamedTypeRef>) {
 			if (interfaces.isEmpty())
 				return
 
@@ -465,7 +463,7 @@ internal object Printer {
 		}
 
 
-		private fun GWriter.writeInputObjectTypeArguments(definitions: List<ArgumentDefinition>) {
+		private fun GWriter.writeInputObjectTypeArguments(definitions: List<GArgumentDefinition>) {
 			writeBlock {
 				definitions.forEachIndexed { index, definition ->
 					if (index > 0) {

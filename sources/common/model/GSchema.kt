@@ -2,13 +2,35 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
-class GSchema private constructor(
-	val directives: List<GDirectiveDefinition>,
-	val mutationType: GObjectType?,
-	val queryType: GObjectType?,
-	val subscriptionType: GObjectType?,
-	val types: Map<String, GNamedType>
+class GSchema(
+	types: List<GNamedType>,
+	queryType: GNamedTypeRef? = null,
+	mutationType: GNamedTypeRef? = null,
+	subscriptionType: GNamedTypeRef? = null,
+	val directives: List<GDirectiveDefinition> = emptyList()
 ) {
+
+	val types = types + GType.defaultTypes
+	val directivesByName = directives.associateBy { it.name }
+	val typesByName = this.types.associateBy { it.name }
+
+	val queryType = queryType?.let { typesByName[it.name] as? GObjectType }
+	val queryTypeRef = queryType
+	val mutationType = mutationType?.let { typesByName[it.name] as? GObjectType }
+	val mutationTypeRef = mutationType
+	val subscriptionType = subscriptionType?.let { typesByName[it.name] as? GObjectType }
+	val subscriptionTypeRef = subscriptionType
+
+	private val possibleTypesByType: Map<String, List<GObjectType>> =
+		types
+			.filterIsInstance<GObjectType>()
+			.filter { it.interfaces.isNotEmpty() }
+			.flatMap { type -> type.interfaces.map { it.name to type } }
+			.groupBy(keySelector = { it.first }, valueTransform = { it.second }) +
+			types
+				.filterIsInstance<GUnionType>()
+				.associate { union -> union.name to union.possibleTypes.mapNotNull { typesByName[it.name] as? GObjectType } }
+
 
 	fun getFieldDefinition(
 		type: GType,
@@ -31,25 +53,40 @@ class GSchema private constructor(
 				GIntrospection.typenameField
 
 			else ->
-				when (type) {
-					is GInterfaceType -> type.fields[name]
-					is GObjectType -> type.fields[name]
-					else -> null
-				}
+				(type as? GType.WithFields)?.fieldsByName?.get(name)
 		}
 
 
-	fun resolveType(ref: GTypeRef): GType? {
-		TODO()
-	}
+	fun getPossibleTypes(type: GAbstractType) =
+		possibleTypesByType[type.name].orEmpty()
+
+
+	fun resolveType(ref: GTypeRef): GType? =
+		when (ref) {
+			is GListTypeRef -> resolveType(ref.elementType)?.let(::GListType)
+			is GNamedTypeRef -> resolveType(ref)
+			is GNonNullTypeRef -> resolveType(ref.nullableType)?.let(::GNonNullType)
+		}
 
 
 	fun resolveType(ref: GNamedTypeRef) =
-		types[ref.name]
+		resolveType(ref.name)
 
 
-	fun resolveType(name: String) =
-		resolveType(GNamedTypeRef(name))
+	fun resolveType(name: String): GNamedType? =
+		typesByName[name] ?: GIntrospection.schema.typesByName[name]
+
+
+	inline fun <reified Type : GType> resolveTypeAs(ref: GTypeRef) =
+		resolveType(ref) as? Type
+
+
+	inline fun <reified Type : GNamedType> resolveTypeAs(ref: GNamedTypeRef) =
+		resolveType(ref) as? Type
+
+
+	inline fun <reified Type : GNamedType> resolveTypeAs(name: String) =
+		resolveType(name) as? Type
 
 
 	fun rootTypeForOperationType(operationType: GOperationType) =
@@ -60,79 +97,33 @@ class GSchema private constructor(
 		}
 
 
-	// FIXME rm
-	val rootTypeNamesFollowCommonConvention
-		get() = (queryType == null || queryType.name == GSpecification.defaultQueryTypeName) &&
-			(mutationType == null || mutationType.name == GSpecification.defaultMutationTypeName) &&
-			(subscriptionType == null || subscriptionType.name == GSpecification.defaultSubscriptionTypeName)
+	companion object
+}
 
 
-	override fun toString() =
-		GWriter { writeSchema(this@GSchema) }
+fun GSchema(definitions: List<GTypeSystemDefinition>): GSchema {
+	val directiveDefinitions = definitions.filterIsInstance<GDirectiveDefinition>()
+	val schemaDefinitions = definitions.filterIsInstance<GSchemaDefinition>()
+		.singleOrNull() // FIXME
+	val typeDefinitions = definitions.filterIsInstance<GNamedType>()
 
+	val mutationType = schemaDefinitions?.operationTypes
+		?.firstOrNull { it.operation == GOperationType.mutation }
+		?.type
 
-	companion object {
+	val queryType = schemaDefinitions?.operationTypes
+		?.firstOrNull { it.operation == GOperationType.query }
+		?.type
 
-		// FIXME validate
-		fun from(ast: List<GAst.Definition.TypeSystem>): GSchema {
-			val directiveDefinitions = ast.filterIsInstance<GAst.Definition.TypeSystem.Directive>()
-			val typeDefinitions = ast.filterIsInstance<GAst.Definition.TypeSystem.Type>()
+	val subscriptionType = schemaDefinitions?.operationTypes
+		?.firstOrNull { it.operation == GOperationType.subscription }
+		?.type
 
-			val operationDefinitions = ast.filterIsInstance<GAst.Definition.TypeSystem.Schema>()
-				.singleOrNull() // FIXME
-
-			val mutationType = operationDefinitions?.operationTypes
-				?.firstOrNull { it.operation == GOperationType.mutation }
-				?.type
-
-			val queryType = operationDefinitions?.operationTypes
-				?.firstOrNull { it.operation == GOperationType.query }
-				?.type
-
-			val subscriptionType = operationDefinitions?.operationTypes
-				?.firstOrNull { it.operation == GOperationType.subscription }
-				?.type
-
-			return Unresolved(
-				directives = directiveDefinitions.map { GDirectiveDefinition.from(it) },
-				mutationType = mutationType?.let { GNamedTypeRef.from(it) },
-				queryType = queryType?.let { GNamedTypeRef.from(it) },
-				subscriptionType = subscriptionType?.let { GNamedTypeRef.from(it) },
-				types = typeDefinitions.map { GType.from(it) }
-			).resolve()
-		}
-	}
-
-
-	class Unresolved(
-		val types: List<GNamedType.Unresolved>,
-		val queryType: GNamedTypeRef? = null,
-		val mutationType: GNamedTypeRef? = null,
-		val subscriptionType: GNamedTypeRef? = null,
-		val directives: List<GDirectiveDefinition.Unresolved> = emptyList()
-	) {
-
-		fun resolve(): GSchema {
-			// FIXME validate first
-
-			val typeRegistry = GTypeRegistry.Autocreating(definitions = types)
-			val types = types
-				.map { typeRegistry.resolve(it.name) }
-				.associateBy { it.name }
-
-			val queryType = queryType
-				?: GNamedTypeRef(GSpecification.defaultQueryTypeName).takeIf { types.containsKey(it.name) }
-
-			return GSchema(
-				directives = directives.map { it.resolve(typeRegistry) },
-				mutationType = mutationType?.let { typeRegistry.resolveKind<GObjectType>(it) },
-				queryType = queryType?.let { typeRegistry.resolveKind<GObjectType>(it) },
-				subscriptionType = subscriptionType?.let { typeRegistry.resolveKind<GObjectType>(it) },
-				types = types // FIXME add builtins?
-			)
-		}
-
-
-		companion object
-	}
+	return GSchema(
+		directives = directiveDefinitions,
+		mutationType = mutationType,
+		queryType = queryType,
+		subscriptionType = subscriptionType,
+		types = typeDefinitions
+	)
 }

@@ -259,7 +259,7 @@ interface GSchemaBuilder {
 		interface Resolvable<out Parent : Any> : FieldDefinitionBuilder {
 
 			@SchemaBuilderKeywordB
-			fun resolve(resolver: Parent.(context: GFieldResolver.Context) -> Any?)
+			fun <Result> resolve(resolver: Parent.(context: GFieldResolver.Context) -> Result)
 		}
 	}
 

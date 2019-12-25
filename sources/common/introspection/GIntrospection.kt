@@ -3,63 +3,52 @@ package io.fluidsonic.graphql
 
 object GIntrospection {
 
-	private const val directiveMetaName = "__Directive"
-	private const val directiveLocationMetaName = "__DirectiveLocation"
-	private const val enumValueMetaName = "___EnumValue"
-	private const val fieldMetaName = "__Field"
-	private const val inputValueMetaName = "__InputValue"
-	private const val schemaFieldName = "__schema"
-	private const val schemaMetaName = "__Schema"
-	private const val typeFieldName = "__type"
-	private const val typeKindMetaName = "__TypeKind"
-	private const val typeMetaName = "__Type"
-	private const val typenameFieldName = "__typename"
+	val Directive = GTypeRef("__Directive")
+	val DirectiveLocation = GTypeRef("__DirectiveLocation")
+	val EnumValue = GTypeRef("___EnumValue")
+	val Field = GTypeRef("__Field")
+	val InputValue = GTypeRef("__InputValue")
+	val Schema = GTypeRef("__Schema")
+	val Type = GTypeRef("__Type")
+	val TypeKind = GTypeRef("__TypeKind")
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
+	@Suppress("RemoveExplicitTypeArguments")
 	val schema = schema {
-		val __Directive = type(directiveMetaName)
-		val __DirectiveLocation = type(directiveLocationMetaName)
-		val __EnumValue = type(enumValueMetaName)
-		val __Field = type(fieldMetaName)
-		val __InputValue = type(inputValueMetaName)
-		val __Schema = type(schemaMetaName)
-		val __Type = type(typeMetaName)
-		val __TypeKind = type(typeKindMetaName)
-
-		Object<GSchema>(__Schema) {
+		Object<GSchema>(Schema) {
 			description(
 				"A GraphQL Schema defines the capabilities of a GraphQL server. " +
 					"It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations."
 			)
 
-			field("types" of !List(!__Type)) {
+			field("types" of !List(!Type)) {
 				description("A list of all types supported by this server.")
-				resolve { types.values } // FIXME move generic to obj def?
+				resolve<List<GType>> { types }
 			}
 
-			field("queryType" of !__Type) {
+			field("queryType" of !Type) {
 				description("The type that query operations will be rooted at.")
-				resolve { queryType }
+				resolve<GType> { queryType!! } // FIME
 			}
 
-			field("mutationType" of __Type) {
+			field("mutationType" of Type) {
 				description("If this server supports mutation, the type that mutation operations will be rooted at.")
-				resolve { mutationType }
+				resolve<GType?> { mutationType }
 			}
 
-			field("subscriptionType" of __Type) {
+			field("subscriptionType" of Type) {
 				description("If this server support subscription, the type that subscription operations will be rooted at.")
-				resolve { subscriptionType }
+				resolve<GType?> { subscriptionType }
 			}
 
-			field("directives" of !List(!__Directive)) {
+			field("directives" of !List(!Directive)) {
 				description("A list of all directives supported by this server.")
-				resolve { directives }
+				resolve<List<GDirectiveDefinition>> { directives }
 			}
 		}
 
-		Object<GType>(__Type) {
+		Object<GType>(Type) {
 			description(
 				"The fundamental unit of any GraphQL Schema is the type. " +
 					"There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\n" +
@@ -70,26 +59,26 @@ object GIntrospection {
 					"List and NonNull types compose other types."
 			)
 
-			field("kind" of !__TypeKind) {
-				resolve { kind.name }
+			field("kind" of !TypeKind) {
+				resolve<String> { kind.name }
 			}
 
 			field("name" of String) {
-				resolve { (this as? GNamedType)?.name }
+				resolve<String?> { (this as? GNamedType)?.name }
 			}
 
 			field("description" of String) {
-				resolve { (this as? GNamedType)?.description }
+				resolve<String?> { (this as? GNamedType)?.description }
 			}
 
-			field("fields" of List(!__Field)) {
+			field("fields" of List(!Field)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve { context ->
+				resolve<List<GFieldDefinition>?> { context ->
 					if (this !is GType.WithFields)
 						return@resolve null
 
-					var fields = fields.values
+					var fields = fields
 					if (context.booleanArgument("includeDeprecated"))
 						fields = fields.filterNot { it.isDeprecated }
 
@@ -97,37 +86,29 @@ object GIntrospection {
 				}
 			}
 
-			field("interfaces" of List(!__Type)) {
-				resolve { (it as? GType.WithInterfaces)?.interfaces }
-			}
-
-			field("possibleTypes" of List(!__Type)) {
-				// FIXME generalize
-				resolve { context ->
-					when (this) {
-						is GInterfaceType ->
-							// TODO probably inefficient
-							context.schema.types.values
-								.filterIsInstance<GType.WithInterfaces>() // FIXME list interfaces?
-								.filter { it.interfaces.contains(this) }
-
-						is GUnionType ->
-							types
-
-						else ->
-							null
-					}
+			field("interfaces" of List(!Type)) {
+				resolve<List<GInterfaceType>?> { context ->
+					(this as? GType.WithInterfaces)
+						?.interfaces
+						?.mapNotNull { context.schema.resolveTypeAs<GInterfaceType>(it) }
 				}
 			}
 
-			field("enumValues" of List(!__EnumValue)) {
+			field("possibleTypes" of List(!Type)) {
+				resolve<List<GType>?> { context ->
+					(this as? GAbstractType)
+						?.let { context.schema.getPossibleTypes(it) }
+				}
+			}
+
+			field("enumValues" of List(!EnumValue)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve { context ->
+				resolve<List<GEnumValueDefinition>?> { context ->
 					if (this !is GEnumType)
 						return@resolve null
 
-					var values = values.values
+					var values = values
 					if (context.booleanArgument("includeDeprecated"))
 						values = values.filterNot { it.isDeprecated }
 
@@ -135,48 +116,48 @@ object GIntrospection {
 				}
 			}
 
-			field("inputFields" of List(!__InputValue)) {
-				resolve { (it as? GType.WithArguments)?.arguments?.values }
+			field("inputFields" of List(!InputValue)) {
+				resolve<List<GArgumentDefinition>?> { (this as? GType.WithArguments)?.arguments }
 			}
 
-			field("ofType" of __Type) {
-				resolve { (it as? GWrappingType)?.ofType }
+			field("ofType" of Type) {
+				resolve<GType?> { (this as? GWrappingType)?.wrappedType }
 			}
 		}
 
-		Object<GFieldDefinition>(__Field) {
+		Object<GFieldDefinition>(Field) {
 			description(
 				"Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, " +
 					"and a return type."
 			)
 
 			field("name" of !String) {
-				resolve { name }
+				resolve<String> { name }
 			}
 
 			field("description" of String) {
-				resolve { description }
+				resolve<String?> { description }
 			}
 
-			field("args" of !List(!__InputValue)) {
-				resolve { arguments.values }
+			field("args" of !List(!InputValue)) {
+				resolve<List<GArgumentDefinition>> { arguments }
 			}
 
-			field("type" of !__Type) {
-				resolve { type }
+			field("type" of !Type) {
+				resolve<GType> { it.schema.resolveType(type)!! }
 			}
 
 			field("isDeprecated" of !Boolean) {
-				resolve { isDeprecated }
+				resolve<Boolean> { isDeprecated }
 			}
 
 			field("deprecationReason" of String) {
-				resolve { deprecationReason }
+				resolve<String?> { deprecationReason }
 			}
 
 		}
 
-		Object(__InputValue) {
+		Object(InputValue) {
 			description(
 				"Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their " +
 					"type and optionally a default value."
@@ -184,13 +165,13 @@ object GIntrospection {
 
 			field("name" of !String)
 			field("description" of String)
-			field("type" of !__Type)
+			field("type" of !Type)
 			field("defaultValue" of !String) {
 				description("A GraphQL-formatted string representing the default value for this input value.")
 			}
 		}
 
-		Object(__EnumValue) {
+		Object(EnumValue) {
 			description(
 				"One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. " +
 					"However an Enum value is returned in a JSON response as a string."
@@ -202,7 +183,7 @@ object GIntrospection {
 			field("deprecationReason" of String)
 		}
 
-		Enum(__TypeKind) {
+		Enum(TypeKind) {
 			value("SCALAR") {
 				description("Indicates this type is a scalar.")
 			}
@@ -229,7 +210,7 @@ object GIntrospection {
 			}
 		}
 
-		Object(__Directive) {
+		Object(Directive) {
 			description(
 				"A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\n" +
 					"In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, " +
@@ -238,11 +219,11 @@ object GIntrospection {
 
 			field("name" of !String)
 			field("description" of String)
-			field("locations" of !List(!__DirectiveLocation))
-			field("args" of !List(!__InputValue))
+			field("locations" of !List(!DirectiveLocation))
+			field("args" of !List(!InputValue))
 		}
 
-		Enum(__DirectiveLocation) {
+		Enum(DirectiveLocation) {
 			value("QUERY") {
 				description("Location adjacent to a query operation.")
 			}
@@ -304,40 +285,30 @@ object GIntrospection {
 	}
 
 
-	val Directive = schema.types[directiveMetaName] as GObjectType
-	val DirectiveLocation = schema.types[directiveLocationMetaName] as GEnumType
-	val EnumValue = schema.types[enumValueMetaName] as GObjectType
-	val Field = schema.types[fieldMetaName] as GObjectType
-	val InputValue = schema.types[inputValueMetaName] as GObjectType
-	val Schema = schema.types[schemaMetaName] as GObjectType
-	val Type = schema.types[typeMetaName] as GObjectType
-	val TypeKind = schema.types[typeKindMetaName] as GEnumType
-
-
 	val schemaField = GFieldDefinition(
-		name = schemaFieldName,
-		type = GNonNullType(Schema),
+		name = "__schema",
+		type = Schema.nonNullable,
 		description = "Access the current type schema of this server.",
-		resolver = GFieldResolver.of<GType> { schema }
+		resolver = GFieldResolver.of<Any> { it.schema }
 	)
 
 	val typeField = GFieldDefinition(
-		name = typeFieldName,
+		name = "__type",
 		type = Type,
 		description = "Request the type information of a single type.",
 		arguments = listOf(
 			GArgumentDefinition(
 				name = "name",
-				type = GNonNullType(GStringType)
+				type = GStringTypeRef.nonNullable
 			)
 		),
-		resolver = GFieldResolver.of<GType> { schema.resolveType(it.stringArgument("name")) }
+		resolver = GFieldResolver.of<Any> { it.schema.resolveType(it.stringArgument("name")) }
 	)
 
 	val typenameField = GFieldDefinition(
-		name = typenameFieldName,
-		type = GNonNullType(GStringType),
+		name = "__typename",
+		type = GStringTypeRef.nonNullable,
 		description = "The name of the current Object type at runtime.",
-		resolver = GFieldResolver.of<Nothing> { it.parentType.name }
+		resolver = GFieldResolver.of<Any> { it.parentType.name }
 	)
 }

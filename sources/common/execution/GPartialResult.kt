@@ -41,25 +41,34 @@ class GPartialResult<out Value>(
 		}
 
 
+		private fun collectErrors(errors: List<GError>) {
+			if (errors.isEmpty())
+				return
+
+			this.errors?.addAll(errors)
+				?: run { this.errors = errors.toMutableList() }
+		}
+
+
 		inline fun <Value> build(block: Builder.() -> Value): GPartialResult<Value> {
 			val value = block()
+			if (value is GResult<*> || value is GPartialResult<*>)
+				error("Unexpected result type in GResult {} block.")
 
 			return GPartialResult(errors = errors.orEmpty(), value = value)
 		}
 
 
 		fun <Value> GPartialResult<Value>.consumeFailure() =
-			consumeFailure { failure ->
-				this@Builder.errors?.addAll(failure.errors)
-					?: run { this@Builder.errors = failure.errors.toMutableList() }
+			consumeErrors { failure ->
+				collectErrors(failure.errors)
 			}
 
 
 		fun <Value> GResult<Value>.orNull() =
 			when (this) {
 				is GResult.Failure -> {
-					this@Builder.errors?.addAll(errors)
-						?: run { this@Builder.errors = errors.toMutableList() }
+					collectErrors(errors)
 
 					null
 				}
@@ -82,7 +91,7 @@ inline fun <Value> GPartialResult(block: GPartialResult.Builder.() -> Value) =
 	GPartialResult.Builder().build(block)
 
 
-inline fun <Value> GPartialResult<Value>.consumeFailure(block: (failure: GPartialResult<Value>) -> Unit): Value {
+inline fun <Value> GPartialResult<Value>.consumeErrors(block: (failure: GPartialResult<Value>) -> Unit): Value {
 	if (errors.isNotEmpty())
 		block(this)
 

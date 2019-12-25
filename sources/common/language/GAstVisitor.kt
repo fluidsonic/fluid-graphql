@@ -1,163 +1,161 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GAst.*
-
 
 interface GAstVisitor<out Result, in Data> {
 
 	fun visitNode(node: GAst, data: Data): Result
 
 
-	fun visitArgument(argument: Argument, data: Data) =
+	fun visitArgument(argument: GArgument, data: Data) =
 		visitNode(argument, data)
 
-	fun visitArgumentDefinition(definition: ArgumentDefinition, data: Data) =
+	fun visitArgumentDefinition(definition: GArgumentDefinition, data: Data) =
 		visitNode(definition, data)
 
-	fun visitBooleanValue(value: Value.Boolean, data: Data) =
+	fun visitBooleanValue(value: GValue.Boolean, data: Data) =
 		visitValue(value, data)
 
-	fun visitDefinition(definition: Definition, data: Data) =
+	fun visitDefinition(definition: GDefinition, data: Data) =
 		visitNode(definition, data)
 
-	fun visitDirective(directive: Directive, data: Data) =
+	fun visitDirective(directive: GDirective, data: Data) =
 		visitNode(directive, data)
 
-	fun visitDirectiveDefinition(definition: Definition.TypeSystem.Directive, data: Data) =
+	fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: Data) =
 		visitTypeSystemDefinition(definition, data)
 
-	fun visitDocument(document: Document, data: Data) =
+	fun visitDocument(document: GDocument, data: Data) =
 		visitNode(document, data)
 
-	fun visitEnumTypeDefinition(definition: Definition.TypeSystem.Type.Enum, data: Data) =
-		visitTypeDefinition(definition, data)
+	fun visitEnumType(type: GEnumType, data: Data) =
+		visitType(type, data)
 
-	fun visitEnumTypeExtension(extension: Definition.TypeSystemExtension.Type.Enum, data: Data) =
+	fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: Data) =
 		visitTypeExtension(extension, data)
 
-	fun visitEnumValue(value: Value.Enum, data: Data) =
+	fun visitEnumValue(value: GValue.Enum, data: Data) =
 		visitValue(value, data)
 
-	fun visitEnumValueDefinition(definition: EnumValueDefinition, data: Data) =
+	fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Data) =
 		visitNode(definition, data)
 
-	fun visitFieldDefinition(definition: FieldDefinition, data: Data) =
+	fun visitFieldDefinition(definition: GFieldDefinition, data: Data) =
 		visitNode(definition, data)
 
-	fun visitFieldSelection(selection: Selection.Field, data: Data) =
+	fun visitFieldSelection(selection: GFieldSelection, data: Data) =
 		visitSelection(selection, data)
 
-	fun visitFloatValue(value: Value.Float, data: Data) =
+	fun visitFloatValue(value: GValue.Float, data: Data) =
 		visitValue(value, data)
 
-	fun visitFragmentDefinition(definition: Definition.Fragment, data: Data) =
+	fun visitFragmentDefinition(definition: GFragmentDefinition, data: Data) =
 		visitDefinition(definition, data)
 
-	fun visitFragmentSelection(selection: Selection.Fragment, data: Data) =
+	fun visitFragmentSelection(selection: GFragmentSelection, data: Data) =
 		visitSelection(selection, data)
 
-	fun visitInlineFragmentSelection(selection: Selection.InlineFragment, data: Data) =
+	fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data) =
 		visitSelection(selection, data)
 
-	fun visitInputObjectTypeDefinition(definition: Definition.TypeSystem.Type.InputObject, data: Data) =
-		visitTypeDefinition(definition, data)
+	fun visitInputObjectType(type: GInputObjectType, data: Data) =
+		visitType(type, data)
 
-	fun visitInputObjectTypeExtension(extension: Definition.TypeSystemExtension.Type.InputObject, data: Data) =
+	fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data) =
 		visitTypeExtension(extension, data)
 
-	fun visitIntValue(value: Value.Int, data: Data) =
+	fun visitIntValue(value: GValue.Int, data: Data) =
 		visitValue(value, data)
 
-	fun visitInterfaceTypeDefinition(definition: Definition.TypeSystem.Type.Interface, data: Data) =
-		visitTypeDefinition(definition, data)
+	fun visitInterfaceType(type: GInterfaceType, data: Data) =
+		visitType(type, data)
 
-	fun visitInterfaceTypeExtension(extension: Definition.TypeSystemExtension.Type.Interface, data: Data) =
+	fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data) =
 		visitTypeExtension(extension, data)
 
-	fun visitListValue(value: Value.List, data: Data) =
+	fun visitListValue(value: GValue.List, data: Data) =
 		visitValue(value, data)
 
-	fun visitListTypeReference(reference: TypeReference.List, data: Data) =
-		visitTypeReference(reference, data)
+	fun visitListTypeRef(ref: GListTypeRef, data: Data) =
+		visitTypeRef(ref, data)
 
-	fun visitName(name: Name, data: Data) =
+	fun visitName(name: GName, data: Data) =
 		visitNode(name, data)
 
-	fun visitNamedTypeReference(reference: TypeReference.Named, data: Data) =
-		visitTypeReference(reference, data)
+	fun visitNamedTypeRef(ref: GNamedTypeRef, data: Data) =
+		visitTypeRef(ref, data)
 
-	fun visitNonNullTypeReference(reference: TypeReference.NonNull, data: Data) =
-		visitTypeReference(reference, data)
+	fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: Data) =
+		visitTypeRef(ref, data)
 
-	fun visitNullValue(value: Value.Null, data: Data) =
+	fun visitNullValue(value: GValue.Null, data: Data) =
 		visitValue(value, data)
 
-	fun visitObjectTypeDefinition(definition: Definition.TypeSystem.Type.Object, data: Data) =
-		visitTypeDefinition(definition, data)
+	fun visitObjectType(type: GObjectType, data: Data) =
+		visitType(type, data)
 
-	fun visitObjectTypeExtension(extension: Definition.TypeSystemExtension.Type.Object, data: Data) =
+	fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: Data) =
 		visitTypeExtension(extension, data)
 
-	fun visitObjectValue(value: Value.Object, data: Data) =
+	fun visitObjectValue(value: GValue.Object, data: Data) =
 		visitValue(value, data)
 
-	fun visitObjectValueField(value: Value.Object.Field, data: Data) =
-		visitNode(value, data)
+	fun visitObjectValueField(field: GObjectValueField, data: Data) =
+		visitNode(field, data)
 
-	fun visitOperationDefinition(definition: Definition.Operation, data: Data) =
+	fun visitOperationDefinition(definition: GOperationDefinition, data: Data) =
 		visitDefinition(definition, data)
 
-	fun visitOperationTypeDefinition(definition: OperationTypeDefinition, data: Data) =
+	fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data) =
 		visitNode(definition, data)
 
-	fun visitScalarTypeDefinition(definition: Definition.TypeSystem.Type.Scalar, data: Data) =
-		visitTypeDefinition(definition, data)
+	fun visitScalarType(type: GScalarType, data: Data) =
+		visitType(type, data)
 
-	fun visitScalarTypeExtension(extension: Definition.TypeSystemExtension.Type.Scalar, data: Data) =
+	fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: Data) =
 		visitTypeExtension(extension, data)
 
-	fun visitSchemaDefinition(definition: Definition.TypeSystem.Schema, data: Data) =
+	fun visitSchemaDefinition(definition: GSchemaDefinition, data: Data) =
 		visitTypeSystemDefinition(definition, data)
 
-	fun visitSchemaExtension(extension: Definition.TypeSystemExtension.Schema, data: Data) =
-		visitTypeSystemExtension(extension, data)
+	fun visitSchemaExtension(extension: GSchemaExtensionDefinition, data: Data) =
+		visitTypeSystemExtensionDefinition(extension, data)
 
-	fun visitSelection(selection: Selection, data: Data) =
+	fun visitSelection(selection: GSelection, data: Data) =
 		visitNode(selection, data)
 
-	fun visitSelectionSet(set: SelectionSet, data: Data) =
+	fun visitSelectionSet(set: GSelectionSet, data: Data) =
 		visitNode(set, data)
 
-	fun visitStringValue(value: Value.String, data: Data) =
+	fun visitStringValue(value: GValue.String, data: Data) =
 		visitValue(value, data)
 
-	fun visitTypeDefinition(definition: Definition.TypeSystem.Type, data: Data) =
-		visitTypeSystemDefinition(definition, data)
+	fun visitType(type: GType, data: Data) =
+		visitTypeSystemDefinition(type, data)
 
-	fun visitTypeExtension(extension: Definition.TypeSystemExtension.Type, data: Data) =
-		visitTypeSystemExtension(extension, data)
+	fun visitTypeExtension(extension: GTypeExtension, data: Data) =
+		visitTypeSystemExtensionDefinition(extension, data)
 
-	fun visitTypeReference(reference: TypeReference, data: Data) =
-		visitNode(reference, data)
+	fun visitTypeRef(ref: GTypeRef, data: Data) =
+		visitNode(ref, data)
 
-	fun visitTypeSystemDefinition(definition: Definition.TypeSystem, data: Data) =
+	fun visitTypeSystemDefinition(definition: GTypeSystemDefinition, data: Data) =
 		visitDefinition(definition, data)
 
-	fun visitTypeSystemExtension(extension: Definition.TypeSystemExtension, data: Data) =
-		visitDefinition(extension, data)
+	fun visitTypeSystemExtensionDefinition(definition: GTypeSystemExtensionDefinition, data: Data) =
+		visitDefinition(definition, data)
 
-	fun visitUnionTypeDefinition(definition: Definition.TypeSystem.Type.Union, data: Data) =
-		visitTypeDefinition(definition, data)
+	fun visitUnionType(type: GUnionType, data: Data) =
+		visitType(type, data)
 
-	fun visitUnionTypeExtension(extension: Definition.TypeSystemExtension.Type.Union, data: Data) =
+	fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Data) =
 		visitTypeExtension(extension, data)
 
-	fun visitValue(value: Value, data: Data) =
+	fun visitValue(value: GValue, data: Data) =
 		visitNode(value, data)
 
-	fun visitVariableDefinition(value: VariableDefinition, data: Data) =
+	fun visitVariableDefinition(value: GVariableDefinition, data: Data) =
 		visitNode(value, data)
 
-	fun visitVariableValue(value: Value.Variable, data: Data) =
+	fun visitVariableValue(value: GValue.Variable, data: Data) =
 		visitValue(value, data)
 }

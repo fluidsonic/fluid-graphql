@@ -6,14 +6,18 @@ import kotlin.test.*
 
 // expected to not throw
 fun assertAst(actual: String) =
-	GAst.parseDocument(makeSource(actual.trimMargin()))
+	GDocument.parse(makeSource(actual.trimMargin()))
 
 
 // Note that "start .. end" origin notations use an exclusive end rather than an inclusive for sake of readability
+@Suppress("NAME_SHADOWING")
 fun assertAst(actual: String, expected: AstBuilder.() -> GAst) {
-	assertEquals(
-		expected = ast(expected),
-		actual = GAst.parseDocument(makeSource(actual.trimMargin()))
+	val expected = ast(expected)
+	val actual = GDocument.parse(makeSource(actual.trimMargin()))
+
+	assertTrue(
+		actual = actual.equalsAst(expected, includingOrigin = true),
+		message = "Expected <$expected>, actual <$actual>."
 	)
 }
 
@@ -38,9 +42,9 @@ inline fun <reified T : GAst> GAst.assertClass(block: T.() -> Unit) {
 }
 
 
-fun GAst.Definition.TypeSystem.Type.assertName(name: String, range: IntRange) {
-	assertEquals(expected = name, actual = this.name.value)
-	this.name.assertAt(range)
+fun GNamedType.assertName(name: String, range: IntRange) {
+	assertEquals(expected = name, actual = this.name)
+	nameNode.assertAt(range)
 }
 
 
@@ -50,7 +54,7 @@ fun assertSyntaxError(
 	line: Int,
 	column: Int
 ) {
-	val error = assertFailsWith<GError> { GAst.parseDocument(content.trimMargin()) }
+	val error = assertFailsWith<GError> { GDocument.parse(content.trimMargin()) }
 	assertEquals(expected = message, actual = error.message)
 	assertEquals(expected = line, actual = error.origins.first().line, message = "incorrect line")
 	assertEquals(expected = column, actual = error.origins.first().column, message = "incorrect column")
@@ -76,12 +80,16 @@ private fun makeSource(content: String) =
 
 ////////////
 
-fun GAst.assertAt(range: IntRange) =
+fun GAst.assertAt(range: IntRange) {
+	val origin = origin
+
+	assertNotNull(origin) { ".origin" }
 	assertEquals(expected = origin.startPosition .. origin.endPosition, actual = range)
+}
 
 
-fun GAst.Definition.asOperation() =
-	this as GAst.Definition.Operation
+fun GDefinition.asOperation() =
+	this as GOperationDefinition
 
 
 inline fun <T : GAst> T?.assert(block: T.() -> Unit) {
@@ -109,9 +117,9 @@ inline fun <reified T : GAst> List<*>.assertOneOf(block: T.() -> Unit) {
 }
 
 
-fun GAst.Selection.asFieldSelection() =
-	this as GAst.Selection.Field
+fun GSelection.asFieldSelection() =
+	this as GFieldSelection
 
 
-fun GAst.Value.asString() =
-	this as GAst.Value.String
+fun GValue.asString() =
+	this as GValue.String

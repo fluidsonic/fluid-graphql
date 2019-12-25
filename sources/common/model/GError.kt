@@ -6,7 +6,7 @@ class GError(
 	message: String,
 	val path: GPath? = null, // FIXME set path only for RESULT fields & consider aliases
 	val nodes: List<GAst> = emptyList(),
-	val origins: List<GOrigin> = nodes.ifEmpty { null }?.map { it.origin }.orEmpty(),
+	val origins: List<GOrigin> = nodes.ifEmpty { null }?.mapNotNull { it.origin }.orEmpty(),
 	cause: Throwable? = null
 ) : Exception(
 	message,
@@ -17,8 +17,10 @@ class GError(
 		append(message)
 
 		for (node in nodes) {
-			append("\n\n")
-			append(node.origin.describe())
+			node.origin?.let { origin ->
+				append("\n\n")
+				append(node.origin.describe())
+			}
 		}
 
 		val origins = origins.filter { origin -> nodes.none { it.origin === origin } }

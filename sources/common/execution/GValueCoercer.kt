@@ -5,32 +5,34 @@ interface GValueCoercer {
 
 	// FIXME not a good name
 	fun coerceArgumentValue(
-		value: GAst.Value,
-		type: GType,
-		nonNullType: GNonNullType? = type as? GNonNullType,
-		rootType: GType = type,
+		value: GValue,
+		typeRef: GTypeRef,
+		schema: GSchema,
+		nonNullTypeRef: GNonNullTypeRef? = typeRef as? GNonNullTypeRef,
+		rootTypeRef: GTypeRef = typeRef,
 		defaultValue: Any? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
 		pathBuilder: GPath.Builder = GPath.Builder()
 	): GResult<Any?> = GResult {
 
-		fun GAst.Value.coerce(
-			childType: GType,
+		fun GValue.coerce(
+			childTypeRef: GTypeRef,
 			isNewArgument: Boolean = false,
 			defaultValue: Any? = null
 		) =
 			coerceArgumentValue(
 				value = this,
-				type = childType,
-				nonNullType = type as? GNonNullType,
-				rootType = if (isNewArgument) childType else rootType,
+				typeRef = childTypeRef,
+				schema = schema,
+				nonNullTypeRef = typeRef as? GNonNullTypeRef,
+				rootTypeRef = if (isNewArgument) childTypeRef else rootTypeRef,
 				defaultValue = defaultValue,
 				variableValues = variableValues,
 				pathBuilder = pathBuilder
-			)
+			).orNull()
 
-		fun GAst.Value.Variable.resolve() =
-			variableValues.getOrElseNullable(name.value) {
+		fun GValue.Variable.resolve() =
+			variableValues.getOrElseNullable(name) {
 				error("Variable '$name' cannot be resolved. Validate the operation before executing it.")
 			}
 
@@ -43,187 +45,192 @@ interface GValueCoercer {
 			))
 
 		fun invalidValueTypeError() =
-			invalidValueError("Unexpected '${value.type}' for argument of type '${rootType}'.")
+			invalidValueError("Unexpected '${value.type}' for argument of type '${rootTypeRef}'.")
 
 
-		when (type) {
-			// https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
-			is GBooleanType ->
-				when (value) {
-					is GAst.Value.Boolean -> value.value
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.Int,
-					is GAst.Value.List,
-					is GAst.Value.Object,
-					is GAst.Value.String -> invalidValueTypeError()
-				}
-
-			// https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
-			is GCustomScalarType ->
-				// FIXME support conversion function
-				when (value) {
-					is GAst.Value.Boolean -> value.value
-					is GAst.Value.Float -> value.value
-					is GAst.Value.Int -> value.value
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.String -> value.value
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Enum,
-					is GAst.Value.List,
-					is GAst.Value.Object -> invalidValueTypeError()
-				}
-
-			// https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
-			is GEnumType ->
-				when (value) {
-					is GAst.Value.Enum -> type.values[value.name]
-						?: invalidValueError("Invalid value '${value.name}' for enum '$type'.")
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Boolean,
-					is GAst.Value.Float,
-					is GAst.Value.Int,
-					is GAst.Value.List,
-					is GAst.Value.Object,
-					is GAst.Value.String -> invalidValueTypeError()
-				}
-
-			// https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
-			is GFloatType ->
-				when (value) {
-					is GAst.Value.Float -> value.value
-					is GAst.Value.Int -> value.value.toFloat()
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.List,
-					is GAst.Value.Object,
-					is GAst.Value.String -> invalidValueTypeError()
-				}
-
-			// https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
-			is GIDType ->
-				when (value) {
-					is GAst.Value.Int -> value.value
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.String -> value.value
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.List,
-					is GAst.Value.Object -> invalidValueTypeError()
-				}
-
-			// https://graphql.github.io/graphql-spec/draft/#sec-Input-Objects.Input-Coercion
-			is GInputObjectType ->
-				when (value) {
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.Object -> {
-						val argumentValues = value.fields.associate { it.name.value to it.value }
-
-						type.arguments.values.associate { argument ->
-							pathBuilder.withFieldName(argument.name) {
-								val argumentValue = argumentValues[argument.name]
-									?: invalidValueError("Missing field '${argument.name}' in value for input object '$type'.")
-
-								argument.name to argumentValue?.coerce(
-									childType = argument.type,
-									isNewArgument = true,
-									defaultValue = argument.defaultValue
-								)
-							}
-						}
-					}
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.Int,
-					is GAst.Value.List,
-					is GAst.Value.String -> invalidValueTypeError()
-				}
-
-			// https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
-			is GIntType ->
-				when (value) {
-					is GAst.Value.Int -> value.value
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.Variable -> value.resolve()
-
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.List,
-					is GAst.Value.Object,
-					is GAst.Value.String -> invalidValueTypeError()
-				}
-
+		when (typeRef) {
 			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.List.Input-Coercion
-			is GListType ->
+			is GListTypeRef ->
 				when (value) {
-					is GAst.Value.List -> value.elements.mapIndexed { index, element ->
+					is GValue.List -> value.elements.mapIndexed { index, element ->
 						pathBuilder.withListIndex(index) {
-							element.coerce(type.ofType)
+							element.coerce(typeRef.elementType)
 						}
 					}
-					is GAst.Value.Null -> null
-					is GAst.Value.Variable -> value.resolve()
+					is GValue.Null -> null
+					is GValue.Variable -> value.resolve()
 
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.Int,
-					is GAst.Value.Object,
-					is GAst.Value.String -> listOf(value.coerce(type.ofType))
+					is GValue.Boolean,
+					is GValue.Enum,
+					is GValue.Float,
+					is GValue.Int,
+					is GValue.Object,
+					is GValue.String -> listOf(value.coerce(typeRef.elementType))
 				}
 
 			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.Non-Null.Input-Coercion
-			is GNonNullType ->
+			is GNonNullTypeRef ->
 				when (value) {
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.Int,
-					is GAst.Value.List,
-					is GAst.Value.Object,
-					is GAst.Value.String -> value.coerce(type.ofType)
+					is GValue.Boolean,
+					is GValue.Enum,
+					is GValue.Float,
+					is GValue.Int,
+					is GValue.List,
+					is GValue.Object,
+					is GValue.String -> value.coerce(typeRef.nullableType)
 
-					is GAst.Value.Null -> defaultValue
+					is GValue.Null -> defaultValue
 						?: invalidValueTypeError()
 
-					is GAst.Value.Variable -> value.resolve()
+					is GValue.Variable -> value.resolve()
 				}
 
-			// https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
-			is GStringType ->
-				when (value) {
-					is GAst.Value.Null -> defaultValue
-					is GAst.Value.String -> value.value
-					is GAst.Value.Variable -> value.resolve()
+			is GNamedTypeRef -> {
+				val type = schema.resolveType(typeRef)
+					?: error("FIXME validation message: $typeRef") // FIXME
 
-					is GAst.Value.Boolean,
-					is GAst.Value.Enum,
-					is GAst.Value.Float,
-					is GAst.Value.Int,
-					is GAst.Value.List,
-					is GAst.Value.Object -> invalidValueTypeError()
+				when (type) {
+					// https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
+					is GBooleanType ->
+						when (value) {
+							is GValue.Boolean -> value.value
+							is GValue.Null -> defaultValue
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Enum,
+							is GValue.Float,
+							is GValue.Int,
+							is GValue.List,
+							is GValue.Object,
+							is GValue.String -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
+					is GCustomScalarType ->
+						// FIXME support conversion function
+						when (value) {
+							is GValue.Boolean -> value.value
+							is GValue.Float -> value.value
+							is GValue.Int -> value.value
+							is GValue.Null -> defaultValue
+							is GValue.String -> value.value
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Enum,
+							is GValue.List,
+							is GValue.Object -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
+					is GEnumType ->
+						when (value) {
+							is GValue.Enum -> type.valuesByName[value.name]
+								?: invalidValueError("Invalid value '${value.name}' for enum '$type'.")
+							is GValue.Null -> defaultValue
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Boolean,
+							is GValue.Float,
+							is GValue.Int,
+							is GValue.List,
+							is GValue.Object,
+							is GValue.String -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
+					is GFloatType ->
+						when (value) {
+							is GValue.Float -> value.value
+							is GValue.Int -> value.value.toFloat()
+							is GValue.Null -> defaultValue
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Boolean,
+							is GValue.Enum,
+							is GValue.List,
+							is GValue.Object,
+							is GValue.String -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
+					is GIDType ->
+						when (value) {
+							is GValue.Int -> value.value
+							is GValue.Null -> defaultValue
+							is GValue.String -> value.value
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Boolean,
+							is GValue.Enum,
+							is GValue.Float,
+							is GValue.List,
+							is GValue.Object -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-Input-Objects.Input-Coercion
+					is GInputObjectType ->
+						when (value) {
+							is GValue.Null -> defaultValue
+							is GValue.Object -> {
+								type.arguments.associate { argument ->
+									pathBuilder.withFieldName(argument.name) {
+										val argumentValue = value.fieldsByName[argument.name]
+											?: invalidValueError("Missing field '${argument.name}' in value for input object '$type'.")
+
+										argument.name to argumentValue?.coerce(
+											childTypeRef = argument.type,
+											isNewArgument = true,
+											defaultValue = argument.defaultValue
+										)
+									}
+								}
+							}
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Boolean,
+							is GValue.Enum,
+							is GValue.Float,
+							is GValue.Int,
+							is GValue.List,
+							is GValue.String -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
+					is GIntType ->
+						when (value) {
+							is GValue.Int -> value.value
+							is GValue.Null -> defaultValue
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Boolean,
+							is GValue.Enum,
+							is GValue.Float,
+							is GValue.List,
+							is GValue.Object,
+							is GValue.String -> invalidValueTypeError()
+						}
+
+					// https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
+					is GStringType ->
+						when (value) {
+							is GValue.Null -> defaultValue
+							is GValue.String -> value.value
+							is GValue.Variable -> value.resolve()
+
+							is GValue.Boolean,
+							is GValue.Enum,
+							is GValue.Float,
+							is GValue.Int,
+							is GValue.List,
+							is GValue.Object -> invalidValueTypeError()
+						}
+
+					is GInterfaceType,
+					is GObjectType,
+					is GUnionType ->
+						error("Argument '$pathBuilder' must have an input type but has output type '$typeRef'.")
 				}
-
-			is GInterfaceType,
-			is GObjectType,
-			is GUnionType ->
-				error("Argument '$pathBuilder' must have an input type but has output type '$type'.")
+			}
 		}
 	}
 
@@ -237,21 +244,22 @@ interface GValueCoercer {
 		val argumentValues = fieldSelection.arguments.associate { it.name to it.value }
 		val pathBuilder = GPath.Builder()
 
-		fieldDefinition.arguments.values.associate { argument ->
+		fieldDefinition.arguments.associate { argument ->
 			pathBuilder.withFieldName(argument.name) {
 				val argumentValue = argumentValues[argument.name]
-				if (argumentValue === null)
+				if (argumentValue === null && argument.defaultValue === null)
 					argument.name to collectError(GError(
 						message = "Missing argument '${argument.name}' of type '${argument.type}' for field '${fieldDefinition.name}'.",
 						path = pathBuilder.snapshot()
 					))
 				else
 					argument.name to coerceArgumentValue(
-						value = argumentValue,
-						type = argument.type,
+						value = argumentValue ?: argument.defaultValue!!,
+						typeRef = argument.type,
+						schema = context.schema,
 						defaultValue = argument.defaultValue,
-						pathBuilder = pathBuilder,
-						variableValues = context.variableValues
+						variableValues = context.variableValues,
+						pathBuilder = pathBuilder
 					).orNull()
 			}
 		}
@@ -261,138 +269,145 @@ interface GValueCoercer {
 	// FIXME not a good name
 	fun coerceVariableValue(
 		value: Any?,
-		type: GType,
-		nonNullType: GNonNullType? = type as? GNonNullType,
-		rootType: GType = type,
+		typeRef: GTypeRef,
+		schema: GSchema,
+		nonNullTypeRef: GNonNullTypeRef? = typeRef as? GNonNullTypeRef,
+		rootTypeRef: GTypeRef = typeRef,
 		pathBuilder: GPath.Builder = GPath.Builder()
 	): GResult<Any?> = GResult {
 
-		inline fun Any?.coerce(
-			childType: GType,
-			isNewArgument: Boolean = false,
-			defaultValue: Any? = null
+		fun Any?.coerce(
+			childTypeRef: GTypeRef,
+			isNewArgument: Boolean = false
 		) =
 			coerceVariableValue(
 				value = this,
-				type = childType,
-				nonNullType = type as? GNonNullType,
-				rootType = if (isNewArgument) childType else rootType,
+				typeRef = childTypeRef,
+				schema = schema,
+				nonNullTypeRef = typeRef as? GNonNullTypeRef,
+				rootTypeRef = if (isNewArgument) childTypeRef else rootTypeRef,
 				pathBuilder = pathBuilder
-			)
+			).orNull()
 
-		inline fun invalidValueError(message: String, cause: Throwable? = null) =
+		fun invalidValueError(message: String, cause: Throwable? = null) =
 			collectError(GError(
 				message = message,
 				path = pathBuilder.snapshot(),
 				cause = cause
 			))
 
-		inline fun invalidValueTypeError() =
-			invalidValueError("Unexpected value for argument of type '${rootType}'.")
+		fun invalidValueTypeError() =
+			invalidValueError("Unexpected value for argument of type '${rootTypeRef}'.")
 
 
-		when (type) {
-			is GBooleanType ->
-				when (value) {
-					null -> null
-					is Boolean -> value
-					else -> invalidValueTypeError()
-				}
-
-			is GCustomScalarType ->
-				// FIXME support conversion function
-				when (value) {
-					null -> null
-					is Boolean -> value
-					is Float -> value
-					is Int -> value
-					is String -> value
-					else -> invalidValueTypeError()
-				}
-
-			is GEnumType ->
-				when (value) {
-					null -> null
-					is String -> type.values[value] ?: invalidValueError("Invalid value '${value}' for enum '$type'.")
-					else -> invalidValueTypeError()
-				}
-
-			is GFloatType ->
-				when (value) {
-					null -> null
-					is Float -> value
-					is Int -> value.toFloat()
-					else -> invalidValueTypeError()
-				}
-
-			is GIDType ->
-				when (value) {
-					null -> null
-					is Int -> value
-					is String -> value
-					else -> invalidValueTypeError()
-				}
-
-			is GInputObjectType ->
-				when (value) {
-					null -> null
-					is Map<*, *> -> {
-
-						type.arguments.values.associate { argument ->
-							pathBuilder.withFieldName(argument.name) {
-								val argumentValue = value.getOrElseNullable(argument.name) {
-									(argument.defaultValue
-										?.mapValue { it.coerce(argument.type) }
-										?: invalidValueError("Missing field '${argument.name}' in value for input object '$type'."))
-										?.value
-								}
-
-								argument.name to argumentValue?.coerce(
-									childType = argument.type,
-									isNewArgument = true,
-									defaultValue = argument.defaultValue
-								)
-							}
-						}
-					}
-					else -> invalidValueTypeError()
-				}
-
-			is GIntType ->
-				when (value) {
-					null -> null
-					is Int -> value
-					else -> invalidValueTypeError()
-				}
-
-			is GListType ->
+		when (typeRef) {
+			is GListTypeRef ->
 				when (value) {
 					null -> null
 					is Iterable<*> -> value.mapIndexed { index, element ->
 						pathBuilder.withListIndex(index) {
-							element.coerce(type.ofType)
+							element.coerce(typeRef.elementType)
 						}
 					}
-					else -> listOf(value.coerce(type.ofType))
+					else -> listOf(value.coerce(typeRef.elementType))
 				}
 
-			is GNonNullType ->
+			is GNonNullTypeRef ->
 				when (value) {
 					null -> invalidValueTypeError()
-					else -> value.coerce(type.ofType)
+					else -> value.coerce(typeRef.nullableType)
 				}
 
-			is GStringType ->
-				when (value) {
-					null -> null
-					is String -> value
-					else -> invalidValueTypeError()
-				}
+			is GNamedTypeRef -> {
+				val type = schema.resolveType(typeRef)
+					?: error("FIXME validation message") // FIXME
 
-			is GInterfaceType,
-			is GObjectType,
-			is GUnionType ->
-				error("Variable '$pathBuilder' must have an input type but has output type '$type'.")
+				when (type) {
+					is GBooleanType ->
+						when (value) {
+							null -> null
+							is Boolean -> value
+							else -> invalidValueTypeError()
+						}
+
+					is GCustomScalarType ->
+						// FIXME support conversion function
+						when (value) {
+							null -> null
+							is Boolean -> value
+							is Float -> value
+							is Int -> value
+							is String -> value
+							else -> invalidValueTypeError()
+						}
+
+					is GEnumType ->
+						when (value) {
+							null -> null
+							is String -> type.valuesByName[value] ?: invalidValueError("Invalid value '${value}' for enum '$type'.")
+							else -> invalidValueTypeError()
+						}
+
+					is GFloatType ->
+						when (value) {
+							null -> null
+							is Float -> value
+							is Int -> value.toFloat()
+							else -> invalidValueTypeError()
+						}
+
+					is GIDType ->
+						when (value) {
+							null -> null
+							is Int -> value
+							is String -> value
+							else -> invalidValueTypeError()
+						}
+
+					is GInputObjectType ->
+						when (value) {
+							null -> null
+							is Map<*, *> -> {
+
+								type.arguments.associate { argument ->
+									pathBuilder.withFieldName(argument.name) {
+										// FIXME conversion
+										val argumentValue = value.getOrElseNullable(argument.name) {
+											argument.defaultValue
+												?: invalidValueError("Missing field '${argument.name}' in value for input object '$type'.")
+										}
+
+										argument.name to argumentValue?.coerce(
+											childTypeRef = argument.type,
+											isNewArgument = true
+											//defaultValue = argument.defaultValue // FIXME
+										)
+									}
+								}
+							}
+							else -> invalidValueTypeError()
+						}
+
+					is GIntType ->
+						when (value) {
+							null -> null
+							is Int -> value
+							else -> invalidValueTypeError()
+						}
+
+					is GStringType ->
+						when (value) {
+							null -> null
+							is String -> value
+							else -> invalidValueTypeError()
+						}
+
+					is GInterfaceType,
+					is GObjectType,
+					is GUnionType ->
+						error("Variable '$pathBuilder' must have an input type but has output type '$typeRef'.")
+				}
+			}
 		}
 	}
 
@@ -407,7 +422,7 @@ interface GValueCoercer {
 
 		operation.variableDefinitions.associate { variable ->
 			pathBuilder.withFieldName(variable.name) {
-				val variableType = schema.resolveType(variable.type)
+				val variableType = schema.resolveType(variable.type.underlyingName)
 					?: return@associate variable.name to collectError(GError(
 						message = "Variable '${variable.name}' references unknown type '${variable.type}'.",
 						path = pathBuilder.snapshot()
@@ -430,13 +445,15 @@ interface GValueCoercer {
 					else
 						variable.name to coerceArgumentValue(
 							value = variable.defaultValue,
-							type = variableType,
+							typeRef = variable.type,
+							schema = schema,
 							pathBuilder = pathBuilder
 						).orNull()
 				else
 					variable.name to coerceVariableValue(
 						value = variableValue,
-						type = variableType,
+						typeRef = variable.type,
+						schema = schema,
 						pathBuilder = pathBuilder
 					).orNull()
 			}

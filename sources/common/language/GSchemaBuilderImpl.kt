@@ -11,21 +11,20 @@ fun schema(configure: GSchemaBuilder.() -> Unit) =
 
 internal class GSchemaBuilderImpl : GSchemaBuilder {
 
-	private val directives = mutableListOf<GDirectiveDefinition.Unresolved>()
+	private val directives = mutableListOf<GDirectiveDefinition>()
 	private var mutationType: GNamedTypeRef? = null
 	private var queryType: GNamedTypeRef? = null
 	private var subscriptionType: GNamedTypeRef? = null
-	private val types = mutableListOf<GNamedType.Unresolved>()
+	private val types = mutableListOf<GNamedType>()
 
 
-	fun build() =
-		GSchema.Unresolved(
-			types = types,
-			queryType = queryType,
-			mutationType = mutationType,
-			subscriptionType = subscriptionType,
-			directives = directives
-		).resolve()
+	fun build() = GSchema(
+		directives = directives,
+		mutationType = mutationType,
+		queryType = queryType,
+		subscriptionType = subscriptionType,
+		types = types
+	)
 
 
 	override fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit) {
@@ -45,8 +44,8 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 	override fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
 		types += InterfaceTypeDefinitionBuilderImpl(
-			name = type.name,
-			interfaces = emptyList()
+			interfaces = emptyList(),
+			name = type.name
 		).apply(configure).build()
 	}
 
@@ -55,8 +54,8 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		named as InterfacesImpl
 
 		types += InterfaceTypeDefinitionBuilderImpl(
-			name = named.name,
-			interfaces = named.interfaces
+			interfaces = named.interfaces,
+			name = named.name
 		).apply(configure).build()
 	}
 
@@ -75,9 +74,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 	override fun <T : Any> Object(type: GNamedTypeRef, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
 		types += ObjectTypeDefinitionBuilderImpl(
-			name = type.name,
 			interfaces = emptyList(),
-			kotlinType = kotlinType
+			kotlinType = kotlinType,
+			name = type.name
 		).apply(configure).build()
 	}
 
@@ -86,9 +85,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		named as InterfacesImpl
 
 		types += ObjectTypeDefinitionBuilderImpl(
-			name = named.name,
 			interfaces = named.interfaces,
-			kotlinType = kotlinType
+			kotlinType = kotlinType,
+			name = named.name
 		).apply(configure).build()
 	}
 
@@ -129,8 +128,8 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 	override fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): Interfaces =
 		InterfacesImpl(
-			name = name,
-			interfaceType = interfaceType
+			interfaceType = interfaceType,
+			name = name
 		)
 
 
@@ -143,40 +142,38 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 	private class ArgumentBuilderImpl(
 		var name: String,
-		var value: Any?
+		var value: GValue
 	) : ArgumentContainer.NameAndValue {
 
-		fun build() =
-			GArgument(
-				name = name,
-				value = value
-			)
+		fun build() = GArgument(
+			name = name,
+			value = value
+		)
 	}
 
 
 	private class ArgumentDefinitionBuilderImpl(
 		var name: String,
 		var type: GTypeRef,
-		var defaultValue: Any? = null
+		var defaultValue: GValue? = null
 	) : ContainerImpl(),
 		ArgumentDefinitionBuilder,
 		ArgumentDefinitionContainer.NameAndType,
 		ArgumentDefinitionContainer.NameAndTypeAndDefault {
 
-		fun build() =
-			GArgumentDefinition.Unresolved(
-				name = name,
-				type = type,
-				defaultValue = defaultValue,
-				description = description,
-				directives = directives
-			)
+		fun build() = GArgumentDefinition(
+			defaultValue = defaultValue,
+			description = description,
+			directives = directives,
+			name = name,
+			type = type
+		)
 
 
 		override fun default(default: Any?) = apply {
-			// FIXME typecheck
-
-			defaultValue = default ?: GNullValue
+			defaultValue =
+				if (default === null) GNullValue
+				else GValue.of(default) ?: error("Value is not a valid GraphQL value: $default (${default::class})")
 		}
 	}
 
@@ -189,7 +186,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		TypeRefContainer {
 
 
-		protected val argumentDefinitions = mutableListOf<GArgumentDefinition.Unresolved>()
+		protected val argumentDefinitions = mutableListOf<GArgumentDefinition>()
 		protected val arguments = mutableListOf<GArgument>()
 		protected var description: String? = null
 		protected val directives = mutableListOf<GDirective>()
@@ -219,7 +216,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			directives += GDirective(
 				name = GSpecification.defaultDeprecatedDirective.name,
 				arguments = listOf(
-					GArgument(name = "reason", value = reason) // FIXME null vs not-specified
+					GArgument(name = "reason", value = reason?.let { GValue.String(it) } ?: GNullValue) // FIXME null vs not-specified
 				)
 			)
 		}
@@ -244,7 +241,13 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		override fun String.with(value: Any?) =
-			ArgumentBuilderImpl(name = this, value = value)
+			ArgumentBuilderImpl(
+				name = this,
+				value = (
+					if (value === null) GNullValue
+					else GValue.of(value) ?: error("Value is not a valid GraphQL value: $value (${value::class})")
+					)
+			)
 
 
 		override fun List(type: GTypeRef) =
@@ -257,11 +260,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		DirectiveBuilder {
 
-		fun build() =
-			GDirective(
-				name = name,
-				arguments = arguments
-			)
+		fun build() = GDirective(
+			arguments = arguments,
+			name = name
+		)
 	}
 
 
@@ -270,16 +272,15 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		DirectiveDefinitionBuilder {
 
-		private var locations = emptyList<GDirectiveLocation>()
+		private var locations = emptySet<GDirectiveLocation>()
 
 
-		fun build() =
-			GDirectiveDefinition.Unresolved(
-				name = name,
-				arguments = argumentDefinitions,
-				locations = locations,
-				description = description
-			)
+		fun build() = GDirectiveDefinition(
+			arguments = argumentDefinitions,
+			description = description,
+			locations = locations,
+			name = name
+		)
 
 		override val ARGUMENT_DEFINITION get() = Companion.ARGUMENT_DEFINITION
 		override val ENUM get() = Companion.ENUM
@@ -316,7 +317,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			ofArgumentDefinitionType(type)
 
 
-		class DirectiveLocationSetImpl(val locations: List<GDirectiveLocation>) :
+		class DirectiveLocationSetImpl(val locations: Set<GDirectiveLocation>) :
 			DirectiveDefinitionBuilder.DirectiveLocation,
 			DirectiveDefinitionBuilder.DirectiveLocationSet {
 
@@ -327,25 +328,25 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 		companion object {
 
-			val ARGUMENT_DEFINITION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.ARGUMENT_DEFINITION))
-			val ENUM = DirectiveLocationSetImpl(listOf(GDirectiveLocation.ENUM))
-			val ENUM_VALUE = DirectiveLocationSetImpl(listOf(GDirectiveLocation.ENUM_VALUE))
-			val FIELD = DirectiveLocationSetImpl(listOf(GDirectiveLocation.FIELD))
-			val FIELD_DEFINITION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.FIELD_DEFINITION))
-			val FRAGMENT_DEFINITION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.FRAGMENT_DEFINITION))
-			val FRAGMENT_SPREAD = DirectiveLocationSetImpl(listOf(GDirectiveLocation.FRAGMENT_SPREAD))
-			val INLINE_FRAGMENT = DirectiveLocationSetImpl(listOf(GDirectiveLocation.INLINE_FRAGMENT))
-			val INPUT_FIELD_DEFINITION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.INPUT_FIELD_DEFINITION))
-			val INPUT_OBJECT = DirectiveLocationSetImpl(listOf(GDirectiveLocation.INPUT_OBJECT))
-			val INTERFACE = DirectiveLocationSetImpl(listOf(GDirectiveLocation.INTERFACE))
-			val MUTATION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.MUTATION))
-			val OBJECT = DirectiveLocationSetImpl(listOf(GDirectiveLocation.OBJECT))
-			val QUERY = DirectiveLocationSetImpl(listOf(GDirectiveLocation.QUERY))
-			val SCALAR = DirectiveLocationSetImpl(listOf(GDirectiveLocation.SCALAR))
-			val SCHEMA = DirectiveLocationSetImpl(listOf(GDirectiveLocation.SCHEMA))
-			val SUBSCRIPTION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.SUBSCRIPTION))
-			val UNION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.UNION))
-			val VARIABLE_DEFINITION = DirectiveLocationSetImpl(listOf(GDirectiveLocation.VARIABLE_DEFINITION))
+			val ARGUMENT_DEFINITION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.ARGUMENT_DEFINITION))
+			val ENUM = DirectiveLocationSetImpl(setOf(GDirectiveLocation.ENUM))
+			val ENUM_VALUE = DirectiveLocationSetImpl(setOf(GDirectiveLocation.ENUM_VALUE))
+			val FIELD = DirectiveLocationSetImpl(setOf(GDirectiveLocation.FIELD))
+			val FIELD_DEFINITION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.FIELD_DEFINITION))
+			val FRAGMENT_DEFINITION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.FRAGMENT_DEFINITION))
+			val FRAGMENT_SPREAD = DirectiveLocationSetImpl(setOf(GDirectiveLocation.FRAGMENT_SPREAD))
+			val INLINE_FRAGMENT = DirectiveLocationSetImpl(setOf(GDirectiveLocation.INLINE_FRAGMENT))
+			val INPUT_FIELD_DEFINITION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.INPUT_FIELD_DEFINITION))
+			val INPUT_OBJECT = DirectiveLocationSetImpl(setOf(GDirectiveLocation.INPUT_OBJECT))
+			val INTERFACE = DirectiveLocationSetImpl(setOf(GDirectiveLocation.INTERFACE))
+			val MUTATION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.MUTATION))
+			val OBJECT = DirectiveLocationSetImpl(setOf(GDirectiveLocation.OBJECT))
+			val QUERY = DirectiveLocationSetImpl(setOf(GDirectiveLocation.QUERY))
+			val SCALAR = DirectiveLocationSetImpl(setOf(GDirectiveLocation.SCALAR))
+			val SCHEMA = DirectiveLocationSetImpl(setOf(GDirectiveLocation.SCHEMA))
+			val SUBSCRIPTION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.SUBSCRIPTION))
+			val UNION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.UNION))
+			val VARIABLE_DEFINITION = DirectiveLocationSetImpl(setOf(GDirectiveLocation.VARIABLE_DEFINITION))
 		}
 	}
 
@@ -358,13 +359,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		private val values = mutableListOf<GEnumValueDefinition>()
 
 
-		fun build() =
-			GEnumType.Unresolved(
-				name = name,
-				values = values,
-				description = description,
-				directives = directives
-			)
+		fun build() = GEnumType(
+			description = description,
+			directives = directives,
+			name = name,
+			values = values
+		)
 
 
 		override fun value(name: String, configure: EnumTypeDefinitionBuilder.ValueBuilder.() -> Unit) {
@@ -378,9 +378,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			EnumTypeDefinitionBuilder.ValueBuilder {
 
 			fun build() = GEnumValueDefinition(
-				name = name,
 				description = description,
-				directives = directives
+				directives = directives,
+				name = name
 			)
 		}
 	}
@@ -396,18 +396,17 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		private var resolver: GFieldResolver<*>? = null
 
 
-		fun build() =
-			GFieldDefinition.Unresolved(
-				name = name,
-				type = type,
-				arguments = argumentDefinitions,
-				description = description,
-				directives = directives,
-				resolver = resolver
-			)
+		fun build() = GFieldDefinition(
+			arguments = argumentDefinitions,
+			description = description,
+			directives = directives,
+			name = name,
+			resolver = resolver,
+			type = type
+		)
 
 
-		override fun resolve(resolver: Parent.(context: GFieldResolver.Context) -> Any?) {
+		override fun <Result> resolve(resolver: Parent.(context: GFieldResolver.Context) -> Result) {
 			this.resolver = GFieldResolver.of(resolver)
 		}
 
@@ -422,13 +421,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		InputObjectTypeDefinitionBuilder {
 
-		fun build() =
-			GInputObjectType.Unresolved(
-				name = name,
-				arguments = argumentDefinitions,
-				description = description,
-				directives = directives
-			)
+		fun build() = GInputObjectType(
+			arguments = argumentDefinitions,
+			description = description,
+			directives = directives,
+			name = name
+		)
 
 
 		override fun String.of(type: GTypeRef) =
@@ -442,17 +440,16 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		InterfaceTypeDefinitionBuilder {
 
-		private val fieldDefinitions = mutableListOf<GFieldDefinition.Unresolved>()
+		private val fieldDefinitions = mutableListOf<GFieldDefinition>()
 
 
-		fun build() =
-			GInterfaceType.Unresolved(
-				name = name,
-				description = description,
-				directives = directives,
-				fields = fieldDefinitions,
-				interfaces = interfaces
-			)
+		fun build() = GInterfaceType(
+			description = description,
+			directives = directives,
+			fields = fieldDefinitions,
+			interfaces = interfaces,
+			name = name
+		)
 
 
 		@Suppress("UNCHECKED_CAST")
@@ -487,18 +484,17 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		ObjectTypeDefinitionBuilder<T> {
 
-		private val fieldDefinitions = mutableListOf<GFieldDefinition.Unresolved>()
+		private val fieldDefinitions = mutableListOf<GFieldDefinition>()
 
 
-		fun build() =
-			GObjectType.Unresolved(
-				name = name,
-				description = description,
-				directives = directives,
-				fields = fieldDefinitions,
-				interfaces = interfaces,
-				kotlinType = kotlinType
-			)
+		fun build() = GObjectType(
+			description = description,
+			directives = directives,
+			fields = fieldDefinitions,
+			interfaces = interfaces,
+			kotlinType = kotlinType,
+			name = name
+		)
 
 
 		@Suppress("UNCHECKED_CAST")
@@ -516,12 +512,11 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		ScalarTypeDefinitionBuilder {
 
-		fun build() =
-			GCustomScalarType.Unresolved(
-				name = name,
-				description = description,
-				directives = directives
-			)
+		fun build() = GCustomScalarType(
+			description = description,
+			directives = directives,
+			name = name
+		)
 	}
 
 
@@ -532,20 +527,19 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		PossibleTypes,
 		UnionTypeDefinitionBuilder {
 
-		private val types = mutableListOf(possibleType)
+		private val possibleTypes = mutableListOf(possibleType)
 
 
-		fun build() =
-			GUnionType.Unresolved(
-				name = name,
-				description = description,
-				directives = directives,
-				types = types
-			)
+		fun build() = GUnionType(
+			description = description,
+			directives = directives,
+			name = name,
+			possibleTypes = possibleTypes
+		)
 
 
 		override fun or(type: GNamedTypeRef) = apply {
-			types += type
+			possibleTypes += type
 		}
 	}
 }

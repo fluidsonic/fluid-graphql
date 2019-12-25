@@ -39,16 +39,16 @@ interface GExecutor {
 	): GResult<Any?> = GResult {
 		this@getArgumentValue
 			.firstOrNull { it.name == directive.name }
-			?.arguments
+			?.argumentsByName
 			?.get(argument)
-			?.value
-			?.let { value ->
-				val directiveArgument = directive.arguments[argument]!!
+			?.let { argument ->
+				val definition = directive.argumentsByName[argument.name]!!
 
 				valueCoercer.coerceArgumentValue(
-					value = value,
-					type = directive.arguments[argument]!!.type,
-					defaultValue = directiveArgument.defaultValue?.value,
+					value = argument.value,
+					typeRef = definition.type,
+					schema = context.schema,
+					defaultValue = definition.defaultValue,
 					variableValues = context.variableValues
 				).orNull()
 			}
@@ -81,7 +81,7 @@ interface GExecutor {
 
 					visitedFragments += fragmentName
 
-					val fragment = context.document.fragments[fragmentName]
+					val fragment = context.document.fragmentsByName[fragmentName]
 						?: continue@loop
 
 					val fragmentType = context.schema.resolveType(fragment.typeCondition)
@@ -136,15 +136,21 @@ interface GExecutor {
 			return@GResult null
 		}
 
-		when (fieldType) {
+		return@GResult when (fieldType) {
+			is GAbstractType ->
+				executeSelectionSet(
+					context = context,
+					selectionSet = mergeSelectionSets(fields),
+					objectType = resolveAbstractType(context, fieldType, result),
+					objectValue = result
+				).consumeErrors()
+
 			is GEnumType,
 			is GScalarType -> {
-				return@GResult result // FIXME coerced(result) ?: GValue.Null
+				result // FIXME coerced(result) ?: GValue.Null
 			}
 
-			is GInterfaceType,
-			is GObjectType,
-			is GUnionType -> {
+			is GObjectType -> {
 				// FIXME
 //				if (result !is GObjectValue) {
 //					context.errors += GError("Field '$fieldName' of type $fieldType has resulted in a value of an incorrect type: $result")
@@ -152,39 +158,36 @@ interface GExecutor {
 //					return GNullValue
 //				}
 
-				val objectType = fieldType as? GObjectType
-					?: resolveAbstractType(context, fieldType, result)
-
-				val subSelectionSet = mergeSelectionSets(fields)
-
-				return@GResult executeSelectionSet(
+				executeSelectionSet(
 					context = context,
-					selectionSet = subSelectionSet,
-					objectType = objectType,
+					selectionSet = mergeSelectionSets(fields),
+					objectType = fieldType,
 					objectValue = result
-				)
+				).consumeErrors()
 			}
 
-			is GListType -> {
-				val elementType = fieldType.ofType
-
-				return@GResult (result as Collection<*>).map { element ->
+			is GListType ->
+				// FIXME type check
+				(result as Collection<*>).map { element ->
 					completeValue(
-						context,
-						elementType,
-						fields,
-						element
+						context = context,
+						fieldType = fieldType.elementType,
+						fields = fields,
+						result = element
 					).orNull()
 				}
-			}
 
 			is GNonNullType -> {
-				val nullableType = fieldType.ofType
-				val completedResult = completeValue(context, nullableType, fields, result)
+				val completedResult = completeValue(
+					context = context,
+					fieldType = fieldType.nullableType,
+					fields = fields,
+					result = result
+				)
 				if (completedResult is GResult.Success && completedResult.value === null)
 					collectError(GError("Non-null field '$fieldName' of type $fieldType has resulted in a null value."))
 
-				return@GResult completedResult.orNull()
+				completedResult.orNull()
 			}
 
 			is GInputObjectType ->
@@ -202,7 +205,9 @@ interface GExecutor {
 	): GResult<Any?> = GResult {
 		val fieldSelection = fields.first()
 		val fieldDefinition = context.schema.getFieldDefinition(type = objectType, name = fieldSelection.name)
-			?: error("Field '${fieldSelection.name}' cannot be selected on '$objectType'. Validate the operation before executing it.")
+			?: error("Field '${fieldSelection.name}' cannot be selected on '${objectType.name}'. Validate the operation before executing it.")
+		val fieldType = context.schema.resolveType(fieldDefinition.type)
+			?: error("FIXME validation message ${fieldDefinition.type} for '${fieldDefinition.name}' in '${objectType.name}'") // FIXME
 
 		val resolvedValue = resolveFieldValue(
 			context = context,
@@ -214,7 +219,7 @@ interface GExecutor {
 
 		completeValue(
 			context = context,
-			fieldType = fieldDefinition.type,
+			fieldType = fieldType,
 			fields = fields,
 			result = resolvedValue
 		).or { return it }
@@ -294,15 +299,20 @@ interface GExecutor {
 		document: GDocument,
 		name: String?
 	): GResult<GOperationDefinition> = GResult {
-		if (name != null)
-			document.operations.firstOrNull { it.name == name }
-				?: return failWith(GError("There is no operation named '$name' in the document."))
-		else
-			document.operations.singleOrNull()
-				?: return failWith(GError(
-					if (document.operations.isEmpty()) "There are no operations in the document."
-					else "There are multiple operations in the document. You must specify the name explicitly."
-				))
+		when {
+			name != null ->
+				document.operationsByName[name]
+					?: return failWith(GError("There is no operation named '$name' in the document."))
+
+			document.operationsByName.isEmpty() ->
+				return failWith(GError("There are no operations in the document."))
+
+			document.operationsByName.size > 1 ->
+				return failWith(GError("There are multiple operations in the document. You must specify the name explicitly."))
+
+			else ->
+				document.operationsByName.values.single()
+		}
 	}
 
 
@@ -322,28 +332,11 @@ interface GExecutor {
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveAbstractType()
 	fun resolveAbstractType(
 		context: GExecutionContext,
-		abstractType: GType,
+		abstractType: GAbstractType,
 		objectValue: Any
-	): GObjectType {
-		val possibleTypes = when (abstractType) { // FIXME generalize
-			is GInterfaceType ->
-				// TODO probably inefficient
-				context.schema.types.values
-					.filterIsInstance<GObjectType>()
-					.filter { it.interfaces.contains(abstractType) }
-
-			is GUnionType ->
-				abstractType.types
-
-			else ->
-				error("What to do?") // FIXME
-		}
-
-		val actualType = possibleTypes.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false }
-			?: error("FIXME")
-
-		return actualType
-	}
+	) =
+		context.schema.getPossibleTypes(abstractType).firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false }
+			?: error("FIXME") // FIXME
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
@@ -361,7 +354,7 @@ interface GExecutor {
 		).or { return it }
 
 		val resolver = fieldDefinition.resolver as GFieldResolver<Any>?
-			?: error("No resolver registered for '$objectType.${fieldDefinition.name}'.")
+			?: error("No resolver registered for '${objectType.name}.${fieldDefinition.name}'.")
 
 		val resolverContext = object : GFieldResolver.Context {
 
@@ -375,12 +368,13 @@ interface GExecutor {
 				get() = context.schema
 		}
 
+
 		try {
 			with(resolver) { objectValue.resolve(resolverContext) }
 		}
 		catch (cause: Throwable) {
 			collectError(GError(
-				message = "Resolving the field value was not possible.", // FIXME don't re-wrap GError
+				message = "Resolving the value for field '${fieldDefinition.name}' of type '${fieldDefinition.type}' in object '${objectType.name}' was not possible.", // FIXME don't re-wrap GError
 				cause = cause
 			))
 		}
@@ -390,13 +384,13 @@ interface GExecutor {
 	fun shouldIncludeSelection(selection: GSelection, context: GExecutionContext): Boolean {
 		val skip = selection.directives.getArgumentValue(context, GSpecification.defaultSkipDirective, "if")
 			.or { error("FIXME needs validation: $it") }
-			as Boolean
+			as Boolean? ?: false
 		if (skip)
 			return false
 
 		val include = selection.directives.getArgumentValue(context, GSpecification.defaultIncludeDirective, "if")
 			.or { error("FIXME needs validation: $it") }
-			as Boolean
+			as Boolean? ?: true
 
 		return include
 	}

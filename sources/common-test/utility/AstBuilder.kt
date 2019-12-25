@@ -1,7 +1,6 @@
 package tests
 
 import io.fluidsonic.graphql.*
-import io.fluidsonic.graphql.GAst.*
 
 
 fun <T : GAst> ast(configure: AstBuilder.() -> T) =
@@ -26,12 +25,12 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ArgumentDefinitionBuilder(private val origin: IntRange) {
 
-		private var defaultValue: Value? = null
-		private var name: Name? = null
-		private var type: TypeReference? = null
+		private var defaultValue: GValue? = null
+		private var name: GName? = null
+		private var type: GTypeRef? = null
 
 
-		fun build() = ArgumentDefinition(
+		fun build() = GArgumentDefinition(
 			description = null,
 			defaultValue = defaultValue,
 			directives = emptyList(),
@@ -47,7 +46,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -64,11 +63,11 @@ object AstBuilder {
 	class DirectiveDefinitionBuilder(private val origin: IntRange) {
 
 		private var isRepeatable = false
-		private val locations = mutableListOf<Name>()
-		private var name: Name? = null
+		private val locations = mutableListOf<GName>()
+		private var name: GName? = null
 
 
-		fun build() = Definition.TypeSystem.Directive(
+		fun build() = GDirectiveDefinition(
 			arguments = emptyList(),
 			description = null,
 			isRepeatable = isRepeatable,
@@ -79,7 +78,7 @@ object AstBuilder {
 
 
 		fun location(origin: IntRange, configure: () -> String) {
-			locations += Name(
+			locations += GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -87,7 +86,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -103,10 +102,10 @@ object AstBuilder {
 	@AstBuilderDsl
 	class DocumentBuilder(private val origin: IntRange) {
 
-		private val definitions = mutableListOf<Definition>()
+		private val definitions = mutableListOf<GDefinition>()
 
 
-		fun build() = Document(
+		fun build() = GDocument(
 			definitions = definitions,
 			origin = Origin(origin)
 		)
@@ -161,12 +160,12 @@ object AstBuilder {
 	@AstBuilderDsl
 	class EnumTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: Value.String? = null
-		private val values = mutableListOf<EnumValueDefinition>()
-		private var name: Name? = null
+		private var description: GValue.String? = null
+		private val values = mutableListOf<GEnumValueDefinition>()
+		private var name: GName? = null
 
 
-		fun build() = Definition.TypeSystem.Type.Enum(
+		fun build() = GEnumType(
 			description = description,
 			directives = emptyList(),
 			name = name ?: error("name() missing"),
@@ -176,7 +175,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = Value.String(
+			description = GValue.String(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -185,7 +184,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -193,10 +192,10 @@ object AstBuilder {
 
 
 		fun value(origin: IntRange, configure: () -> String) {
-			values += EnumValueDefinition(
+			values += GEnumValueDefinition(
 				description = null,
 				directives = emptyList(),
-				name = Name(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -209,12 +208,12 @@ object AstBuilder {
 	@AstBuilderDsl
 	class FieldDefinitionBuilder(private val origin: IntRange) {
 
-		private val arguments = mutableListOf<ArgumentDefinition>()
-		private var name: Name? = null
-		private var type: TypeReference? = null
+		private val arguments = mutableListOf<GArgumentDefinition>()
+		private var name: GName? = null
+		private var type: GTypeRef? = null
 
 
-		fun build() = FieldDefinition(
+		fun build() = GFieldDefinition(
 			arguments = arguments,
 			description = null,
 			directives = emptyList(),
@@ -230,7 +229,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -253,9 +252,9 @@ object AstBuilder {
 	@AstBuilderDsl
 	class InputObjectTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private val arguments = mutableListOf<ArgumentDefinition>()
-		private var description: Value.String? = null
-		private var name: Name? = null
+		private val arguments = mutableListOf<GArgumentDefinition>()
+		private var description: GValue.String? = null
+		private var name: GName? = null
 
 
 		fun argument(origin: IntRange, configure: ArgumentDefinitionBuilder.() -> Unit) {
@@ -263,7 +262,7 @@ object AstBuilder {
 		}
 
 
-		fun build() = Definition.TypeSystem.Type.InputObject(
+		fun build() = GInputObjectType(
 			arguments = arguments,
 			description = description,
 			directives = emptyList(),
@@ -273,7 +272,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = Value.String(
+			description = GValue.String(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -282,7 +281,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -293,13 +292,13 @@ object AstBuilder {
 	@AstBuilderDsl
 	class InterfaceTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: Value.String? = null
-		private val fields = mutableListOf<FieldDefinition>()
-		private val interfaces = mutableListOf<TypeReference.Named>()
-		private var name: Name? = null
+		private var description: GValue.String? = null
+		private val fields = mutableListOf<GFieldDefinition>()
+		private val interfaces = mutableListOf<GNamedTypeRef>()
+		private var name: GName? = null
 
 
-		fun build() = Definition.TypeSystem.Type.Interface(
+		fun build() = GInterfaceType(
 			description = description,
 			directives = emptyList(),
 			fields = fields,
@@ -310,7 +309,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = Value.String(
+			description = GValue.String(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -324,8 +323,8 @@ object AstBuilder {
 
 
 		fun inherits(origin: IntRange, configure: () -> String) {
-			interfaces += TypeReference.Named(
-				name = Name(
+			interfaces += GNamedTypeRef(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -335,7 +334,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -346,13 +345,13 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ObjectTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: Value.String? = null
-		private val fields = mutableListOf<FieldDefinition>()
-		private val interfaces = mutableListOf<TypeReference.Named>()
-		private var name: Name? = null
+		private var description: GValue.String? = null
+		private val fields = mutableListOf<GFieldDefinition>()
+		private val interfaces = mutableListOf<GNamedTypeRef>()
+		private var name: GName? = null
 
 
-		fun build() = Definition.TypeSystem.Type.Object(
+		fun build() = GObjectType(
 			description = description,
 			directives = emptyList(),
 			fields = fields,
@@ -363,7 +362,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = Value.String(
+			description = GValue.String(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -377,8 +376,8 @@ object AstBuilder {
 
 
 		fun implements(origin: IntRange, configure: () -> String) {
-			interfaces += TypeReference.Named(
-				name = Name(
+			interfaces += GNamedTypeRef(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -388,7 +387,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -399,11 +398,11 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ListTypeReferenceBuilder(private val origin: IntRange) {
 
-		private var elementType: TypeReference? = null
+		private var elementType: GTypeRef? = null
 
 
 		fun build() =
-			TypeReference.List(
+			GListTypeRef(
 				elementType = elementType ?: error("name(), list() or nonNull() missing"),
 				origin = Origin(origin)
 			)
@@ -415,8 +414,8 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			elementType = TypeReference.Named(
-				name = Name(
+			elementType = GNamedTypeRef(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -434,11 +433,11 @@ object AstBuilder {
 	@AstBuilderDsl
 	class NonNullTypeReferenceBuilder(private val origin: IntRange) {
 
-		private var nullableType: TypeReference? = null
+		private var nullableType: GTypeRef? = null
 
 
 		fun build() =
-			TypeReference.NonNull(
+			GNonNullTypeRef(
 				nullableType = nullableType ?: error("name() or list() missing"),
 				origin = Origin(origin)
 			)
@@ -450,8 +449,8 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			nullableType = TypeReference.Named(
-				name = Name(
+			nullableType = GNamedTypeRef(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -477,6 +476,16 @@ object AstBuilder {
 
 		constructor(range: IntRange) :
 			this(startPosition = range.first, endPosition = range.last)
+
+
+		override fun equals(other: Any?) =
+			this === other || (
+				other is Origin &&
+					startPosition == other.startPosition &&
+					endPosition == other.endPosition &&
+					(column < 0 || other.column < 0 || column == other.column) &&
+					(line < 0 || other.line < 0 || line == other.line)
+				)
 
 
 		override val source: GSource
@@ -507,7 +516,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class TypeReferenceBuilder {
 
-		private var type: TypeReference? = null
+		private var type: GTypeRef? = null
 
 
 		fun build() =
@@ -520,8 +529,8 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			type = TypeReference.Named(
-				name = Name(
+			type = GNamedTypeRef(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -539,11 +548,11 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ScalarTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: Value.String? = null
-		private var name: Name? = null
+		private var description: GValue.String? = null
+		private var name: GName? = null
 
 
-		fun build() = Definition.TypeSystem.Type.Scalar(
+		fun build() = GCustomScalarType(
 			description = description,
 			directives = emptyList(),
 			name = name ?: error("name() missing"),
@@ -552,7 +561,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = Value.String(
+			description = GValue.String(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -561,7 +570,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -572,22 +581,22 @@ object AstBuilder {
 	@AstBuilderDsl
 	class UnionTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: Value.String? = null
-		private val possibleTypes = mutableListOf<TypeReference.Named>()
-		private var name: Name? = null
+		private var description: GValue.String? = null
+		private val possibleTypes = mutableListOf<GNamedTypeRef>()
+		private var name: GName? = null
 
 
-		fun build() = Definition.TypeSystem.Type.Union(
+		fun build() = GUnionType(
 			description = description,
 			directives = emptyList(),
 			name = name ?: error("name() missing"),
 			origin = Origin(origin),
-			types = possibleTypes
+			possibleTypes = possibleTypes
 		)
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = Value.String(
+			description = GValue.String(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -596,7 +605,7 @@ object AstBuilder {
 
 
 		fun name(origin: IntRange, configure: () -> String) {
-			name = Name(
+			name = GName(
 				origin = Origin(origin),
 				value = configure()
 			)
@@ -604,8 +613,8 @@ object AstBuilder {
 
 
 		fun possibleType(origin: IntRange, configure: () -> String) {
-			possibleTypes += TypeReference.Named(
-				name = Name(
+			possibleTypes += GNamedTypeRef(
+				name = GName(
 					origin = Origin(origin),
 					value = configure()
 				),
@@ -618,7 +627,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ValueBuilder {
 
-		private var value: Value? = null
+		private var value: GValue? = null
 
 
 		fun build() =
@@ -626,7 +635,7 @@ object AstBuilder {
 
 
 		fun boolean(origin: IntRange, configure: () -> Boolean) {
-			value = Value.Boolean(
+			value = GValue.Boolean(
 				origin = Origin(origin),
 				value = configure()
 			)

@@ -1,7 +1,6 @@
 package tests
 
 import io.fluidsonic.graphql.*
-import io.fluidsonic.graphql.GAst.*
 import kotlin.test.*
 
 
@@ -116,7 +115,7 @@ class AstParsingTest {
 		document.assert {
 			assertAt(0 .. 41)
 
-			definitions.assertOneOf<Definition.Operation> {
+			definitions.assertOneOf<GOperationDefinition> {
 				assertAt(0 .. 40)
 				assertEquals(expected = GOperationType.query, actual = type)
 				assertNull(name)
@@ -126,12 +125,12 @@ class AstParsingTest {
 				selectionSet.assert {
 					assertAt(0 .. 40)
 
-					selections.assertOneOf<Selection.Field> {
+					selections.assertOneOf<GFieldSelection> {
 						assertAt(4 .. 38)
-						assertNull(alias)
+						assertNull(aliasNode)
 						assertEquals(expected = emptyList(), actual = directives)
 
-						name.assert {
+						nameNode.assert {
 							assertAt(4 .. 8)
 							assertEquals(expected = "node", actual = value)
 						}
@@ -140,7 +139,7 @@ class AstParsingTest {
 							assertAt(9 .. 14)
 							assertEquals(expected = emptyList(), actual = directives)
 
-							name.assert {
+							nameNode.assert {
 								assertAt(9 .. 11)
 								assertEquals(expected = "id", actual = value)
 							}
@@ -151,27 +150,27 @@ class AstParsingTest {
 
 							selections.assertMany(2) {
 
-								get(0).assertOf<Selection.Field> {
+								get(0).assertOf<GFieldSelection> {
 									assertAt(22 .. 24)
-									assertNull(alias)
+									assertNull(aliasNode)
 									assertEquals(expected = emptyList(), actual = arguments)
 									assertEquals(expected = emptyList(), actual = directives)
 									assertNull(selectionSet)
 
-									name.assert {
+									nameNode.assert {
 										assertAt(22 .. 24)
 										assertEquals(expected = "id", actual = value)
 									}
 								}
 
-								get(1).assertOf<Selection.Field> {
+								get(1).assertOf<GFieldSelection> {
 									assertAt(30 .. 34)
-									assertNull(alias)
+									assertNull(aliasNode)
 									assertEquals(expected = emptyList(), actual = arguments)
 									assertEquals(expected = emptyList(), actual = directives)
 									assertNull(selectionSet)
 
-									name.assert {
+									nameNode.assert {
 										assertAt(30 .. 34)
 										assertEquals(expected = "name", actual = value)
 									}
@@ -199,7 +198,7 @@ class AstParsingTest {
 		document.assert {
 			assertAt(0 .. 30)
 
-			definitions.assertOneOf<Definition.Operation> {
+			definitions.assertOneOf<GOperationDefinition> {
 				assertAt(0 .. 29)
 				assertEquals(expected = GOperationType.query, actual = type)
 				assertNull(name)
@@ -209,13 +208,13 @@ class AstParsingTest {
 				selectionSet.assert {
 					assertAt(6 .. 29)
 
-					selections.assertOneOf<Selection.Field> {
+					selections.assertOneOf<GFieldSelection> {
 						assertAt(10 .. 27)
-						assertNull(alias)
+						assertNull(aliasNode)
 						assertEquals(expected = emptyList(), actual = arguments)
 						assertEquals(expected = emptyList(), actual = directives)
 
-						name.assert {
+						nameNode.assert {
 							assertAt(10 .. 14)
 							assertEquals(expected = "node", actual = value)
 						}
@@ -223,14 +222,14 @@ class AstParsingTest {
 						selectionSet.assert {
 							assertAt(15 .. 27)
 
-							selections.assertOneOf<Selection.Field> {
+							selections.assertOneOf<GFieldSelection> {
 								assertAt(21 .. 23)
-								assertNull(alias)
+								assertNull(aliasNode)
 								assertEquals(expected = emptyList(), actual = arguments)
 								assertEquals(expected = emptyList(), actual = directives)
 								assertNull(selectionSet)
 
-								name.assert {
+								nameNode.assert {
 									assertAt(21 .. 23)
 									assertEquals(expected = "id", actual = value)
 								}
@@ -256,14 +255,14 @@ class AstParsingTest {
 			override val content = "{ id }"
 			override val name = "custom"
 		}
-		val document = GAst.parseDocument(source)
-		assertSame(expected = source, actual = document.origin.source)
+		val document = GDocument.parse(source)
+		assertSame(expected = source, actual = document.origin?.source)
 	}
 
 
 	@Test
 	fun `parses null value`() {
-		parseValue("null").assertOf<Value.Null> {
+		parseValue("null").assertOf<GValue.Null> {
 			assertAt(0 .. 4)
 		}
 	}
@@ -271,17 +270,17 @@ class AstParsingTest {
 
 	@Test
 	fun `parses list values`() {
-		parseValue("""[123 "abc"]""").assertOf<Value.List> {
+		parseValue("""[123 "abc"]""").assertOf<GValue.List> {
 			assertAt(0 .. 11)
 
 			elements.assertMany(2) {
 
-				get(0).assertOf<Value.Int> {
+				get(0).assertOf<GValue.Int> {
 					assertAt(1 .. 4)
 					assertEquals(expected = "123", actual = value)
 				}
 
-				get(1).assertOf<Value.String> {
+				get(1).assertOf<GValue.String> {
 					assertAt(5 .. 10)
 					assertEquals(expected = "abc", actual = value)
 					assertFalse(isBlock)
@@ -293,18 +292,18 @@ class AstParsingTest {
 
 	@Test
 	fun `parses block string`() {
-		parseValue("[\"\"\"long\"\"\" \"short\"]").assertOf<Value.List> {
+		parseValue("[\"\"\"long\"\"\" \"short\"]").assertOf<GValue.List> {
 			assertAt(0 .. 20)
 
 			elements.assertMany(2) {
 
-				get(0).assertOf<Value.String> {
+				get(0).assertOf<GValue.String> {
 					assertAt(1 .. 11)
 					assertEquals(expected = "long", actual = value)
 					assertTrue(isBlock)
 				}
 
-				get(1).assertOf<Value.String> {
+				get(1).assertOf<GValue.String> {
 					assertAt(12 .. 19)
 					assertEquals(expected = "short", actual = value)
 					assertFalse(isBlock)
@@ -316,10 +315,10 @@ class AstParsingTest {
 
 	@Test
 	fun `parses well known types`() {
-		parseTypeReference("String").assertOf<TypeReference.Named> {
+		parseTypeReference("String").assertOf<GNamedTypeRef> {
 			assertAt(0 .. 6)
 
-			name.assert {
+			nameNode.assert {
 				assertAt(0 .. 6)
 				assertEquals(expected = "String", actual = value)
 			}
@@ -329,10 +328,10 @@ class AstParsingTest {
 
 	@Test
 	fun `parses custom types`() {
-		parseTypeReference("MyType").assertOf<TypeReference.Named> {
+		parseTypeReference("MyType").assertOf<GNamedTypeRef> {
 			assertAt(0 .. 6)
 
-			name.assert {
+			nameNode.assert {
 				assertAt(0 .. 6)
 				assertEquals(expected = "MyType", actual = value)
 			}
@@ -342,13 +341,13 @@ class AstParsingTest {
 
 	@Test
 	fun `parses list types`() {
-		parseTypeReference("[MyType]").assertOf<TypeReference.List> {
+		parseTypeReference("[MyType]").assertOf<GListTypeRef> {
 			assertAt(0 .. 8)
 
-			elementType.assertOf<TypeReference.Named> {
+			elementType.assertOf<GNamedTypeRef> {
 				assertAt(1 .. 7)
 
-				name.assert {
+				nameNode.assert {
 					assertAt(1 .. 7)
 					assertEquals(expected = "MyType", actual = value)
 				}
@@ -359,13 +358,13 @@ class AstParsingTest {
 
 	@Test
 	fun `parses non-null types`() {
-		parseTypeReference("MyType!").assertOf<TypeReference.NonNull> {
+		parseTypeReference("MyType!").assertOf<GNonNullTypeRef> {
 			assertAt(0 .. 7)
 
-			nullableType.assertOf<TypeReference.Named> {
+			nullableType.assertOf<GNamedTypeRef> {
 				assertAt(0 .. 6)
 
-				name.assert {
+				nameNode.assert {
 					assertAt(0 .. 6)
 					assertEquals(expected = "MyType", actual = value)
 				}
@@ -376,16 +375,16 @@ class AstParsingTest {
 
 	@Test
 	fun `parses nested types`() {
-		parseTypeReference("[MyType!]").assertOf<TypeReference.List> {
+		parseTypeReference("[MyType!]").assertOf<GListTypeRef> {
 			assertAt(0 .. 9)
 
-			elementType.assertOf<TypeReference.NonNull> {
+			elementType.assertOf<GNonNullTypeRef> {
 				assertAt(1 .. 8)
 
-				nullableType.assertOf<TypeReference.Named> {
+				nullableType.assertOf<GNamedTypeRef> {
 					assertAt(1 .. 7)
 
-					name.assert {
+					nameNode.assert {
 						assertAt(1 .. 7)
 						assertEquals(expected = "MyType", actual = value)
 					}
@@ -402,7 +401,7 @@ class AstParsingTest {
 		|# foo
 		|scalar Test
 		""")
-		assertEquals(expected = 3, actual = (ast.definitions.first() as Definition.TypeSystem.Type.Scalar).name.origin.line)
+		assertEquals(expected = 3, actual = (ast.definitions.first() as GScalarType).nameNode.origin?.line)
 	}
 
 
@@ -418,18 +417,18 @@ class AstParsingTest {
 		|""${'"'}
 		|scalar Test
 		""")
-		assertEquals(expected = 8, actual = (ast.definitions.first() as Definition.TypeSystem.Type.Scalar).name.origin.line)
+		assertEquals(expected = 8, actual = (ast.definitions.first() as GScalarType).nameNode.origin?.line)
 	}
 
 
 	private fun parseDocument(content: String, name: String = "<test>") =
-		GAst.parseDocument(content.trimMargin(), name = name)
+		GDocument.parse(content.trimMargin(), name = name)
 
 
 	private fun parseTypeReference(content: String, name: String = "<test>") =
-		GAst.parseTypeReference(content.trimMargin(), name = name)
+		GTypeRef.parse(content.trimMargin(), name = name)
 
 
 	private fun parseValue(content: String, name: String = "<test>") =
-		GAst.parseValue(content.trimMargin(), name = name)
+		GValue.parse(content.trimMargin(), name = name)
 }

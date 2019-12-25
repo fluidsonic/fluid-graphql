@@ -21,14 +21,14 @@ object GSpecification {
 		arguments = listOf(
 			GArgumentDefinition(
 				name = "reason",
-				type = GStringType,
+				type = GStringTypeRef,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
 					"Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).",
-				defaultValue = Optional("No longer supported")
+				defaultValue = GValue.String("No longer supported")
 			)
 		),
 		description = "Marks an element of a GraphQL schema as no longer supported.",
-		locations = listOf(
+		locations = setOf(
 			GDirectiveLocation.ENUM_VALUE,
 			GDirectiveLocation.FIELD_DEFINITION
 		)
@@ -40,12 +40,12 @@ object GSpecification {
 		arguments = listOf(
 			GArgumentDefinition(
 				name = "if",
-				type = GNonNullType(GBooleanType),
+				type = GBooleanTypeRef.nonNullable,
 				description = "Included when true."
 			)
 		),
 		description = "Directs the executor to include this field or fragment only when the `if` argument is true.",
-		locations = listOf(
+		locations = setOf(
 			GDirectiveLocation.FIELD,
 			GDirectiveLocation.FRAGMENT_SPREAD,
 			GDirectiveLocation.INLINE_FRAGMENT
@@ -58,12 +58,12 @@ object GSpecification {
 		arguments = listOf(
 			GArgumentDefinition(
 				name = "if",
-				type = GNonNullType(GBooleanType),
+				type = GBooleanTypeRef.nonNullable,
 				description = "Skipped when true."
 			)
 		),
 		description = "Directs the executor to skip this field or fragment when the `if` argument is true.",
-		locations = listOf(
+		locations = setOf(
 			GDirectiveLocation.FIELD,
 			GDirectiveLocation.FRAGMENT_SPREAD,
 			GDirectiveLocation.INLINE_FRAGMENT

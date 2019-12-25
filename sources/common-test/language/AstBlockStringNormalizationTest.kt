@@ -1,7 +1,6 @@
 package tests
 
 import io.fluidsonic.graphql.*
-import io.fluidsonic.graphql.GAst.*
 import kotlin.test.*
 
 
@@ -19,7 +18,7 @@ class AstBlockStringNormalizationTest {
 			|      GraphQL.
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -42,7 +41,7 @@ class AstBlockStringNormalizationTest {
 			|
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -65,7 +64,7 @@ class AstBlockStringNormalizationTest {
 			|  
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -84,7 +83,7 @@ class AstBlockStringNormalizationTest {
 			|      GraphQL.
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -105,7 +104,7 @@ class AstBlockStringNormalizationTest {
 			|               
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf(
@@ -132,7 +131,7 @@ class AstBlockStringNormalizationTest {
 			|
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -147,7 +146,7 @@ class AstBlockStringNormalizationTest {
 			|	    Hello
 		""".toBlockString()
 
-		val parsed = (GAst.parseValue(input) as Value.String).value
+		val parsed = (GValue.parse(input) as GValue.String).value
 
 		assertEquals(
 			expected = listOf("Hello"),

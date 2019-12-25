@@ -107,12 +107,12 @@ class SchemaTest {
 				field("article" of Article) {
 					argument("id" of ID)
 					resolve {
-						article(it.intArgument("id"))
+						article(it.stringArgument("id"))
 					}
 				}
 				field("feed" of List(Article)) {
 					resolve {
-						List(10) { article(it + 1) }
+						List(10) { article("${it + 1}") }
 					}
 				}
 			}
@@ -173,11 +173,11 @@ class SchemaTest {
 		private val johnSmith = Author(
 			id = 123,
 			name = "John Smith",
-			recentArticleProvider = { article(1) }
+			recentArticleProvider = { article("1") }
 		)
 
 
-		private fun article(id: Int): Article =
+		private fun article(id: String): Article =
 			Article(
 				id = id,
 				isPublished = true,
@@ -192,7 +192,7 @@ class SchemaTest {
 
 	private data class Article(
 		val author: Author,
-		val id: Int,
+		val id: String,
 		val isPublished: Boolean,
 		val title: String,
 		val body: String,

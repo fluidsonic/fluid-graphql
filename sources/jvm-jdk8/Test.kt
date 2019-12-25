@@ -137,7 +137,7 @@ fun main() {
 //	)
 
 	val req = GDocument(
-		operations = listOf(
+		definitions = listOf(
 			GOperationDefinition(
 				type = GOperationType.query,
 				selectionSet = GSelectionSet(
@@ -146,7 +146,7 @@ fun main() {
 						GFieldSelection(
 							name = "__type",
 							arguments = listOf(
-								GArgument(name = "name", value = "Droid")
+								GArgument(name = "name", value = GValue.String("Droid"))
 							),
 							selectionSet = GSelectionSet(
 								selections = listOf(
@@ -187,7 +187,7 @@ fun main() {
 
 	val githubSource = File("sources/test-fixtures/github-schema.graphql").readText()
 	val githubSchema = GDocument.parse(githubSource, "github-schema.graphql")
-	val github = GAst.parseDocument(githubSource)
+	val github = GDocument.parse(githubSource)
 
 	println(GAst.print(github))
 }

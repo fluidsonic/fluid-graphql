@@ -76,6 +76,15 @@ sealed class GResult<out Value> {
 		}
 
 
+		private fun collectErrors(errors: List<GError>) {
+			if (errors.isEmpty())
+				return
+
+			this.errors?.addAll(errors)
+				?: run { this.errors = errors.toMutableList() }
+		}
+
+
 		fun failWith(error: GError): Failure {
 			collectError(error)
 
@@ -85,6 +94,8 @@ sealed class GResult<out Value> {
 
 		inline fun <Value> run(block: Builder.() -> Value): GResult<Value> {
 			val value = block()
+			if (value is GResult<*> || value is GPartialResult<*>)
+				error("Unexpected result type in GResult {} block.")
 
 			return errors
 				?.let(::Failure)
@@ -92,9 +103,8 @@ sealed class GResult<out Value> {
 		}
 
 
-		fun <Value> GPartialResult<Value>.consumeFailure(): Value {
-			this@Builder.errors?.addAll(errors)
-				?: run { this@Builder.errors = errors.toMutableList() }
+		fun <Value> GPartialResult<Value>.consumeErrors(): Value {
+			collectErrors(errors)
 
 			return value
 		}
@@ -104,8 +114,7 @@ sealed class GResult<out Value> {
 			when (this) {
 				is Success -> value
 				is Failure -> {
-					this@Builder.errors?.addAll(errors)
-						?: run { this@Builder.errors = errors.toMutableList() }
+					collectErrors(errors)
 
 					null
 				}
@@ -116,7 +125,7 @@ sealed class GResult<out Value> {
 			when {
 				errors.isEmpty() -> value
 				else -> {
-					consumeFailure()
+					consumeErrors()
 
 					block(Failure(this@Builder.errors.orEmpty()))
 				}
@@ -140,7 +149,7 @@ inline fun <Value> GResult(block: GResult.Builder.() -> Value) =
 	GResult.Builder().run(block)
 
 
-inline fun <Value> GResult<Value>.consumeFailure(block: (failure: GResult.Failure) -> Nothing): Value =
+inline fun <Value> GResult<Value>.consumeErrors(block: (failure: GResult.Failure) -> Nothing): Value =
 	when (this) {
 		is GResult.Failure -> block(this)
 		is GResult.Success -> value

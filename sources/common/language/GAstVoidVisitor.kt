@@ -1,164 +1,163 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GAst.*
-
 
 abstract class GAstVoidVisitor : GAstVisitor<Unit, Nothing?> {
 
-	abstract fun visitNode(node: GAst)
+	open fun visitNode(node: GAst) =
+		Unit
 
 
-	open fun visitArgument(argument: Argument) =
+	open fun visitArgument(argument: GArgument) =
 		visitNode(argument)
 
-	open fun visitArgumentDefinition(definition: ArgumentDefinition) =
+	open fun visitArgumentDefinition(definition: GArgumentDefinition) =
 		visitNode(definition)
 
-	open fun visitBooleanValue(value: Value.Boolean) =
+	open fun visitBooleanValue(value: GValue.Boolean) =
 		visitValue(value)
 
-	open fun visitDefinition(definition: Definition) =
+	open fun visitDefinition(definition: GDefinition) =
 		visitNode(definition)
 
-	open fun visitDirective(directive: Directive) =
+	open fun visitDirective(directive: GDirective) =
 		visitNode(directive)
 
-	open fun visitDirectiveDefinition(definition: Definition.TypeSystem.Directive) =
+	open fun visitDirectiveDefinition(definition: GDirectiveDefinition) =
 		visitTypeSystemDefinition(definition)
 
-	open fun visitDocument(document: Document) =
+	open fun visitDocument(document: GDocument) =
 		visitNode(document)
 
-	open fun visitEnumTypeDefinition(definition: Definition.TypeSystem.Type.Enum) =
-		visitTypeDefinition(definition)
+	open fun visitEnumType(type: GEnumType) =
+		visitType(type)
 
-	open fun visitEnumTypeExtension(extension: Definition.TypeSystemExtension.Type.Enum) =
+	open fun visitEnumTypeExtension(extension: GEnumTypeExtension) =
 		visitTypeExtension(extension)
 
-	open fun visitEnumValue(value: Value.Enum) =
+	open fun visitEnumValue(value: GValue.Enum) =
 		visitValue(value)
 
-	open fun visitEnumValueDefinition(definition: EnumValueDefinition) =
+	open fun visitEnumValueDefinition(definition: GEnumValueDefinition) =
 		visitNode(definition)
 
-	open fun visitFieldDefinition(definition: FieldDefinition) =
+	open fun visitFieldDefinition(definition: GFieldDefinition) =
 		visitNode(definition)
 
-	open fun visitFieldSelection(selection: Selection.Field) =
+	open fun visitFieldSelection(selection: GFieldSelection) =
 		visitSelection(selection)
 
-	open fun visitFloatValue(value: Value.Float) =
+	open fun visitFloatValue(value: GValue.Float) =
 		visitValue(value)
 
-	open fun visitFragmentDefinition(definition: Definition.Fragment) =
+	open fun visitFragmentDefinition(definition: GFragmentDefinition) =
 		visitDefinition(definition)
 
-	open fun visitFragmentSelection(selection: Selection.Fragment) =
+	open fun visitFragmentSelection(selection: GFragmentSelection) =
 		visitSelection(selection)
 
-	open fun visitInlineFragmentSelection(selection: Selection.InlineFragment) =
+	open fun visitInlineFragmentSelection(selection: GInlineFragmentSelection) =
 		visitSelection(selection)
 
-	open fun visitInputObjectTypeDefinition(definition: Definition.TypeSystem.Type.InputObject) =
-		visitTypeDefinition(definition)
+	open fun visitInputObjectType(type: GInputObjectType) =
+		visitType(type)
 
-	open fun visitInputObjectTypeExtension(extension: Definition.TypeSystemExtension.Type.InputObject) =
+	open fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension) =
 		visitTypeExtension(extension)
 
-	open fun visitIntValue(value: Value.Int) =
+	open fun visitIntValue(value: GValue.Int) =
 		visitValue(value)
 
-	open fun visitInterfaceTypeDefinition(definition: Definition.TypeSystem.Type.Interface) =
-		visitTypeDefinition(definition)
+	open fun visitInterfaceType(type: GInterfaceType) =
+		visitType(type)
 
-	open fun visitInterfaceTypeExtension(extension: Definition.TypeSystemExtension.Type.Interface) =
+	open fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension) =
 		visitTypeExtension(extension)
 
-	open fun visitListValue(value: Value.List) =
+	open fun visitListValue(value: GValue.List) =
 		visitValue(value)
 
-	open fun visitListTypeReference(reference: TypeReference.List) =
-		visitTypeReference(reference)
+	open fun visitListTypeRef(ref: GListTypeRef) =
+		visitTypeRef(ref)
 
-	open fun visitName(name: Name) =
+	open fun visitName(name: GName) =
 		visitNode(name)
 
-	open fun visitNamedTypeReference(reference: TypeReference.Named) =
-		visitTypeReference(reference)
+	open fun visitNamedTypeRef(ref: GNamedTypeRef) =
+		visitTypeRef(ref)
 
-	open fun visitNonNullTypeReference(reference: TypeReference.NonNull) =
-		visitTypeReference(reference)
+	open fun visitNonNullTypeRef(ref: GNonNullTypeRef) =
+		visitTypeRef(ref)
 
-	open fun visitNullValue(value: Value.Null) =
+	open fun visitNullValue(value: GValue.Null) =
 		visitValue(value)
 
-	open fun visitObjectTypeDefinition(definition: Definition.TypeSystem.Type.Object) =
-		visitTypeDefinition(definition)
+	open fun visitObjectType(type: GObjectType) =
+		visitType(type)
 
-	open fun visitObjectTypeExtension(extension: Definition.TypeSystemExtension.Type.Object) =
+	open fun visitObjectTypeExtension(extension: GObjectTypeExtension) =
 		visitTypeExtension(extension)
 
-	open fun visitObjectValue(value: Value.Object) =
+	open fun visitObjectValue(value: GValue.Object) =
 		visitValue(value)
 
-	open fun visitObjectValueField(value: Value.Object.Field) =
+	open fun visitObjectValueField(value: GObjectValueField) =
 		visitNode(value)
 
-	open fun visitOperationDefinition(definition: Definition.Operation) =
+	open fun visitOperationDefinition(definition: GOperationDefinition) =
 		visitDefinition(definition)
 
-	open fun visitOperationTypeDefinition(definition: OperationTypeDefinition) =
+	open fun visitOperationTypeDefinition(definition: GOperationTypeDefinition) =
 		visitNode(definition)
 
-	open fun visitScalarTypeDefinition(definition: Definition.TypeSystem.Type.Scalar) =
-		visitTypeDefinition(definition)
+	open fun visitScalarType(type: GScalarType) =
+		visitType(type)
 
-	open fun visitScalarTypeExtension(extension: Definition.TypeSystemExtension.Type.Scalar) =
+	open fun visitScalarTypeExtension(extension: GScalarTypeExtension) =
 		visitTypeExtension(extension)
 
-	open fun visitSchemaDefinition(definition: Definition.TypeSystem.Schema) =
+	open fun visitSchemaDefinition(definition: GSchemaDefinition) =
 		visitTypeSystemDefinition(definition)
 
-	open fun visitSchemaExtension(extension: Definition.TypeSystemExtension.Schema) =
+	open fun visitSchemaExtension(extension: GSchemaExtensionDefinition) =
 		visitTypeSystemExtension(extension)
 
-	open fun visitSelection(selection: Selection) =
+	open fun visitSelection(selection: GSelection) =
 		visitNode(selection)
 
-	open fun visitSelectionSet(set: SelectionSet) =
+	open fun visitSelectionSet(set: GSelectionSet) =
 		visitNode(set)
 
-	open fun visitStringValue(value: Value.String) =
+	open fun visitStringValue(value: GValue.String) =
 		visitValue(value)
 
-	open fun visitTypeDefinition(definition: Definition.TypeSystem.Type) =
-		visitTypeSystemDefinition(definition)
+	open fun visitType(type: GType) =
+		visitTypeSystemDefinition(type)
 
-	open fun visitTypeExtension(extension: Definition.TypeSystemExtension.Type) =
+	open fun visitTypeExtension(extension: GTypeExtension) =
 		visitTypeSystemExtension(extension)
 
-	open fun visitTypeReference(reference: TypeReference) =
-		visitNode(reference)
+	open fun visitTypeRef(ref: GTypeRef) =
+		visitNode(ref)
 
-	open fun visitTypeSystemDefinition(definition: Definition.TypeSystem) =
+	open fun visitTypeSystemDefinition(definition: GTypeSystemDefinition) =
 		visitDefinition(definition)
 
-	open fun visitTypeSystemExtension(extension: Definition.TypeSystemExtension) =
+	open fun visitTypeSystemExtension(extension: GTypeSystemExtensionDefinition) =
 		visitDefinition(extension)
 
-	open fun visitUnionTypeDefinition(definition: Definition.TypeSystem.Type.Union) =
-		visitTypeDefinition(definition)
+	open fun visitUnionType(type: GUnionType) =
+		visitType(type)
 
-	open fun visitUnionTypeExtension(extension: Definition.TypeSystemExtension.Type.Union) =
+	open fun visitUnionTypeExtension(extension: GUnionTypeExtension) =
 		visitTypeExtension(extension)
 
-	open fun visitValue(value: Value) =
+	open fun visitValue(value: GValue) =
 		visitNode(value)
 
-	open fun visitVariableDefinition(value: VariableDefinition) =
+	open fun visitVariableDefinition(value: GVariableDefinition) =
 		visitNode(value)
 
-	open fun visitVariableValue(value: Value.Variable) =
+	open fun visitVariableValue(value: GValue.Variable) =
 		visitValue(value)
 
 
@@ -166,156 +165,156 @@ abstract class GAstVoidVisitor : GAstVisitor<Unit, Nothing?> {
 		visitNode(node)
 
 
-	final override fun visitArgument(argument: Argument, data: Nothing?) =
+	final override fun visitArgument(argument: GArgument, data: Nothing?) =
 		visitArgument(argument)
 
-	final override fun visitArgumentDefinition(definition: ArgumentDefinition, data: Nothing?) =
+	final override fun visitArgumentDefinition(definition: GArgumentDefinition, data: Nothing?) =
 		visitArgumentDefinition(definition)
 
-	final override fun visitBooleanValue(value: Value.Boolean, data: Nothing?) =
+	final override fun visitBooleanValue(value: GValue.Boolean, data: Nothing?) =
 		visitBooleanValue(value)
 
-	final override fun visitDefinition(definition: Definition, data: Nothing?) =
+	final override fun visitDefinition(definition: GDefinition, data: Nothing?) =
 		visitDefinition(definition)
 
-	final override fun visitDirective(directive: Directive, data: Nothing?) =
+	final override fun visitDirective(directive: GDirective, data: Nothing?) =
 		visitDirective(directive)
 
-	final override fun visitDirectiveDefinition(definition: Definition.TypeSystem.Directive, data: Nothing?) =
+	final override fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: Nothing?) =
 		visitDirectiveDefinition(definition)
 
-	final override fun visitDocument(document: Document, data: Nothing?) =
+	final override fun visitDocument(document: GDocument, data: Nothing?) =
 		visitDocument(document)
 
-	final override fun visitEnumTypeDefinition(definition: Definition.TypeSystem.Type.Enum, data: Nothing?) =
-		visitEnumTypeDefinition(definition)
+	final override fun visitEnumType(type: GEnumType, data: Nothing?) =
+		visitEnumType(type)
 
-	final override fun visitEnumTypeExtension(extension: Definition.TypeSystemExtension.Type.Enum, data: Nothing?) =
+	final override fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: Nothing?) =
 		visitEnumTypeExtension(extension)
 
-	final override fun visitEnumValue(value: Value.Enum, data: Nothing?) =
+	final override fun visitEnumValue(value: GValue.Enum, data: Nothing?) =
 		visitEnumValue(value)
 
-	final override fun visitEnumValueDefinition(definition: EnumValueDefinition, data: Nothing?) =
+	final override fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Nothing?) =
 		visitEnumValueDefinition(definition)
 
-	final override fun visitFieldDefinition(definition: FieldDefinition, data: Nothing?) =
+	final override fun visitFieldDefinition(definition: GFieldDefinition, data: Nothing?) =
 		visitFieldDefinition(definition)
 
-	final override fun visitFieldSelection(selection: Selection.Field, data: Nothing?) =
+	final override fun visitFieldSelection(selection: GFieldSelection, data: Nothing?) =
 		visitFieldSelection(selection)
 
-	final override fun visitFloatValue(value: Value.Float, data: Nothing?) =
+	final override fun visitFloatValue(value: GValue.Float, data: Nothing?) =
 		visitFloatValue(value)
 
-	final override fun visitFragmentDefinition(definition: Definition.Fragment, data: Nothing?) =
+	final override fun visitFragmentDefinition(definition: GFragmentDefinition, data: Nothing?) =
 		visitFragmentDefinition(definition)
 
-	final override fun visitFragmentSelection(selection: Selection.Fragment, data: Nothing?) =
+	final override fun visitFragmentSelection(selection: GFragmentSelection, data: Nothing?) =
 		visitFragmentSelection(selection)
 
-	final override fun visitInlineFragmentSelection(selection: Selection.InlineFragment, data: Nothing?) =
+	final override fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?) =
 		visitInlineFragmentSelection(selection)
 
-	final override fun visitInputObjectTypeDefinition(definition: Definition.TypeSystem.Type.InputObject, data: Nothing?) =
-		visitInputObjectTypeDefinition(definition)
+	final override fun visitInputObjectType(type: GInputObjectType, data: Nothing?) =
+		visitInputObjectType(type)
 
-	final override fun visitInputObjectTypeExtension(extension: Definition.TypeSystemExtension.Type.InputObject, data: Nothing?) =
+	final override fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?) =
 		visitInputObjectTypeExtension(extension)
 
-	final override fun visitIntValue(value: Value.Int, data: Nothing?) =
+	final override fun visitIntValue(value: GValue.Int, data: Nothing?) =
 		visitIntValue(value)
 
-	final override fun visitInterfaceTypeDefinition(definition: Definition.TypeSystem.Type.Interface, data: Nothing?) =
-		visitInterfaceTypeDefinition(definition)
+	final override fun visitInterfaceType(type: GInterfaceType, data: Nothing?) =
+		visitInterfaceType(type)
 
-	final override fun visitInterfaceTypeExtension(extension: Definition.TypeSystemExtension.Type.Interface, data: Nothing?) =
+	final override fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?) =
 		visitInterfaceTypeExtension(extension)
 
-	final override fun visitListValue(value: Value.List, data: Nothing?) =
+	final override fun visitListValue(value: GValue.List, data: Nothing?) =
 		visitListValue(value)
 
-	final override fun visitListTypeReference(reference: TypeReference.List, data: Nothing?) =
-		visitListTypeReference(reference)
+	final override fun visitListTypeRef(ref: GListTypeRef, data: Nothing?) =
+		visitListTypeRef(ref)
 
-	final override fun visitName(name: Name, data: Nothing?) =
+	final override fun visitName(name: GName, data: Nothing?) =
 		visitName(name)
 
-	final override fun visitNamedTypeReference(reference: TypeReference.Named, data: Nothing?) =
-		visitNamedTypeReference(reference)
+	final override fun visitNamedTypeRef(ref: GNamedTypeRef, data: Nothing?) =
+		visitNamedTypeRef(ref)
 
-	final override fun visitNonNullTypeReference(reference: TypeReference.NonNull, data: Nothing?) =
-		visitNonNullTypeReference(reference)
+	final override fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: Nothing?) =
+		visitNonNullTypeRef(ref)
 
-	final override fun visitNullValue(value: Value.Null, data: Nothing?) =
+	final override fun visitNullValue(value: GValue.Null, data: Nothing?) =
 		visitNullValue(value)
 
-	final override fun visitObjectTypeDefinition(definition: Definition.TypeSystem.Type.Object, data: Nothing?) =
-		visitObjectTypeDefinition(definition)
+	final override fun visitObjectType(type: GObjectType, data: Nothing?) =
+		visitObjectType(type)
 
-	final override fun visitObjectTypeExtension(extension: Definition.TypeSystemExtension.Type.Object, data: Nothing?) =
+	final override fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: Nothing?) =
 		visitObjectTypeExtension(extension)
 
-	final override fun visitObjectValue(value: Value.Object, data: Nothing?) =
+	final override fun visitObjectValue(value: GValue.Object, data: Nothing?) =
 		visitObjectValue(value)
 
-	final override fun visitObjectValueField(value: Value.Object.Field, data: Nothing?) =
-		visitObjectValueField(value)
+	final override fun visitObjectValueField(field: GObjectValueField, data: Nothing?) =
+		visitObjectValueField(field)
 
-	final override fun visitOperationDefinition(definition: Definition.Operation, data: Nothing?) =
+	final override fun visitOperationDefinition(definition: GOperationDefinition, data: Nothing?) =
 		visitOperationDefinition(definition)
 
-	final override fun visitOperationTypeDefinition(definition: OperationTypeDefinition, data: Nothing?) =
+	final override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?) =
 		visitOperationTypeDefinition(definition)
 
-	final override fun visitScalarTypeDefinition(definition: Definition.TypeSystem.Type.Scalar, data: Nothing?) =
-		visitScalarTypeDefinition(definition)
+	final override fun visitScalarType(type: GScalarType, data: Nothing?) =
+		visitScalarType(type)
 
-	final override fun visitScalarTypeExtension(extension: Definition.TypeSystemExtension.Type.Scalar, data: Nothing?) =
+	final override fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: Nothing?) =
 		visitScalarTypeExtension(extension)
 
-	final override fun visitSchemaDefinition(definition: Definition.TypeSystem.Schema, data: Nothing?) =
+	final override fun visitSchemaDefinition(definition: GSchemaDefinition, data: Nothing?) =
 		visitSchemaDefinition(definition)
 
-	final override fun visitSchemaExtension(extension: Definition.TypeSystemExtension.Schema, data: Nothing?) =
+	final override fun visitSchemaExtension(extension: GSchemaExtensionDefinition, data: Nothing?) =
 		visitSchemaExtension(extension)
 
-	final override fun visitSelection(selection: Selection, data: Nothing?) =
+	final override fun visitSelection(selection: GSelection, data: Nothing?) =
 		visitSelection(selection)
 
-	final override fun visitSelectionSet(set: SelectionSet, data: Nothing?) =
+	final override fun visitSelectionSet(set: GSelectionSet, data: Nothing?) =
 		visitSelectionSet(set)
 
-	final override fun visitStringValue(value: Value.String, data: Nothing?) =
+	final override fun visitStringValue(value: GValue.String, data: Nothing?) =
 		visitStringValue(value)
 
-	final override fun visitTypeDefinition(definition: Definition.TypeSystem.Type, data: Nothing?) =
-		visitTypeDefinition(definition)
+	final override fun visitType(type: GType, data: Nothing?) =
+		visitType(type)
 
-	final override fun visitTypeExtension(extension: Definition.TypeSystemExtension.Type, data: Nothing?) =
+	final override fun visitTypeExtension(extension: GTypeExtension, data: Nothing?) =
 		visitTypeExtension(extension)
 
-	final override fun visitTypeReference(reference: TypeReference, data: Nothing?) =
-		visitTypeReference(reference)
+	final override fun visitTypeRef(ref: GTypeRef, data: Nothing?) =
+		visitTypeRef(ref)
 
-	final override fun visitTypeSystemDefinition(definition: Definition.TypeSystem, data: Nothing?) =
+	final override fun visitTypeSystemDefinition(definition: GTypeSystemDefinition, data: Nothing?) =
 		visitTypeSystemDefinition(definition)
 
-	final override fun visitTypeSystemExtension(extension: Definition.TypeSystemExtension, data: Nothing?) =
-		visitTypeSystemExtension(extension)
+	final override fun visitTypeSystemExtensionDefinition(definition: GTypeSystemExtensionDefinition, data: Nothing?) =
+		visitTypeSystemExtension(definition)
 
-	final override fun visitUnionTypeDefinition(definition: Definition.TypeSystem.Type.Union, data: Nothing?) =
-		visitUnionTypeDefinition(definition)
+	final override fun visitUnionType(type: GUnionType, data: Nothing?) =
+		visitUnionType(type)
 
-	final override fun visitUnionTypeExtension(extension: Definition.TypeSystemExtension.Type.Union, data: Nothing?) =
+	final override fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Nothing?) =
 		visitUnionTypeExtension(extension)
 
-	final override fun visitValue(value: Value, data: Nothing?) =
+	final override fun visitValue(value: GValue, data: Nothing?) =
 		visitValue(value)
 
-	final override fun visitVariableDefinition(value: VariableDefinition, data: Nothing?) =
+	final override fun visitVariableDefinition(value: GVariableDefinition, data: Nothing?) =
 		visitVariableDefinition(value)
 
-	final override fun visitVariableValue(value: Value.Variable, data: Nothing?) =
+	final override fun visitVariableValue(value: GValue.Variable, data: Nothing?) =
 		visitVariableValue(value)
 }
