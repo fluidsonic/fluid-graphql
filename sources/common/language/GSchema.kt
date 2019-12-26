@@ -102,38 +102,48 @@ class GSchema internal constructor(
 		).toString()
 
 
-	companion object
+	companion object {
+
+		fun parse(source: GSource.Parsable) =
+			GDocument.parse(source).schema
+
+
+		fun parse(content: String, name: String = "<document>") =
+			parse(GSource.of(content = content, name = name))
+	}
 }
 
 
 fun GSchema(document: GDocument): GSchema? {
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
-		.ifEmpty { null }
-		?: return null
+		.ifEmpty { return null }
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>()
-	val schemaDefinitions = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()
+	val schemaDefinition = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()
 		.singleOrNull() // FIXME
 	val typeDefinitions = typeSystemDefinitions.filterIsInstance<GNamedType>()
 
-	val mutationType = schemaDefinitions?.operationTypes
-		?.firstOrNull { it.operation == GOperationType.mutation }
-		?.type
+	val mutationTypeRef: GNamedTypeRef?
+	val queryTypeRef: GNamedTypeRef?
+	val subscriptionTypeRef: GNamedTypeRef?
 
-	val queryType = schemaDefinitions?.operationTypes
-		?.firstOrNull { it.operation == GOperationType.query }
-		?.type
-
-	val subscriptionType = schemaDefinitions?.operationTypes
-		?.firstOrNull { it.operation == GOperationType.subscription }
-		?.type
+	if (schemaDefinition !== null) {
+		mutationTypeRef = schemaDefinition.operationTypes.firstOrNull { it.operation == GOperationType.mutation }?.type
+		queryTypeRef = schemaDefinition.operationTypes.firstOrNull { it.operation == GOperationType.query }?.type
+		subscriptionTypeRef = schemaDefinition.operationTypes.firstOrNull { it.operation == GOperationType.subscription }?.type
+	}
+	else {
+		mutationTypeRef = GTypeRef(GSpecification.defaultMutationTypeName)
+		queryTypeRef = GTypeRef(GSpecification.defaultQueryTypeName)
+		subscriptionTypeRef = GTypeRef(GSpecification.defaultSubscriptionTypeName)
+	}
 
 	return GSchema(
 		directives = directiveDefinitions,
 		document = document,
-		mutationType = mutationType,
-		queryType = queryType,
-		subscriptionType = subscriptionType,
+		mutationType = mutationTypeRef,
+		queryType = queryTypeRef,
+		subscriptionType = subscriptionTypeRef,
 		types = typeDefinitions
 	)
 }

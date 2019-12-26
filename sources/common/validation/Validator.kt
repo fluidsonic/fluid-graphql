@@ -1,3 +1,29 @@
+package io.fluidsonic.graphql
+
+
+internal class Validator(
+	private val document: GDocument,
+	rules: List<ValidationRule>,
+	schema: GSchema
+) {
+
+	private val context = ValidationContext(
+		document = document,
+		schema = schema
+	)
+
+	private val visitor = rules
+		.map(::ValidationRuleVisitor)
+		.parallelize()
+		.contextualize(context)
+
+
+	fun validate() {
+		document.accept(visitor, data = context)
+	}
+
+
+	// FIXME make rules
 //import io.fluidsonic.graphql.*
 //
 //internal fun requireImplementationOfInterface(implementingTypeName: String, iface: GInterfaceType, fields: List<GFieldDefinition>) {
@@ -33,3 +59,4 @@
 //		}
 //	}
 //}
+}

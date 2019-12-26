@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 // Internal for now. Review API before making it public.
-internal class GValueCoercer( // FIXME do we need this outside of GExecutor? if not then move some local functions below to this class
+internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if not then move some local functions below to this class
 	private val document: GDocument,
 	private val schema: GSchema,
 	private val variableValues: Map<String, Any?> = emptyMap(),
@@ -450,8 +450,8 @@ internal class GValueCoercer( // FIXME do we need this outside of GExecutor? if 
 			variableDefinitions: List<GVariableDefinition> = emptyList(),
 			variableValues: Map<String, Any?> = emptyMap(),
 			pathBuilder: GPath.Builder? = null
-		): GResult<GValueCoercer> = GResult {
-			val variableCoercer = GValueCoercer(
+		): GResult<ValueCoercer> = GResult {
+			val variableCoercer = ValueCoercer(
 				document = document,
 				schema = schema
 			)
@@ -462,7 +462,7 @@ internal class GValueCoercer( // FIXME do we need this outside of GExecutor? if 
 				variableDefinitions = variableDefinitions
 			).or { return it }
 
-			GValueCoercer(
+			ValueCoercer(
 				document = document,
 				schema = schema,
 				variableValues = variableValues,

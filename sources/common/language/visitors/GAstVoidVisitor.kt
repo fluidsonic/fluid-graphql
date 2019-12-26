@@ -223,6 +223,9 @@ abstract class GAstVoidVisitor : GAstVisitor<Unit, Nothing?> {
 		override fun visitEnumValueDefinition(definition: GEnumValueDefinition) =
 			visitNode(definition)
 
+		open fun visitExecutableDefinition(definition: GDefinition) =
+			visitDefinition(definition)
+
 		override fun visitFieldDefinition(definition: GFieldDefinition) =
 			visitNode(definition)
 
@@ -233,7 +236,7 @@ abstract class GAstVoidVisitor : GAstVisitor<Unit, Nothing?> {
 			visitValue(value)
 
 		override fun visitFragmentDefinition(definition: GFragmentDefinition) =
-			visitDefinition(definition)
+			visitExecutableDefinition(definition)
 
 		override fun visitFragmentSelection(selection: GFragmentSelection) =
 			visitSelection(selection)
@@ -293,7 +296,7 @@ abstract class GAstVoidVisitor : GAstVisitor<Unit, Nothing?> {
 			visitNode(field)
 
 		override fun visitOperationDefinition(definition: GOperationDefinition) =
-			visitDefinition(definition)
+			visitExecutableDefinition(definition)
 
 		override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition) =
 			visitNode(definition)

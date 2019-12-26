@@ -69,8 +69,10 @@ internal object Printer {
 
 			document.definitions.forEach { definition ->
 				// Cannot use index as some definitions like GSchemaDefinition may have no content and thus not produce any output.
-				if (length > startLength)
+				if (length > startLength) {
 					writeLinebreak()
+					writeLinebreak()
+				}
 
 				writeAst(definition)
 			}
@@ -84,7 +86,6 @@ internal object Printer {
 			writeDirectives(type.directives)
 			writeRaw(" ")
 			writeEnumValueDefinitions(type.values)
-			writeLinebreak()
 		}
 
 
@@ -94,7 +95,6 @@ internal object Printer {
 			writeDirectives(extension.directives)
 			writeRaw(" ")
 			writeEnumValueDefinitions(extension.values)
-			writeLinebreak()
 		}
 
 
@@ -166,7 +166,6 @@ internal object Printer {
 			writeAst(type.nameNode)
 			writeDirectives(type.directives)
 			writeInputObjectTypeArguments(type.arguments)
-			writeLinebreak()
 		}
 
 
@@ -175,7 +174,6 @@ internal object Printer {
 			writeAst(extension.nameNode)
 			writeDirectives(extension.directives)
 			writeInputObjectTypeArguments(extension.arguments)
-			writeLinebreak()
 		}
 
 
@@ -203,7 +201,6 @@ internal object Printer {
 			writeImplementedInterfaces(type.interfaces)
 			writeDirectives(type.directives)
 			writeFieldDefinitions(type.fields)
-			writeLinebreak()
 		}
 
 
@@ -213,7 +210,6 @@ internal object Printer {
 			writeImplementedInterfaces(extension.interfaces)
 			writeDirectives(extension.directives)
 			writeFieldDefinitions(extension.fields)
-			writeLinebreak()
 		}
 
 
@@ -263,7 +259,6 @@ internal object Printer {
 			writeAst(type.nameNode)
 			writeImplementedInterfaces(type.interfaces)
 			writeFieldDefinitions(type.fields)
-			writeLinebreak()
 		}
 
 
@@ -272,7 +267,6 @@ internal object Printer {
 			writeAst(extension.nameNode)
 			writeImplementedInterfaces(extension.interfaces)
 			writeFieldDefinitions(extension.fields)
-			writeLinebreak()
 		}
 
 
@@ -342,7 +336,6 @@ internal object Printer {
 			writeRaw("scalar ")
 			writeAst(type.nameNode)
 			writeDirectives(type.directives)
-			writeLinebreak()
 		}
 
 
@@ -350,7 +343,6 @@ internal object Printer {
 			writeRaw("extend scalar ")
 			writeAst(extension.nameNode)
 			writeDirectives(extension.directives)
-			writeLinebreak()
 		}
 
 
@@ -384,7 +376,6 @@ internal object Printer {
 					writeAst(it)
 				}
 			}
-			writeLinebreak()
 		}
 
 
@@ -441,7 +432,6 @@ internal object Printer {
 			writeAst(type.nameNode)
 			writeDirectives(type.directives)
 			writePossibleTypes(type.possibleTypes)
-			writeLinebreak()
 		}
 
 
@@ -450,7 +440,6 @@ internal object Printer {
 			writeAst(extension.nameNode)
 			writeDirectives(extension.directives)
 			writePossibleTypes(extension.possibleTypes)
-			writeLinebreak()
 		}
 
 

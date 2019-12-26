@@ -224,6 +224,9 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 		override fun transformEnumValueDefinition(definition: GEnumValueDefinition, data: Data) =
 			transformNode(definition, data)
 
+		open fun <Definition : GExecutableDefinition> transformExecutableDefinition(definition: Definition, data: Data) =
+			transformDefinition(definition, data)
+
 		override fun transformFieldDefinition(definition: GFieldDefinition, data: Data) =
 			transformNode(definition, data)
 
@@ -234,7 +237,7 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 			transformValue(value, data)
 
 		override fun transformFragmentDefinition(definition: GFragmentDefinition, data: Data) =
-			transformDefinition(definition, data)
+			transformExecutableDefinition(definition, data)
 
 		override fun transformFragmentSelection(selection: GFragmentSelection, data: Data) =
 			transformSelection(selection, data)
@@ -294,7 +297,7 @@ abstract class GAstTransformer<in Data> : GAstVisitor<GAst, Data> {
 			transformNode(field, data)
 
 		override fun transformOperationDefinition(definition: GOperationDefinition, data: Data) =
-			transformDefinition(definition, data)
+			transformExecutableDefinition(definition, data)
 
 		override fun transformOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data) =
 			transformNode(definition, data)

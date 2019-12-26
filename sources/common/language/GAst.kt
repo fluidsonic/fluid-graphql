@@ -3,17 +3,21 @@ package io.fluidsonic.graphql
 import kotlin.reflect.*
 
 
-// TODO add acceptChildren
-// FIXME hashCode & equals
+// FIXME hashCode
 sealed class GAst(
 	val origin: GOrigin?
 ) {
 
 	abstract fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data): Result
+	abstract fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data)
 
 
 	fun accept(visitor: GAstVoidVisitor) =
-		accept(visitor, data = null)
+		accept(visitor = visitor, data = null)
+
+
+	fun acceptChildren(visitor: GAstVoidVisitor) =
+		acceptChildren(visitor = visitor, data = null)
 
 
 	abstract fun equalsAst(other: GAst, includingOrigin: Boolean = false): Boolean
@@ -90,6 +94,12 @@ class GArgument(
 		visitor.visitArgument(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		value.accept(visitor, data)
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GArgument &&
@@ -157,6 +167,15 @@ class GArgumentDefinition(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitArgumentDefinition(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		type.accept(visitor, data)
+		defaultValue?.accept(visitor, data)
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -234,6 +253,12 @@ class GDirective(
 		visitor.visitDirective(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		arguments.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GDirective &&
@@ -286,6 +311,14 @@ class GDirectiveDefinition(
 		visitor.visitDirectiveDefinition(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		locationNodes.forEach { it.accept(visitor, data) }
+		arguments.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GDirectiveDefinition &&
@@ -322,6 +355,11 @@ class GDocument(
 		visitor.visitDocument(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		definitions.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GDocument &&
@@ -338,7 +376,7 @@ class GDocument(
 		externalContext: Any? = null,
 		defaultResolver: GFieldResolver<*>? = null
 	) =
-		GExecutor.create(
+		Executor.create(
 			schema = schema,
 			document = this,
 			rootValue = rootValue,
@@ -398,6 +436,14 @@ class GEnumType(
 		visitor.visitEnumType(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		values.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun isSupertypeOf(other: GType) =
 		other === this ||
 			(other is GNonNullType && other.nullableType === this)
@@ -445,6 +491,13 @@ class GEnumTypeExtension(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitEnumTypeExtension(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		values.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -502,6 +555,13 @@ class GEnumValueDefinition(
 		visitor.visitEnumValueDefinition(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GEnumValueDefinition &&
@@ -511,6 +571,14 @@ class GEnumValueDefinition(
 				(!includingOrigin || origin == other.origin)
 			)
 
+
+	companion object
+}
+
+
+sealed class GExecutableDefinition(
+	origin: GOrigin?
+) : GDefinition(origin = origin) {
 
 	companion object
 }
@@ -567,6 +635,15 @@ class GFieldDefinition(
 		visitor.visitFieldDefinition(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		type.accept(visitor, data)
+		arguments.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GFieldDefinition &&
@@ -621,6 +698,15 @@ class GFieldSelection(
 		visitor.visitFieldSelection(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		selectionSet?.accept(visitor, data)
+		arguments.forEach { it.accept(visitor, data) }
+		aliasNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GFieldSelection &&
@@ -645,7 +731,7 @@ class GFragmentDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
 ) :
-	GDefinition(origin = origin),
+	GExecutableDefinition(origin = origin),
 	GAst.WithDirectives {
 
 	val name get() = nameNode.value
@@ -670,6 +756,15 @@ class GFragmentDefinition(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitFragmentDefinition(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		typeCondition.accept(visitor, data)
+		selectionSet.accept(visitor, data)
+		variableDefinitions.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -714,6 +809,12 @@ class GFragmentSelection(
 		visitor.visitFragmentSelection(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GFragmentSelection &&
@@ -739,6 +840,13 @@ class GInlineFragmentSelection(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitInlineFragmentSelection(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		selectionSet.accept(visitor, data)
+		typeCondition?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -793,6 +901,14 @@ class GInputObjectType(
 		visitor.visitInputObjectType(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		arguments.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GInputObjectType &&
@@ -840,6 +956,13 @@ class GInputObjectTypeExtension(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitInputObjectTypeExtension(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		arguments.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -898,6 +1021,15 @@ class GInterfaceType(
 		visitor.visitInterfaceType(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		fields.forEach { it.accept(visitor, data) }
+		interfaces.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GInterfaceType &&
@@ -952,6 +1084,14 @@ class GInterfaceTypeExtension(
 		visitor.visitInterfaceTypeExtension(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		fields.forEach { it.accept(visitor, data) }
+		interfaces.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GInterfaceTypeExtension &&
@@ -994,6 +1134,10 @@ class GListType(
 			(other is GNonNullType && isSupertypeOf(other.nullableType))
 
 
+	override fun toRef() =
+		GListTypeRef(elementType.toRef())
+
+
 	companion object
 }
 
@@ -1008,6 +1152,11 @@ class GListTypeRef(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitListTypeRef(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		elementType.accept(visitor, data)
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1029,6 +1178,10 @@ class GName(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitName(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+		Unit
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1060,7 +1213,12 @@ sealed class GNamedType(
 	val descriptionNode = description
 	val nameNode = name
 
-	override val name get() = nameNode.value
+	final override val name get() = nameNode.value
+	final override val underlyingNamedType get() = this
+
+
+	override fun toRef() =
+		GTypeRef(name)
 
 
 	companion object
@@ -1087,6 +1245,11 @@ class GNamedTypeRef(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitNamedTypeRef(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1126,6 +1289,13 @@ class GNonNullType(
 	override fun isSupertypeOf(other: GType) =
 		other === this ||
 			(other is GNonNullType && nullableType.isSupertypeOf(other.nullableType))
+
+
+	override fun toRef() =
+		GNonNullTypeRef(nullableType.toRef())
+
+
+	companion object
 }
 
 
@@ -1139,6 +1309,11 @@ class GNonNullTypeRef(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitNonNullTypeRef(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nullableType.accept(visitor, data)
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1198,6 +1373,15 @@ class GObjectType(
 		visitor.visitObjectType(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		fields.forEach { it.accept(visitor, data) }
+		interfaces.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectType &&
@@ -1251,6 +1435,14 @@ class GObjectTypeExtension(
 		visitor.visitObjectTypeExtension(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		fields.forEach { it.accept(visitor, data) }
+		interfaces.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectTypeExtension &&
@@ -1289,6 +1481,12 @@ class GObjectValueField(
 		visitor.visitObjectValueField(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		value.accept(visitor, data)
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectValueField &&
@@ -1307,7 +1505,7 @@ class GOperationDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
 ) :
-	GDefinition(origin = origin),
+	GExecutableDefinition(origin = origin),
 	GAst.WithDirectives {
 
 	val name get() = nameNode?.value
@@ -1334,6 +1532,14 @@ class GOperationDefinition(
 		visitor.visitOperationDefinition(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode?.accept(visitor, data)
+		selectionSet.accept(visitor, data)
+		variableDefinitions.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GOperationDefinition &&
@@ -1358,6 +1564,11 @@ class GOperationTypeDefinition(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitOperationTypeDefinition(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		type.accept(visitor, data)
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1401,6 +1612,13 @@ sealed class GScalarType(
 
 	final override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitScalarType(this, data)
+
+
+	final override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	final override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1452,6 +1670,12 @@ class GScalarTypeExtension(
 		visitor.visitScalarTypeExtension(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GScalarTypeExtension &&
@@ -1476,6 +1700,12 @@ class GSchemaDefinition(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitSchemaDefinition(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		operationTypes.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1504,6 +1734,12 @@ class GSchemaExtensionDefinition(
 		visitor.visitSchemaExtensionDefinition(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		operationTypes.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GSchemaExtensionDefinition &&
@@ -1522,7 +1758,8 @@ sealed class GSelection(
 	origin: GOrigin?
 ) :
 	GAst(origin = origin),
-	GAst.WithDirectives
+	GAst.WithDirectives {
+}
 
 
 class GSelectionSet(
@@ -1532,6 +1769,11 @@ class GSelectionSet(
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitSelectionSet(this, data)
+
+
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		selections.forEach { it.accept(visitor, data) }
+	}
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1555,6 +1797,10 @@ sealed class GType(
 ) : GTypeSystemDefinition(origin = origin) {
 
 	abstract val name: String
+	abstract val underlyingNamedType: GNamedType
+
+
+	abstract fun toRef(): GTypeRef
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#IsInputType()
@@ -1748,6 +1994,14 @@ class GUnionType(
 		visitor.visitUnionType(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		possibleTypes.forEach { it.accept(visitor, data) }
+		descriptionNode?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GUnionType &&
@@ -1795,6 +2049,13 @@ class GUnionTypeExtension(
 		visitor.visitUnionTypeExtension(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		nameNode.accept(visitor, data)
+		possibleTypes.forEach { it.accept(visitor, data) }
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GUnionTypeExtension &&
@@ -1828,12 +2089,24 @@ sealed class GValue(
 			visitor.visitBooleanValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+			Unit
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is Boolean && value == other.value)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Boolean &&
 					value == other.value &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			value.hashCode()
 
 
 		companion object
@@ -1852,12 +2125,24 @@ sealed class GValue(
 			visitor.visitEnumValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+			Unit
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is Enum && name == other.name)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Enum &&
 					name == other.name &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			name.hashCode()
 
 
 		companion object
@@ -1876,12 +2161,24 @@ sealed class GValue(
 			visitor.visitFloatValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+			Unit
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is Float && value == other.value)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Float &&
 					value == other.value &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			value.hashCode()
 
 
 		companion object
@@ -1900,12 +2197,24 @@ sealed class GValue(
 			visitor.visitIntValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+			Unit
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is Int && value == other.value)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Int &&
 					value == other.value &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			value.hashCode()
 
 
 		companion object
@@ -1924,12 +2233,25 @@ sealed class GValue(
 			visitor.visitListValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+			elements.forEach { it.accept(visitor, data) }
+		}
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is List && elements == other.elements)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is List &&
 					elements.equalsAst(other.elements, includingOrigin = includingOrigin) &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			elements.hashCode()
 
 
 		companion object
@@ -1947,11 +2269,23 @@ sealed class GValue(
 			visitor.visitNullValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+			Unit
+
+
+		override fun equals(other: Any?) =
+			this === other || other is Null
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Null &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			0
 
 
 		companion object
@@ -1972,12 +2306,25 @@ sealed class GValue(
 			visitor.visitObjectValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+			fields.forEach { it.accept(visitor, data) }
+		}
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is Object && fieldsByName == other.fieldsByName)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Object &&
 					fields.equalsAst(other.fields, includingOrigin = includingOrigin) &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			fieldsByName.hashCode()
 
 
 		companion object
@@ -1997,6 +2344,14 @@ sealed class GValue(
 			visitor.visitStringValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) =
+			Unit
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is String && value == other.value)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is String &&
@@ -2004,6 +2359,10 @@ sealed class GValue(
 					isBlock == other.isBlock &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			value.hashCode()
 
 
 		companion object
@@ -2032,12 +2391,25 @@ sealed class GValue(
 			visitor.visitVariableValue(this, data)
 
 
+		override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+			nameNode.accept(visitor, data)
+		}
+
+
+		override fun equals(other: Any?) =
+			this === other || (other is Variable && name == other.name)
+
+
 		override fun equalsAst(other: GAst, includingOrigin: kotlin.Boolean) =
 			this === other || (
 				other is Variable &&
 					nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
 					(!includingOrigin || origin == other.origin)
 				)
+
+
+		override fun hashCode() =
+			name.hashCode()
 
 
 		companion object
@@ -2137,6 +2509,14 @@ class GVariableDefinition(
 		visitor.visitVariableDefinition(this, data)
 
 
+	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		variable.accept(visitor, data)
+		type.accept(visitor, data)
+		defaultValue?.accept(visitor, data)
+		directives.forEach { it.accept(visitor, data) }
+	}
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GVariableDefinition &&
@@ -2162,8 +2542,20 @@ sealed class GWrappingType(
 	origin = null
 ) {
 
+	final override val underlyingNamedType get() = wrappedType.underlyingNamedType
+
+
 	final override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
-		wrappedType.accept(visitor = visitor, data = data)
+		visitor.visitSyntheticNode(this, data)
+
+
+	final override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
+		wrappedType.accept(visitor, data)
+	}
+
+
+	override fun toString() =
+		"${print(wrappedType)} <wrapped as $name>"
 
 
 	companion object

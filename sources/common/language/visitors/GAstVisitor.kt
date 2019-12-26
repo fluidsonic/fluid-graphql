@@ -90,6 +90,9 @@ interface GAstVisitor<out Result, in Data> {
 		override fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Data) =
 			visitNode(definition, data)
 
+		fun visitExecutableDefinition(definition: GExecutableDefinition, data: Data) =
+			visitDefinition(definition, data)
+
 		override fun visitFieldDefinition(definition: GFieldDefinition, data: Data) =
 			visitNode(definition, data)
 
@@ -100,7 +103,7 @@ interface GAstVisitor<out Result, in Data> {
 			visitValue(value, data)
 
 		override fun visitFragmentDefinition(definition: GFragmentDefinition, data: Data) =
-			visitDefinition(definition, data)
+			visitExecutableDefinition(definition, data)
 
 		override fun visitFragmentSelection(selection: GFragmentSelection, data: Data) =
 			visitSelection(selection, data)
@@ -159,7 +162,7 @@ interface GAstVisitor<out Result, in Data> {
 			visitNode(field, data)
 
 		override fun visitOperationDefinition(definition: GOperationDefinition, data: Data) =
-			visitDefinition(definition, data)
+			visitExecutableDefinition(definition, data)
 
 		override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data) =
 			visitNode(definition, data)
@@ -215,4 +218,7 @@ interface GAstVisitor<out Result, in Data> {
 		override fun visitVariableValue(value: GValue.Variable, data: Data) =
 			visitValue(value, data)
 	}
+
+
+	companion object
 }

@@ -1,7 +1,7 @@
 package io.fluidsonic.graphql
 
 
-internal class GExecutor private constructor(
+internal class Executor private constructor(
 	private val defaultResolver: GFieldResolver<*>? = null,
 	private val document: GDocument,
 	private val externalContext: Any? = null,
@@ -9,7 +9,7 @@ internal class GExecutor private constructor(
 	private val pathBuilder: GPath.Builder, // FIXME may not work as class property with later parallelization
 	private val rootValue: Any,
 	private val schema: GSchema,
-	private val valueCoercer: GValueCoercer
+	private val valueCoercer: ValueCoercer
 ) {
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
@@ -307,7 +307,7 @@ internal class GExecutor private constructor(
 
 			override val arguments get() = argumentValues
 			override val parentType get() = objectType
-			override val schema get() = this@GExecutor.schema
+			override val schema get() = this@Executor.schema
 		}
 
 		try {
@@ -374,7 +374,7 @@ internal class GExecutor private constructor(
 			variableValues: Map<String, Any?> = emptyMap(),
 			externalContext: Any? = null,
 			defaultResolver: GFieldResolver<*>? = null
-		): GResult<GExecutor> = GResult {
+		): GResult<Executor> = GResult {
 			// FIXME check type
 			val operation = getOperation(
 				document = document,
@@ -383,14 +383,14 @@ internal class GExecutor private constructor(
 
 			val pathBuilder = GPath.Builder()
 
-			val valueCoercer = GValueCoercer.create(
+			val valueCoercer = ValueCoercer.create(
 				document = document,
 				schema = schema,
 				variableValues = variableValues,
 				pathBuilder = pathBuilder
 			).or { return it }
 
-			GExecutor(
+			Executor(
 				defaultResolver = defaultResolver,
 				document = document,
 				externalContext = externalContext,

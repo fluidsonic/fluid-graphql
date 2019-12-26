@@ -9,3 +9,4 @@ To-Do
 - consistent toString(), equals(), hashCode() where applicable
 - split visitors into bare & with-defaults
 - make print visitor use no defaults in order to catch missing implementations
+- visitors are getting messy - refactor
