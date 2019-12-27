@@ -122,7 +122,7 @@ internal class Parser private constructor(
 		)
 
 
-	private fun parseArgumentDefinition(): GArgumentDefinition {
+	private fun parseArgumentDefinition(definitionType: ArgumentDefinitionType): GArgumentDefinition {
 		val startToken = lexer.currentToken
 		val description = parseDescription()
 		val name = parseName()
@@ -132,21 +132,44 @@ internal class Parser private constructor(
 			?.let { parseValue(isConstant = true) }
 		val directives = parseDirectives(isConstant = true)
 
-		return GArgumentDefinition(
-			defaultValue = defaultValue,
-			description = description,
-			directives = directives,
-			name = name,
-			origin = makeOrigin(startToken = startToken),
-			type = type
-		)
+		return when (definitionType) {
+			ArgumentDefinitionType.directiveDefinition ->
+				GDirectiveArgumentDefinition(
+					defaultValue = defaultValue,
+					description = description,
+					directives = directives,
+					name = name,
+					origin = makeOrigin(startToken = startToken),
+					type = type
+				)
+
+			ArgumentDefinitionType.fieldDefinition ->
+				GFieldArgumentDefinition(
+					defaultValue = defaultValue,
+					description = description,
+					directives = directives,
+					name = name,
+					origin = makeOrigin(startToken = startToken),
+					type = type
+				)
+
+			ArgumentDefinitionType.inputField ->
+				GInputFieldDefinition(
+					defaultValue = defaultValue,
+					description = description,
+					directives = directives,
+					name = name,
+					origin = makeOrigin(startToken = startToken),
+					type = type
+				)
+		}
 	}
 
 
-	private fun parseArgumentDefinitions(isBlock: Boolean) =
+	private fun parseArgumentDefinitions(isBlock: Boolean, definitionType: ArgumentDefinitionType) =
 		optionalMany(
 			if (isBlock) TokenKind.BRACE_L else TokenKind.PAREN_L,
-			this::parseArgumentDefinition,
+			{ parseArgumentDefinition(definitionType) },
 			if (isBlock) TokenKind.BRACE_R else TokenKind.PAREN_R
 		)
 
@@ -199,19 +222,21 @@ internal class Parser private constructor(
 	}
 
 
+	@Suppress("UNCHECKED_CAST")
 	private fun parseDirectiveDefinition(): GDirectiveDefinition {
 		val startToken = lexer.currentToken
 		val description = parseDescription()
 		expectKeyword("directive")
 		expectToken(TokenKind.AT)
 		val name = parseName()
-		val arguments = parseArgumentDefinitions(isBlock = false)
+		val arguments = parseArgumentDefinitions(isBlock = false, definitionType = ArgumentDefinitionType.directiveDefinition)
+			as List<GDirectiveArgumentDefinition>
 		val isRepeatable = expectOptionalKeyword("repeatable")
 		expectKeyword("on")
 		val locations = parseDirectiveLocations()
 
 		return GDirectiveDefinition(
-			arguments = arguments,
+			argumentDefinitions = arguments,
 			description = description,
 			isRepeatable = isRepeatable,
 			locations = locations,
@@ -361,17 +386,19 @@ internal class Parser private constructor(
 	}
 
 
+	@Suppress("UNCHECKED_CAST")
 	private fun parseFieldDefinition(): GFieldDefinition {
 		val startToken = lexer.currentToken
 		val description = parseDescription()
 		val name = parseName()
-		val arguments = parseArgumentDefinitions(isBlock = false)
+		val arguments = parseArgumentDefinitions(isBlock = false, definitionType = ArgumentDefinitionType.fieldDefinition)
+			as List<GFieldArgumentDefinition>
 		expectToken(TokenKind.COLON)
 		val type = parseTypeReference()
 		val directives = parseDirectives(isConstant = true)
 
 		return GFieldDefinition(
-			arguments = arguments,
+			argumentDefinitions = arguments,
 			description = description,
 			directives = directives,
 			name = name,
@@ -421,8 +448,8 @@ internal class Parser private constructor(
 		val startToken = lexer.currentToken
 		expectKeyword("fragment")
 		val name = parseFragmentName()
-		expectKeyword("on")
 		val variableDefinitions = parseVariableDefinitions()
+		expectKeyword("on")
 		val typeCondition = parseNamedType()
 		val directives = parseDirectives(isConstant = false)
 		val selectionSet = parseSelectionSet()
@@ -459,16 +486,18 @@ internal class Parser private constructor(
 	}
 
 
+	@Suppress("UNCHECKED_CAST")
 	private fun parseInputObjectTypeDefinition(): GInputObjectType {
 		val startToken = lexer.currentToken
 		val description = parseDescription()
 		expectKeyword("input")
 		val name = parseName()
 		val directives = parseDirectives(isConstant = true)
-		val arguments = parseArgumentDefinitions(isBlock = true)
+		val arguments = parseArgumentDefinitions(isBlock = true, definitionType = ArgumentDefinitionType.inputField)
+			as List<GInputFieldDefinition>
 
 		return GInputObjectType(
-			arguments = arguments,
+			argumentDefinitions = arguments,
 			description = description,
 			directives = directives,
 			name = name,
@@ -477,19 +506,21 @@ internal class Parser private constructor(
 	}
 
 
+	@Suppress("UNCHECKED_CAST")
 	private fun parseInputObjectTypeExtension(): GInputObjectTypeExtension {
 		val startToken = lexer.currentToken
 		expectKeyword("extend")
 		expectKeyword("input")
 		val name = parseName()
 		val directives = parseDirectives(isConstant = true)
-		val arguments = parseArgumentDefinitions(isBlock = true)
+		val arguments = parseArgumentDefinitions(isBlock = true, definitionType = ArgumentDefinitionType.inputField)
+			as List<GInputFieldDefinition>
 
 		if (directives.isEmpty() && arguments.isEmpty())
 			unexpectedTokenError()
 
 		return GInputObjectTypeExtension(
-			arguments = arguments,
+			argumentDefinitions = arguments,
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken)
@@ -509,7 +540,7 @@ internal class Parser private constructor(
 		return GInterfaceType(
 			description = description,
 			directives = directives,
-			fields = fields,
+			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
 			origin = makeOrigin(startToken = startToken)
@@ -531,7 +562,7 @@ internal class Parser private constructor(
 
 		return GInterfaceTypeExtension(
 			directives = directives,
-			fields = fields,
+			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
 			origin = makeOrigin(startToken = startToken)
@@ -616,7 +647,7 @@ internal class Parser private constructor(
 		return GObjectType(
 			description = description,
 			directives = directives,
-			fields = fields,
+			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
 			origin = makeOrigin(startToken = startToken)
@@ -638,7 +669,7 @@ internal class Parser private constructor(
 
 		return GObjectTypeExtension(
 			directives = directives,
-			fields = fields,
+			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
 			origin = makeOrigin(startToken = startToken)
@@ -698,7 +729,7 @@ internal class Parser private constructor(
 		val type = parseNamedType()
 
 		return GOperationTypeDefinition(
-			operation = operation,
+			operationType = operation,
 			origin = makeOrigin(startToken = startToken),
 			type = type
 		)
@@ -739,7 +770,7 @@ internal class Parser private constructor(
 
 		return GSchemaExtensionDefinition(
 			directives = directives,
-			operationTypes = operationTypes,
+			operationTypeDefinitions = operationTypes,
 			origin = makeOrigin(startToken = startToken)
 		)
 	}
@@ -773,7 +804,7 @@ internal class Parser private constructor(
 
 		return GSchemaDefinition(
 			directives = directives,
-			operationTypes = operationTypes,
+			operationTypeDefinitions = operationTypes,
 			origin = makeOrigin(startToken = startToken)
 		)
 	}
@@ -939,21 +970,43 @@ internal class Parser private constructor(
 			TokenKind.BRACE_L ->
 				parseObject(isConstant)
 
-			TokenKind.INT -> {
-				lexer.advance()
-
-				GValue.Int(
-					origin = makeOrigin(startToken = startToken),
-					value = startToken.value!!
-				)
-			}
-
 			TokenKind.FLOAT -> {
+				val stringValue = startToken.value!!
+				val floatValue = try {
+					stringValue.toFloat()
+				}
+				catch (e: NumberFormatException) {
+					throw GError.syntax(
+						description = "Invalid Float value '$stringValue'",
+						origin = makeOrigin(startToken = startToken, endToken = startToken)
+					)
+				}
+
 				lexer.advance()
 
 				GValue.Float(
 					origin = makeOrigin(startToken = startToken),
-					value = startToken.value!!
+					value = floatValue
+				)
+			}
+
+			TokenKind.INT -> {
+				val stringValue = startToken.value!!
+				val intValue = try {
+					stringValue.toInt()
+				}
+				catch (e: NumberFormatException) {
+					throw GError.syntax(
+						description = "Invalid Int value '$stringValue'",
+						origin = makeOrigin(startToken = startToken, endToken = startToken)
+					)
+				}
+
+				lexer.advance()
+
+				GValue.Int(
+					origin = makeOrigin(startToken = startToken),
+					value = intValue
 				)
 			}
 
@@ -1076,6 +1129,14 @@ internal class Parser private constructor(
 
 			return value
 		}
+	}
+
+
+	private enum class ArgumentDefinitionType {
+
+		directiveDefinition,
+		fieldDefinition,
+		inputField
 	}
 
 

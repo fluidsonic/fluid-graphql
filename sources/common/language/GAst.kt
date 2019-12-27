@@ -39,27 +39,144 @@ sealed class GAst(
 	}
 
 
-	interface Depreciable : WithDirectives {
+	interface WithArguments {
 
-		val deprecationReason: String?
-		val isDeprecated: Boolean
+		val arguments: List<GArgument>
+
+		fun argument(name: String) =
+			arguments.firstOrNull { it.name == name }
+	}
+
+
+	interface WithArgumentDefinitions {
+
+		val argumentDefinitions: List<GArgumentDefinition>
+
+
+		fun argumentDefinition(name: String) =
+			argumentDefinitions.firstOrNull { it.name == name }
 	}
 
 
 	interface WithDirectives {
 
 		val directives: List<GDirective>
+
+
+		fun directive(name: String) =
+			directives.firstOrNull { it.name == name }
+
+
+		fun directives(name: String) =
+			directives.filter { it.name == name }
 	}
+
+
+	interface WithFieldDefinitions {
+
+		val fieldDefinitions: List<GFieldDefinition>
+
+
+		fun field(name: String) =
+			fieldDefinitions.firstOrNull { it.name == name }
+	}
+
+
+	interface WithInterfaces {
+
+		val interfaces: List<GNamedTypeRef>
+	}
+
+
+	interface WithName : WithOptionalName {
+
+		override val name
+			get() = nameNode.value
+
+
+		override val nameNode: GName
+	}
+
+
+	interface WithOperationTypeDefinitions {
+
+		val operationTypeDefinitions: List<GOperationTypeDefinition>
+
+
+		fun operationTypeDefinition(operationType: GOperationType) =
+			operationTypeDefinitions.firstOrNull { it.operationType == operationType }
+	}
+
+
+	interface WithOptionalDeprecation : WithDirectives, WithName {
+
+		val deprecation
+			get() = directive(GSpecification.defaultDeprecatedDirective.name)
+
+
+		val deprecationReason
+			get() = (deprecation?.argument("reason")?.value as? GValue.String)?.value
+	}
+
+
+	interface WithOptionalDescription {
+
+		val description
+			get() = descriptionNode?.value
+
+
+		val descriptionNode: GValue.String?
+	}
+
+
+	interface WithOptionalName {
+
+		val name
+			get() = nameNode?.value
+
+
+		val nameNode: GName?
+	}
+
+
+	interface WithVariableDefinitions {
+
+		val variableDefinitions: List<GVariableDefinition>
+
+
+		fun variableDefinition(name: String) =
+			variableDefinitions.firstOrNull { it.name == name }
+	}
+}
+
+
+fun GAst?.equalsAst(other: GAst?, includingOrigin: Boolean = false) =
+	this === other || (this !== null && other !== null && equalsAst(other, includingOrigin = includingOrigin))
+
+
+fun List<GAst?>.equalsAst(other: List<GAst?>, includingOrigin: Boolean): Boolean {
+	if (this === other)
+		return true
+
+	if (size != other.size)
+		return false
+
+	forEachIndexed { index, ast ->
+		if (!ast.equalsAst(other[index], includingOrigin = includingOrigin))
+			return false
+	}
+
+	return true
 }
 
 
 sealed class GAbstractType(
 	description: GValue.String?,
 	directives: List<GDirective>,
-	kind: GTypeKind,
+	kind: Kind,
 	name: GName,
 	origin: GOrigin?
-) : GNamedType(
+) : GCompositeType(
 	description = description,
 	directives = directives,
 	kind = kind,
@@ -75,10 +192,11 @@ class GArgument(
 	name: GName,
 	val value: GValue,
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) :
+	GAst(origin = origin),
+	GAst.WithName {
 
-	val name get() = nameNode.value
-	val nameNode = name
+	override val nameNode = name
 
 
 	constructor(
@@ -113,58 +231,24 @@ class GArgument(
 }
 
 
-fun GAst?.equalsAst(other: GAst?, includingOrigin: Boolean = false) =
-	this === other || (this !== null && other !== null && equalsAst(other, includingOrigin = includingOrigin))
-
-
-fun List<GAst?>.equalsAst(other: List<GAst?>, includingOrigin: Boolean): Boolean {
-	if (this === other)
-		return true
-
-	if (size != other.size)
-		return false
-
-	forEachIndexed { index, ast ->
-		if (!ast.equalsAst(other[index], includingOrigin = includingOrigin))
-			return false
-	}
-
-	return true
-}
-
-
-class GArgumentDefinition(
+sealed class GArgumentDefinition(
 	name: GName,
 	val type: GTypeRef,
-	val defaultValue: GValue? = null,
-	description: GValue.String? = null,
-	override val directives: List<GDirective> = emptyList(),
+	val defaultValue: GValue?,
+	description: GValue.String?,
+	override val directives: List<GDirective>,
 	origin: GOrigin? = null
 ) :
 	GAst(origin = origin),
-	GAst.WithDirectives {
+	GAst.WithDirectives,
+	GAst.WithName,
+	GAst.WithOptionalDescription {
 
-	val description get() = descriptionNode?.value?.ifEmpty { null }
-	val descriptionNode = description
-	val name get() = nameNode.value
-	val nameNode = name
-
-
-	constructor(
-		name: String,
-		type: GTypeRef,
-		defaultValue: GValue? = null,
-		description: String? = null,
-		directives: List<GDirective> = emptyList()
-	) : this(
-		name = GName(name),
-		type = type,
-		defaultValue = defaultValue,
-		description = description?.let { GValue.String(it) },
-		directives = directives
-	)
+	override val descriptionNode = description
+	override val nameNode = name
 
 
+	// FIXME add for children
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitArgumentDefinition(this, data)
 
@@ -189,6 +273,32 @@ class GArgumentDefinition(
 				(!includingOrigin || origin == other.origin)
 			)
 
+
+	fun isOptional() =
+		!isRequired()
+
+
+	fun isRequired() =
+		type is GNonNullTypeRef && defaultValue === null
+
+
+	companion object
+}
+
+
+sealed class GCompositeType(
+	name: GName,
+	description: GValue.String? = null,
+	directives: List<GDirective> = emptyList(),
+	kind: Kind,
+	origin: GOrigin?
+) : GNamedType(
+	name = name,
+	description = description,
+	directives = directives,
+	kind = kind,
+	origin = origin
+) {
 
 	companion object
 }
@@ -231,13 +341,14 @@ sealed class GDefinition(
 
 class GDirective(
 	name: GName,
-	val arguments: List<GArgument> = emptyList(),
+	override val arguments: List<GArgument> = emptyList(),
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) :
+	GAst(origin = origin),
+	GAst.WithArguments,
+	GAst.WithName {
 
-	val argumentsByName = arguments.associateBy { it.name }
-	val name get() = nameNode.value
-	val nameNode = name
+	override val nameNode = name
 
 
 	constructor(
@@ -272,37 +383,73 @@ class GDirective(
 }
 
 
+class GDirectiveArgumentDefinition(
+	name: GName,
+	type: GTypeRef,
+	defaultValue: GValue? = null,
+	description: GValue.String? = null,
+	directives: List<GDirective> = emptyList(),
+	origin: GOrigin? = null
+) : GArgumentDefinition(
+	name = name,
+	type = type,
+	defaultValue = defaultValue,
+	description = description,
+	directives = directives,
+	origin = origin
+) {
+
+	constructor(
+		name: String,
+		type: GTypeRef,
+		defaultValue: GValue? = null,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		name = GName(name),
+		type = type,
+		defaultValue = defaultValue,
+		description = description?.let { GValue.String(it) },
+		directives = directives
+	)
+
+	companion object
+}
+
+
 class GDirectiveDefinition(
 	name: GName,
 	locations: List<GName>,
 	val isRepeatable: Boolean = false,
-	val arguments: List<GArgumentDefinition> = emptyList(),
+	override val argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
 	description: GValue.String? = null,
 	origin: GOrigin? = null
-) : GTypeSystemDefinition(origin = origin) {
+) :
+	GTypeSystemDefinition(origin = origin),
+	GAst.WithArgumentDefinitions,
+	GAst.WithName,
+	GAst.WithOptionalDescription {
 
-	val argumentsByName = arguments.associateBy { it.name }
-	val description get() = descriptionNode?.value?.ifEmpty { null }
-	val descriptionNode = description
 	val locations: Set<GDirectiveLocation> = locations.mapNotNullTo(mutableSetOf()) { node ->
 		GDirectiveLocation.values().firstOrNull { it.name == node.value }
 	}
 	val locationNodes = locations
-	val name get() = nameNode.value
-	val nameNode = name
+
+	override val descriptionNode = description
+	override val nameNode = name
 
 
 	constructor(
 		name: String,
 		locations: Set<GDirectiveLocation>,
 		isRepeatable: Boolean = false,
-		arguments: List<GArgumentDefinition> = emptyList(),
+		arguments: List<GDirectiveArgumentDefinition> = emptyList(),
 		description: String? = null
 	) : this(
 		name = GName(name),
 		locations = locations.map { GName(it.name) },
 		isRepeatable = isRepeatable,
-		arguments = arguments,
+		argumentDefinitions = arguments,
 		description = description?.let { GValue.String(it) }
 	)
 
@@ -314,15 +461,19 @@ class GDirectiveDefinition(
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
 		locationNodes.forEach { it.accept(visitor, data) }
-		arguments.forEach { it.accept(visitor, data) }
+		argumentDefinitions.forEach { it.accept(visitor, data) }
 		descriptionNode?.accept(visitor, data)
 	}
+
+
+	override fun argumentDefinition(name: String) =
+		argumentDefinitions.firstOrNull { it.name == name }
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GDirectiveDefinition &&
-				arguments.equalsAst(other.arguments, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
 				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
 				isRepeatable == other.isRepeatable &&
 				locationNodes.equalsAst(other.locationNodes, includingOrigin = includingOrigin) &&
@@ -340,14 +491,8 @@ class GDocument(
 	origin: GOrigin? = null
 ) : GAst(origin = origin) {
 
-	val fragmentsByName = definitions
-		.filterIsInstance<GFragmentDefinition>()
-		.associateBy { it.name }
-
-	val operationsByName = definitions
-		.filterIsInstance<GOperationDefinition>()
-		.associateBy { it.name }
-
+	// FIXME this is confusing. It may indicate that this is the schema related to this document instead of representing the
+	// type definitions within this document.
 	val schema = GSchema(document = this) // FIXME check if cyclic reference is OK here
 
 
@@ -368,6 +513,7 @@ class GDocument(
 			)
 
 
+	// FIXME add a way to execute and returning either data or errors rather than a response containg serialized errors
 	fun execute(
 		schema: GSchema,
 		rootValue: Any,
@@ -389,6 +535,24 @@ class GDocument(
 			.execute()
 
 
+	fun fragment(name: String): GFragmentDefinition? {
+		for (definition in definitions)
+			if (definition is GFragmentDefinition && definition.name == name)
+				return definition
+
+		return null
+	}
+
+
+	fun operation(name: String?): GOperationDefinition? {
+		for (definition in definitions)
+			if (definition is GOperationDefinition && definition.name == name)
+				return definition
+
+		return null
+	}
+
+
 	companion object {
 
 		fun parse(source: GSource.Parsable) =
@@ -408,16 +572,13 @@ class GEnumType(
 	description: GValue.String? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GNamedType(
+) : GLeafType(
 	description = description,
 	directives = directives,
-	kind = GTypeKind.ENUM,
+	kind = Kind.ENUM,
 	name = name,
 	origin = origin
 ) {
-
-	val valuesByName = values.associateBy { it.name }
-
 
 	constructor(
 		name: String,
@@ -444,11 +605,6 @@ class GEnumType(
 	}
 
 
-	override fun isSupertypeOf(other: GType) =
-		other === this ||
-			(other is GNonNullType && other.nullableType === this)
-
-
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GEnumType &&
@@ -458,6 +614,15 @@ class GEnumType(
 				values.equalsAst(other.values, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
+
+
+	override fun isSupertypeOf(other: GType) =
+		other === this ||
+			(other is GNonNullType && other.nullableType === this)
+
+
+	fun value(name: String) =
+		values.firstOrNull { it.name == name }
 
 
 	companion object
@@ -474,9 +639,6 @@ class GEnumTypeExtension(
 	name = name,
 	origin = origin
 ) {
-
-	val valuesByName = values.associateBy { it.name }
-
 
 	constructor(
 		name: String,
@@ -510,6 +672,10 @@ class GEnumTypeExtension(
 			)
 
 
+	fun value(name: String) =
+		values.firstOrNull { it.name == name }
+
+
 	companion object
 }
 
@@ -521,23 +687,11 @@ class GEnumValueDefinition(
 	origin: GOrigin? = null
 ) :
 	GAst(origin = origin),
-	GAst.Depreciable {
+	GAst.WithOptionalDeprecation,
+	GAst.WithOptionalDescription {
 
-	val description get() = descriptionNode?.value?.ifEmpty { null }
-	val descriptionNode = description
-	val name get() = nameNode.value
-	val nameNode = name
-
-	override val deprecationReason: String?
-	override val isDeprecated: Boolean
-
-
-	init {
-		val deprecation = directives.firstOrNull { it.name == GSpecification.defaultDeprecatedDirective.name }
-
-		deprecationReason = (deprecation?.argumentsByName?.get("reason")?.value as? GValue.String)?.value?.ifEmpty { null } // FIXME improve
-		isDeprecated = deprecation != null
-	}
+	override val descriptionNode = description
+	override val nameNode = name
 
 
 	constructor(
@@ -584,47 +738,69 @@ sealed class GExecutableDefinition(
 }
 
 
+class GFieldArgumentDefinition(
+	name: GName,
+	type: GTypeRef,
+	defaultValue: GValue? = null,
+	description: GValue.String? = null,
+	directives: List<GDirective> = emptyList(),
+	origin: GOrigin? = null
+) : GArgumentDefinition(
+	name = name,
+	type = type,
+	defaultValue = defaultValue,
+	description = description,
+	directives = directives,
+	origin = origin
+) {
+
+	constructor(
+		name: String,
+		type: GTypeRef,
+		defaultValue: GValue? = null,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		name = GName(name),
+		type = type,
+		defaultValue = defaultValue,
+		description = description?.let { GValue.String(it) },
+		directives = directives
+	)
+
+	companion object
+}
+
+
 class GFieldDefinition(
 	name: GName,
 	val type: GTypeRef,
-	val arguments: List<GArgumentDefinition> = emptyList(),
+	override val argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
 	description: GValue.String? = null,
 	override val directives: List<GDirective> = emptyList(),
 	val resolver: GFieldResolver<*>? = null,
 	origin: GOrigin? = null
 ) :
 	GAst(origin = origin),
-	GAst.Depreciable {
+	GAst.WithArgumentDefinitions,
+	GAst.WithOptionalDescription,
+	GAst.WithOptionalDeprecation {
 
-	val argumentsByName = arguments.associateBy { it.name }
-	val description get() = descriptionNode?.value?.ifEmpty { null }
-	val descriptionNode = description
-	val name get() = nameNode.value
-	val nameNode = name
-
-	override val deprecationReason: String?
-	override val isDeprecated: Boolean
-
-
-	init {
-		val deprecation = directives.firstOrNull { it.name == GSpecification.defaultDeprecatedDirective.name }
-
-		deprecationReason = (deprecation?.argumentsByName?.get("reason")?.value as? GValue.String)?.value?.ifEmpty { null } // FIXME improve
-		isDeprecated = deprecation != null
-	}
+	override val descriptionNode = description
+	override val nameNode = name
 
 
 	constructor(
 		name: String,
 		type: GTypeRef,
-		arguments: List<GArgumentDefinition> = emptyList(),
+		arguments: List<GFieldArgumentDefinition> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
 		resolver: GFieldResolver<*>? = null
 	) : this(
 		name = GName(name),
 		type = type,
-		arguments = arguments,
+		argumentDefinitions = arguments,
 		description = description?.let { GValue.String(it) },
 		directives = directives,
 		resolver = resolver
@@ -638,16 +814,20 @@ class GFieldDefinition(
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
 		type.accept(visitor, data)
-		arguments.forEach { it.accept(visitor, data) }
+		argumentDefinitions.forEach { it.accept(visitor, data) }
 		descriptionNode?.accept(visitor, data)
 		directives.forEach { it.accept(visitor, data) }
 	}
 
 
+	override fun argumentDefinition(name: String) =
+		argumentDefinitions.firstOrNull { it.name == name }
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GFieldDefinition &&
-				arguments.equalsAst(other.arguments, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
 				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
@@ -663,18 +843,19 @@ class GFieldDefinition(
 class GFieldSelection(
 	name: GName,
 	val selectionSet: GSelectionSet? = null,
-	val arguments: List<GArgument> = emptyList(),
+	override val arguments: List<GArgument> = emptyList(),
 	alias: GName? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GSelection(
-	directives = directives,
-	origin = origin
-) {
+) :
+	GSelection(
+		directives = directives,
+		origin = origin
+	),
+	GAst.WithArguments {
 
 	val alias get() = aliasNode?.value
 	val aliasNode = alias
-	val argumentsByName = arguments.associateBy { it.name }
 	val name get() = nameNode.value
 	val nameNode = name
 
@@ -727,16 +908,16 @@ class GFragmentDefinition(
 	name: GName,
 	val typeCondition: GNamedTypeRef,
 	val selectionSet: GSelectionSet,
-	val variableDefinitions: List<GVariableDefinition> = emptyList(),
+	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
 ) :
 	GExecutableDefinition(origin = origin),
-	GAst.WithDirectives {
+	GAst.WithDirectives,
+	GAst.WithName,
+	GAst.WithVariableDefinitions {
 
-	val name get() = nameNode.value
-	val nameNode = name
-	val variableDefinitionsByName = variableDefinitions.associateBy { it.name }
+	override val nameNode = name
 
 
 	constructor(
@@ -787,10 +968,11 @@ class GFragmentSelection(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GSelection(
-	directives = directives,
-	origin = origin
-) {
+) :
+	GSelection(
+		directives = directives,
+		origin = origin
+	) {
 
 	val name get() = nameNode.value
 	val nameNode = name
@@ -863,35 +1045,66 @@ class GInlineFragmentSelection(
 }
 
 
-// https://graphql.github.io/graphql-spec/June2018/#sec-Input-Objects
-// https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
-class GInputObjectType(
+class GInputFieldDefinition(
 	name: GName,
-	override val arguments: List<GArgumentDefinition>,
+	type: GTypeRef,
+	defaultValue: GValue? = null,
 	description: GValue.String? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) :
-	GNamedType(
-		description = description,
-		directives = directives,
-		kind = GTypeKind.INPUT_OBJECT,
-		name = name,
-		origin = origin
-	),
-	GType.WithArguments {
-
-	override val argumentsByName = arguments.associateBy { it.name }
-
+) : GArgumentDefinition(
+	name = name,
+	type = type,
+	defaultValue = defaultValue,
+	description = description,
+	directives = directives,
+	origin = origin
+) {
 
 	constructor(
 		name: String,
-		arguments: List<GArgumentDefinition>,
+		type: GTypeRef,
+		defaultValue: GValue? = null,
 		description: String? = null,
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		arguments = arguments,
+		type = type,
+		defaultValue = defaultValue,
+		description = description?.let { GValue.String(it) },
+		directives = directives
+	)
+
+	companion object
+}
+
+
+// https://graphql.github.io/graphql-spec/June2018/#sec-Input-Objects
+// https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
+class GInputObjectType(
+	name: GName,
+	override val argumentDefinitions: List<GInputFieldDefinition>,
+	description: GValue.String? = null,
+	directives: List<GDirective> = emptyList(),
+	origin: GOrigin? = null
+) :
+	GCompositeType(
+		description = description,
+		directives = directives,
+		kind = Kind.INPUT_OBJECT,
+		name = name,
+		origin = origin
+	),
+	GAst.WithArgumentDefinitions {
+
+	constructor(
+		name: String,
+		arguments: List<GInputFieldDefinition>,
+		description: String? = null,
+		directives: List<GDirective> = emptyList()
+	) : this(
+		name = GName(name),
+		argumentDefinitions = arguments,
 		description = description?.let { GValue.String(it) },
 		directives = directives
 	)
@@ -903,16 +1116,20 @@ class GInputObjectType(
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
-		arguments.forEach { it.accept(visitor, data) }
+		argumentDefinitions.forEach { it.accept(visitor, data) }
 		descriptionNode?.accept(visitor, data)
 		directives.forEach { it.accept(visitor, data) }
 	}
 
 
+	override fun argumentDefinition(name: String) =
+		argumentDefinitions.firstOrNull { it.name == name }
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GInputObjectType &&
-				arguments.equalsAst(other.arguments, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
 				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
@@ -931,25 +1148,24 @@ class GInputObjectType(
 
 class GInputObjectTypeExtension(
 	name: GName,
-	val arguments: List<GArgumentDefinition> = emptyList(),
+	override val argumentDefinitions: List<GInputFieldDefinition> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GTypeExtension(
-	directives = directives,
-	name = name,
-	origin = origin
-) {
-
-	val argumentsByName = arguments.associateBy { it.name }
-
+) :
+	GTypeExtension(
+		directives = directives,
+		name = name,
+		origin = origin
+	),
+	GAst.WithArgumentDefinitions {
 
 	constructor(
 		name: String,
-		arguments: List<GArgumentDefinition> = emptyList(),
+		arguments: List<GInputFieldDefinition> = emptyList(),
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		arguments = arguments,
+		argumentDefinitions = arguments,
 		directives = directives
 	)
 
@@ -960,7 +1176,7 @@ class GInputObjectTypeExtension(
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
-		arguments.forEach { it.accept(visitor, data) }
+		argumentDefinitions.forEach { it.accept(visitor, data) }
 		directives.forEach { it.accept(visitor, data) }
 	}
 
@@ -968,7 +1184,7 @@ class GInputObjectTypeExtension(
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GInputObjectTypeExtension &&
-				arguments.equalsAst(other.arguments, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
@@ -983,7 +1199,7 @@ class GInputObjectTypeExtension(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interface
 class GInterfaceType(
 	name: GName,
-	override val fields: List<GFieldDefinition>,
+	override val fieldDefinitions: List<GFieldDefinition>,
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	description: GValue.String? = null,
 	directives: List<GDirective> = emptyList(),
@@ -992,15 +1208,12 @@ class GInterfaceType(
 	GAbstractType(
 		description = description,
 		directives = directives,
-		kind = GTypeKind.INTERFACE,
+		kind = Kind.INTERFACE,
 		name = name,
 		origin = origin
 	),
-	GType.WithFields,
-	GType.WithInterfaces {
-
-	override val fieldsByName = fields.associateBy { it.name }
-
+	GAst.WithFieldDefinitions,
+	GAst.WithInterfaces {
 
 	constructor(
 		name: String,
@@ -1010,7 +1223,7 @@ class GInterfaceType(
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		fields = fields,
+		fieldDefinitions = fields,
 		interfaces = interfaces,
 		description = description?.let { GValue.String(it) },
 		directives = directives
@@ -1023,7 +1236,7 @@ class GInterfaceType(
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
-		fields.forEach { it.accept(visitor, data) }
+		fieldDefinitions.forEach { it.accept(visitor, data) }
 		interfaces.forEach { it.accept(visitor, data) }
 		descriptionNode?.accept(visitor, data)
 		directives.forEach { it.accept(visitor, data) }
@@ -1035,7 +1248,7 @@ class GInterfaceType(
 			other is GInterfaceType &&
 				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fields.equalsAst(other.fields, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
 				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
@@ -1054,17 +1267,20 @@ class GInterfaceType(
 
 class GInterfaceTypeExtension(
 	name: GName,
-	val fields: List<GFieldDefinition> = emptyList(),
-	val interfaces: List<GNamedTypeRef> = emptyList(),
+	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
+	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GTypeExtension(
-	directives = directives,
-	name = name,
-	origin = origin
-) {
+) :
+	GTypeExtension(
+		directives = directives,
+		name = name,
+		origin = origin
+	),
+	GAst.WithFieldDefinitions,
+	GAst.WithInterfaces {
 
-	val fieldsByName = fields.associateBy { it.name }
+	val fieldsByName = fieldDefinitions.associateBy { it.name }
 
 
 	constructor(
@@ -1074,7 +1290,7 @@ class GInterfaceTypeExtension(
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		fields = fields,
+		fieldDefinitions = fields,
 		interfaces = interfaces,
 		directives = directives
 	)
@@ -1086,7 +1302,7 @@ class GInterfaceTypeExtension(
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
-		fields.forEach { it.accept(visitor, data) }
+		fieldDefinitions.forEach { it.accept(visitor, data) }
 		interfaces.forEach { it.accept(visitor, data) }
 		directives.forEach { it.accept(visitor, data) }
 	}
@@ -1096,7 +1312,7 @@ class GInterfaceTypeExtension(
 		this === other || (
 			other is GInterfaceTypeExtension &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fields.equalsAst(other.fields, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
 				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
@@ -1107,12 +1323,30 @@ class GInterfaceTypeExtension(
 }
 
 
+sealed class GLeafType(
+	name: GName,
+	description: GValue.String? = null,
+	directives: List<GDirective> = emptyList(),
+	kind: Kind,
+	origin: GOrigin?
+) : GNamedType(
+	name = name,
+	description = description,
+	directives = directives,
+	kind = kind,
+	origin = origin
+) {
+
+	companion object
+}
+
+
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
 class GListType(
 	elementType: GType
 ) : GWrappingType(
-	kind = GTypeKind.LIST,
+	kind = Kind.LIST,
 	wrappedType = elementType
 ) {
 
@@ -1184,12 +1418,20 @@ class GName(
 		Unit
 
 
+	override fun equals(other: Any?) =
+		this === other || (other is GName && value == other.value)
+
+
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GName &&
 				value == other.value &&
 				(!includingOrigin || origin == other.origin)
 			)
+
+
+	override fun hashCode() =
+		value.hashCode()
 
 
 	companion object
@@ -1199,7 +1441,7 @@ class GName(
 sealed class GNamedType(
 	description: GValue.String?,
 	override val directives: List<GDirective>,
-	kind: GTypeKind,
+	kind: Kind,
 	name: GName,
 	origin: GOrigin?
 ) :
@@ -1207,13 +1449,12 @@ sealed class GNamedType(
 		kind = kind,
 		origin = origin
 	),
-	GAst.WithDirectives {
+	GAst.WithDirectives,
+	GAst.WithName,
+	GAst.WithOptionalDescription {
 
-	val description get() = descriptionNode?.value?.ifEmpty { null }
-	val descriptionNode = description
-	val nameNode = name
-
-	final override val name get() = nameNode.value
+	final override val descriptionNode = description
+	final override val nameNode = name
 	final override val underlyingNamedType get() = this
 
 
@@ -1269,13 +1510,13 @@ class GNamedTypeRef(
 class GNonNullType(
 	nullableType: GType
 ) : GWrappingType(
-	kind = GTypeKind.NON_NULL,
+	kind = Kind.NON_NULL,
 	wrappedType = nullableType
 ) {
 
-	val nullableType get() = wrappedType
-
 	override val name get() = "${nullableType.name}!"
+	override val nonNullable get() = this
+	override val nullableType get() = wrappedType
 
 
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
@@ -1332,25 +1573,22 @@ class GNonNullTypeRef(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Object
 class GObjectType(
 	name: GName,
-	override val fields: List<GFieldDefinition>,
+	override val fieldDefinitions: List<GFieldDefinition>,
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	description: GValue.String? = null,
 	directives: List<GDirective> = emptyList(),
 	val kotlinType: KClass<*>? = null,
 	origin: GOrigin? = null
 ) :
-	GNamedType(
+	GCompositeType(
 		description = description,
 		directives = directives,
-		kind = GTypeKind.OBJECT,
+		kind = Kind.OBJECT,
 		name = name,
 		origin = origin
 	),
-	GType.WithFields,
-	GType.WithInterfaces {
-
-	override val fieldsByName = fields.associateBy { it.name }
-
+	GAst.WithFieldDefinitions,
+	GAst.WithInterfaces {
 
 	constructor(
 		name: String,
@@ -1361,7 +1599,7 @@ class GObjectType(
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		fields = fields,
+		fieldDefinitions = fields,
 		interfaces = interfaces,
 		description = description?.let { GValue.String(it) },
 		directives = directives,
@@ -1375,7 +1613,7 @@ class GObjectType(
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
-		fields.forEach { it.accept(visitor, data) }
+		fieldDefinitions.forEach { it.accept(visitor, data) }
 		interfaces.forEach { it.accept(visitor, data) }
 		descriptionNode?.accept(visitor, data)
 		directives.forEach { it.accept(visitor, data) }
@@ -1387,7 +1625,7 @@ class GObjectType(
 			other is GObjectType &&
 				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fields.equalsAst(other.fields, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
 				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
@@ -1405,18 +1643,18 @@ class GObjectType(
 
 class GObjectTypeExtension(
 	name: GName,
-	val fields: List<GFieldDefinition> = emptyList(),
-	val interfaces: List<GNamedTypeRef> = emptyList(),
+	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
+	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GTypeExtension(
-	directives = directives,
-	name = name,
-	origin = origin
-) {
-
-	val fieldsByName = fields.associateBy { it.name }
-
+) :
+	GTypeExtension(
+		directives = directives,
+		name = name,
+		origin = origin
+	),
+	GAst.WithFieldDefinitions,
+	GAst.WithInterfaces {
 
 	constructor(
 		name: String,
@@ -1425,7 +1663,7 @@ class GObjectTypeExtension(
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		fields = fields,
+		fieldDefinitions = fields,
 		interfaces = interfaces,
 		directives = directives
 	)
@@ -1437,7 +1675,7 @@ class GObjectTypeExtension(
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
 		nameNode.accept(visitor, data)
-		fields.forEach { it.accept(visitor, data) }
+		fieldDefinitions.forEach { it.accept(visitor, data) }
 		interfaces.forEach { it.accept(visitor, data) }
 		directives.forEach { it.accept(visitor, data) }
 	}
@@ -1447,7 +1685,7 @@ class GObjectTypeExtension(
 		this === other || (
 			other is GObjectTypeExtension &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fields.equalsAst(other.fields, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
 				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
 				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
@@ -1462,10 +1700,11 @@ class GObjectValueField(
 	name: GName,
 	val value: GValue,
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) :
+	GAst(origin = origin),
+	GAst.WithName {
 
-	val name get() = nameNode.value
-	val nameNode = name
+	override val nameNode = name
 
 
 	constructor(
@@ -1494,6 +1733,9 @@ class GObjectValueField(
 				value.equalsAst(other.value, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
+
+
+	companion object
 }
 
 
@@ -1501,16 +1743,16 @@ class GOperationDefinition(
 	val type: GOperationType,
 	name: GName? = null,
 	val selectionSet: GSelectionSet,
-	val variableDefinitions: List<GVariableDefinition> = emptyList(),
+	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
 ) :
 	GExecutableDefinition(origin = origin),
-	GAst.WithDirectives {
+	GAst.WithDirectives,
+	GAst.WithOptionalName,
+	GAst.WithVariableDefinitions {
 
-	val name get() = nameNode?.value
-	val nameNode = name
-	val variableDefinitionsByName = variableDefinitions.associateBy { it.name }
+	override val nameNode = name
 
 
 	constructor(
@@ -1557,7 +1799,7 @@ class GOperationDefinition(
 
 
 class GOperationTypeDefinition(
-	val operation: GOperationType,
+	val operationType: GOperationType,
 	val type: GNamedTypeRef,
 	origin: GOrigin? = null
 ) : GAst(origin = origin) {
@@ -1574,7 +1816,7 @@ class GOperationTypeDefinition(
 	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
 		this === other || (
 			other is GOperationTypeDefinition &&
-				operation == other.operation &&
+				operationType == other.operationType &&
 				type.equalsAst(other.type, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
@@ -1591,10 +1833,10 @@ sealed class GScalarType(
 	description: GValue.String? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GNamedType(
+) : GLeafType(
 	description = description,
 	directives = directives,
-	kind = GTypeKind.SCALAR,
+	kind = Kind.SCALAR,
 	name = name,
 	origin = origin
 ) {
@@ -1690,20 +1932,20 @@ class GScalarTypeExtension(
 
 
 class GSchemaDefinition(
-	val operationTypes: List<GOperationTypeDefinition> = emptyList(),
-	val directives: List<GDirective> = emptyList(),
+	override val operationTypeDefinitions: List<GOperationTypeDefinition>,
+	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GTypeSystemDefinition(origin = origin) {
-
-	val operationTypesByName = operationTypes.associateBy { it.operation }
-
+) :
+	GTypeSystemDefinition(origin = origin),
+	GAst.WithDirectives,
+	GAst.WithOperationTypeDefinitions {
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitSchemaDefinition(this, data)
 
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
-		operationTypes.forEach { it.accept(visitor, data) }
+		operationTypeDefinitions.forEach { it.accept(visitor, data) }
 		directives.forEach { it.accept(visitor, data) }
 	}
 
@@ -1712,7 +1954,7 @@ class GSchemaDefinition(
 		this === other || (
 			other is GSchemaDefinition &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				operationTypes.equalsAst(other.operationTypes, includingOrigin = includingOrigin) &&
+				operationTypeDefinitions.equalsAst(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1722,20 +1964,20 @@ class GSchemaDefinition(
 
 
 class GSchemaExtensionDefinition(
-	val operationTypes: List<GOperationTypeDefinition> = emptyList(),
-	val directives: List<GDirective> = emptyList(),
+	override val operationTypeDefinitions: List<GOperationTypeDefinition> = emptyList(),
+	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
-) : GTypeSystemExtensionDefinition(origin = origin) {
-
-	val operationTypesByName = operationTypes.associateBy { it.operation }
-
+) :
+	GTypeSystemExtensionDefinition(origin = origin),
+	GAst.WithDirectives,
+	GAst.WithOperationTypeDefinitions {
 
 	override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
 		visitor.visitSchemaExtensionDefinition(this, data)
 
 
 	override fun <Data> acceptChildren(visitor: GAstVisitor<*, Data>, data: Data) {
-		operationTypes.forEach { it.accept(visitor, data) }
+		operationTypeDefinitions.forEach { it.accept(visitor, data) }
 		directives.forEach { it.accept(visitor, data) }
 	}
 
@@ -1744,7 +1986,7 @@ class GSchemaExtensionDefinition(
 		this === other || (
 			other is GSchemaExtensionDefinition &&
 				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				operationTypes.equalsAst(other.operationTypes, includingOrigin = includingOrigin) &&
+				operationTypeDefinitions.equalsAst(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1759,6 +2001,8 @@ sealed class GSelection(
 ) :
 	GAst(origin = origin),
 	GAst.WithDirectives {
+
+	companion object
 }
 
 
@@ -1792,12 +2036,15 @@ class GSelectionSet(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__Type-Type
 sealed class GType(
-	val kind: GTypeKind,
+	val kind: Kind,
 	origin: GOrigin?
 ) : GTypeSystemDefinition(origin = origin) {
 
 	abstract val name: String
 	abstract val underlyingNamedType: GNamedType
+
+	open val nonNullable get() = GNonNullType(this)
+	open val nullableType get() = this
 
 
 	abstract fun toRef(): GTypeRef
@@ -1840,23 +2087,34 @@ sealed class GType(
 	}
 
 
-	interface WithArguments {
+	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
+	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds
+	enum class Kind {
 
-		val arguments: List<GArgumentDefinition>
-		val argumentsByName: Map<String, GArgumentDefinition>
-	}
+		ENUM,
+		INPUT_OBJECT,
+		INTERFACE,
+		LIST,
+		NON_NULL,
+		OBJECT,
+		SCALAR,
+		UNION;
 
 
-	interface WithFields {
+		override fun toString() =
+			when (this) {
+				ENUM -> "Enum"
+				INPUT_OBJECT -> "Input Object"
+				INTERFACE -> "Interface"
+				LIST -> "List"
+				NON_NULL -> "Non-Null"
+				OBJECT -> "Object"
+				SCALAR -> "Scalar"
+				UNION -> "Union"
+			}
 
-		val fields: List<GFieldDefinition>
-		val fieldsByName: Map<String, GFieldDefinition>
-	}
 
-
-	interface WithInterfaces {
-
-		val interfaces: List<GNamedTypeRef>
+		companion object
 	}
 }
 
@@ -1867,38 +2125,10 @@ sealed class GTypeExtension(
 	origin: GOrigin?
 ) :
 	GTypeSystemExtensionDefinition(origin = origin),
-	GAst.WithDirectives {
+	GAst.WithDirectives,
+	GAst.WithName {
 
-	val name get() = nameNode.value
-	val nameNode = name
-}
-
-
-// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
-// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds
-enum class GTypeKind {
-
-	ENUM,
-	INPUT_OBJECT,
-	INTERFACE,
-	LIST,
-	NON_NULL,
-	OBJECT,
-	SCALAR,
-	UNION;
-
-
-	override fun toString() =
-		when (this) {
-			ENUM -> "Enum"
-			INPUT_OBJECT -> "Input Object"
-			INTERFACE -> "Interface"
-			LIST -> "List"
-			NON_NULL -> "Non-Null"
-			OBJECT -> "Object"
-			SCALAR -> "Scalar"
-			UNION -> "Union"
-		}
+	override val nameNode = name
 
 
 	companion object
@@ -1953,12 +2183,18 @@ val GStringTypeRef = GTypeRef("String")
 
 sealed class GTypeSystemDefinition(
 	origin: GOrigin?
-) : GDefinition(origin = origin)
+) : GDefinition(origin = origin) {
+
+	companion object
+}
 
 
 sealed class GTypeSystemExtensionDefinition(
 	origin: GOrigin?
-) : GDefinition(origin = origin)
+) : GDefinition(origin = origin) {
+
+	companion object
+}
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Unions
@@ -1972,7 +2208,7 @@ class GUnionType(
 ) : GAbstractType(
 	description = description,
 	directives = directives,
-	kind = GTypeKind.UNION,
+	kind = Kind.UNION,
 	name = name,
 	origin = origin
 ) {
@@ -2074,7 +2310,7 @@ sealed class GValue(
 	origin: GOrigin?
 ) : GAst(origin = origin) {
 
-	abstract val type: Type
+	abstract val kind: Kind
 
 
 	class Boolean(
@@ -2082,7 +2318,7 @@ sealed class GValue(
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.BOOLEAN
+		override val kind get() = Kind.BOOLEAN
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2118,7 +2354,7 @@ sealed class GValue(
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.ENUM
+		override val kind get() = Kind.ENUM
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2150,11 +2386,11 @@ sealed class GValue(
 
 
 	class Float(
-		val value: kotlin.String,
+		val value: kotlin.Float,
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.FLOAT
+		override val kind get() = Kind.FLOAT
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2186,11 +2422,11 @@ sealed class GValue(
 
 
 	class Int(
-		val value: kotlin.String,
+		val value: kotlin.Int,
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.INT
+		override val kind get() = Kind.INT
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2226,7 +2462,7 @@ sealed class GValue(
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.FLOAT
+		override val kind get() = Kind.FLOAT
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2262,7 +2498,7 @@ sealed class GValue(
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.NULL
+		override val kind get() = Kind.NULL
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2297,9 +2533,9 @@ sealed class GValue(
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		val fieldsByName = fields.associate { it.name to it.value }
+		private val fieldsByName = fields.associateBy { it.name }
 
-		override val type get() = Type.OBJECT
+		override val kind get() = Kind.OBJECT
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2323,6 +2559,10 @@ sealed class GValue(
 				)
 
 
+		fun field(name: kotlin.String) =
+			fieldsByName[name]
+
+
 		override fun hashCode() =
 			fieldsByName.hashCode()
 
@@ -2337,7 +2577,7 @@ sealed class GValue(
 		origin: GOrigin? = null
 	) : GValue(origin = origin) {
 
-		override val type get() = Type.STRING
+		override val kind get() = Kind.STRING
 
 
 		override fun <Result, Data> accept(visitor: GAstVisitor<Result, Data>, data: Data) =
@@ -2372,12 +2612,12 @@ sealed class GValue(
 	class Variable(
 		name: GName,
 		origin: GOrigin? = null
-	) : GValue(origin = origin) {
+	) : GValue(origin = origin) { // not Named, just referencing a name
 
 		val name get() = nameNode.value
 		val nameNode = name
 
-		override val type get() = Type.VARIABLE
+		override val kind get() = Kind.VARIABLE
 
 
 		constructor(
@@ -2423,8 +2663,8 @@ sealed class GValue(
 			return when (value) {
 				null -> GNullValue
 				is kotlin.Boolean -> Boolean(value)
-				is kotlin.Float -> Float(value.toString())
-				is kotlin.Int -> Int(value.toString())
+				is kotlin.Float -> Float(value)
+				is kotlin.Int -> Int(value)
 				is Map<*, *> -> Object(value.map { (fieldName, fieldValue) ->
 					GObjectValueField(
 						name = fieldName as? kotlin.String ?: return null,
@@ -2447,7 +2687,7 @@ sealed class GValue(
 	}
 
 
-	enum class Type {
+	enum class Kind {
 
 		BOOLEAN,
 		ENUM,
@@ -2535,7 +2775,7 @@ class GVariableDefinition(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 sealed class GWrappingType(
-	kind: GTypeKind,
+	kind: Kind,
 	val wrappedType: GType
 ) : GType(
 	kind = kind,

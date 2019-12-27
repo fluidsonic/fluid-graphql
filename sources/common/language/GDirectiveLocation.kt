@@ -24,5 +24,51 @@ enum class GDirectiveLocation {
 	VARIABLE_DEFINITION;
 
 
-	companion object
+	companion object {
+
+		fun forAstNode(node: GAst) = when (node) {
+			is GInputFieldDefinition -> INPUT_FIELD_DEFINITION // Must be checked before superclass 'GArgumentDefinition'.
+
+			is GArgumentDefinition -> ARGUMENT_DEFINITION
+			is GEnumType -> ENUM
+			is GEnumTypeExtension -> ENUM
+			is GEnumValueDefinition -> ENUM_VALUE
+			is GFieldSelection -> FIELD
+			is GFieldDefinition -> FIELD_DEFINITION
+			is GFragmentDefinition -> FRAGMENT_DEFINITION
+			is GFragmentSelection -> FRAGMENT_SPREAD
+			is GInlineFragmentSelection -> INLINE_FRAGMENT
+			is GInputObjectType -> INPUT_OBJECT
+			is GInputObjectTypeExtension -> INPUT_OBJECT
+			is GInterfaceType -> INTERFACE
+			is GInterfaceTypeExtension -> INTERFACE
+			is GObjectType -> OBJECT
+			is GObjectTypeExtension -> OBJECT
+			is GOperationDefinition -> when (node.type) {
+				GOperationType.mutation -> MUTATION
+				GOperationType.query -> QUERY
+				GOperationType.subscription -> SUBSCRIPTION
+			}
+			is GScalarType -> SCALAR
+			is GScalarTypeExtension -> SCALAR
+			is GSchemaDefinition -> SCHEMA
+			is GSchemaExtensionDefinition -> SCHEMA
+			is GUnionType -> UNION
+			is GUnionTypeExtension -> UNION
+			is GVariableDefinition -> VARIABLE_DEFINITION
+
+			is GArgument,
+			is GDirective,
+			is GDirectiveDefinition,
+			is GDocument,
+			is GName,
+			is GObjectValueField,
+			is GOperationTypeDefinition,
+			is GSelectionSet,
+			is GTypeRef,
+			is GValue,
+			is GWrappingType ->
+				null
+		}
+	}
 }

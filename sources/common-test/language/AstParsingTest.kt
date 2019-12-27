@@ -277,7 +277,7 @@ class AstParsingTest {
 
 				get(0).assertOf<GValue.Int> {
 					assertAt(1 .. 4)
-					assertEquals(expected = "123", actual = value)
+					assertEquals(expected = 123, actual = value)
 				}
 
 				get(1).assertOf<GValue.String> {

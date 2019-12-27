@@ -4,12 +4,12 @@ import tests.*
 import kotlin.test.*
 
 
-class SelectionSetHasNoConflictsRuleTest : ValidationRule {
+class SelectionUnambiguityRuleTest : ValidationRule {
 
 	@Test
 	fun `accepts duplicate but identical name and alias selection`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
+			rule = SelectionUnambiguityRule,
 			errors = emptyList(),
 			document = """
 				|{
@@ -24,10 +24,49 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	}
 
 
+	@Ignore // FIXME needs implementation
+	@Test
+	fun `accepts conflicting field names and arguments for disjoint object types`() {
+		assertValidationRule(
+			rule = SelectionUnambiguityRule,
+			errors = emptyList(),
+			document = """
+				|fragment conflictingDifferingResponses on Pet {
+				|   ... on Dog {
+				|       string: dogString
+				|       stringWithArg: dogStringWithArg(foo: 2)
+				|   }
+				|   ... on Cat {
+				|       string: catString
+				|       stringWithArg: catStringWithArg(bar: "baz")
+				|   }
+				|}
+			""",
+			schema = """
+				|interface Pet {
+				|   name: String!
+				|}
+				|
+				|type Dog implements Pet {
+				|   name: String!
+				|   dogString: String
+				|   dogStringWithArg(foo: Int): String
+				|}
+				|
+				|type Cat implements Pet {
+				|   name: String!
+				|   catString: String
+				|   catStringWithArg(bar: String): String
+				|}
+			"""
+		)
+	}
+
+
 	@Test
 	fun `rejects conflicting types selection`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
+			rule = SelectionUnambiguityRule,
 			errors = listOf("""
 				Field 'id' in 'Query' is selected in multiple locations but with incompatible types.
 
@@ -65,7 +104,7 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	@Test
 	fun `rejects conflicting nullability`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
+			rule = SelectionUnambiguityRule,
 			errors = listOf("""
 				Field 'foo' in 'A' is selected in multiple locations but with incompatible types.
 
@@ -113,7 +152,7 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	@Test
 	fun `rejects conflicting list types`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
+			rule = SelectionUnambiguityRule,
 			errors = listOf("""
 				Field 'foo' in 'A' is selected in multiple locations but with incompatible types.
 
@@ -161,22 +200,32 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	@Test
 	fun `rejects conflicting field names`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
-			errors = listOf("""
-				Field 'foo' in 'Query' is selected in multiple locations but selects different fields or with different arguments.
+			rule = SelectionUnambiguityRule,
+			errors = listOf(
+				"""
+					Field 'foo' in 'Query' is selected in multiple locations but selects different fields or with different arguments.
 
-				<document>:2:4
-				1 | {
-				2 |    foo
-				  |    ^
-				3 |    foo: bar
+					<document>:2:4
+					1 | {
+					2 |    foo
+					  |    ^
+					3 |    foo: bar
 
-				<document>:3:4
-				2 |    foo
-				3 |    foo: bar
-				  |    ^
-				4 | }
-			"""),
+					<document>:1:14
+					1 | type Query { foo: String, bar: String }
+					  |              ^
+
+					<document>:3:9
+					2 |    foo
+					3 |    foo: bar
+					  |         ^
+					4 | }
+
+					<document>:1:27
+					1 | type Query { foo: String, bar: String }
+					  |                           ^
+				"""
+			),
 			document = """
 				|{
 				|   foo
@@ -193,22 +242,24 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	@Test
 	fun `rejects conflicting arguments`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
-			errors = listOf("""
-				Field 'foo' in 'Query' is selected in multiple locations but selects different fields or with different arguments.
+			rule = SelectionUnambiguityRule,
+			errors = listOf(
+				"""
+					Field 'foo' in 'Query' is selected in multiple locations but selects different fields or with different arguments.
 
-				<document>:2:4
-				1 | {
-				2 |    foo(bar: 1)
-				  |    ^
-				3 |    foo(bar: 2)
+					<document>:2:13
+					1 | {
+					2 |    foo(bar: 1)
+					  |             ^
+					3 |    foo(bar: 2)
 
-				<document>:3:4
-				2 |    foo(bar: 1)
-				3 |    foo(bar: 2)
-				  |    ^
-				4 | }
-			"""),
+					<document>:3:13
+					2 |    foo(bar: 1)
+					3 |    foo(bar: 2)
+					  |             ^
+					4 | }
+				"""
+			),
 			document = """
 				|{
 				|   foo(bar: 1)
@@ -225,7 +276,7 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	@Test
 	fun `rejects conflicting sub-selections`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
+			rule = SelectionUnambiguityRule,
 			errors = listOf("""
 				Field 'bar' in 'Foo' is selected in multiple locations but with incompatible types.
 
@@ -270,7 +321,7 @@ class SelectionSetHasNoConflictsRuleTest : ValidationRule {
 	@Test
 	fun `rejects different types also for disjoint object types`() {
 		assertValidationRule(
-			rule = SelectionSetHasNoConflictsRule,
+			rule = SelectionUnambiguityRule,
 			errors = listOf("""
 				Field 'someValue' in 'Dog' is selected in multiple locations but with incompatible types.
 

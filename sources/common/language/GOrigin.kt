@@ -57,7 +57,7 @@ interface GOrigin {
 								.subList(1, (sublineIndex + 1).coerceAtMost(sublines.lastIndex + 1))
 								.map { "" to it }
 								.toTypedArray(),
-							"" to (" ".repeat(sublineColumnNumber - 1) + "^"),
+							"" to (" ".repeat(sublineColumnNumber - 1) + "^"), // FIXME account for leading tabs in previous line
 							"" to lines.getOrNull(sublineIndex + 1)
 						)
 					}
@@ -66,7 +66,7 @@ interface GOrigin {
 					appendPrefixedLines(
 						"${lineNumber - 1}" to lines.getOrNull(lineNumber - 2),
 						"$lineNumber" to relevantLine,
-						"" to (" ".repeat(columnNumber - 1) + "^"),
+						"" to (" ".repeat(columnNumber - 1) + "^"), // FIXME account for leading tabs in previous line
 						"${lineNumber + 1}" to lines.getOrNull(lineNumber)
 					)
 			}

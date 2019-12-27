@@ -3,6 +3,12 @@ package io.fluidsonic.graphql
 
 internal interface ValidationRule {
 
+	fun afterTraversal(context: ValidationContext) =
+		Unit
+
+	fun beforeTraversal(context: ValidationContext) =
+		Unit
+
 	fun validateAbstractType(type: GAbstractType, context: ValidationContext) =
 		validateNamedType(type, context)
 

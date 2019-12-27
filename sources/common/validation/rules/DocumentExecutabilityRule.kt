@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Executable-Definitions
-internal object DocumentIsExecutableRule : ValidationRule {
+internal object DocumentExecutabilityRule : ValidationRule {
 
 	override fun validateDocument(document: GDocument, context: ValidationContext) {
 		if (document.definitions.none { it is GOperationDefinition })

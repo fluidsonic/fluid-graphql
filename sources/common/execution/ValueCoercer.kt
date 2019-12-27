@@ -41,7 +41,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 			))
 
 		fun invalidValueTypeError() =
-			invalidValueError("Unexpected '${value.type}' for argument of type '${rootTypeRef}'.")
+			invalidValueError("Unexpected '${value.kind}' for argument of type '${rootTypeRef}'.")
 
 
 		when (typeRef) {
@@ -121,7 +121,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 					// https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
 					is GEnumType ->
 						when (value) {
-							is GValue.Enum -> type.valuesByName[value.name]
+							is GValue.Enum -> type.value(value.name)
 								?: invalidValueError("Invalid value '${value.name}' for enum '${type.name}'.")
 
 							is GValue.Null -> null
@@ -171,8 +171,8 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 					is GInputObjectType ->
 						when (value) {
 							is GValue.Object ->
-								type.arguments.associate { argument ->
-									val argumentValue = value.fieldsByName.getOrElseNullable(argument.name) { argument.defaultValue }
+								type.argumentDefinitions.associate { argument ->
+									val argumentValue = value.field(argument.name)?.value ?: argument.defaultValue
 									if (argumentValue !== null)
 										pathBuilder.withFieldName(argument.name) {
 											argument.name to argumentValue.coerceToType(
@@ -340,7 +340,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 
 					is GEnumType ->
 						when (value) {
-							is String -> type.valuesByName[value]
+							is String -> type.value(value)
 								?: invalidValueError("Invalid value '${value}' for enum '${type.name}'.")
 
 							null -> null
@@ -366,7 +366,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 					is GInputObjectType ->
 						when (value) {
 							is Map<*, *> ->
-								type.arguments.associate { argument ->
+								type.argumentDefinitions.associate { argument ->
 									val argumentValue = value.getOrElseNullable(argument.name) { argument.defaultValue }
 									if (argumentValue !== null)
 										pathBuilder.withFieldName(argument.name) {

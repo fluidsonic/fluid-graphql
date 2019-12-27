@@ -4,12 +4,12 @@ import tests.*
 import kotlin.test.*
 
 
-class AnonymousOperationIsOnlyOneRuleTest : ValidationRule {
+class AnonymousOperationExclusivityRuleTest : ValidationRule {
 
 	@Test
 	fun `accepts zero operations`() {
 		assertValidationRule(
-			rule = AnonymousOperationIsOnlyOneRule,
+			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
 			document = "fragment f on Query { id: ID }",
 			schema = "type Query { id: ID }"
@@ -20,7 +20,7 @@ class AnonymousOperationIsOnlyOneRuleTest : ValidationRule {
 	@Test
 	fun `accepts one named operations`() {
 		assertValidationRule(
-			rule = AnonymousOperationIsOnlyOneRule,
+			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
 			document = """
 				|query q { id: ID }
@@ -34,7 +34,7 @@ class AnonymousOperationIsOnlyOneRuleTest : ValidationRule {
 	@Test
 	fun `accepts one anonymous operations`() {
 		assertValidationRule(
-			rule = AnonymousOperationIsOnlyOneRule,
+			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
 			document = """
 				|{ id: ID }
@@ -48,7 +48,7 @@ class AnonymousOperationIsOnlyOneRuleTest : ValidationRule {
 	@Test
 	fun `accepts two named operations`() {
 		assertValidationRule(
-			rule = AnonymousOperationIsOnlyOneRule,
+			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
 			document = """
 				|query q1 { id: ID }
@@ -63,7 +63,7 @@ class AnonymousOperationIsOnlyOneRuleTest : ValidationRule {
 	@Test
 	fun `rejects two anonymous operations`() {
 		assertValidationRule(
-			rule = AnonymousOperationIsOnlyOneRule,
+			rule = AnonymousOperationExclusivityRule,
 			errors = listOf("""
 				The document must not contain more than one operation if it contains an anonymous operation.
 
@@ -91,7 +91,7 @@ class AnonymousOperationIsOnlyOneRuleTest : ValidationRule {
 	@Test
 	fun `rejects one anonymous and one named operations`() {
 		assertValidationRule(
-			rule = AnonymousOperationIsOnlyOneRule,
+			rule = AnonymousOperationExclusivityRule,
 			errors = listOf("""
 				The document must not contain more than one operation if it contains an anonymous operation.
 

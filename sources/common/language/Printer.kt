@@ -53,7 +53,7 @@ internal object Printer {
 			writeAst(definition.descriptionNode)
 			writeRaw("directive @")
 			writeAst(definition.nameNode)
-			writeArgumentDefinitions(definition.arguments)
+			writeArgumentDefinitions(definition.argumentDefinitions)
 			writeRaw(" on ")
 			definition.locationNodes.forEachIndexed { index, location ->
 				if (index > 0)
@@ -113,7 +113,7 @@ internal object Printer {
 		override fun visitFieldDefinition(definition: GFieldDefinition) = writer {
 			writeAst(definition.descriptionNode)
 			writeAst(definition.nameNode)
-			writeArgumentDefinitions(definition.arguments)
+			writeArgumentDefinitions(definition.argumentDefinitions)
 			writeRaw(": ")
 			writeAst(definition.type)
 			writeDirectives(definition.directives)
@@ -136,7 +136,7 @@ internal object Printer {
 
 
 		override fun visitFloatValue(value: GValue.Float) = writer {
-			writeRaw(value.value)
+			writeRaw(value.value.toString())
 		}
 
 
@@ -165,7 +165,7 @@ internal object Printer {
 			writeRaw("input ")
 			writeAst(type.nameNode)
 			writeDirectives(type.directives)
-			writeInputObjectTypeArguments(type.arguments)
+			writeInputObjectTypeArguments(type.argumentDefinitions)
 		}
 
 
@@ -173,7 +173,7 @@ internal object Printer {
 			writeRaw("extend input ")
 			writeAst(extension.nameNode)
 			writeDirectives(extension.directives)
-			writeInputObjectTypeArguments(extension.arguments)
+			writeInputObjectTypeArguments(extension.argumentDefinitions)
 		}
 
 
@@ -190,7 +190,7 @@ internal object Printer {
 
 
 		override fun visitIntValue(value: GValue.Int) = writer {
-			writeRaw(value.value)
+			writeRaw(value.value.toString())
 		}
 
 
@@ -200,7 +200,7 @@ internal object Printer {
 			writeAst(type.nameNode)
 			writeImplementedInterfaces(type.interfaces)
 			writeDirectives(type.directives)
-			writeFieldDefinitions(type.fields)
+			writeFieldDefinitions(type.fieldDefinitions)
 		}
 
 
@@ -209,7 +209,7 @@ internal object Printer {
 			writeAst(extension.nameNode)
 			writeImplementedInterfaces(extension.interfaces)
 			writeDirectives(extension.directives)
-			writeFieldDefinitions(extension.fields)
+			writeFieldDefinitions(extension.fieldDefinitions)
 		}
 
 
@@ -258,7 +258,7 @@ internal object Printer {
 			writeRaw("type ")
 			writeAst(type.nameNode)
 			writeImplementedInterfaces(type.interfaces)
-			writeFieldDefinitions(type.fields)
+			writeFieldDefinitions(type.fieldDefinitions)
 		}
 
 
@@ -266,7 +266,7 @@ internal object Printer {
 			writeRaw("extend type ")
 			writeAst(extension.nameNode)
 			writeImplementedInterfaces(extension.interfaces)
-			writeFieldDefinitions(extension.fields)
+			writeFieldDefinitions(extension.fieldDefinitions)
 		}
 
 
@@ -274,13 +274,15 @@ internal object Printer {
 			if (value.fields.isNotEmpty())
 				writeBlock {
 					value.fields.forEachIndexed { index, field ->
-						if (index > 0)
+						if (index > 0) {
 							writeRaw(",")
+							writeLinebreak()
+						}
 
 						writeAst(field)
-						writeLinebreak()
 					}
 
+					writeLinebreak()
 				}
 			else
 				writeRaw("{}")
@@ -325,7 +327,7 @@ internal object Printer {
 
 
 		override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition) = writer {
-			writeRaw(definition.operation.name)
+			writeRaw(definition.operationType.name)
 			writeRaw(": ")
 			writeAst(definition.type)
 		}
@@ -347,13 +349,13 @@ internal object Printer {
 
 
 		override fun visitSchemaDefinition(definition: GSchemaDefinition) = writer {
-			val queryOperation = definition.operationTypes.firstOrNull { it.operation == GOperationType.query }
+			val queryOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.query }
 				?.takeIf { it.type.name != GSpecification.defaultQueryTypeName }
 
-			val mutationOperation = definition.operationTypes.firstOrNull { it.operation == GOperationType.mutation }
+			val mutationOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.mutation }
 				?.takeIf { it.type.name != GSpecification.defaultMutationTypeName }
 
-			val subscriptionOperation = definition.operationTypes.firstOrNull { it.operation == GOperationType.subscription }
+			val subscriptionOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.subscription }
 				?.takeIf { it.type.name != GSpecification.defaultSubscriptionTypeName }
 
 			if (queryOperation == null && mutationOperation == null && subscriptionOperation == null)
@@ -382,7 +384,7 @@ internal object Printer {
 		override fun visitSchemaExtensionDefinition(definition: GSchemaExtensionDefinition) = writer {
 			writeRaw("extend schema")
 			writeDirectives(definition.directives)
-			writeOperationTypeDefinitions(definition.operationTypes)
+			writeOperationTypeDefinitions(definition.operationTypeDefinitions)
 		}
 
 

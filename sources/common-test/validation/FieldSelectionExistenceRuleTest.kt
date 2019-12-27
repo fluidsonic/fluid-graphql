@@ -4,12 +4,12 @@ import tests.*
 import kotlin.test.*
 
 
-class FieldSelectionReferencesExistingFieldRuleTest : ValidationRule {
+class FieldSelectionExistenceRuleTest : ValidationRule {
 
 	@Test
 	fun `accepts existing field in field selection`() {
 		assertValidationRule(
-			rule = FieldSelectionReferencesExistingFieldRule,
+			rule = FieldSelectionExistenceRule,
 			errors = emptyList(),
 			document = """
 				|{ id }
@@ -22,7 +22,7 @@ class FieldSelectionReferencesExistingFieldRuleTest : ValidationRule {
 	@Test
 	fun `accepts existing field in inline fragment selection`() {
 		assertValidationRule(
-			rule = FieldSelectionReferencesExistingFieldRule,
+			rule = FieldSelectionExistenceRule,
 			errors = emptyList(),
 			document = """
 				|{
@@ -39,7 +39,7 @@ class FieldSelectionReferencesExistingFieldRuleTest : ValidationRule {
 	@Test
 	fun `accepts existing field in fragment selection`() {
 		assertValidationRule(
-			rule = FieldSelectionReferencesExistingFieldRule,
+			rule = FieldSelectionExistenceRule,
 			errors = emptyList(),
 			document = """
 				|{
@@ -54,11 +54,11 @@ class FieldSelectionReferencesExistingFieldRuleTest : ValidationRule {
 
 
 	@Test
-	fun `rejects non-existent field in field selection`() {
+	fun `rejects nonexistent field in field selection`() {
 		assertValidationRule(
-			rule = FieldSelectionReferencesExistingFieldRule,
+			rule = FieldSelectionExistenceRule,
 			errors = listOf("""
-				Cannot select non-existent field 'foo' on type 'Query'.
+				Cannot select nonexistent field 'foo' on type 'Query'.
 
 				<document>:1:3
 				1 | { foo }
@@ -73,11 +73,11 @@ class FieldSelectionReferencesExistingFieldRuleTest : ValidationRule {
 
 
 	@Test
-	fun `rejects non-existent field in inline fragment selection`() {
+	fun `rejects nonexistent field in inline fragment selection`() {
 		assertValidationRule(
-			rule = FieldSelectionReferencesExistingFieldRule,
+			rule = FieldSelectionExistenceRule,
 			errors = listOf("""
-				Cannot select non-existent field 'foo' on type 'Query'.
+				Cannot select nonexistent field 'foo' on type 'Query'.
 
 				<document>:3:8
 				2 |    ... {
@@ -98,11 +98,11 @@ class FieldSelectionReferencesExistingFieldRuleTest : ValidationRule {
 
 
 	@Test
-	fun `rejects non-existent field in fragment selection`() {
+	fun `rejects nonexistent field in fragment selection`() {
 		assertValidationRule(
-			rule = FieldSelectionReferencesExistingFieldRule,
+			rule = FieldSelectionExistenceRule,
 			errors = listOf("""
-				Cannot select non-existent field 'foo' on type 'Query'.
+				Cannot select nonexistent field 'foo' on type 'Query'.
 
 				<document>:5:23
 				4 | 

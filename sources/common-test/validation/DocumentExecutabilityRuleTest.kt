@@ -4,12 +4,12 @@ import tests.*
 import kotlin.test.*
 
 
-class DocumentIsExecutableRuleTest : ValidationRule {
+class DocumentExecutabilityRuleTest : ValidationRule {
 
 	@Test
 	fun `accepts single operation`() {
 		assertValidationRule(
-			rule = DocumentIsExecutableRule,
+			rule = DocumentExecutabilityRule,
 			errors = emptyList(),
 			document = "{ id: ID }",
 			schema = "type Query { id: ID }"
@@ -20,7 +20,7 @@ class DocumentIsExecutableRuleTest : ValidationRule {
 	@Test
 	fun `rejects zero operations`() {
 		assertValidationRule(
-			rule = DocumentIsExecutableRule,
+			rule = DocumentExecutabilityRule,
 			errors = listOf("In order to be executable, the document must contain at least one operation definition."),
 			document = """
 				|fragment f on Query { id: ID }
@@ -33,15 +33,17 @@ class DocumentIsExecutableRuleTest : ValidationRule {
 	@Test
 	fun `rejects type definitions`() {
 		assertValidationRule(
-			rule = DocumentIsExecutableRule,
-			errors = listOf("""
-				In order to be executable, the document must contain only executable definitions.
+			rule = DocumentExecutabilityRule,
+			errors = listOf(
+				"""
+					In order to be executable, the document must contain only executable definitions.
 
-				<document>:2:1
-				1 | { id: ID }
-				2 | scalar S
-				  | ^
-			"""),
+					<document>:2:1
+					1 | { id: ID }
+					2 | scalar S
+					  | ^
+				"""
+			),
 			document = """
 				|{ id: ID }
 				|scalar S
@@ -54,7 +56,7 @@ class DocumentIsExecutableRuleTest : ValidationRule {
 	@Test
 	fun `rejects type extensions`() {
 		assertValidationRule(
-			rule = DocumentIsExecutableRule,
+			rule = DocumentExecutabilityRule,
 			errors = listOf("""
 				In order to be executable, the document must contain only executable definitions.
 

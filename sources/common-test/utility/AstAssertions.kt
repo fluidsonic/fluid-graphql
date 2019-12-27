@@ -3,6 +3,7 @@ package tests
 import io.fluidsonic.graphql.*
 import kotlin.test.*
 
+// FIXME cleanup
 
 // expected to not throw
 fun assertAst(actual: String) =

@@ -19,7 +19,7 @@ object GSpecification {
 	val defaultDeprecatedDirective = GDirectiveDefinition(
 		name = "deprecated",
 		arguments = listOf(
-			GArgumentDefinition(
+			GDirectiveArgumentDefinition(
 				name = "reason",
 				type = GStringTypeRef,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
@@ -38,7 +38,7 @@ object GSpecification {
 	val defaultIncludeDirective = GDirectiveDefinition(
 		name = "include",
 		arguments = listOf(
-			GArgumentDefinition(
+			GDirectiveArgumentDefinition(
 				name = "if",
 				type = GBooleanTypeRef.nonNullable,
 				description = "Included when true."
@@ -56,7 +56,7 @@ object GSpecification {
 	val defaultSkipDirective = GDirectiveDefinition(
 		name = "skip",
 		arguments = listOf(
-			GArgumentDefinition(
+			GDirectiveArgumentDefinition(
 				name = "if",
 				type = GBooleanTypeRef.nonNullable,
 				description = "Skipped when true."

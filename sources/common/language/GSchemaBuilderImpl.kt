@@ -25,10 +25,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		val definitions = definitions.toMutableList()
 		if (mutationType !== null || queryType !== null || subscriptionType !== null)
 			definitions.add(0, GSchemaDefinition(
-				operationTypes = listOfNotNull(
-					queryType?.let { GOperationTypeDefinition(operation = GOperationType.query, type = it) },
-					mutationType?.let { GOperationTypeDefinition(operation = GOperationType.mutation, type = it) },
-					subscriptionType?.let { GOperationTypeDefinition(operation = GOperationType.subscription, type = it) }
+				operationTypeDefinitions = listOfNotNull(
+					queryType?.let { GOperationTypeDefinition(operationType = GOperationType.query, type = it) },
+					mutationType?.let { GOperationTypeDefinition(operationType = GOperationType.mutation, type = it) },
+					subscriptionType?.let { GOperationTypeDefinition(operationType = GOperationType.subscription, type = it) }
 				)
 			))
 
@@ -166,21 +166,43 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	private class ArgumentDefinitionBuilderImpl(
-		var name: String,
-		var type: GTypeRef,
+		val name: String,
+		val type: GTypeRef,
+		val definitionType: ArgumentDefinitionType,
 		var defaultValue: GValue? = null
 	) : ContainerImpl(),
 		ArgumentDefinitionBuilder,
 		ArgumentDefinitionContainer.NameAndType,
 		ArgumentDefinitionContainer.NameAndTypeAndDefault {
 
-		fun build() = GArgumentDefinition(
-			defaultValue = defaultValue,
-			description = description,
-			directives = directives,
-			name = name,
-			type = type
-		)
+		fun build() = when (definitionType) {
+			ArgumentDefinitionType.directiveDefinition ->
+				GDirectiveArgumentDefinition(
+					defaultValue = defaultValue,
+					description = description,
+					directives = directives,
+					name = name,
+					type = type
+				)
+
+			ArgumentDefinitionType.fieldDefinition ->
+				GFieldArgumentDefinition(
+					defaultValue = defaultValue,
+					description = description,
+					directives = directives,
+					name = name,
+					type = type
+				)
+
+			ArgumentDefinitionType.inputField ->
+				GInputFieldDefinition(
+					defaultValue = defaultValue,
+					description = description,
+					directives = directives,
+					name = name,
+					type = type
+				)
+		}
 
 
 		override fun default(default: Any?) = apply {
@@ -188,6 +210,14 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 				if (default === null) GNullValue
 				else GValue.of(default) ?: error("Value is not a valid GraphQL value: $default (${default::class})")
 		}
+	}
+
+
+	private enum class ArgumentDefinitionType {
+
+		directiveDefinition,
+		fieldDefinition,
+		inputField
 	}
 
 
@@ -245,8 +275,8 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		}
 
 
-		fun String.ofArgumentDefinitionType(type: GTypeRef) =
-			ArgumentDefinitionBuilderImpl(name = this, type = type)
+		fun String.ofArgumentDefinitionType(type: GTypeRef, definitionType: ArgumentDefinitionType) =
+			ArgumentDefinitionBuilderImpl(name = this, type = type, definitionType = definitionType)
 
 
 		fun String.ofFieldDefinitionType(type: GTypeRef) =
@@ -288,8 +318,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		private var locations = emptySet<GDirectiveLocation>()
 
 
+		@Suppress("UNCHECKED_CAST")
 		fun build() = GDirectiveDefinition(
-			arguments = argumentDefinitions,
+			arguments = argumentDefinitions as List<GDirectiveArgumentDefinition>,
 			description = description,
 			locations = locations,
 			name = name
@@ -327,7 +358,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		override fun String.of(type: GTypeRef) =
-			ofArgumentDefinitionType(type)
+			ofArgumentDefinitionType(type, definitionType = ArgumentDefinitionType.directiveDefinition)
 
 
 		class DirectiveLocationSetImpl(val locations: Set<GDirectiveLocation>) :
@@ -409,8 +440,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		private var resolver: GFieldResolver<*>? = null
 
 
+		@Suppress("UNCHECKED_CAST")
 		fun build() = GFieldDefinition(
-			arguments = argumentDefinitions,
+			arguments = argumentDefinitions as List<GFieldArgumentDefinition>,
 			description = description,
 			directives = directives,
 			name = name,
@@ -425,7 +457,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		override fun String.of(type: GTypeRef) =
-			ofArgumentDefinitionType(type)
+			ofArgumentDefinitionType(type, definitionType = ArgumentDefinitionType.fieldDefinition)
 	}
 
 
@@ -434,8 +466,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	) : ContainerImpl(),
 		InputObjectTypeDefinitionBuilder {
 
+		@Suppress("UNCHECKED_CAST")
 		fun build() = GInputObjectType(
-			arguments = argumentDefinitions,
+			arguments = argumentDefinitions as List<GInputFieldDefinition>,
 			description = description,
 			directives = directives,
 			name = name
@@ -443,7 +476,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		override fun String.of(type: GTypeRef) =
-			ofArgumentDefinitionType(type)
+			ofArgumentDefinitionType(type, definitionType = ArgumentDefinitionType.inputField)
 	}
 
 

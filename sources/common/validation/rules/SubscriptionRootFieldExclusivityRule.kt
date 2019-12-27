@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Single-root-field
-internal object SubscriptionSelectsOnlyOneRootFieldRule : ValidationRule {
+internal object SubscriptionRootFieldExclusivityRule : ValidationRule {
 
 	override fun validateOperationDefinition(definition: GOperationDefinition, context: ValidationContext) {
 		if (definition.type != GOperationType.subscription)

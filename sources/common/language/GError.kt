@@ -33,10 +33,10 @@ class GError(
 		append(message)
 
 		for (node in nodes) {
-			node.origin?.let { origin ->
-				append("\n\n")
-				append(node.origin.describe())
-			}
+			val origin = node.origin ?: continue
+
+			append("\n\n")
+			append(origin.describe())
 		}
 
 		for (origin in origins) {

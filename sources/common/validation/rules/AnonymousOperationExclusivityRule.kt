@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Lone-Anonymous-Operation
-internal object AnonymousOperationIsOnlyOneRule : ValidationRule {
+internal object AnonymousOperationExclusivityRule : ValidationRule {
 
 	override fun validateDocument(document: GDocument, context: ValidationContext) {
 		val operations = document.definitions.filterIsInstance<GOperationDefinition>()

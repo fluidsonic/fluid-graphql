@@ -37,9 +37,7 @@ class SchemaTest {
 			|  id,
 			|  isPublished,
 			|  title,
-			|  body,
-			|  hidden,
-			|  notDefined
+			|  body
 			|}
 		""".trimMargin())
 
@@ -77,7 +75,7 @@ class SchemaTest {
 								"height" to 480
 							),
 							"recentArticle" to mapOf(
-								"id" to 1,
+								"id" to "1",
 								"isPublished" to true,
 								"title" to "My Article 1",
 								"body" to "This is a post",
@@ -167,7 +165,7 @@ class SchemaTest {
 
 
 		private val johnSmith = Author(
-			id = 123,
+			id = "123",
 			name = "John Smith",
 			recentArticleProvider = { article("1") }
 		)
@@ -198,7 +196,7 @@ class SchemaTest {
 
 
 	private data class Author(
-		val id: Int,
+		val id: String,
 		val name: String,
 		private val recentArticleProvider: () -> Article
 	) {
@@ -210,15 +208,15 @@ class SchemaTest {
 		fun pic(width: Int, height: Int) =
 			Image(
 				url = "cdn://$id",
-				width = width.toString(),
-				height = height.toString()
+				width = width,
+				height = height
 			)
 	}
 
 
 	private data class Image(
 		val url: String,
-		val width: String,
-		val height: String
+		val width: Int,
+		val height: Int
 	)
 }

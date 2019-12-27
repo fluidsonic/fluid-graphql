@@ -10,3 +10,4 @@ To-Do
 - split visitors into bare & with-defaults
 - make print visitor use no defaults in order to catch missing implementations
 - visitors are getting messy - refactor
+- to prefix or not to prefix all public class names?

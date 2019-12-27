@@ -96,7 +96,7 @@ class AstParsingErrorsTest {
 
 
 	@Test
-	fun `rejects non-existent operation name`() {
+	fun `rejects nonexistent operation name`() {
 		assertSyntaxError(
 			content = "notanoperation Foo { field }",
 			message = """Syntax Error: Unexpected Name "notanoperation".""",

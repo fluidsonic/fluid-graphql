@@ -30,7 +30,7 @@ internal class Executor private constructor(
 				if (!visitedFragmentNames.add(fragmentName))
 					return
 
-				val fragment = document.fragmentsByName[fragmentName]
+				val fragment = document.fragment(fragmentName)
 					?: invalidOperationError("A fragment with name '$fragmentName' is referenced but not defined.")
 
 				val fragmentType = schema.resolveType(fragment.typeCondition)
@@ -295,7 +295,7 @@ internal class Executor private constructor(
 	): GResult<Any?> = GResult {
 		val argumentValues = valueCoercer.coerceArgumentValues(
 			arguments = fieldSelections.first().arguments,
-			argumentDefinitions = fieldDefinition.arguments
+			argumentDefinitions = fieldDefinition.argumentDefinitions
 		).or { return it } // FIXME possible if validated?
 
 		// FIXME type safety
@@ -321,6 +321,9 @@ internal class Executor private constructor(
 			))
 		}
 		catch (cause: Throwable) {
+			// FIXME remove
+			println(cause)
+
 			collectError(GError(
 				message = "The field value is not available at the moment.",
 				cause = cause,
@@ -336,7 +339,7 @@ internal class Executor private constructor(
 			?.let { directive ->
 				valueCoercer.coerceArgumentValues(
 					arguments = directive.arguments,
-					argumentDefinitions = definition.arguments
+					argumentDefinitions = definition.argumentDefinitions
 				).or { failure ->
 					invalidOperationError(
 						message = "Invalid '${definition.name}' directive arguments.",
@@ -408,23 +411,11 @@ internal class Executor private constructor(
 			document: GDocument,
 			name: String?
 		): GResult<GOperationDefinition> = GResult {
-			when {
-				name != null ->
-					document.operationsByName[name]
-						?: return failWith(GError("There is no operation named '$name' in the document."))
-
-				document.operationsByName.isEmpty() ->
-					return failWith(GError("There are no operations in the document."))
-
-				document.operationsByName.size > 1 ->
-					return failWith(GError(
-						message = "There are multiple operations in the document. " +
-							"You must specify the name of the operation to be executed explicitly."
-					))
-
-				else ->
-					document.operationsByName.values.single()
-			}
+			document.operation(name)
+				?: return failWith(GError(
+					if (name != null) "There is no operation named '$name' in the document."
+					else "There are no anonymous operation in the document."
+				))
 		}
 	}
 }

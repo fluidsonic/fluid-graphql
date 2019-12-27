@@ -13,13 +13,17 @@ internal class ValidationContext(
 		get() = _errors.toList()
 
 
+	fun reportError(error: GError) {
+		_errors += error
+	}
+
+
 	fun reportError(
 		message: String,
 		nodes: List<GAst> = emptyList()
-	) {
-		_errors += GError(
+	) =
+		reportError(GError(
 			message = message,
 			nodes = nodes
-		)
-	}
+		))
 }

@@ -18,10 +18,6 @@ object AstBuilder {
 		DocumentBuilder(origin).apply(configure).build()
 
 
-//	fun schema(configure: SchemaBuilder.() -> Unit) =
-//		SchemaBuilder().apply(configure).build()
-
-
 	@AstBuilderDsl
 	class ArgumentDefinitionBuilder(private val origin: IntRange) {
 
@@ -30,7 +26,27 @@ object AstBuilder {
 		private var type: GTypeRef? = null
 
 
-		fun build() = GArgumentDefinition(
+		fun buildForDirective() = GDirectiveArgumentDefinition(
+			description = null,
+			defaultValue = defaultValue,
+			directives = emptyList(),
+			name = name ?: error("name() missing"),
+			origin = Origin(origin),
+			type = type ?: error("type() missing")
+		)
+
+
+		fun buildForField() = GFieldArgumentDefinition(
+			description = null,
+			defaultValue = defaultValue,
+			directives = emptyList(),
+			name = name ?: error("name() missing"),
+			origin = Origin(origin),
+			type = type ?: error("type() missing")
+		)
+
+
+		fun buildForInputObject() = GInputFieldDefinition(
 			description = null,
 			defaultValue = defaultValue,
 			directives = emptyList(),
@@ -68,7 +84,7 @@ object AstBuilder {
 
 
 		fun build() = GDirectiveDefinition(
-			arguments = emptyList(),
+			argumentDefinitions = emptyList(),
 			description = null,
 			isRepeatable = isRepeatable,
 			locations = locations,
@@ -208,13 +224,13 @@ object AstBuilder {
 	@AstBuilderDsl
 	class FieldDefinitionBuilder(private val origin: IntRange) {
 
-		private val arguments = mutableListOf<GArgumentDefinition>()
+		private val arguments = mutableListOf<GFieldArgumentDefinition>()
 		private var name: GName? = null
 		private var type: GTypeRef? = null
 
 
 		fun build() = GFieldDefinition(
-			arguments = arguments,
+			argumentDefinitions = arguments,
 			description = null,
 			directives = emptyList(),
 			name = name ?: error("name() missing"),
@@ -224,7 +240,7 @@ object AstBuilder {
 
 
 		fun argument(origin: IntRange, configure: ArgumentDefinitionBuilder.() -> Unit) {
-			arguments += ArgumentDefinitionBuilder(origin).apply(configure).build()
+			arguments += ArgumentDefinitionBuilder(origin).apply(configure).buildForField()
 		}
 
 
@@ -252,18 +268,18 @@ object AstBuilder {
 	@AstBuilderDsl
 	class InputObjectTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private val arguments = mutableListOf<GArgumentDefinition>()
+		private val arguments = mutableListOf<GInputFieldDefinition>()
 		private var description: GValue.String? = null
 		private var name: GName? = null
 
 
 		fun argument(origin: IntRange, configure: ArgumentDefinitionBuilder.() -> Unit) {
-			arguments += ArgumentDefinitionBuilder(origin).apply(configure).build()
+			arguments += ArgumentDefinitionBuilder(origin).apply(configure).buildForInputObject()
 		}
 
 
 		fun build() = GInputObjectType(
-			arguments = arguments,
+			argumentDefinitions = arguments,
 			description = description,
 			directives = emptyList(),
 			name = name ?: error("name() missing"),
@@ -301,7 +317,7 @@ object AstBuilder {
 		fun build() = GInterfaceType(
 			description = description,
 			directives = emptyList(),
-			fields = fields,
+			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name ?: error("name() missing"),
 			origin = Origin(origin)
@@ -354,7 +370,7 @@ object AstBuilder {
 		fun build() = GObjectType(
 			description = description,
 			directives = emptyList(),
-			fields = fields,
+			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name ?: error("name() missing"),
 			origin = Origin(origin)

@@ -5,7 +5,7 @@ package io.fluidsonic.graphql
 // FIXME will give false-negatives if two fragments are in conflict, but are never possible at the same time
 //       Maybe if there is a conflict run a more thorough check that validates all possible object types independently.
 // https://graphql.github.io/graphql-spec/draft/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types
-internal object SelectionSetHasNoConflictsRule : ValidationRule {
+internal object SelectionUnambiguityRule : ValidationRule {
 
 	override fun validateSelectionSet(set: GSelectionSet, context: ValidationContext) {
 		// We only care about top-level selection sets in operations and fragment definitions.
@@ -30,7 +30,7 @@ internal object SelectionSetHasNoConflictsRule : ValidationRule {
 			return false
 
 		for (argument1 in selection1.arguments) {
-			val argument2 = selection2.argumentsByName[argument1.name]
+			val argument2 = selection2.argument(argument1.name)
 				?: return false
 
 			if (argument1.value != argument2.value)
@@ -55,7 +55,7 @@ internal object SelectionSetHasNoConflictsRule : ValidationRule {
 			if (!isPotentiallyCompatibleType)
 				return context.reportError(
 					message = "Field '$responseName' in '${firstField.parentType.name}' is selected in multiple locations but with incompatible types.",
-					nodes = fields.flatMap { listOf(it.selection, it.definition.type) }
+					nodes = fields.flatMap { listOf(it.selection.aliasNode ?: it.selection.nameNode, it.definition.type) }
 				)
 
 			// Cannot validate a selection of a field of an invalid type.
@@ -64,7 +64,9 @@ internal object SelectionSetHasNoConflictsRule : ValidationRule {
 				return
 
 			var bothFieldsAreOfDistinctObjectType = false
+			var selectsDifferentFieldNames = false
 
+			// TODO We can improve this by pointing to specific incompatible arguments.
 			val incompatibleFields = fields.filterIndexed incompatible@{ index, otherField ->
 				// No need to compare field against itself.
 				if (index == 0)
@@ -77,19 +79,27 @@ internal object SelectionSetHasNoConflictsRule : ValidationRule {
 				if (bothFieldsAreOfDistinctObjectType)
 					return@incompatible false
 
-				val fieldNameAndArgumentsAreIdentical = firstField.selection.name == otherField.selection.name &&
-					argumentValuesAreEqual(firstField.selection, otherField.selection)
-				if (fieldNameAndArgumentsAreIdentical)
-					return@incompatible false
+				if (firstField.selection.name != otherField.selection.name) {
+					selectsDifferentFieldNames = true
 
-				true
+					return@incompatible true
+				}
+
+				if (!argumentValuesAreEqual(firstField.selection, otherField.selection))
+					return@incompatible true
+
+				false
 			}
 
 			if (incompatibleFields.isNotEmpty())
 				context.reportError(
 					message = "Field '$responseName' in '${firstField.parentType.name}' is selected in multiple locations " +
 						"but selects different fields or with different arguments.",
-					nodes = (listOf(firstField) + incompatibleFields).map { it.selection }
+					nodes = (listOf(firstField) + incompatibleFields).flatMap { field ->
+						if (selectsDifferentFieldNames)
+							listOf(field.selection.nameNode, field.definition.nameNode)
+						else listOf(field.selection.arguments.firstOrNull()?.value ?: field.selection.nameNode)
+					}
 				)
 			else if (!bothFieldsAreOfDistinctObjectType)
 				findConflictsInSet(
@@ -141,7 +151,7 @@ internal object SelectionSetHasNoConflictsRule : ValidationRule {
 	) {
 		when (this) {
 			is GFieldSelection -> {
-				// Cannot validate a selection of a non-existent field.
+				// Cannot validate a selection of a nonexistent field.
 				val fieldDefinition = context.schema.getFieldDefinition(type = parentType, name = name)
 					?: return
 
@@ -158,8 +168,8 @@ internal object SelectionSetHasNoConflictsRule : ValidationRule {
 			}
 
 			is GFragmentSelection -> {
-				// Cannot validate a selection that refers to a non-existent fragment.
-				val fragment = context.document.fragmentsByName[name] ?: return
+				// Cannot validate a selection that refers to a nonexistent fragment.
+				val fragment = context.document.fragment(name) ?: return
 
 				// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
 				val fragmentType = context.schema.resolveType(fragment.typeCondition)

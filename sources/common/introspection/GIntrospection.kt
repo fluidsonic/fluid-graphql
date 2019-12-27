@@ -45,7 +45,7 @@ internal object GIntrospection {
 
 			field("directives" of !List(!Directive)) {
 				description("A list of all directives supported by this server.")
-				resolve<List<GDirectiveDefinition>> { directives }
+				resolve<List<GDirectiveDefinition>> { directiveDefinitions }
 			}
 		}
 
@@ -76,20 +76,20 @@ internal object GIntrospection {
 				argument("includeDeprecated" of Boolean default false)
 
 				resolve<List<GFieldDefinition>?> { context ->
-					if (this !is GType.WithFields)
+					if (this !is GAst.WithFieldDefinitions)
 						return@resolve null
 
-					var fields = fields
-					if (context.booleanArgument("includeDeprecated"))
-						fields = fields.filterNot { it.isDeprecated }
+					var fieldDefinitions = fieldDefinitions
+					if (!context.booleanArgument("includeDeprecated"))
+						fieldDefinitions = fieldDefinitions.filter { it.deprecation === null }
 
-					return@resolve fields
+					return@resolve fieldDefinitions
 				}
 			}
 
 			field("interfaces" of List(!Type)) {
 				resolve<List<GInterfaceType>?> { context ->
-					(this as? GType.WithInterfaces)
+					(this as? GAst.WithInterfaces)
 						?.interfaces
 						?.mapNotNull { context.schema.resolveTypeAs<GInterfaceType>(it) }
 				}
@@ -110,15 +110,15 @@ internal object GIntrospection {
 						return@resolve null
 
 					var values = values
-					if (context.booleanArgument("includeDeprecated"))
-						values = values.filterNot { it.isDeprecated }
+					if (!context.booleanArgument("includeDeprecated"))
+						values = values.filter { it.deprecation === null }
 
 					return@resolve values
 				}
 			}
 
 			field("inputFields" of List(!InputValue)) {
-				resolve<List<GArgumentDefinition>?> { (this as? GType.WithArguments)?.arguments }
+				resolve<List<GArgumentDefinition>?> { (this as? GAst.WithArgumentDefinitions)?.argumentDefinitions }
 			}
 
 			field("ofType" of Type) {
@@ -141,7 +141,7 @@ internal object GIntrospection {
 			}
 
 			field("args" of !List(!InputValue)) {
-				resolve<List<GArgumentDefinition>> { arguments }
+				resolve<List<GArgumentDefinition>> { argumentDefinitions }
 			}
 
 			field("type" of !Type) {
@@ -149,7 +149,7 @@ internal object GIntrospection {
 			}
 
 			field("isDeprecated" of !Boolean) {
-				resolve<Boolean> { isDeprecated }
+				resolve<Boolean> { deprecation !== null }
 			}
 
 			field("deprecationReason" of String) {
@@ -298,7 +298,7 @@ internal object GIntrospection {
 		type = Type,
 		description = "Request the type information of a single type.",
 		arguments = listOf(
-			GArgumentDefinition(
+			GFieldArgumentDefinition(
 				name = "name",
 				type = GStringTypeRef.nonNullable
 			)

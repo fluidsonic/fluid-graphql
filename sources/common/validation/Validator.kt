@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 internal class Validator(
 	private val document: GDocument,
-	rules: List<ValidationRule>,
+	private val rules: List<ValidationRule>,
 	schema: GSchema
 ) {
 
@@ -20,6 +20,9 @@ internal class Validator(
 
 	fun validate() {
 		document.accept(visitor, data = context)
+
+		for (rule in rules)
+			rule.beforeTraversal(context)
 	}
 
 
