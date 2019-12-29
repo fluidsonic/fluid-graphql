@@ -262,7 +262,7 @@ class AstParsingTest {
 
 	@Test
 	fun `parses null value`() {
-		parseValue("null").assertOf<GValue.Null> {
+		parseValue("null").assertOf<GNullValue> {
 			assertAt(0 .. 4)
 		}
 	}
@@ -270,17 +270,17 @@ class AstParsingTest {
 
 	@Test
 	fun `parses list values`() {
-		parseValue("""[123 "abc"]""").assertOf<GValue.List> {
+		parseValue("""[123 "abc"]""").assertOf<GListValue> {
 			assertAt(0 .. 11)
 
 			elements.assertMany(2) {
 
-				get(0).assertOf<GValue.Int> {
+				get(0).assertOf<GIntValue> {
 					assertAt(1 .. 4)
 					assertEquals(expected = 123, actual = value)
 				}
 
-				get(1).assertOf<GValue.String> {
+				get(1).assertOf<GStringValue> {
 					assertAt(5 .. 10)
 					assertEquals(expected = "abc", actual = value)
 					assertFalse(isBlock)
@@ -292,18 +292,18 @@ class AstParsingTest {
 
 	@Test
 	fun `parses block string`() {
-		parseValue("[\"\"\"long\"\"\" \"short\"]").assertOf<GValue.List> {
+		parseValue("[\"\"\"long\"\"\" \"short\"]").assertOf<GListValue> {
 			assertAt(0 .. 20)
 
 			elements.assertMany(2) {
 
-				get(0).assertOf<GValue.String> {
+				get(0).assertOf<GStringValue> {
 					assertAt(1 .. 11)
 					assertEquals(expected = "long", actual = value)
 					assertTrue(isBlock)
 				}
 
-				get(1).assertOf<GValue.String> {
+				get(1).assertOf<GStringValue> {
 					assertAt(12 .. 19)
 					assertEquals(expected = "short", actual = value)
 					assertFalse(isBlock)
@@ -361,7 +361,7 @@ class AstParsingTest {
 		parseTypeReference("MyType!").assertOf<GNonNullTypeRef> {
 			assertAt(0 .. 7)
 
-			nullableType.assertOf<GNamedTypeRef> {
+			nullableRef.assertOf<GNamedTypeRef> {
 				assertAt(0 .. 6)
 
 				nameNode.assert {
@@ -381,7 +381,7 @@ class AstParsingTest {
 			elementType.assertOf<GNonNullTypeRef> {
 				assertAt(1 .. 8)
 
-				nullableType.assertOf<GNamedTypeRef> {
+				nullableRef.assertOf<GNamedTypeRef> {
 					assertAt(1 .. 7)
 
 					nameNode.assert {

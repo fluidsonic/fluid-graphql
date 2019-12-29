@@ -18,7 +18,7 @@ class AstBlockStringNormalizationTest {
 			|      GraphQL.
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -41,7 +41,7 @@ class AstBlockStringNormalizationTest {
 			|
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -64,7 +64,7 @@ class AstBlockStringNormalizationTest {
 			|  
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -83,7 +83,7 @@ class AstBlockStringNormalizationTest {
 			|      GraphQL.
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -104,7 +104,7 @@ class AstBlockStringNormalizationTest {
 			|               
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf(
@@ -131,7 +131,7 @@ class AstBlockStringNormalizationTest {
 			|
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
@@ -146,7 +146,7 @@ class AstBlockStringNormalizationTest {
 			|	    Hello
 		""".toBlockString()
 
-		val parsed = (GValue.parse(input) as GValue.String).value
+		val parsed = (GValue.parse(input) as GStringValue).value
 
 		assertEquals(
 			expected = listOf("Hello"),

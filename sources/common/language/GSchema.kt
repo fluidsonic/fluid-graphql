@@ -69,7 +69,7 @@ class GSchema internal constructor(
 		when (ref) {
 			is GListTypeRef -> resolveType(ref.elementType)?.let(::GListType)
 			is GNamedTypeRef -> resolveType(ref)
-			is GNonNullTypeRef -> resolveType(ref.nullableType)?.let(::GNonNullType)
+			is GNonNullTypeRef -> resolveType(ref.nullableRef)?.let(::GNonNullType)
 		}
 
 
@@ -133,8 +133,8 @@ class GSchema internal constructor(
 		/* inline */ fun reportError(message: String? = null, nodeInsteadOfTypeRef: GAst? = null) {
 			val message = message ?: run {
 				val valueText = when (value) {
-					is GValue.List -> "a list value"
-					is GValue.Object -> "an input object value"
+					is GListValue -> "a list value"
+					is GObjectValue -> "an input object value"
 					else -> "value '$value'"
 				}
 
@@ -150,10 +150,10 @@ class GSchema internal constructor(
 		}
 
 		// We don't support variables here yet.
-		if (value is GValue.Variable)
+		if (value is GVariableRef)
 			return null
 
-		if (type is GNonNullType && value is GValue.Null) {
+		if (type is GNonNullType && value is GNullValue) {
 			reportError()
 
 			return errors
@@ -162,90 +162,90 @@ class GSchema internal constructor(
 		val isValidValue = when (val namedType = type.nullableType) {
 			is GBooleanType ->
 				when (value) {
-					is GValue.Boolean,
-					is GValue.Null ->
+					is GBooleanValue,
+					is GNullValue ->
 						true
 
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.String,
-					is GValue.Variable ->
+					is GEnumValue,
+					is GFloatValue,
+					is GIntValue,
+					is GListValue,
+					is GObjectValue,
+					is GStringValue,
+					is GVariableRef ->
 						false
 				}
 
 			is GCustomScalarType ->
 				// FIXME support conversion function
 				when (value) {
-					is GValue.Boolean,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.Null,
-					is GValue.String ->
+					is GBooleanValue,
+					is GFloatValue,
+					is GIntValue,
+					is GNullValue,
+					is GStringValue ->
 						true
 
-					is GValue.Enum,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.Variable ->
+					is GEnumValue,
+					is GListValue,
+					is GObjectValue,
+					is GVariableRef ->
 						false
 				}
 
 			is GEnumType ->
 				when (value) {
-					is GValue.Enum ->
+					is GEnumValue ->
 						namedType.value(value.name) !== null
 
-					is GValue.Null ->
+					is GNullValue ->
 						true
 
-					is GValue.Boolean,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.String,
-					is GValue.Variable ->
+					is GBooleanValue,
+					is GFloatValue,
+					is GIntValue,
+					is GListValue,
+					is GObjectValue,
+					is GStringValue,
+					is GVariableRef ->
 						false
 				}
 
 			is GFloatType ->
 				when (value) {
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.Null ->
+					is GFloatValue,
+					is GIntValue,
+					is GNullValue ->
 						true
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.String,
-					is GValue.Variable ->
+					is GBooleanValue,
+					is GEnumValue,
+					is GListValue,
+					is GObjectValue,
+					is GStringValue,
+					is GVariableRef ->
 						false
 				}
 
-			is GIDType ->
+			is GIdType ->
 				when (value) {
-					is GValue.Int,
-					is GValue.Null,
-					is GValue.String ->
+					is GIntValue,
+					is GNullValue,
+					is GStringValue ->
 						true
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.Variable ->
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GListValue,
+					is GObjectValue,
+					is GVariableRef ->
 						false
 				}
 
 			is GInputObjectType ->
 				when (value) {
-					is GValue.Object -> {
+					is GObjectValue -> {
 						for (argumentDefinition in namedType.argumentDefinitions)
 							if (argumentDefinition.isRequired())
 								if (value.field(argumentDefinition.name) === null)
@@ -271,42 +271,42 @@ class GSchema internal constructor(
 						true
 					}
 
-					is GValue.Null ->
+					is GNullValue ->
 						true
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.List,
-					is GValue.String,
-					is GValue.Variable ->
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GIntValue,
+					is GListValue,
+					is GStringValue,
+					is GVariableRef ->
 						false
 				}
 
 			is GIntType ->
 				when (value) {
-					is GValue.Int,
-					is GValue.Null ->
+					is GIntValue,
+					is GNullValue ->
 						true
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.String,
-					is GValue.Variable ->
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GListValue,
+					is GObjectValue,
+					is GStringValue,
+					is GVariableRef ->
 						false
 				}
 
 			is GListType ->
 				when (value) {
-					is GValue.List -> {
+					is GListValue -> {
 						for (element in value.elements)
 							validateValue(
 								value = element,
-								typeRef = (typeRef?.nullable as GListTypeRef?)?.elementType,
+								typeRef = (typeRef?.nullableRef as GListTypeRef?)?.elementType,
 								type = namedType.elementType,
 								fullyWrappedTypeRef = fullyWrappedTypeRef,
 								errors = errors ?: mutableListOf<GError>().also { errors = it }
@@ -315,15 +315,15 @@ class GSchema internal constructor(
 						true
 					}
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.Object,
-					is GValue.String -> {
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GIntValue,
+					is GObjectValue,
+					is GStringValue -> {
 						validateValue(
 							value = value,
-							typeRef = (typeRef?.nullable as GListTypeRef?)?.elementType,
+							typeRef = (typeRef?.nullableRef as GListTypeRef?)?.elementType,
 							type = namedType.elementType,
 							fullyWrappedTypeRef = fullyWrappedTypeRef,
 							errors = errors ?: mutableListOf<GError>().also { errors = it }
@@ -332,10 +332,10 @@ class GSchema internal constructor(
 						true
 					}
 
-					is GValue.Null ->
+					is GNullValue ->
 						true
 
-					is GValue.Variable ->
+					is GVariableRef ->
 						false
 				}
 
@@ -344,17 +344,17 @@ class GSchema internal constructor(
 
 			is GStringType ->
 				when (value) {
-					is GValue.Null,
-					is GValue.String ->
+					is GNullValue,
+					is GStringValue ->
 						true
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.Variable ->
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GIntValue,
+					is GListValue,
+					is GObjectValue,
+					is GVariableRef ->
 						false
 				}
 

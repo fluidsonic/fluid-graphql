@@ -5,7 +5,7 @@ package io.fluidsonic.graphql
 internal object ObjectFieldNameExclusivityRule : ValidationRule {
 
 	override fun validateValue(value: GValue, context: ValidationContext) {
-		if (value !is GValue.Object)
+		if (value !is GObjectValue)
 			return // Irrelevant.
 
 		value.fields

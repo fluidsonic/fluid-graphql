@@ -3,19 +3,25 @@ package io.fluidsonic.graphql
 
 internal class ValidationRuleVisitor(
 	private val rule: ValidationRule
-) : GAstVisitor<Unit, ValidationContext> {
+) : Visitor.WithoutResult<ValidationContext>() {
 
 	override fun visitArgument(argument: GArgument, data: ValidationContext) =
 		rule.validateArgument(argument, data)
 
-	override fun visitArgumentDefinition(definition: GArgumentDefinition, data: ValidationContext) =
-		rule.validateArgumentDefinition(definition, data)
+	override fun visitBooleanType(type: GBooleanType, data: ValidationContext) =
+		rule.validateScalarType(type, data)
 
-	override fun visitBooleanValue(value: GValue.Boolean, data: ValidationContext) =
+	override fun visitBooleanValue(value: GBooleanValue, data: ValidationContext) =
 		rule.validateBooleanValue(value, data)
+
+	override fun visitCustomScalarType(type: GCustomScalarType, data: ValidationContext) =
+		rule.validateScalarType(type, data)
 
 	override fun visitDirective(directive: GDirective, data: ValidationContext) =
 		rule.validateDirective(directive, data)
+
+	override fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition, data: ValidationContext) =
+		rule.validateArgumentDefinition(definition, data)
 
 	override fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: ValidationContext) =
 		rule.validateDirectiveDefinition(definition, data)
@@ -29,11 +35,14 @@ internal class ValidationRuleVisitor(
 	override fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: ValidationContext) =
 		rule.validateEnumTypeExtension(extension, data)
 
-	override fun visitEnumValue(value: GValue.Enum, data: ValidationContext) =
+	override fun visitEnumValue(value: GEnumValue, data: ValidationContext) =
 		rule.validateEnumValue(value, data)
 
 	override fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: ValidationContext) =
 		rule.validateEnumValueDefinition(definition, data)
+
+	override fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition, data: ValidationContext) =
+		rule.validateArgumentDefinition(definition, data)
 
 	override fun visitFieldDefinition(definition: GFieldDefinition, data: ValidationContext) =
 		rule.validateFieldDefinition(definition, data)
@@ -41,8 +50,14 @@ internal class ValidationRuleVisitor(
 	override fun visitFieldSelection(selection: GFieldSelection, data: ValidationContext) =
 		rule.validateFieldSelection(selection, data)
 
-	override fun visitFloatValue(value: GValue.Float, data: ValidationContext) =
+	override fun visitFloatType(type: GFloatType, data: ValidationContext) =
+		rule.validateScalarType(type, data)
+
+	override fun visitFloatValue(value: GFloatValue, data: ValidationContext) =
 		rule.validateFloatValue(value, data)
+
+	override fun visitIdType(type: GIdType, data: ValidationContext) =
+		rule.validateScalarType(type, data)
 
 	override fun visitFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext) =
 		rule.validateFragmentDefinition(definition, data)
@@ -53,13 +68,19 @@ internal class ValidationRuleVisitor(
 	override fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: ValidationContext) =
 		rule.validateInlineFragmentSelection(selection, data)
 
+	override fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition, data: ValidationContext) =
+		rule.validateArgumentDefinition(definition, data)
+
 	override fun visitInputObjectType(type: GInputObjectType, data: ValidationContext) =
 		rule.validateInputObjectType(type, data)
 
 	override fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: ValidationContext) =
 		rule.validateInputObjectTypeExtension(extension, data)
 
-	override fun visitIntValue(value: GValue.Int, data: ValidationContext) =
+	override fun visitIntType(type: GIntType, data: ValidationContext) =
+		rule.validateScalarType(type, data)
+
+	override fun visitIntValue(value: GIntValue, data: ValidationContext) =
 		rule.validateIntValue(value, data)
 
 	override fun visitInterfaceType(type: GInterfaceType, data: ValidationContext) =
@@ -71,7 +92,7 @@ internal class ValidationRuleVisitor(
 	override fun visitListTypeRef(ref: GListTypeRef, data: ValidationContext) =
 		rule.validateListTypeRef(ref, data)
 
-	override fun visitListValue(value: GValue.List, data: ValidationContext) =
+	override fun visitListValue(value: GListValue, data: ValidationContext) =
 		rule.validateListValue(value, data)
 
 	override fun visitName(name: GName, data: ValidationContext) =
@@ -83,7 +104,7 @@ internal class ValidationRuleVisitor(
 	override fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: ValidationContext) =
 		rule.validateNonNullTypeRef(ref, data)
 
-	override fun visitNullValue(value: GValue.Null, data: ValidationContext) =
+	override fun visitNullValue(value: GNullValue, data: ValidationContext) =
 		rule.validateNullValue(value, data)
 
 	override fun visitObjectType(type: GObjectType, data: ValidationContext) =
@@ -92,7 +113,7 @@ internal class ValidationRuleVisitor(
 	override fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: ValidationContext) =
 		rule.validateObjectTypeExtension(extension, data)
 
-	override fun visitObjectValue(value: GValue.Object, data: ValidationContext) =
+	override fun visitObjectValue(value: GObjectValue, data: ValidationContext) =
 		rule.validateObjectValue(value, data)
 
 	override fun visitObjectValueField(field: GObjectValueField, data: ValidationContext) =
@@ -104,22 +125,22 @@ internal class ValidationRuleVisitor(
 	override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: ValidationContext) =
 		rule.validateOperationTypeDefinition(definition, data)
 
-	override fun visitScalarType(type: GScalarType, data: ValidationContext) =
-		rule.validateScalarType(type, data)
-
 	override fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: ValidationContext) =
 		rule.validateScalarTypeExtension(extension, data)
 
 	override fun visitSchemaDefinition(definition: GSchemaDefinition, data: ValidationContext) =
 		rule.validateSchemaDefinition(definition, data)
 
-	override fun visitSchemaExtensionDefinition(definition: GSchemaExtensionDefinition, data: ValidationContext) =
+	override fun visitSchemaExtensionDefinition(definition: GSchemaExtension, data: ValidationContext) =
 		rule.validateSchemaExtensionDefinition(definition, data)
 
 	override fun visitSelectionSet(set: GSelectionSet, data: ValidationContext) =
 		rule.validateSelectionSet(set, data)
 
-	override fun visitStringValue(value: GValue.String, data: ValidationContext) =
+	override fun visitStringType(type: GStringType, data: ValidationContext) =
+		rule.validateScalarType(type, data)
+
+	override fun visitStringValue(value: GStringValue, data: ValidationContext) =
 		rule.validateStringValue(value, data)
 
 	override fun visitSyntheticNode(node: GAst, data: ValidationContext) =
@@ -134,6 +155,6 @@ internal class ValidationRuleVisitor(
 	override fun visitVariableDefinition(definition: GVariableDefinition, data: ValidationContext) =
 		rule.validateVariableDefinition(definition, data)
 
-	override fun visitVariableValue(value: GValue.Variable, data: ValidationContext) =
-		rule.validateVariableValue(value, data)
+	override fun visitVariableRef(ref: GVariableRef, data: ValidationContext) =
+		rule.validateVariableRef(ref, data)
 }

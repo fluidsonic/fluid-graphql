@@ -24,7 +24,7 @@ object GSpecification {
 				type = GStringTypeRef,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
 					"Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).",
-				defaultValue = GValue.String("No longer supported")
+				defaultValue = GStringValue("No longer supported")
 			)
 		),
 		description = "Marks an element of a GraphQL schema as no longer supported.",
@@ -40,7 +40,7 @@ object GSpecification {
 		arguments = listOf(
 			GDirectiveArgumentDefinition(
 				name = "if",
-				type = GBooleanTypeRef.nonNullable,
+				type = GBooleanTypeRef.nonNullableRef,
 				description = "Included when true."
 			)
 		),
@@ -58,7 +58,7 @@ object GSpecification {
 		arguments = listOf(
 			GDirectiveArgumentDefinition(
 				name = "if",
-				type = GBooleanTypeRef.nonNullable,
+				type = GBooleanTypeRef.nonNullableRef,
 				description = "Skipped when true."
 			)
 		),

@@ -5,7 +5,7 @@ package io.fluidsonic.graphql
 internal class ValidationContext(
 	document: GDocument,
 	schema: GSchema
-) : GAstVisitorContext(document = document, schema = schema) {
+) : VisitorContext(document = document, schema = schema) {
 
 	private val _errors = mutableListOf<GError>()
 

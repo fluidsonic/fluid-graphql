@@ -13,7 +13,7 @@ internal object Printer {
 
 	private class Visitor(
 		private val writer: GWriter
-	) : GAstVoidVisitor() {
+	) : io.fluidsonic.graphql.Visitor.Hierarchical.WithoutResultAndData() {
 
 		override fun visitArgument(argument: GArgument) = writer {
 			writeAst(argument.nameNode)
@@ -37,7 +37,7 @@ internal object Printer {
 		}
 
 
-		override fun visitBooleanValue(value: GValue.Boolean) = writer {
+		override fun visitBooleanValue(value: GBooleanValue) = writer {
 			writeRaw(if (value.value) "true" else "false")
 		}
 
@@ -98,7 +98,7 @@ internal object Printer {
 		}
 
 
-		override fun visitEnumValue(value: GValue.Enum) = writer {
+		override fun visitEnumValue(value: GEnumValue) = writer {
 			writeRaw(value.name)
 		}
 
@@ -135,7 +135,7 @@ internal object Printer {
 		}
 
 
-		override fun visitFloatValue(value: GValue.Float) = writer {
+		override fun visitFloatValue(value: GFloatValue) = writer {
 			writeRaw(value.value.toString())
 		}
 
@@ -189,7 +189,7 @@ internal object Printer {
 		}
 
 
-		override fun visitIntValue(value: GValue.Int) = writer {
+		override fun visitIntValue(value: GIntValue) = writer {
 			writeRaw(value.value.toString())
 		}
 
@@ -213,7 +213,7 @@ internal object Printer {
 		}
 
 
-		override fun visitListValue(value: GValue.List) = writer {
+		override fun visitListValue(value: GListValue) = writer {
 			writeRaw("[")
 			value.elements.forEachIndexed { index, element ->
 				if (index > 0)
@@ -243,12 +243,12 @@ internal object Printer {
 
 
 		override fun visitNonNullTypeRef(ref: GNonNullTypeRef) = writer {
-			writeAst(ref.nullableType)
+			writeAst(ref.nullableRef)
 			writeRaw("!")
 		}
 
 
-		override fun visitNullValue(value: GValue.Null) = writer {
+		override fun visitNullValue(value: GNullValue) = writer {
 			writeRaw("null")
 		}
 
@@ -270,7 +270,7 @@ internal object Printer {
 		}
 
 
-		override fun visitObjectValue(value: GValue.Object) = writer {
+		override fun visitObjectValue(value: GObjectValue) = writer {
 			if (value.fields.isNotEmpty())
 				writeBlock {
 					value.fields.forEachIndexed { index, field ->
@@ -381,7 +381,7 @@ internal object Printer {
 		}
 
 
-		override fun visitSchemaExtensionDefinition(definition: GSchemaExtensionDefinition) = writer {
+		override fun visitSchemaExtensionDefinition(definition: GSchemaExtension) = writer {
 			writeRaw("extend schema")
 			writeDirectives(definition.directives)
 			writeOperationTypeDefinitions(definition.operationTypeDefinitions)
@@ -399,7 +399,7 @@ internal object Printer {
 
 
 		// FIXME escaping, line wrapping, indentation
-		override fun visitStringValue(value: GValue.String) = writer {
+		override fun visitStringValue(value: GStringValue) = writer {
 			val string = value.value
 
 			if (value.isBlock) {
@@ -446,7 +446,8 @@ internal object Printer {
 
 
 		override fun visitVariableDefinition(definition: GVariableDefinition) = writer {
-			writeAst(definition.variable)
+			writeRaw("$")
+			writeAst(definition.nameNode)
 			writeRaw(": ")
 			writeAst(definition.type)
 			definition.defaultValue?.let { defaultValue ->
@@ -457,7 +458,7 @@ internal object Printer {
 		}
 
 
-		override fun visitVariableValue(value: GValue.Variable) = writer {
+		override fun visitVariableRef(value: GVariableRef) = writer {
 			writeRaw("$")
 			writeAst(value.nameNode)
 		}

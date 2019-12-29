@@ -46,7 +46,7 @@ object AstBuilder {
 		)
 
 
-		fun buildForInputObject() = GInputFieldDefinition(
+		fun buildForInputObject() = GInputObjectArgumentDefinition(
 			description = null,
 			defaultValue = defaultValue,
 			directives = emptyList(),
@@ -176,7 +176,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class EnumTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: GValue.String? = null
+		private var description: GStringValue? = null
 		private val values = mutableListOf<GEnumValueDefinition>()
 		private var name: GName? = null
 
@@ -191,7 +191,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = GValue.String(
+			description = GStringValue(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -268,8 +268,8 @@ object AstBuilder {
 	@AstBuilderDsl
 	class InputObjectTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private val arguments = mutableListOf<GInputFieldDefinition>()
-		private var description: GValue.String? = null
+		private val arguments = mutableListOf<GInputObjectArgumentDefinition>()
+		private var description: GStringValue? = null
 		private var name: GName? = null
 
 
@@ -288,7 +288,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = GValue.String(
+			description = GStringValue(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -308,7 +308,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class InterfaceTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: GValue.String? = null
+		private var description: GStringValue? = null
 		private val fields = mutableListOf<GFieldDefinition>()
 		private val interfaces = mutableListOf<GNamedTypeRef>()
 		private var name: GName? = null
@@ -325,7 +325,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = GValue.String(
+			description = GStringValue(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -361,7 +361,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ObjectTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: GValue.String? = null
+		private var description: GStringValue? = null
 		private val fields = mutableListOf<GFieldDefinition>()
 		private val interfaces = mutableListOf<GNamedTypeRef>()
 		private var name: GName? = null
@@ -378,7 +378,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = GValue.String(
+			description = GStringValue(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -454,7 +454,7 @@ object AstBuilder {
 
 		fun build() =
 			GNonNullTypeRef(
-				nullableType = nullableType ?: error("name() or list() missing"),
+				nullableRef = nullableType ?: error("name() or list() missing"),
 				origin = Origin(origin)
 			)
 
@@ -564,7 +564,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class ScalarTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: GValue.String? = null
+		private var description: GStringValue? = null
 		private var name: GName? = null
 
 
@@ -577,7 +577,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = GValue.String(
+			description = GStringValue(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -597,7 +597,7 @@ object AstBuilder {
 	@AstBuilderDsl
 	class UnionTypeDefinitionBuilder(private val origin: IntRange) {
 
-		private var description: GValue.String? = null
+		private var description: GStringValue? = null
 		private val possibleTypes = mutableListOf<GNamedTypeRef>()
 		private var name: GName? = null
 
@@ -612,7 +612,7 @@ object AstBuilder {
 
 
 		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
-			description = GValue.String(
+			description = GStringValue(
 				origin = Origin(origin),
 				value = configure(),
 				isBlock = isBlock
@@ -651,7 +651,7 @@ object AstBuilder {
 
 
 		fun boolean(origin: IntRange, configure: () -> Boolean) {
-			value = GValue.Boolean(
+			value = GBooleanValue(
 				origin = Origin(origin),
 				value = configure()
 			)

@@ -288,7 +288,7 @@ internal object GIntrospection {
 
 	val schemaField = GFieldDefinition(
 		name = "__schema",
-		type = Schema.nonNullable,
+		type = Schema.nonNullableRef,
 		description = "Access the current type schema of this server.",
 		resolver = GFieldResolver.of<Any> { it.schema }
 	)
@@ -300,7 +300,7 @@ internal object GIntrospection {
 		arguments = listOf(
 			GFieldArgumentDefinition(
 				name = "name",
-				type = GStringTypeRef.nonNullable
+				type = GStringTypeRef.nonNullableRef
 			)
 		),
 		resolver = GFieldResolver.of<Any> { it.schema.resolveType(it.stringArgument("name")) }
@@ -308,7 +308,7 @@ internal object GIntrospection {
 
 	val typenameField = GFieldDefinition(
 		name = "__typename",
-		type = GStringTypeRef.nonNullable,
+		type = GStringTypeRef.nonNullableRef,
 		description = "The name of the current Object type at runtime.",
 		resolver = GFieldResolver.of<Any> { it.parentType.name }
 	)

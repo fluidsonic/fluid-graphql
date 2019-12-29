@@ -123,4 +123,4 @@ fun GSelection.asFieldSelection() =
 
 
 fun GValue.asString() =
-	this as GValue.String
+	this as GStringValue

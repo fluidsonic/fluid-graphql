@@ -14,7 +14,7 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule {
 			.forEach { (name, variableDefinitions) ->
 				context.reportError(
 					message = "Fragment '${definition.name}' must not contain multiple variables with the same name '$$name'.",
-					nodes = variableDefinitions.map { it.variable }
+					nodes = variableDefinitions.map { it.nameNode }
 				)
 			}
 	}
@@ -32,7 +32,7 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule {
 
 				context.reportError(
 					message = "Operation$operationName must not contain multiple variables with the same name '$$name'.",
-					nodes = variableDefinitions.map { it.variable }
+					nodes = variableDefinitions.map { it.nameNode }
 				)
 			}
 	}

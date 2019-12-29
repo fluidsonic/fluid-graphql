@@ -146,7 +146,7 @@ fun main() {
 						GFieldSelection(
 							name = "__type",
 							arguments = listOf(
-								GArgument(name = "name", value = GValue.String("Droid"))
+								GArgument(name = "name", value = GStringValue("Droid"))
 							),
 							selectionSet = GSelectionSet(
 								selections = listOf(

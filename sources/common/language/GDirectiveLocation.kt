@@ -27,7 +27,7 @@ enum class GDirectiveLocation {
 	companion object {
 
 		fun forAstNode(node: GAst) = when (node) {
-			is GInputFieldDefinition -> INPUT_FIELD_DEFINITION // Must be checked before superclass 'GArgumentDefinition'.
+			is GInputObjectArgumentDefinition -> INPUT_FIELD_DEFINITION // Must be checked before superclass 'GArgumentDefinition'.
 
 			is GArgumentDefinition -> ARGUMENT_DEFINITION
 			is GEnumType -> ENUM
@@ -52,7 +52,7 @@ enum class GDirectiveLocation {
 			is GScalarType -> SCALAR
 			is GScalarTypeExtension -> SCALAR
 			is GSchemaDefinition -> SCHEMA
-			is GSchemaExtensionDefinition -> SCHEMA
+			is GSchemaExtension -> SCHEMA
 			is GUnionType -> UNION
 			is GUnionTypeExtension -> UNION
 			is GVariableDefinition -> VARIABLE_DEFINITION

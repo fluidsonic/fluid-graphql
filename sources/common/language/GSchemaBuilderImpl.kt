@@ -195,7 +195,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 				)
 
 			ArgumentDefinitionType.inputField ->
-				GInputFieldDefinition(
+				GInputObjectArgumentDefinition(
 					defaultValue = defaultValue,
 					description = description,
 					directives = directives,
@@ -207,7 +207,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 		override fun default(default: Any?) = apply {
 			defaultValue =
-				if (default === null) GNullValue
+				if (default === null) GNullValue.withoutOrigin
 				else GValue.of(default) ?: error("Value is not a valid GraphQL value: $default (${default::class})")
 		}
 	}
@@ -259,7 +259,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			directives += GDirective(
 				name = GSpecification.defaultDeprecatedDirective.name,
 				arguments = listOf(
-					GArgument(name = "reason", value = reason?.let { GValue.String(it) } ?: GNullValue) // FIXME null vs not-specified
+					GArgument(name = "reason", value = reason?.let { GStringValue(it) } ?: GNullValue.withoutOrigin) // FIXME null vs not-specified
 				)
 			)
 		}
@@ -287,7 +287,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 			ArgumentBuilderImpl(
 				name = this,
 				value = (
-					if (value === null) GNullValue
+					if (value === null) GNullValue.withoutOrigin
 					else GValue.of(value) ?: error("Value is not a valid GraphQL value: $value (${value::class})")
 					)
 			)
@@ -468,7 +468,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 		@Suppress("UNCHECKED_CAST")
 		fun build() = GInputObjectType(
-			arguments = argumentDefinitions as List<GInputFieldDefinition>,
+			arguments = argumentDefinitions as List<GInputObjectArgumentDefinition>,
 			description = description,
 			directives = directives,
 			name = name

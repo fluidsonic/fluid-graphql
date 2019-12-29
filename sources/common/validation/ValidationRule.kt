@@ -18,7 +18,7 @@ internal interface ValidationRule {
 	fun validateArgumentDefinition(definition: GArgumentDefinition, context: ValidationContext) =
 		validateNode(definition, context)
 
-	fun validateBooleanValue(value: GValue.Boolean, context: ValidationContext) =
+	fun validateBooleanValue(value: GBooleanValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateCustomScalarType(type: GCustomScalarType, context: ValidationContext) =
@@ -42,7 +42,7 @@ internal interface ValidationRule {
 	fun validateEnumTypeExtension(extension: GEnumTypeExtension, context: ValidationContext) =
 		validateTypeExtension(extension, context)
 
-	fun validateEnumValue(value: GValue.Enum, context: ValidationContext) =
+	fun validateEnumValue(value: GEnumValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateEnumValueDefinition(definition: GEnumValueDefinition, context: ValidationContext) =
@@ -57,7 +57,7 @@ internal interface ValidationRule {
 	fun validateFieldSelection(selection: GFieldSelection, context: ValidationContext) =
 		validateSelection(selection, context)
 
-	fun validateFloatValue(value: GValue.Float, context: ValidationContext) =
+	fun validateFloatValue(value: GFloatValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateFragmentDefinition(definition: GFragmentDefinition, context: ValidationContext) =
@@ -75,7 +75,7 @@ internal interface ValidationRule {
 	fun validateInputObjectTypeExtension(extension: GInputObjectTypeExtension, context: ValidationContext) =
 		validateTypeExtension(extension, context)
 
-	fun validateIntValue(value: GValue.Int, context: ValidationContext) =
+	fun validateIntValue(value: GIntValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateInterfaceType(type: GInterfaceType, context: ValidationContext) =
@@ -87,7 +87,7 @@ internal interface ValidationRule {
 	fun validateListTypeRef(ref: GListTypeRef, context: ValidationContext) =
 		validateTypeRef(ref, context)
 
-	fun validateListValue(value: GValue.List, context: ValidationContext) =
+	fun validateListValue(value: GListValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateName(name: GName, context: ValidationContext) =
@@ -105,7 +105,7 @@ internal interface ValidationRule {
 	fun validateNonNullTypeRef(ref: GNonNullTypeRef, context: ValidationContext) =
 		validateTypeRef(ref, context)
 
-	fun validateNullValue(value: GValue.Null, context: ValidationContext) =
+	fun validateNullValue(value: GNullValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateObjectType(type: GObjectType, context: ValidationContext) =
@@ -114,7 +114,7 @@ internal interface ValidationRule {
 	fun validateObjectTypeExtension(extension: GObjectTypeExtension, context: ValidationContext) =
 		validateTypeExtension(extension, context)
 
-	fun validateObjectValue(value: GValue.Object, context: ValidationContext) =
+	fun validateObjectValue(value: GObjectValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateObjectValueField(field: GObjectValueField, context: ValidationContext) =
@@ -135,7 +135,7 @@ internal interface ValidationRule {
 	fun validateSchemaDefinition(definition: GSchemaDefinition, context: ValidationContext) =
 		validateTypeSystemDefinition(definition, context)
 
-	fun validateSchemaExtensionDefinition(definition: GSchemaExtensionDefinition, context: ValidationContext) =
+	fun validateSchemaExtensionDefinition(definition: GSchemaExtension, context: ValidationContext) =
 		validateTypeSystemExtensionDefinition(definition, context)
 
 	fun validateSelection(selection: GSelection, context: ValidationContext) =
@@ -144,7 +144,7 @@ internal interface ValidationRule {
 	fun validateSelectionSet(set: GSelectionSet, context: ValidationContext) =
 		validateNode(set, context)
 
-	fun validateStringValue(value: GValue.String, context: ValidationContext) =
+	fun validateStringValue(value: GStringValue, context: ValidationContext) =
 		validateValue(value, context)
 
 	fun validateSyntheticNode(node: GAst, context: ValidationContext) =
@@ -159,7 +159,7 @@ internal interface ValidationRule {
 	fun validateTypeSystemDefinition(definition: GTypeSystemDefinition, context: ValidationContext) =
 		validateDefinition(definition, context)
 
-	fun validateTypeSystemExtensionDefinition(definition: GTypeSystemExtensionDefinition, context: ValidationContext) =
+	fun validateTypeSystemExtensionDefinition(definition: GTypeSystemExtension, context: ValidationContext) =
 		validateDefinition(definition, context)
 
 	fun validateUnionType(type: GUnionType, context: ValidationContext) =
@@ -174,6 +174,6 @@ internal interface ValidationRule {
 	fun validateVariableDefinition(definition: GVariableDefinition, context: ValidationContext) =
 		validateNode(definition, context)
 
-	fun validateVariableValue(value: GValue.Variable, context: ValidationContext) =
-		validateValue(value, context)
+	fun validateVariableRef(ref: GVariableRef, context: ValidationContext) =
+		validateValue(ref, context)
 }

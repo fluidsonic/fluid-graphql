@@ -27,7 +27,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 				rootTypeRef = rootTypeRef
 			).orNull()
 
-		fun GValue.Variable.resolve() =
+		fun GVariableRef.resolve() =
 			variableValues.getOrElseNullable(name) {
 				invalidOperationError("Variable '$$name' cannot be resolved.")
 			}
@@ -48,36 +48,36 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.List.Input-Coercion
 			is GListTypeRef ->
 				when (value) {
-					is GValue.List -> value.elements.mapIndexed { index, element ->
+					is GListValue -> value.elements.mapIndexed { index, element ->
 						pathBuilder.withListIndex(index) {
 							element.coerceToType(typeRef.elementType)
 						}
 					}
-					is GValue.Null -> null
-					is GValue.Variable -> value.resolve()
+					is GNullValue -> null
+					is GVariableRef -> value.resolve()
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.Object,
-					is GValue.String -> listOf(value.coerceToType(typeRef.elementType))
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GIntValue,
+					is GObjectValue,
+					is GStringValue -> listOf(value.coerceToType(typeRef.elementType))
 				}
 
 			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.Non-Null.Input-Coercion
 			is GNonNullTypeRef ->
 				when (value) {
-					is GValue.Null -> invalidValueTypeError()
+					is GNullValue -> invalidValueTypeError()
 
-					is GValue.Boolean,
-					is GValue.Enum,
-					is GValue.Float,
-					is GValue.Int,
-					is GValue.List,
-					is GValue.Object,
-					is GValue.String -> value.coerceToType(typeRef.nullableType)
+					is GBooleanValue,
+					is GEnumValue,
+					is GFloatValue,
+					is GIntValue,
+					is GListValue,
+					is GObjectValue,
+					is GStringValue -> value.coerceToType(typeRef.nullableRef)
 
-					is GValue.Variable -> value.resolve()
+					is GVariableRef -> value.resolve()
 				}
 
 			is GNamedTypeRef -> {
@@ -88,89 +88,89 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 					// https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
 					is GBooleanType ->
 						when (value) {
-							is GValue.Boolean -> value.value
+							is GBooleanValue -> value.value
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Enum,
-							is GValue.Float,
-							is GValue.Int,
-							is GValue.List,
-							is GValue.Object,
-							is GValue.String -> invalidValueTypeError()
+							is GEnumValue,
+							is GFloatValue,
+							is GIntValue,
+							is GListValue,
+							is GObjectValue,
+							is GStringValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
 					is GCustomScalarType ->
 						// FIXME support conversion function
 						when (value) {
-							is GValue.Boolean -> value.value
-							is GValue.Float -> value.value
-							is GValue.Int -> value.value
-							is GValue.String -> value.value
+							is GBooleanValue -> value.value
+							is GFloatValue -> value.value
+							is GIntValue -> value.value
+							is GStringValue -> value.value
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Enum,
-							is GValue.List,
-							is GValue.Object -> invalidValueTypeError()
+							is GEnumValue,
+							is GListValue,
+							is GObjectValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
 					is GEnumType ->
 						when (value) {
-							is GValue.Enum -> type.value(value.name)
+							is GEnumValue -> type.value(value.name)
 								?: invalidValueError("Invalid value '${value.name}' for enum '${type.name}'.")
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Boolean,
-							is GValue.Float,
-							is GValue.Int,
-							is GValue.List,
-							is GValue.Object,
-							is GValue.String -> invalidValueTypeError()
+							is GBooleanValue,
+							is GFloatValue,
+							is GIntValue,
+							is GListValue,
+							is GObjectValue,
+							is GStringValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
 					is GFloatType ->
 						when (value) {
-							is GValue.Float -> value.value
-							is GValue.Int -> value.value.toFloat()
+							is GFloatValue -> value.value
+							is GIntValue -> value.value.toFloat()
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Boolean,
-							is GValue.Enum,
-							is GValue.List,
-							is GValue.Object,
-							is GValue.String -> invalidValueTypeError()
+							is GBooleanValue,
+							is GEnumValue,
+							is GListValue,
+							is GObjectValue,
+							is GStringValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
-					is GIDType ->
+					is GIdType ->
 						when (value) {
-							is GValue.Int -> value.value
-							is GValue.String -> value.value
+							is GIntValue -> value.value
+							is GStringValue -> value.value
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Boolean,
-							is GValue.Enum,
-							is GValue.Float,
-							is GValue.List,
-							is GValue.Object -> invalidValueTypeError()
+							is GBooleanValue,
+							is GEnumValue,
+							is GFloatValue,
+							is GListValue,
+							is GObjectValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-Input-Objects.Input-Coercion
 					is GInputObjectType ->
 						when (value) {
-							is GValue.Object ->
+							is GObjectValue ->
 								type.argumentDefinitions.associate { argument ->
 									val argumentValue = value.field(argument.name)?.value ?: argument.defaultValue
 									if (argumentValue !== null)
@@ -187,47 +187,47 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 										)
 								}
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Boolean,
-							is GValue.Enum,
-							is GValue.Float,
-							is GValue.Int,
-							is GValue.List,
-							is GValue.String -> invalidValueTypeError()
+							is GBooleanValue,
+							is GEnumValue,
+							is GFloatValue,
+							is GIntValue,
+							is GListValue,
+							is GStringValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
 					is GIntType ->
 						when (value) {
-							is GValue.Int -> value.value
+							is GIntValue -> value.value
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Boolean,
-							is GValue.Enum,
-							is GValue.Float,
-							is GValue.List,
-							is GValue.Object,
-							is GValue.String -> invalidValueTypeError()
+							is GBooleanValue,
+							is GEnumValue,
+							is GFloatValue,
+							is GListValue,
+							is GObjectValue,
+							is GStringValue -> invalidValueTypeError()
 						}
 
 					// https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
 					is GStringType ->
 						when (value) {
-							is GValue.String -> value.value
+							is GStringValue -> value.value
 
-							is GValue.Null -> null
-							is GValue.Variable -> value.resolve()
+							is GNullValue -> null
+							is GVariableRef -> value.resolve()
 
-							is GValue.Boolean,
-							is GValue.Enum,
-							is GValue.Float,
-							is GValue.Int,
-							is GValue.List,
-							is GValue.Object -> invalidValueTypeError()
+							is GBooleanValue,
+							is GEnumValue,
+							is GFloatValue,
+							is GIntValue,
+							is GListValue,
+							is GObjectValue -> invalidValueTypeError()
 						}
 
 					is GInterfaceType,
@@ -310,7 +310,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 			is GNonNullTypeRef ->
 				when (value) {
 					null -> invalidValueTypeError()
-					else -> value.coerce(typeRef.nullableType)
+					else -> value.coerce(typeRef.nullableRef)
 				}
 
 			is GNamedTypeRef -> {
@@ -355,7 +355,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 							else -> invalidValueTypeError()
 						}
 
-					is GIDType ->
+					is GIdType ->
 						when (value) {
 							null -> null
 							is Int -> value
