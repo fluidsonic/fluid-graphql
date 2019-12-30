@@ -26,7 +26,7 @@ enum class GDirectiveLocation {
 
 	companion object {
 
-		fun forAstNode(node: GAst) = when (node) {
+		fun forNode(node: GNode) = when (node) {
 			is GInputObjectArgumentDefinition -> INPUT_FIELD_DEFINITION // Must be checked before superclass 'GArgumentDefinition'.
 
 			is GArgumentDefinition -> ARGUMENT_DEFINITION

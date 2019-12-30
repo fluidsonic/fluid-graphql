@@ -6,14 +6,14 @@ private class ParallelVisitor<Data>(
 ) : Visitor<Unit, Data>() {
 
 	// FIXME We must use Visit to orchestrate node traversal rather than doing so by ourself in ParallelVisit.
-	override fun onNode(node: GAst, data: Data, visit: Visit) =
+	override fun onNode(node: GNode, data: Data, visit: Visit) =
 		ParallelVisit(node = node, data = data, children = children).run()
 			.also { visit.skipChildren() }
 }
 
 
 private class ParallelVisit<in Data>(
-	node: GAst,
+	node: GNode,
 	data: Data,
 	children: List<Visitor<Unit, Data>>
 ) {
@@ -78,7 +78,7 @@ private class ParallelVisit<in Data>(
 	}
 
 
-	private fun runChild(node: GAst) {
+	private fun runChild(node: GNode) {
 		println("$childIndex: runChild() { node: ${node::class} }")
 
 		val index = childIndex
@@ -172,7 +172,7 @@ private class ParallelVisit<in Data>(
 		}
 
 
-		fun dispatchVisit(node: GAst) {
+		fun dispatchVisit(node: GNode) {
 			println("${index}: dispatchVisit() { state: $state }")
 
 			if (isSkippingChildren)

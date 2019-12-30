@@ -56,7 +56,7 @@ class GSchema internal constructor(
 				GIntrospection.typenameField
 
 			else ->
-				(type as? GAst.WithFieldDefinitions)?.field(name)
+				(type as? GNode.WithFieldDefinitions)?.field(name)
 		}
 
 
@@ -130,7 +130,7 @@ class GSchema internal constructor(
 		var errors = errors
 
 		// no inline: https://youtrack.jetbrains.com/issue/KT-31371
-		/* inline */ fun reportError(message: String? = null, nodeInsteadOfTypeRef: GAst? = null) {
+		/* inline */ fun reportError(message: String? = null, nodeInsteadOfTypeRef: GNode? = null) {
 			val message = message ?: run {
 				val valueText = when (value) {
 					is GListValue -> "a list value"

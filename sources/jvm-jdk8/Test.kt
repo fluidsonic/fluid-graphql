@@ -186,5 +186,5 @@ fun main() {
 	val githubSchema = GDocument.parse(githubSource, "github-schema.graphql")
 	val github = GDocument.parse(githubSource)
 
-	println(GAst.print(github))
+	println(GNode.print(github))
 }

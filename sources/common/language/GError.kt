@@ -5,7 +5,7 @@ package io.fluidsonic.graphql
 class GError(
 	message: String,
 	val path: GPath? = null, // FIXME set path only for RESULT fields & consider aliases
-	val nodes: List<GAst> = emptyList(),
+	val nodes: List<GNode> = emptyList(),
 	val origins: List<GOrigin> = emptyList(),
 	cause: Throwable? = null
 ) : Exception(
@@ -16,7 +16,7 @@ class GError(
 	fun copy(
 		message: String = this.message.orEmpty(),
 		path: GPath? = this.path,
-		nodes: List<GAst> = this.nodes,
+		nodes: List<GNode> = this.nodes,
 		origins: List<GOrigin> = this.origins,
 		cause: Throwable? = this.cause
 	) =

@@ -4,8 +4,8 @@ package io.fluidsonic.graphql
 // https://graphql.github.io/graphql-spec/draft/#sec-Directives-Are-Unique-Per-Location
 internal object DirectiveExclusivityRule : ValidationRule.Singleton() {
 
-	override fun onAny(node: GAst, data: ValidationContext, visit: Visit) {
-		if (node !is GAst.WithDirectives)
+	override fun onAny(node: GNode, data: ValidationContext, visit: Visit) {
+		if (node !is GNode.WithDirectives)
 			return // No directives to check.
 
 		node.directives

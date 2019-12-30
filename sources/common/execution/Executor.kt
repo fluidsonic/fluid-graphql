@@ -334,7 +334,7 @@ internal class Executor private constructor(
 	}
 
 
-	private fun GAst.WithDirectives.getDirectiveValues(definition: GDirectiveDefinition): Map<String, Any?>? =
+	private fun GNode.WithDirectives.getDirectiveValues(definition: GDirectiveDefinition): Map<String, Any?>? =
 		directives.firstOrNull { it.name == definition.name }
 			?.let { directive ->
 				valueCoercer.coerceArgumentValues(

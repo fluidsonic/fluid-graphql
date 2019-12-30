@@ -43,7 +43,7 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 		if (intersectionTypes.isNotEmpty())
 			return // Fragment type condition can match.
 
-		val relatedNodes = mutableListOf<GAst>(typeCondition)
+		val relatedNodes = mutableListOf<GNode>(typeCondition)
 
 		val relatedFieldSelection = data.relatedFieldSelection
 		val relatedFragmentDefinition = data.relatedFragmentDefinition

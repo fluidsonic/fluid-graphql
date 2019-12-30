@@ -76,7 +76,7 @@ internal object GIntrospection {
 				argument("includeDeprecated" of Boolean default false)
 
 				resolve<List<GFieldDefinition>?> { context ->
-					if (this !is GAst.WithFieldDefinitions)
+					if (this !is GNode.WithFieldDefinitions)
 						return@resolve null
 
 					var fieldDefinitions = fieldDefinitions
@@ -89,7 +89,7 @@ internal object GIntrospection {
 
 			field("interfaces" of List(!Type)) {
 				resolve<List<GInterfaceType>?> { context ->
-					(this as? GAst.WithInterfaces)
+					(this as? GNode.WithInterfaces)
 						?.interfaces
 						?.mapNotNull { context.schema.resolveTypeAs<GInterfaceType>(it) }
 				}
@@ -118,7 +118,7 @@ internal object GIntrospection {
 			}
 
 			field("inputFields" of List(!InputValue)) {
-				resolve<List<GArgumentDefinition>?> { (this as? GAst.WithArgumentDefinitions)?.argumentDefinitions }
+				resolve<List<GArgumentDefinition>?> { (this as? GNode.WithArgumentDefinitions)?.argumentDefinitions }
 			}
 
 			field("ofType" of Type) {

@@ -4,11 +4,11 @@ import kotlin.reflect.*
 
 
 // FIXME hashCode
-sealed class GAst(
+sealed class GNode(
 	val origin: GOrigin?
 ) {
 
-	fun childAt(index: Int): GAst? {
+	fun childAt(index: Int): GNode? {
 		var childIndex = 0
 
 		forEachChild { child ->
@@ -22,11 +22,11 @@ sealed class GAst(
 	}
 
 
-	fun children(): List<GAst> {
-		var list: MutableList<GAst>? = null
+	fun children(): List<GNode> {
+		var list: MutableList<GNode>? = null
 
 		forEachChild { child ->
-			(list ?: mutableListOf<GAst>().also { list = it })
+			(list ?: mutableListOf<GNode>().also { list = it })
 				.add(child)
 		}
 
@@ -42,24 +42,24 @@ sealed class GAst(
 	}
 
 
-	abstract fun equalsAst(other: GAst, includingOrigin: Boolean = false): Boolean
+	abstract fun equalsNode(other: GNode, includingOrigin: Boolean = false): Boolean
 
 
 	@PublishedApi
-	internal inline fun forNode(node: GAst?, block: (node: GAst) -> Unit) {
+	internal inline fun forNode(node: GNode?, block: (node: GNode) -> Unit) {
 		if (node !== null)
 			block(node)
 	}
 
 
 	@PublishedApi
-	internal inline fun forNodes(nodes: List<GAst>, block: (node: GAst) -> Unit) {
+	internal inline fun forNodes(nodes: List<GNode>, block: (node: GNode) -> Unit) {
 		for (node in nodes)
 			block(node)
 	}
 
 
-	inline fun forEachChild(block: (child: GAst) -> Unit) {
+	inline fun forEachChild(block: (child: GNode) -> Unit) {
 		@Suppress("UNUSED_VARIABLE") // Exhaustiveness check.
 		val exhaustive = when (this) {
 			is GArgument -> {
@@ -308,8 +308,8 @@ sealed class GAst(
 
 	companion object {
 
-		fun print(ast: GAst, indent: String = "\t") =
-			Printer.print(ast = ast, indent = indent)
+		fun print(node: GNode, indent: String = "\t") =
+			Printer.print(node = node, indent = indent)
 	}
 
 
@@ -424,11 +424,11 @@ sealed class GAst(
 }
 
 
-fun GAst?.equalsAst(other: GAst?, includingOrigin: Boolean = false) =
-	this === other || (this !== null && other !== null && equalsAst(other, includingOrigin = includingOrigin))
+fun GNode?.equalsNode(other: GNode?, includingOrigin: Boolean = false) =
+	this === other || (this !== null && other !== null && equalsNode(other, includingOrigin = includingOrigin))
 
 
-fun List<GAst?>.equalsAst(other: List<GAst?>, includingOrigin: Boolean): Boolean {
+fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean): Boolean {
 	if (this === other)
 		return true
 
@@ -436,7 +436,7 @@ fun List<GAst?>.equalsAst(other: List<GAst?>, includingOrigin: Boolean): Boolean
 		return false
 
 	forEachIndexed { index, ast ->
-		if (!ast.equalsAst(other[index], includingOrigin = includingOrigin))
+		if (!ast.equalsNode(other[index], includingOrigin = includingOrigin))
 			return false
 	}
 
@@ -467,8 +467,8 @@ class GArgument(
 	val value: GValue,
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithName {
+	GNode(origin = origin),
+	GNode.WithName {
 
 	override val nameNode = name
 
@@ -482,11 +482,11 @@ class GArgument(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GArgument &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				value.equalsAst(other.value, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				value.equalsNode(other.value, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -503,23 +503,23 @@ sealed class GArgumentDefinition(
 	override val directives: List<GDirective>,
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithName,
-	GAst.WithOptionalDescription {
+	GNode(origin = origin),
+	GNode.WithDirectives,
+	GNode.WithName,
+	GNode.WithOptionalDescription {
 
 	override val descriptionNode = description
 	override val nameNode = name
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GArgumentDefinition &&
-				defaultValue.equalsAst(other.defaultValue, includingOrigin = includingOrigin) &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				type.equalsAst(other.type, includingOrigin = includingOrigin) &&
+				defaultValue.equalsNode(other.defaultValue, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				type.equalsNode(other.type, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -551,7 +551,7 @@ class GBooleanValue(
 		this === other || (other is GBooleanValue && value == other.value)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GBooleanValue &&
 				value == other.value &&
@@ -614,7 +614,7 @@ class GCustomScalarType(
 
 sealed class GDefinition(
 	origin: GOrigin?
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
 	companion object
 }
@@ -625,9 +625,9 @@ class GDirective(
 	override val arguments: List<GArgument> = emptyList(),
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithArguments,
-	GAst.WithName {
+	GNode(origin = origin),
+	GNode.WithArguments,
+	GNode.WithName {
 
 	override val nameNode = name
 
@@ -641,11 +641,11 @@ class GDirective(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GDirective &&
-				arguments.equalsAst(other.arguments, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -697,9 +697,9 @@ class GDirectiveDefinition(
 	origin: GOrigin? = null
 ) :
 	GTypeSystemDefinition(origin = origin),
-	GAst.WithArgumentDefinitions,
-	GAst.WithName,
-	GAst.WithOptionalDescription {
+	GNode.WithArgumentDefinitions,
+	GNode.WithName,
+	GNode.WithOptionalDescription {
 
 	val locations: Set<GDirectiveLocation> = locations.mapNotNullTo(mutableSetOf()) { node ->
 		GDirectiveLocation.values().firstOrNull { it.name == node.value }
@@ -729,14 +729,14 @@ class GDirectiveDefinition(
 		argumentDefinitions.firstOrNull { it.name == name }
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GDirectiveDefinition &&
-				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
 				isRepeatable == other.isRepeatable &&
-				locationNodes.equalsAst(other.locationNodes, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				locationNodes.equalsNode(other.locationNodes, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -748,17 +748,17 @@ class GDirectiveDefinition(
 class GDocument(
 	val definitions: List<GDefinition>,
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
 	// FIXME this is confusing. It may indicate that this is the schema related to this document instead of representing the
 	// type definitions within this document.
 	val schema = GSchema(document = this) // FIXME check if cyclic reference is OK here
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GDocument &&
-				definitions.equalsAst(other.definitions, includingOrigin = includingOrigin) &&
+				definitions.equalsNode(other.definitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -844,13 +844,13 @@ class GEnumType(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GEnumType &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				values.equalsAst(other.values, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				values.equalsNode(other.values, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -890,12 +890,12 @@ class GEnumTypeExtension(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GEnumTypeExtension &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				values.equalsAst(other.values, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				values.equalsNode(other.values, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -920,7 +920,7 @@ class GEnumValue(
 		this === other || (other is GEnumValue && name == other.name)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GEnumValue &&
 				name == other.name &&
@@ -942,9 +942,9 @@ class GEnumValueDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithOptionalDeprecation,
-	GAst.WithOptionalDescription {
+	GNode(origin = origin),
+	GNode.WithOptionalDeprecation,
+	GNode.WithOptionalDescription {
 
 	override val descriptionNode = description
 	override val nameNode = name
@@ -961,12 +961,12 @@ class GEnumValueDefinition(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GEnumValueDefinition &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1026,10 +1026,10 @@ class GFieldDefinition(
 	val resolver: GFieldResolver<*>? = null,
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithArgumentDefinitions,
-	GAst.WithOptionalDescription,
-	GAst.WithOptionalDeprecation {
+	GNode(origin = origin),
+	GNode.WithArgumentDefinitions,
+	GNode.WithOptionalDescription,
+	GNode.WithOptionalDeprecation {
 
 	override val descriptionNode = description
 	override val nameNode = name
@@ -1056,14 +1056,14 @@ class GFieldDefinition(
 		argumentDefinitions.firstOrNull { it.name == name }
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GFieldDefinition &&
-				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				type.equalsAst(other.type, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				type.equalsNode(other.type, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1084,7 +1084,7 @@ class GFieldSelection(
 		directives = directives,
 		origin = origin
 	),
-	GAst.WithArguments {
+	GNode.WithArguments {
 
 	val alias get() = aliasNode?.value
 	val aliasNode = alias
@@ -1107,14 +1107,14 @@ class GFieldSelection(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GFieldSelection &&
-				aliasNode.equalsAst(other.aliasNode, includingOrigin = includingOrigin) &&
-				arguments.equalsAst(other.arguments, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				selectionSet.equalsAst(other.selectionSet, includingOrigin = includingOrigin) &&
+				aliasNode.equalsNode(other.aliasNode, includingOrigin = includingOrigin) &&
+				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1138,7 +1138,7 @@ class GFloatValue(
 		this === other || (other is GFloatValue && value == other.value)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GFloatValue &&
 				value == other.value &&
@@ -1163,9 +1163,9 @@ class GFragmentDefinition(
 	origin: GOrigin? = null
 ) :
 	GExecutableDefinition(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithName,
-	GAst.WithVariableDefinitions {
+	GNode.WithDirectives,
+	GNode.WithName,
+	GNode.WithVariableDefinitions {
 
 	override val nameNode = name
 
@@ -1185,14 +1185,14 @@ class GFragmentDefinition(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GFragmentDefinition &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				selectionSet.equalsAst(other.selectionSet, includingOrigin = includingOrigin) &&
-				typeCondition.equalsAst(other.typeCondition, includingOrigin = includingOrigin) &&
-				variableDefinitions.equalsAst(other.variableDefinitions, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
+				typeCondition.equalsNode(other.typeCondition, includingOrigin = includingOrigin) &&
+				variableDefinitions.equalsNode(other.variableDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1224,11 +1224,11 @@ class GFragmentSelection(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GFragmentSelection &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1250,12 +1250,12 @@ class GInlineFragmentSelection(
 	origin = origin
 ) {
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GInlineFragmentSelection &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				selectionSet.equalsAst(other.selectionSet, includingOrigin = includingOrigin) &&
-				typeCondition.equalsAst(other.typeCondition, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
+				typeCondition.equalsNode(other.typeCondition, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1314,7 +1314,7 @@ class GInputObjectType(
 		name = name,
 		origin = origin
 	),
-	GAst.WithArgumentDefinitions {
+	GNode.WithArgumentDefinitions {
 
 	constructor(
 		name: String,
@@ -1333,13 +1333,13 @@ class GInputObjectType(
 		argumentDefinitions.firstOrNull { it.name == name }
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GInputObjectType &&
-				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1364,7 +1364,7 @@ class GInputObjectTypeExtension(
 		name = name,
 		origin = origin
 	),
-	GAst.WithArgumentDefinitions {
+	GNode.WithArgumentDefinitions {
 
 	constructor(
 		name: String,
@@ -1377,12 +1377,12 @@ class GInputObjectTypeExtension(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GInputObjectTypeExtension &&
-				argumentDefinitions.equalsAst(other.argumentDefinitions, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1406,7 +1406,7 @@ class GIntValue(
 		this === other || (other is GIntValue && value == other.value)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GIntValue &&
 				value == other.value &&
@@ -1439,8 +1439,8 @@ class GInterfaceType(
 		name = name,
 		origin = origin
 	),
-	GAst.WithFieldDefinitions,
-	GAst.WithInterfaces {
+	GNode.WithFieldDefinitions,
+	GNode.WithInterfaces {
 
 	constructor(
 		name: String,
@@ -1457,14 +1457,14 @@ class GInterfaceType(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GInterfaceType &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
-				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsNode(other.fieldDefinitions, includingOrigin = includingOrigin) &&
+				interfaces.equalsNode(other.interfaces, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1491,8 +1491,8 @@ class GInterfaceTypeExtension(
 		name = name,
 		origin = origin
 	),
-	GAst.WithFieldDefinitions,
-	GAst.WithInterfaces {
+	GNode.WithFieldDefinitions,
+	GNode.WithInterfaces {
 
 	val fieldsByName = fieldDefinitions.associateBy { it.name }
 
@@ -1510,13 +1510,13 @@ class GInterfaceTypeExtension(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GInterfaceTypeExtension &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
-				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsNode(other.fieldDefinitions, includingOrigin = includingOrigin) &&
+				interfaces.equalsNode(other.interfaces, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1557,10 +1557,10 @@ class GListType(
 	override val name get() = "[${elementType.name}]"
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GListType &&
-				elementType.equalsAst(other.elementType, includingOrigin = includingOrigin)
+				elementType.equalsNode(other.elementType, includingOrigin = includingOrigin)
 			)
 
 
@@ -1586,10 +1586,10 @@ class GListTypeRef(
 	override val underlyingName get() = elementType.underlyingName
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GListTypeRef &&
-				elementType.equalsAst(other.elementType, includingOrigin = includingOrigin) &&
+				elementType.equalsNode(other.elementType, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1614,10 +1614,10 @@ class GListValue(
 		this === other || (other is GListValue && elements == other.elements)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GListValue &&
-				elements.equalsAst(other.elements, includingOrigin = includingOrigin) &&
+				elements.equalsNode(other.elements, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1633,13 +1633,13 @@ class GListValue(
 class GName(
 	val value: String,
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
 	override fun equals(other: Any?) =
 		this === other || (other is GName && value == other.value)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GName &&
 				value == other.value &&
@@ -1666,9 +1666,9 @@ sealed class GNamedType(
 		kind = kind,
 		origin = origin
 	),
-	GAst.WithDirectives,
-	GAst.WithName,
-	GAst.WithOptionalDescription {
+	GNode.WithDirectives,
+	GNode.WithName,
+	GNode.WithOptionalDescription {
 
 	final override val descriptionNode = description
 	final override val nameNode = name
@@ -1701,10 +1701,10 @@ class GNamedTypeRef(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GNamedTypeRef &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1727,10 +1727,10 @@ class GNonNullType(
 	override val nullableType get() = wrappedType
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GNonNullType &&
-				nullableType.equalsAst(other.nullableType, includingOrigin = includingOrigin) &&
+				nullableType.equalsNode(other.nullableType, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1757,10 +1757,10 @@ class GNonNullTypeRef(
 	override val underlyingName get() = nullableRef.underlyingName
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GNonNullTypeRef &&
-				nullableRef.equalsAst(other.nullableRef, includingOrigin = includingOrigin) &&
+				nullableRef.equalsNode(other.nullableRef, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1784,7 +1784,7 @@ class GNullValue(
 		this === other || other is GNullValue
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GNullValue &&
 				(!includingOrigin || origin == other.origin)
@@ -1820,8 +1820,8 @@ class GObjectType(
 		name = name,
 		origin = origin
 	),
-	GAst.WithFieldDefinitions,
-	GAst.WithInterfaces {
+	GNode.WithFieldDefinitions,
+	GNode.WithInterfaces {
 
 	constructor(
 		name: String,
@@ -1840,14 +1840,14 @@ class GObjectType(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectType &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
-				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsNode(other.fieldDefinitions, includingOrigin = includingOrigin) &&
+				interfaces.equalsNode(other.interfaces, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1873,8 +1873,8 @@ class GObjectTypeExtension(
 		name = name,
 		origin = origin
 	),
-	GAst.WithFieldDefinitions,
-	GAst.WithInterfaces {
+	GNode.WithFieldDefinitions,
+	GNode.WithInterfaces {
 
 	constructor(
 		name: String,
@@ -1889,13 +1889,13 @@ class GObjectTypeExtension(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectTypeExtension &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				fieldDefinitions.equalsAst(other.fieldDefinitions, includingOrigin = includingOrigin) &&
-				interfaces.equalsAst(other.interfaces, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				fieldDefinitions.equalsNode(other.fieldDefinitions, includingOrigin = includingOrigin) &&
+				interfaces.equalsNode(other.interfaces, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1918,10 +1918,10 @@ class GObjectValue(
 		this === other || (other is GObjectValue && fieldsByName == other.fieldsByName)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectValue &&
-				fields.equalsAst(other.fields, includingOrigin = includingOrigin) &&
+				fields.equalsNode(other.fields, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1943,8 +1943,8 @@ class GObjectValueField(
 	val value: GValue,
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithName {
+	GNode(origin = origin),
+	GNode.WithName {
 
 	override val nameNode = name
 
@@ -1958,11 +1958,11 @@ class GObjectValueField(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GObjectValueField &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				value.equalsAst(other.value, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				value.equalsNode(other.value, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -1980,9 +1980,9 @@ class GOperationDefinition(
 	origin: GOrigin? = null
 ) :
 	GExecutableDefinition(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithOptionalName,
-	GAst.WithVariableDefinitions {
+	GNode.WithDirectives,
+	GNode.WithOptionalName,
+	GNode.WithVariableDefinitions {
 
 	override val nameNode = name
 
@@ -2002,14 +2002,14 @@ class GOperationDefinition(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GOperationDefinition &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				selectionSet.equalsAst(other.selectionSet, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
 				type == other.type &&
-				variableDefinitions.equalsAst(other.variableDefinitions, includingOrigin = includingOrigin) &&
+				variableDefinitions.equalsNode(other.variableDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2022,13 +2022,13 @@ class GOperationTypeDefinition(
 	val operationType: GOperationType,
 	val type: GNamedTypeRef,
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GOperationTypeDefinition &&
 				operationType == other.operationType &&
-				type.equalsAst(other.type, includingOrigin = includingOrigin) &&
+				type.equalsNode(other.type, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2063,12 +2063,12 @@ sealed class GScalarType(
 	)
 
 
-	final override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	final override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GScalarType &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2101,11 +2101,11 @@ class GScalarTypeExtension(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GScalarTypeExtension &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2120,14 +2120,14 @@ class GSchemaDefinition(
 	origin: GOrigin? = null
 ) :
 	GTypeSystemDefinition(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithOperationTypeDefinitions {
+	GNode.WithDirectives,
+	GNode.WithOperationTypeDefinitions {
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GSchemaDefinition &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				operationTypeDefinitions.equalsAst(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				operationTypeDefinitions.equalsNode(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2142,14 +2142,14 @@ class GSchemaExtension(
 	origin: GOrigin? = null
 ) :
 	GTypeSystemExtension(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithOperationTypeDefinitions {
+	GNode.WithDirectives,
+	GNode.WithOperationTypeDefinitions {
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GSchemaExtension &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				operationTypeDefinitions.equalsAst(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				operationTypeDefinitions.equalsNode(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2162,8 +2162,8 @@ sealed class GSelection(
 	override val directives: List<GDirective>,
 	origin: GOrigin?
 ) :
-	GAst(origin = origin),
-	GAst.WithDirectives {
+	GNode(origin = origin),
+	GNode.WithDirectives {
 
 	companion object
 }
@@ -2172,12 +2172,12 @@ sealed class GSelection(
 class GSelectionSet(
 	val selections: List<GSelection>,
 	origin: GOrigin? = null
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GSelectionSet &&
-				selections.equalsAst(other.selections, includingOrigin = includingOrigin) &&
+				selections.equalsNode(other.selections, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2202,7 +2202,7 @@ class GStringValue(
 		this === other || (other is GStringValue && value == other.value)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GStringValue &&
 				value == other.value &&
@@ -2312,8 +2312,8 @@ sealed class GTypeExtension(
 	origin: GOrigin?
 ) :
 	GTypeSystemExtension(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithName {
+	GNode.WithDirectives,
+	GNode.WithName {
 
 	override val nameNode = name
 
@@ -2324,7 +2324,7 @@ sealed class GTypeExtension(
 
 sealed class GTypeRef(
 	origin: GOrigin?
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
 	abstract val underlyingName: String
 
@@ -2400,13 +2400,13 @@ class GUnionType(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GUnionType &&
-				descriptionNode.equalsAst(other.descriptionNode, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				possibleTypes.equalsAst(other.possibleTypes, includingOrigin = includingOrigin) &&
+				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				possibleTypes.equalsNode(other.possibleTypes, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2443,12 +2443,12 @@ class GUnionTypeExtension(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GUnionTypeExtension &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				possibleTypes.equalsAst(other.possibleTypes, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				possibleTypes.equalsNode(other.possibleTypes, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2459,7 +2459,7 @@ class GUnionTypeExtension(
 
 sealed class GValue(
 	origin: GOrigin?
-) : GAst(origin = origin) {
+) : GNode(origin = origin) {
 
 	abstract val kind: Kind
 
@@ -2530,9 +2530,9 @@ class GVariableDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GOrigin? = null
 ) :
-	GAst(origin = origin),
-	GAst.WithDirectives,
-	GAst.WithName {
+	GNode(origin = origin),
+	GNode.WithDirectives,
+	GNode.WithName {
 
 	override val nameNode = name
 
@@ -2550,13 +2550,13 @@ class GVariableDefinition(
 	)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GVariableDefinition &&
-				defaultValue.equalsAst(other.defaultValue, includingOrigin = includingOrigin) &&
-				directives.equalsAst(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
-				type.equalsAst(other.type, includingOrigin = includingOrigin) &&
+				defaultValue.equalsNode(other.defaultValue, includingOrigin = includingOrigin) &&
+				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
+				type.equalsNode(other.type, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2587,10 +2587,10 @@ class GVariableRef(
 		this === other || (other is GVariableRef && name == other.name)
 
 
-	override fun equalsAst(other: GAst, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
 			other is GVariableRef &&
-				nameNode.equalsAst(other.nameNode, includingOrigin = includingOrigin) &&
+				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 

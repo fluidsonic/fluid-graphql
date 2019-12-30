@@ -4,28 +4,28 @@ package io.fluidsonic.graphql
 // Children must be traversed in the order they would occur in a proper GraphQL document.
 internal interface NodeWalker {
 
-	val child: GAst?
-	val parent: GAst?
+	val child: GNode?
+	val parent: GNode?
 
 	fun ascend(): Boolean
 	fun descend(): Boolean
-	fun nextChild(): GAst?
+	fun nextChild(): GNode?
 }
 
 
-private class NodeWalkerImpl(root: GAst) : NodeWalker {
+private class NodeWalkerImpl(root: GNode) : NodeWalker {
 
 	private var childIndex = -1
 	private val childIndexStack = mutableListOf<Int>()
-	private val childStack = mutableListOf<GAst?>()
-	private val parentStack = mutableListOf<GAst?>()
+	private val childStack = mutableListOf<GNode?>()
+	private val parentStack = mutableListOf<GNode?>()
 
 
-	override var child: GAst? = root
+	override var child: GNode? = root
 		private set
 
 
-	override var parent: GAst? = null
+	override var parent: GNode? = null
 		private set
 
 
@@ -60,7 +60,7 @@ private class NodeWalkerImpl(root: GAst) : NodeWalker {
 	}
 
 
-	override fun nextChild(): GAst? {
+	override fun nextChild(): GNode? {
 		val parent = parent ?: return null
 
 		if (childIndex >= 0 && child === null)
@@ -74,5 +74,5 @@ private class NodeWalkerImpl(root: GAst) : NodeWalker {
 }
 
 
-internal fun GAst.walk(): NodeWalker =
+internal fun GNode.walk(): NodeWalker =
 	NodeWalkerImpl(root = this)

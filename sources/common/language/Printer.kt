@@ -3,9 +3,9 @@ package io.fluidsonic.graphql
 
 internal object Printer {
 
-	fun print(ast: GAst, indent: String = "\t"): String {
+	fun print(node: GNode, indent: String = "\t"): String {
 		val writer = GWriter(indent = indent)
-		ast.accept(PrintVisitor(writer))
+		node.accept(PrintVisitor(writer))
 
 		return writer.toString()
 	}
@@ -17,21 +17,21 @@ private class PrintVisitor(
 ) : Visitor.Typed.WithoutData<Unit>() {
 
 	override fun onArgument(argument: GArgument, visit: Visit) = writer {
-		writeAst(argument.nameNode)
+		writeNode(argument.nameNode)
 		writeRaw(": ")
-		writeAst(argument.value)
+		writeNode(argument.value)
 	}
 
 
 	override fun onArgumentDefinition(definition: GArgumentDefinition, visit: Visit) = writer {
-		writeAst(definition.descriptionNode)
-		writeAst(definition.nameNode)
+		writeNode(definition.descriptionNode)
+		writeNode(definition.nameNode)
 		writeRaw(": ")
-		writeAst(definition.type)
+		writeNode(definition.type)
 
 		definition.defaultValue?.let { defaultValue ->
 			writeRaw(" = ")
-			writeAst(defaultValue)
+			writeNode(defaultValue)
 		}
 
 		writeDirectives(definition.directives)
@@ -45,22 +45,22 @@ private class PrintVisitor(
 
 	override fun onDirective(directive: GDirective, visit: Visit) = writer {
 		writeRaw("@")
-		writeAst(directive.nameNode)
+		writeNode(directive.nameNode)
 		writeArguments(directive.arguments)
 	}
 
 
 	override fun onDirectiveDefinition(definition: GDirectiveDefinition, visit: Visit) = writer {
-		writeAst(definition.descriptionNode)
+		writeNode(definition.descriptionNode)
 		writeRaw("directive @")
-		writeAst(definition.nameNode)
+		writeNode(definition.nameNode)
 		writeArgumentDefinitions(definition.argumentDefinitions)
 		writeRaw(" on ")
 		definition.locationNodes.forEachIndexed { index, location ->
 			if (index > 0)
 				writeRaw(" | ")
 
-			writeAst(location)
+			writeNode(location)
 		}
 	}
 
@@ -75,15 +75,15 @@ private class PrintVisitor(
 				writeLinebreak()
 			}
 
-			writeAst(definition)
+			writeNode(definition)
 		}
 	}
 
 
 	override fun onEnumType(type: GEnumType, visit: Visit) = writer {
-		writeAst(type.descriptionNode)
+		writeNode(type.descriptionNode)
 		writeRaw("enum ")
-		writeAst(type.nameNode)
+		writeNode(type.nameNode)
 		writeDirectives(type.directives)
 		writeRaw(" ")
 		writeEnumValueDefinitions(type.values)
@@ -92,7 +92,7 @@ private class PrintVisitor(
 
 	override fun onEnumTypeExtension(extension: GEnumTypeExtension, visit: Visit) = writer {
 		writeRaw("extend enum ")
-		writeAst(extension.nameNode)
+		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 		writeRaw(" ")
 		writeEnumValueDefinitions(extension.values)
@@ -105,33 +105,33 @@ private class PrintVisitor(
 
 
 	override fun onEnumValueDefinition(definition: GEnumValueDefinition, visit: Visit) = writer {
-		writeAst(definition.descriptionNode)
-		writeAst(definition.nameNode)
+		writeNode(definition.descriptionNode)
+		writeNode(definition.nameNode)
 		writeDirectives(definition.directives)
 	}
 
 
 	override fun onFieldDefinition(definition: GFieldDefinition, visit: Visit) = writer {
-		writeAst(definition.descriptionNode)
-		writeAst(definition.nameNode)
+		writeNode(definition.descriptionNode)
+		writeNode(definition.nameNode)
 		writeArgumentDefinitions(definition.argumentDefinitions)
 		writeRaw(": ")
-		writeAst(definition.type)
+		writeNode(definition.type)
 		writeDirectives(definition.directives)
 	}
 
 
 	override fun onFieldSelection(selection: GFieldSelection, visit: Visit) = writer {
 		selection.aliasNode?.let { alias ->
-			writeAst(alias)
+			writeNode(alias)
 			writeRaw(": ")
 		}
-		writeAst(selection.nameNode)
+		writeNode(selection.nameNode)
 		writeArguments(selection.arguments)
 		writeDirectives(selection.directives)
 		selection.selectionSet?.let { set ->
 			writeRaw(" ")
-			writeAst(set)
+			writeNode(set)
 		}
 	}
 
@@ -143,28 +143,28 @@ private class PrintVisitor(
 
 	override fun onFragmentDefinition(definition: GFragmentDefinition, visit: Visit) = writer {
 		writeRaw("fragment ")
-		writeAst(definition.nameNode)
+		writeNode(definition.nameNode)
 		writeVariableDefinitions(definition.variableDefinitions)
 		writeRaw(" on ")
-		writeAst(definition.typeCondition)
+		writeNode(definition.typeCondition)
 		writeDirectives(definition.directives)
 		writeRaw(" ")
-		writeAst(definition.selectionSet)
+		writeNode(definition.selectionSet)
 		writeLinebreak()
 	}
 
 
 	override fun onFragmentSelection(selection: GFragmentSelection, visit: Visit) = writer {
 		writeRaw("...")
-		writeAst(selection.nameNode)
+		writeNode(selection.nameNode)
 		writeDirectives(selection.directives)
 	}
 
 
 	override fun onInputObjectType(type: GInputObjectType, visit: Visit) = writer {
-		writeAst(type.descriptionNode)
+		writeNode(type.descriptionNode)
 		writeRaw("input ")
-		writeAst(type.nameNode)
+		writeNode(type.nameNode)
 		writeDirectives(type.directives)
 		writeInputObjectTypeArguments(type.argumentDefinitions)
 	}
@@ -172,7 +172,7 @@ private class PrintVisitor(
 
 	override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, visit: Visit) = writer {
 		writeRaw("extend input ")
-		writeAst(extension.nameNode)
+		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 		writeInputObjectTypeArguments(extension.argumentDefinitions)
 	}
@@ -182,11 +182,11 @@ private class PrintVisitor(
 		writeRaw("...")
 		selection.typeCondition?.let { typeCondition ->
 			writeRaw(" on")
-			writeAst(typeCondition)
+			writeNode(typeCondition)
 		}
 		writeDirectives(selection.directives)
 		writeRaw(" ")
-		writeAst(selection.selectionSet)
+		writeNode(selection.selectionSet)
 	}
 
 
@@ -196,9 +196,9 @@ private class PrintVisitor(
 
 
 	override fun onInterfaceType(type: GInterfaceType, visit: Visit) = writer {
-		writeAst(type.descriptionNode)
+		writeNode(type.descriptionNode)
 		writeRaw("interface ")
-		writeAst(type.nameNode)
+		writeNode(type.nameNode)
 		writeImplementedInterfaces(type.interfaces)
 		writeDirectives(type.directives)
 		writeFieldDefinitions(type.fieldDefinitions)
@@ -207,7 +207,7 @@ private class PrintVisitor(
 
 	override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, visit: Visit) = writer {
 		writeRaw("extend interface ")
-		writeAst(extension.nameNode)
+		writeNode(extension.nameNode)
 		writeImplementedInterfaces(extension.interfaces)
 		writeDirectives(extension.directives)
 		writeFieldDefinitions(extension.fieldDefinitions)
@@ -220,7 +220,7 @@ private class PrintVisitor(
 			if (index > 0)
 				writeRaw(", ")
 
-			writeAst(element)
+			writeNode(element)
 		}
 		writeRaw("]")
 	}
@@ -228,7 +228,7 @@ private class PrintVisitor(
 
 	override fun onListTypeRef(ref: GListTypeRef, visit: Visit) = writer {
 		writeRaw("[")
-		writeAst(ref.elementType)
+		writeNode(ref.elementType)
 		writeRaw("]")
 	}
 
@@ -239,12 +239,12 @@ private class PrintVisitor(
 
 
 	override fun onNamedTypeRef(ref: GNamedTypeRef, visit: Visit) = writer {
-		writeAst(ref.nameNode)
+		writeNode(ref.nameNode)
 	}
 
 
 	override fun onNonNullTypeRef(ref: GNonNullTypeRef, visit: Visit) = writer {
-		writeAst(ref.nullableRef)
+		writeNode(ref.nullableRef)
 		writeRaw("!")
 	}
 
@@ -255,9 +255,9 @@ private class PrintVisitor(
 
 
 	override fun onObjectType(type: GObjectType, visit: Visit) = writer {
-		writeAst(type.descriptionNode)
+		writeNode(type.descriptionNode)
 		writeRaw("type ")
-		writeAst(type.nameNode)
+		writeNode(type.nameNode)
 		writeImplementedInterfaces(type.interfaces)
 		writeFieldDefinitions(type.fieldDefinitions)
 	}
@@ -265,7 +265,7 @@ private class PrintVisitor(
 
 	override fun onObjectTypeExtension(extension: GObjectTypeExtension, visit: Visit) = writer {
 		writeRaw("extend type ")
-		writeAst(extension.nameNode)
+		writeNode(extension.nameNode)
 		writeImplementedInterfaces(extension.interfaces)
 		writeFieldDefinitions(extension.fieldDefinitions)
 	}
@@ -280,7 +280,7 @@ private class PrintVisitor(
 						writeLinebreak()
 					}
 
-					writeAst(field)
+					writeNode(field)
 				}
 
 				writeLinebreak()
@@ -291,9 +291,9 @@ private class PrintVisitor(
 
 
 	override fun onObjectValueField(field: GObjectValueField, visit: Visit) = writer {
-		writeAst(field.nameNode)
+		writeNode(field.nameNode)
 		writeRaw(": ")
-		writeAst(field.value)
+		writeNode(field.value)
 	}
 
 
@@ -308,7 +308,7 @@ private class PrintVisitor(
 
 			definition.nameNode?.let { name ->
 				writeRaw(" ")
-				writeAst(name)
+				writeNode(name)
 			}
 
 			if (definition.variableDefinitions.isNotEmpty()) {
@@ -322,7 +322,7 @@ private class PrintVisitor(
 			writeRaw(" ")
 		}
 
-		writeAst(definition.selectionSet)
+		writeNode(definition.selectionSet)
 		writeLinebreak()
 	}
 
@@ -330,21 +330,21 @@ private class PrintVisitor(
 	override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, visit: Visit) = writer {
 		writeRaw(definition.operationType.name)
 		writeRaw(": ")
-		writeAst(definition.type)
+		writeNode(definition.type)
 	}
 
 
 	override fun onScalarType(type: GScalarType, visit: Visit) = writer {
-		writeAst(type.descriptionNode)
+		writeNode(type.descriptionNode)
 		writeRaw("scalar ")
-		writeAst(type.nameNode)
+		writeNode(type.nameNode)
 		writeDirectives(type.directives)
 	}
 
 
 	override fun onScalarTypeExtension(extension: GScalarTypeExtension, visit: Visit) = writer {
 		writeRaw("extend scalar ")
-		writeAst(extension.nameNode)
+		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 	}
 
@@ -366,17 +366,17 @@ private class PrintVisitor(
 		writeBlock {
 			queryOperation?.let {
 				writeLinebreak()
-				writeAst(it)
+				writeNode(it)
 			}
 
 			mutationOperation?.let {
 				writeLinebreak()
-				writeAst(it)
+				writeNode(it)
 			}
 
 			subscriptionOperation?.let {
 				writeLinebreak()
-				writeAst(it)
+				writeNode(it)
 			}
 		}
 	}
@@ -392,7 +392,7 @@ private class PrintVisitor(
 	override fun onSelectionSet(set: GSelectionSet, visit: Visit) = writer {
 		writeBlock {
 			set.selections.forEach { selection ->
-				writeAst(selection)
+				writeNode(selection)
 				writeLinebreak()
 			}
 		}
@@ -424,15 +424,15 @@ private class PrintVisitor(
 	}
 
 
-	override fun onSyntheticNode(node: GAst, visit: Visit) {
+	override fun onSyntheticNode(node: GNode, visit: Visit) {
 		error("Cannot print AST of ${node::class}")
 	}
 
 
 	override fun onUnionType(type: GUnionType, visit: Visit) = writer {
-		writeAst(type.descriptionNode)
+		writeNode(type.descriptionNode)
 		writeRaw("union ")
-		writeAst(type.nameNode)
+		writeNode(type.nameNode)
 		writeDirectives(type.directives)
 		writePossibleTypes(type.possibleTypes)
 	}
@@ -440,7 +440,7 @@ private class PrintVisitor(
 
 	override fun onUnionTypeExtension(extension: GUnionTypeExtension, visit: Visit) = writer {
 		writeRaw("union ")
-		writeAst(extension.nameNode)
+		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 		writePossibleTypes(extension.possibleTypes)
 	}
@@ -448,12 +448,12 @@ private class PrintVisitor(
 
 	override fun onVariableDefinition(definition: GVariableDefinition, visit: Visit) = writer {
 		writeRaw("$")
-		writeAst(definition.nameNode)
+		writeNode(definition.nameNode)
 		writeRaw(": ")
-		writeAst(definition.type)
+		writeNode(definition.type)
 		definition.defaultValue?.let { defaultValue ->
 			writeRaw(" = ")
-			writeAst(defaultValue)
+			writeNode(defaultValue)
 		}
 		writeDirectives(definition.directives)
 	}
@@ -461,12 +461,12 @@ private class PrintVisitor(
 
 	override fun onVariableRef(ref: GVariableRef, visit: Visit) = writer {
 		writeRaw("$")
-		writeAst(ref.nameNode)
+		writeNode(ref.nameNode)
 	}
 
 
-	private fun writeAst(ast: GAst?) {
-		ast?.accept(this)
+	private fun writeNode(node: GNode?) {
+		node?.accept(this)
 	}
 
 
@@ -483,7 +483,7 @@ private class PrintVisitor(
 			if (index > 0)
 				writeRaw(", ")
 
-			writeAst(argument)
+			writeNode(argument)
 		}
 		writeRaw(")")
 	}
@@ -501,7 +501,7 @@ private class PrintVisitor(
 				if (index > 0)
 					writeRaw(", ")
 
-				writeAst(definition)
+				writeNode(definition)
 			}
 		}
 		else {
@@ -516,7 +516,7 @@ private class PrintVisitor(
 				}
 
 				writeLinebreak()
-				writeAst(definition)
+				writeNode(definition)
 			}
 			writeLinebreak()
 		}
@@ -541,7 +541,7 @@ private class PrintVisitor(
 
 		directives.forEach { directive ->
 			writeRaw(" ")
-			writeAst(directive)
+			writeNode(directive)
 		}
 	}
 
@@ -561,7 +561,7 @@ private class PrintVisitor(
 						writeLinebreak()
 				}
 
-				writeAst(definition)
+				writeNode(definition)
 				writeLinebreak()
 			}
 		}
@@ -585,7 +585,7 @@ private class PrintVisitor(
 						writeLinebreak()
 				}
 
-				writeAst(definition)
+				writeNode(definition)
 				writeLinebreak()
 			}
 		}
@@ -601,7 +601,7 @@ private class PrintVisitor(
 			if (index > 0)
 				writeRaw(" & ")
 
-			writeAst(type)
+			writeNode(type)
 		}
 	}
 
@@ -623,7 +623,7 @@ private class PrintVisitor(
 						writeLinebreak()
 				}
 
-				writeAst(definition)
+				writeNode(definition)
 				writeLinebreak()
 			}
 		}
@@ -636,7 +636,7 @@ private class PrintVisitor(
 
 		writeBlock {
 			definitions.forEach { definition ->
-				writeAst(definition)
+				writeNode(definition)
 				writeLinebreak()
 			}
 		}
@@ -653,7 +653,7 @@ private class PrintVisitor(
 			if (index > 0)
 				writeRaw(" | ")
 
-			writeAst(type.nameNode)
+			writeNode(type.nameNode)
 		}
 	}
 
@@ -667,7 +667,7 @@ private class PrintVisitor(
 			if (index > 0)
 				writeRaw(", ")
 
-			writeAst(definition)
+			writeNode(definition)
 		}
 		writeRaw(")")
 	}

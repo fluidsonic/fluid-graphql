@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 internal abstract class ValidationRule : Visitor.Hierarchical<Unit, ValidationContext>() {
 
-	override fun onAny(node: GAst, data: ValidationContext, visit: Visit) =
+	override fun onAny(node: GNode, data: ValidationContext, visit: Visit) =
 		Unit
 
 

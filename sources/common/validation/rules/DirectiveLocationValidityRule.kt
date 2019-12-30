@@ -4,7 +4,7 @@ package io.fluidsonic.graphql
 internal object DirectiveLocationValidityRule : ValidationRule.Singleton() {
 
 	override fun onDirective(directive: GDirective, data: ValidationContext, visit: Visit) {
-		val location = data.parentNode?.let { GDirectiveLocation.forAstNode(it) }
+		val location = data.parentNode?.let { GDirectiveLocation.forNode(it) }
 			?: return // Unknown location.
 
 		val definition = data.relatedDirectiveDefinition

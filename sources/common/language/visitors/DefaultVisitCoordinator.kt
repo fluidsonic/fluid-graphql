@@ -5,13 +5,13 @@ private class DefaultVisitCoordinator<Result, in Data>(
 	private val visitor: Visitor<Result, Data>
 ) : VisitCoordinator<Result, Data> {
 
-	override fun visit(node: GAst, data: Data) =
+	override fun visit(node: GNode, data: Data) =
 		DefaultVisit(node = node, data = data, visitor = visitor).visit()
 }
 
 
 private class DefaultVisit<Result, Data>(
-	node: GAst,
+	node: GNode,
 	private val data: Data,
 	private val visitor: Visitor<Result, Data>
 ) : Visit {
@@ -38,7 +38,7 @@ private class DefaultVisit<Result, Data>(
 	}
 
 
-	private fun dispatchVisit(node: GAst, data: Data) {
+	private fun dispatchVisit(node: GNode, data: Data) {
 		if (isAborting)
 			return
 

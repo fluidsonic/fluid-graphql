@@ -3,7 +3,7 @@ package tests
 import io.fluidsonic.graphql.*
 
 
-fun <T : GAst> ast(configure: AstBuilder.() -> T) =
+fun <T : GNode> ast(configure: AstBuilder.() -> T) =
 	AstBuilder.run(configure)
 
 

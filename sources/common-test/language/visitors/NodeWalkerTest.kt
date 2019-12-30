@@ -164,7 +164,7 @@ class NodeWalkerTest {
 //	}
 
 
-	private fun NodeWalker.assertAscend(toParent: GAst?, toChild: GAst, checkEndOfChildren: Boolean = true) {
+	private fun NodeWalker.assertAscend(toParent: GNode?, toChild: GNode, checkEndOfChildren: Boolean = true) {
 		if (checkEndOfChildren) {
 			assertNull(nextChild(), message = "walker.nextChild()")
 			assertNull(this.child, message = "walker.child")
@@ -177,14 +177,14 @@ class NodeWalkerTest {
 	}
 
 
-	private fun NodeWalker.assertDescend(toChild: GAst) {
+	private fun NodeWalker.assertDescend(toChild: GNode) {
 		assertTrue(descend(), message = "walker.descend()")
 		assertNull(this.child, message = "walker.child")
 		assertSame(expected = this.parent, actual = toChild, message = "walker.parent")
 	}
 
 
-	private fun NodeWalker.assertNextChild(parent: GAst, child: GAst?) {
+	private fun NodeWalker.assertNextChild(parent: GNode, child: GNode?) {
 		assertSame(expected = child, actual = nextChild(), message = "walker.nextChild()")
 		assertSame(expected = parent, actual = this.parent, message = "walker.parent")
 		assertSame(expected = child, actual = this.child, message = "walker.child")

@@ -6,12 +6,12 @@ import io.fluidsonic.graphql.*
 internal class StackCollectingVisitor(
 	private val suffix: String = "",
 	val target: Target = Target(),
-	val skipsChildrenInNode: (node: GAst) -> Boolean = { false },
-	val abortsInNode: (node: GAst) -> Boolean = { false }
+	val skipsChildrenInNode: (node: GNode) -> Boolean = { false },
+	val abortsInNode: (node: GNode) -> Boolean = { false }
 
 ) : Visitor.Typed<Unit, StackCollectingVisitor.Data>() {
 
-	private fun on(node: GAst, name: String, data: Data, visit: Visit) {
+	private fun on(node: GNode, name: String, data: Data, visit: Visit) {
 		target.currentStack += "$name$suffix($data)"
 		target.stacks += target.currentStack.toList()
 
@@ -64,7 +64,7 @@ internal class StackCollectingVisitor(
 	override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Data, visit: Visit) = on(definition, "SchemaExtensionDefinition", data, visit)
 	override fun onSelectionSet(set: GSelectionSet, data: Data, visit: Visit) = on(set, "SelectionSet", data, visit)
 	override fun onStringValue(value: GStringValue, data: Data, visit: Visit) = on(value, "StringValue", data, visit)
-	override fun onSyntheticNode(node: GAst, data: Data, visit: Visit) = on(node, "SyntheticNode", data, visit)
+	override fun onSyntheticNode(node: GNode, data: Data, visit: Visit) = on(node, "SyntheticNode", data, visit)
 	override fun onUnionType(type: GUnionType, data: Data, visit: Visit) = on(type, "UnionType", data, visit)
 	override fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit) = on(extension, "UnionTypeExtension", data, visit)
 	override fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit) = on(definition, "VariableDefinition", data, visit)

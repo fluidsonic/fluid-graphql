@@ -7,7 +7,7 @@ private class ChainingVisitor<out Result, IntermediateResult, in Data>(
 ) : Visitor<Result, Data>() {
 
 	// FIXME won't work as children will recursively call this too
-	override fun onNode(node: GAst, data: Data, visit: Visit) =
+	override fun onNode(node: GNode, data: Data, visit: Visit) =
 		nextCoordinator.visit(node = node, data = current.onNode(node, data = data, visit = visit))
 }
 

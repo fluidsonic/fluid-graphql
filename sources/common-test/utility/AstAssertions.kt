@@ -12,31 +12,31 @@ fun assertAst(actual: String) =
 
 // Note that "start .. end" origin notations use an exclusive end rather than an inclusive for sake of readability
 @Suppress("NAME_SHADOWING")
-fun assertAst(actual: String, expected: AstBuilder.() -> GAst) {
+fun assertAst(actual: String, expected: AstBuilder.() -> GNode) {
 	val expected = ast(expected)
 	val actual = GDocument.parse(makeSource(actual.trimMargin()))
 
 	assertTrue(
-		actual = actual.equalsAst(expected, includingOrigin = true),
+		actual = actual.equalsNode(expected, includingOrigin = true),
 		message = "Expected <$expected>, actual <$actual>."
 	)
 }
 
 
-inline fun <T : GAst> List<T>.assertMany(count: Int, block: List<T>.() -> Unit) {
+inline fun <T : GNode> List<T>.assertMany(count: Int, block: List<T>.() -> Unit) {
 	assertEquals(expected = count, actual = size)
 
 	block()
 }
 
 
-inline fun <T : GAst> List<T>.assertOne(block: T.() -> Unit) =
+inline fun <T : GNode> List<T>.assertOne(block: T.() -> Unit) =
 	assertMany(1) {
 		single().apply(block)
 	}
 
 
-inline fun <reified T : GAst> GAst.assertClass(block: T.() -> Unit) {
+inline fun <reified T : GNode> GNode.assertClass(block: T.() -> Unit) {
 	assertTrue(this is T, "Expected '$this' to be of ${T::class}")
 
 	block(this)
@@ -81,7 +81,7 @@ private fun makeSource(content: String) =
 
 ////////////
 
-fun GAst.assertAt(range: IntRange) {
+fun GNode.assertAt(range: IntRange) {
 	val origin = origin
 
 	assertNotNull(origin) { ".origin" }
@@ -93,14 +93,14 @@ fun GDefinition.asOperation() =
 	this as GOperationDefinition
 
 
-inline fun <T : GAst> T?.assert(block: T.() -> Unit) {
+inline fun <T : GNode> T?.assert(block: T.() -> Unit) {
 	assertNotNull(this)
 
 	block()
 }
 
 
-inline fun <reified T : GAst> GAst?.assertOf(block: T.() -> Unit) {
+inline fun <reified T : GNode> GNode?.assertOf(block: T.() -> Unit) {
 	assertNotNull(this)
 	assertTrue { this is T }
 
@@ -108,7 +108,7 @@ inline fun <reified T : GAst> GAst?.assertOf(block: T.() -> Unit) {
 }
 
 
-inline fun <reified T : GAst> List<*>.assertOneOf(block: T.() -> Unit) {
+inline fun <reified T : GNode> List<*>.assertOneOf(block: T.() -> Unit) {
 	assertEquals(expected = 1, actual = size)
 
 	val single = single()

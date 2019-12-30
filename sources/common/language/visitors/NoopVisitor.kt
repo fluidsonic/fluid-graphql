@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 private object NoopVisitor : Visitor<Unit, Any?>() {
 
-	override fun onNode(node: GAst, data: Any?, visit: Visit) =
+	override fun onNode(node: GNode, data: Any?, visit: Visit) =
 		Unit
 }
 

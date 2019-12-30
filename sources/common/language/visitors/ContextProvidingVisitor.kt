@@ -5,7 +5,7 @@ private class ContextProvidingVisitor<out Result, in Context : VisitorContext>(
 	private val next: Visitor<Result, Context>
 ) : Visitor<Result, Context>() {
 
-	override fun onNode(node: GAst, data: Context, visit: Visit) =
+	override fun onNode(node: GNode, data: Context, visit: Visit) =
 		data.with(node) {
 			next.onNode(node = node, data = data, visit = visit)
 		}

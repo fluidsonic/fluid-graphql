@@ -6,9 +6,9 @@ internal open class VisitorContext(
 	val schema: GSchema
 ) {
 
-	private var visitingNode: GAst? = null
+	private var visitingNode: GNode? = null
 
-	var parentNode: GAst? = null
+	var parentNode: GNode? = null
 		private set
 
 	var relatedArgumentDefinition: GArgumentDefinition? = null
@@ -48,7 +48,7 @@ internal open class VisitorContext(
 		private set
 
 
-	internal inline fun <Result> with(node: GAst, block: () -> Result): Result {
+	internal inline fun <Result> with(node: GNode, block: () -> Result): Result {
 		val _parentNode = parentNode
 		parentNode = visitingNode
 

@@ -20,7 +20,7 @@ internal class ValidationContext(
 
 	fun reportError(
 		message: String,
-		nodes: List<GAst> = emptyList()
+		nodes: List<GNode> = emptyList()
 	) =
 		reportError(GError(
 			message = message,

@@ -3,14 +3,14 @@ package io.fluidsonic.graphql
 
 abstract class Visitor<out Result, in Data> {
 
-	abstract fun onNode(node: GAst, data: Data, visit: Visit): Result
+	abstract fun onNode(node: GNode, data: Data, visit: Visit): Result
 
 
 	companion object {
 
 		fun <Result> ofResult(result: Result) = object : Visitor<Result, Any?>() {
 
-			override fun onNode(node: GAst, data: Any?, visit: Visit) =
+			override fun onNode(node: GNode, data: Any?, visit: Visit) =
 				result
 		}
 	}
@@ -18,7 +18,7 @@ abstract class Visitor<out Result, in Data> {
 
 	abstract class Hierarchical<out Result, in Data> : Typed<Result, Data>() {
 
-		protected abstract fun onAny(node: GAst, data: Data, visit: Visit): Result
+		protected abstract fun onAny(node: GNode, data: Data, visit: Visit): Result
 
 		protected open fun onAbstractType(type: GAbstractType, data: Data, visit: Visit) = onCompositeType(type, data, visit)
 		protected open fun onCompositeType(type: GCompositeType, data: Data, visit: Visit) = onNamedType(type, data, visit)
@@ -73,7 +73,7 @@ abstract class Visitor<out Result, in Data> {
 		override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Data, visit: Visit) = onTypeSystemExtension(definition, data, visit)
 		override fun onSelectionSet(set: GSelectionSet, data: Data, visit: Visit) = onAny(set, data, visit)
 		override fun onStringValue(value: GStringValue, data: Data, visit: Visit) = onValue(value, data, visit)
-		override fun onSyntheticNode(node: GAst, data: Data, visit: Visit) = onAny(node, data, visit)
+		override fun onSyntheticNode(node: GNode, data: Data, visit: Visit) = onAny(node, data, visit)
 		override fun onUnionType(type: GUnionType, data: Data, visit: Visit) = onAbstractType(type, data, visit)
 		override fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
 		override fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
@@ -82,7 +82,7 @@ abstract class Visitor<out Result, in Data> {
 
 		abstract class WithoutData<out Result> : Hierarchical<Result, Nothing?>() {
 
-			protected abstract fun onAny(node: GAst, visit: Visit): Result
+			protected abstract fun onAny(node: GNode, visit: Visit): Result
 
 			protected open fun onAbstractType(type: GAbstractType, visit: Visit) = onCompositeType(type, visit)
 			protected open fun onArgument(argument: GArgument, visit: Visit) = onAny(argument, visit)
@@ -130,7 +130,7 @@ abstract class Visitor<out Result, in Data> {
 			protected open fun onSelection(selection: GSelection, visit: Visit) = onAny(selection, visit)
 			protected open fun onSelectionSet(set: GSelectionSet, visit: Visit) = onAny(set, visit)
 			protected open fun onStringValue(value: GStringValue, visit: Visit) = onValue(value, visit)
-			protected open fun onSyntheticNode(node: GAst, visit: Visit) = onAny(node, visit)
+			protected open fun onSyntheticNode(node: GNode, visit: Visit) = onAny(node, visit)
 			protected open fun onType(type: GType, visit: Visit) = onTypeSystemDefinition(type, visit)
 			protected open fun onTypeExtension(extension: GTypeExtension, visit: Visit) = onTypeSystemExtension(extension, visit)
 			protected open fun onTypeRef(ref: GTypeRef, visit: Visit) = onAny(ref, visit)
@@ -146,7 +146,7 @@ abstract class Visitor<out Result, in Data> {
 			final override fun onAbstractType(type: GAbstractType, data: Nothing?, visit: Visit) = onCompositeType(type, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onAny(node: GAst, data: Nothing?, visit: Visit) = onAny(node, visit)
+			final override fun onAny(node: GNode, data: Nothing?, visit: Visit) = onAny(node, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onArgument(argument: GArgument, data: Nothing?, visit: Visit) = onArgument(argument, visit)
@@ -284,7 +284,7 @@ abstract class Visitor<out Result, in Data> {
 			final override fun onStringValue(value: GStringValue, data: Nothing?, visit: Visit) = onStringValue(value, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onSyntheticNode(node: GAst, data: Nothing?, visit: Visit) = onSyntheticNode(node, visit)
+			final override fun onSyntheticNode(node: GNode, data: Nothing?, visit: Visit) = onSyntheticNode(node, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onType(type: GType, data: Nothing?, visit: Visit) = onTypeSystemDefinition(type, visit)
@@ -322,7 +322,7 @@ abstract class Visitor<out Result, in Data> {
 	abstract class Typed<out Result, in Data> : Visitor<Result, Data>() {
 
 		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun onNode(node: GAst, data: Data, visit: Visit) =
+		final override fun onNode(node: GNode, data: Data, visit: Visit) =
 			when (node) {
 				is GArgument -> onArgument(node, data, visit)
 				is GArgumentDefinition -> onArgumentDefinition(node, data, visit)
@@ -411,7 +411,7 @@ abstract class Visitor<out Result, in Data> {
 		protected abstract fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Data, visit: Visit): Result
 		protected abstract fun onSelectionSet(set: GSelectionSet, data: Data, visit: Visit): Result
 		protected abstract fun onStringValue(value: GStringValue, data: Data, visit: Visit): Result
-		protected abstract fun onSyntheticNode(node: GAst, data: Data, visit: Visit): Result
+		protected abstract fun onSyntheticNode(node: GNode, data: Data, visit: Visit): Result
 		protected abstract fun onUnionType(type: GUnionType, data: Data, visit: Visit): Result
 		protected abstract fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit): Result
 		protected abstract fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit): Result
@@ -459,7 +459,7 @@ abstract class Visitor<out Result, in Data> {
 			protected abstract fun onSchemaExtensionDefinition(definition: GSchemaExtension, visit: Visit): Result
 			protected abstract fun onSelectionSet(set: GSelectionSet, visit: Visit): Result
 			protected abstract fun onStringValue(value: GStringValue, visit: Visit): Result
-			protected abstract fun onSyntheticNode(node: GAst, visit: Visit): Result
+			protected abstract fun onSyntheticNode(node: GNode, visit: Visit): Result
 			protected abstract fun onUnionType(type: GUnionType, visit: Visit): Result
 			protected abstract fun onUnionTypeExtension(extension: GUnionTypeExtension, visit: Visit): Result
 			protected abstract fun onVariableDefinition(definition: GVariableDefinition, visit: Visit): Result
@@ -583,7 +583,7 @@ abstract class Visitor<out Result, in Data> {
 			final override fun onStringValue(value: GStringValue, data: Nothing?, visit: Visit) = onStringValue(value, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onSyntheticNode(node: GAst, data: Nothing?, visit: Visit) = onSyntheticNode(node, visit)
+			final override fun onSyntheticNode(node: GNode, data: Nothing?, visit: Visit) = onSyntheticNode(node, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onUnionType(type: GUnionType, data: Nothing?, visit: Visit) = onUnionType(type, visit)
@@ -602,11 +602,11 @@ abstract class Visitor<out Result, in Data> {
 
 	abstract class WithoutData<out Result> : Visitor<Result, Nothing?>() {
 
-		abstract fun onNode(node: GAst, visit: Visit): Result
+		abstract fun onNode(node: GNode, visit: Visit): Result
 
 
 		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun onNode(node: GAst, data: Nothing?, visit: Visit) =
+		final override fun onNode(node: GNode, data: Nothing?, visit: Visit) =
 			onNode(node, visit)
 	}
 
@@ -616,20 +616,20 @@ abstract class Visitor<out Result, in Data> {
 }
 
 
-internal fun <Result> GAst.accept(visitor: Visitor<Result, Nothing?>) =
+internal fun <Result> GNode.accept(visitor: Visitor<Result, Nothing?>) =
 	accept(visitor = visitor, data = null)
 
 
-internal fun <Result> GAst.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>) =
+internal fun <Result> GNode.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>) =
 	accept(visitCoordinator = visitCoordinator, data = null)
 
 
-internal fun <Result, Data> GAst.accept(
+internal fun <Result, Data> GNode.accept(
 	visitor: Visitor<Result, Data>,
 	data: Data
 ) =
 	accept(visitCoordinator = VisitCoordinator.default(visitor), data = data)
 
 
-internal fun <Result, Data> GAst.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data) =
+internal fun <Result, Data> GNode.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data) =
 	visitCoordinator.visit(node = this, data = data)
