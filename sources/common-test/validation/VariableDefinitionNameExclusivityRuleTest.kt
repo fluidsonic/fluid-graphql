@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class VariableDefinitionNameExclusivityRuleTest : ValidationRule {
+class VariableDefinitionNameExclusivityRuleTest {
 
 	@Test
 	fun `accepts unique variable names`() {

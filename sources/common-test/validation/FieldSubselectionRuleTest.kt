@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FieldSubselectionRuleTest : ValidationRule {
+class FieldSubselectionRuleTest {
 
 	@Test
 	fun `accepts leaf fields without subselection`() {

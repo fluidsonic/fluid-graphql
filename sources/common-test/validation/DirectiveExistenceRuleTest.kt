@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class DirectiveExistenceRuleTest : ValidationRule {
+class DirectiveExistenceRuleTest {
 
 	@Test
 	fun `accepts directive that exist`() {

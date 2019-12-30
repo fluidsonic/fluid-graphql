@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class ArgumentRequirementRuleTest : ValidationRule {
+class ArgumentRequirementRuleTest {
 
 	@Test
 	fun `accepts absence of optional arguments`() {

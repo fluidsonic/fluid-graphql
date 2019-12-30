@@ -1,20 +1,24 @@
 package io.fluidsonic.graphql
 
 
-private class ChainingVisitor<out Result, IntermediateResult, Data>(
-	private val first: Visitor<IntermediateResult, Data>,
-	private val second: Visitor<Result, IntermediateResult>
-) : CustomizedVisitor<Result, Data>() {
+private class ChainingVisitor<out Result, IntermediateResult, in Data>(
+	private val current: Visitor<IntermediateResult, Data>,
+	private val nextCoordinator: VisitCoordinator<Result, IntermediateResult>
+) : Visitor<Result, Data>() {
 
-	override fun dispatchVisit(node: GAst, data: Data, coordination: VisitCoordination<Data>) =
-		node.accept(second, data = node.accept(first, data = data))
+	// FIXME won't work as children will recursively call this too
+	override fun onNode(node: GAst, data: Data, visit: Visit) =
+		nextCoordinator.visit(node = node, data = current.onNode(node, data = data, visit = visit))
 }
 
 
-@Suppress("UNCHECKED_CAST")
-internal fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(next: Visitor<Result, IntermediateResult>): Visitor<Result, Data> =
-	when {
-		this is Visitor.Identity<*> -> next as Visitor<Result, Data>  // Data === IntermediateResult
-		next is Visitor.Identity<*> -> this as Visitor<Result, Data>  // IntermediateResult === Result
-		else -> ChainingVisitor(first = this, second = next)
-	}
+internal fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(
+	next: Visitor<Result, IntermediateResult>
+): Visitor<Result, Data> =
+	ChainingVisitor(current = this, nextCoordinator = VisitCoordinator.default(next))
+
+
+internal fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(
+	nextCoordinator: VisitCoordinator<Result, IntermediateResult>
+): Visitor<Result, Data> =
+	ChainingVisitor(current = this, nextCoordinator = nextCoordinator)

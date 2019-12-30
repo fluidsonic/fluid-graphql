@@ -2,13 +2,13 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Input-Object-Required-Fields
-internal object ObjectFieldRequirementRule : ValidationRule {
+internal object ObjectFieldRequirementRule : ValidationRule.Singleton() {
 
-	override fun validateValue(value: GValue, context: ValidationContext) {
+	override fun onValue(value: GValue, data: ValidationContext, visit: Visit) {
 		if (value !is GObjectValue)
 			return // Irrelevant.
 
-		val type = context.relatedType as? GInputObjectType
+		val type = data.relatedType as? GInputObjectType
 			?: return // Cannot validate unknown or incorrect type.
 
 		val missingArguments = type.argumentDefinitions
@@ -19,7 +19,7 @@ internal object ObjectFieldRequirementRule : ValidationRule {
 			if (missingArguments.size == 1) "field '${missingArguments.first().name}'"
 			else "fields '${missingArguments.joinToString(separator = "', '", lastSeparator = "' and '", transform = { it.name })}'"
 
-		context.reportError(
+		data.reportError(
 			message = "Value for Input type '${type.name}' is missing required $missingArgumentsText.",
 			nodes = listOf(value) + missingArguments.map { it.nameNode }
 		)

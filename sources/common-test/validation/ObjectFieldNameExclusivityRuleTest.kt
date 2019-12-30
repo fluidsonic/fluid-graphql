@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class ObjectFieldNameExclusivityRuleTest : ValidationRule {
+class ObjectFieldNameExclusivityRuleTest {
 
 	@Test
 	fun `accepts unique object field names`() {

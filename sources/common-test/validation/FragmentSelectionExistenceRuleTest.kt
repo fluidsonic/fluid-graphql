@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentSelectionExistenceRuleTest : ValidationRule {
+class FragmentSelectionExistenceRuleTest {
 
 	@Test
 	fun `accepts selections of existing fragments`() {

@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class AnonymousOperationExclusivityRuleTest : ValidationRule {
+class AnonymousOperationExclusivityRuleTest {
 
 	@Test
 	fun `accepts zero operations`() {

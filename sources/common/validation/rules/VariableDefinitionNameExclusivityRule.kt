@@ -2,9 +2,9 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-Name-Uniqueness
-internal object VariableDefinitionNameExclusivityRule : ValidationRule {
+internal object VariableDefinitionNameExclusivityRule : ValidationRule.Singleton() {
 
-	override fun validateFragmentDefinition(definition: GFragmentDefinition, context: ValidationContext) {
+	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {
 		definition.variableDefinitions
 			.groupBy { it.name }
 			.filterNot { (_, variableDefinitions) ->
@@ -12,7 +12,7 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule {
 				variableDefinitions.size == 1
 			}
 			.forEach { (name, variableDefinitions) ->
-				context.reportError(
+				data.reportError(
 					message = "Fragment '${definition.name}' must not contain multiple variables with the same name '$$name'.",
 					nodes = variableDefinitions.map { it.nameNode }
 				)
@@ -20,7 +20,7 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule {
 	}
 
 
-	override fun validateOperationDefinition(definition: GOperationDefinition, context: ValidationContext) {
+	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		definition.variableDefinitions
 			.groupBy { it.name }
 			.filterNot { (_, variableDefinitions) ->
@@ -30,7 +30,7 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule {
 			.forEach { (name, variableDefinitions) ->
 				val operationName = definition.name?.let { " '$it'" } ?: ""
 
-				context.reportError(
+				data.reportError(
 					message = "Operation$operationName must not contain multiple variables with the same name '$$name'.",
 					nodes = variableDefinitions.map { it.nameNode }
 				)

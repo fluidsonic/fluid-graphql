@@ -2,19 +2,19 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-Name-Uniqueness
-internal class FragmentCycleDetectionRule : ValidationRule {
+internal class FragmentCycleDetectionRule : ValidationRule() {
 
 	private val path: MutableList<GFragmentSelection> = mutableListOf()
 	private val pathIndexByName: MutableMap<String, Int> = mutableMapOf()
 	private val visitedFragments: MutableSet<String> = mutableSetOf()
 
 
-	override fun validateFragmentDefinition(definition: GFragmentDefinition, context: ValidationContext) {
-		reportCycles(context = context, definition = definition)
+	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {
+		reportCycles(data = data, definition = definition)
 	}
 
 
-	private fun reportCycles(context: ValidationContext, definition: GFragmentDefinition) {
+	private fun reportCycles(data: ValidationContext, definition: GFragmentDefinition) {
 		if (!visitedFragments.add(definition.name))
 			return
 
@@ -28,9 +28,9 @@ internal class FragmentCycleDetectionRule : ValidationRule {
 
 			val cycleIndex = pathIndexByName[child.name]
 			if (cycleIndex == null) {
-				val childDefinition = context.document.fragment(child.name)
+				val childDefinition = data.document.fragment(child.name)
 				if (childDefinition !== null)
-					reportCycles(context = context, definition = childDefinition)
+					reportCycles(data = data, definition = childDefinition)
 			}
 			else {
 				val cyclePath = path.drop(cycleIndex).map { it.nameNode }
@@ -41,7 +41,7 @@ internal class FragmentCycleDetectionRule : ValidationRule {
 					?.let { " through '$it'" }
 					.orEmpty()
 
-				context.reportError(
+				data.reportError(
 					message = "Fragment '${child.name}' cannot recursively reference itself$cycleText.",
 					nodes = cyclePath
 				)
@@ -64,4 +64,7 @@ internal class FragmentCycleDetectionRule : ValidationRule {
 
 		return target
 	}
+
+
+	companion object : Factory(::FragmentCycleDetectionRule)
 }

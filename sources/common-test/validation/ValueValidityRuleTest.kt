@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class ValueValidityRuleTest : ValidationRule {
+class ValueValidityRuleTest {
 
 	@Test
 	fun `accepts values of correct type in document`() {

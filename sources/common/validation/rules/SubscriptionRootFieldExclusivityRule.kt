@@ -2,15 +2,15 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Single-root-field
-internal object SubscriptionRootFieldExclusivityRule : ValidationRule {
+internal object SubscriptionRootFieldExclusivityRule : ValidationRule.Singleton() {
 
-	override fun validateOperationDefinition(definition: GOperationDefinition, context: ValidationContext) {
+	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		if (definition.type != GOperationType.subscription)
 			return
 
 		// FIXME
 //		val fieldByResponseName: Map<String, List<GFieldSelection>> = collectFields(
-//			context.schema.subscriptionType, // FIXME check
+//			data.schema.subscriptionType, // FIXME check
 //			selectionSet,
 //			emptyMap()
 //		)
@@ -18,7 +18,7 @@ internal object SubscriptionRootFieldExclusivityRule : ValidationRule {
 //		if (fieldByResponseName.size != 1) {
 //			val name = definition.name
 //
-//			context.reportError(
+//			data.reportError(
 //				message = (
 //					if (name != null) "Subscription '$name' must select exactly one top-level field."
 //					else "Anonymous Subscription must select exactly one top-level field."),

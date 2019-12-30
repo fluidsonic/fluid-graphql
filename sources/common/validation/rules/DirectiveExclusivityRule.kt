@@ -2,16 +2,16 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Directives-Are-Unique-Per-Location
-internal object DirectiveExclusivityRule : ValidationRule {
+internal object DirectiveExclusivityRule : ValidationRule.Singleton() {
 
-	override fun validateNode(node: GAst, context: ValidationContext) {
+	override fun onAny(node: GAst, data: ValidationContext, visit: Visit) {
 		if (node !is GAst.WithDirectives)
 			return // No directives to check.
 
 		node.directives
 			.mapNotNull { directive ->
 				// Unknown.
-				context.schema.directiveDefinition(directive.name)?.let { directive to it }
+				data.schema.directiveDefinition(directive.name)?.let { directive to it }
 			}
 			.filterNot { (_, definition) ->
 				// Repeatable.
@@ -24,7 +24,7 @@ internal object DirectiveExclusivityRule : ValidationRule {
 				directives.size == 1
 			}
 			.forEach { (name, directives) ->
-				context.reportError(
+				data.reportError(
 					message = "Directive '@${name}' must not occur multiple times.",
 					nodes = directives.map { it.nameNode }
 				)

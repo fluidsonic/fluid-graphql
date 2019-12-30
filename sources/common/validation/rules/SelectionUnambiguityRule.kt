@@ -5,21 +5,21 @@ package io.fluidsonic.graphql
 // FIXME will give false-negatives if two fragments are in conflict, but are never possible at the same time
 //       Maybe if there is a conflict run a more thorough check that validates all possible object types independently.
 // https://graphql.github.io/graphql-spec/draft/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types
-internal object SelectionUnambiguityRule : ValidationRule {
+internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
-	override fun validateSelectionSet(set: GSelectionSet, context: ValidationContext) {
+	override fun onSelectionSet(set: GSelectionSet, data: ValidationContext, visit: Visit) {
 		// We only care about top-level selection sets in operations and fragment definitions.
 		// Nested selections will already be checked recursively through these.
-		if (context.relatedParentSelectionSet !== null)
+		if (data.relatedParentSelectionSet !== null)
 			return
 
 		// Cannot validate a selection for an unknown type.
-		val parentType = context.relatedParentType?.underlyingNamedType
+		val parentType = data.relatedParentType?.underlyingNamedType
 			?: return
 
 		findConflictsInSet(
 			set = set.selections.withParentType(parentType),
-			context = context
+			data = data
 		)
 	}
 
@@ -44,7 +44,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 	private fun findConflictsForResponseName(
 		responseName: String,
 		fields: List<ResolvedField>,
-		context: ValidationContext
+		data: ValidationContext
 	) {
 		val firstField = fields.first()
 
@@ -53,7 +53,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 				compatible && isPotentiallyCompatibleType(firstField.type, otherField.type)
 			}
 			if (!isPotentiallyCompatibleType)
-				return context.reportError(
+				return data.reportError(
 					message = "Field '$responseName' in '${firstField.parentType.name}' is selected in multiple locations but with incompatible types.",
 					nodes = fields.flatMap { listOf(it.selection.aliasNode ?: it.selection.nameNode, it.definition.type) }
 				)
@@ -92,7 +92,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 			}
 
 			if (incompatibleFields.isNotEmpty())
-				context.reportError(
+				data.reportError(
 					message = "Field '$responseName' in '${firstField.parentType.name}' is selected in multiple locations " +
 						"but selects different fields or with different arguments.",
 					nodes = (listOf(firstField) + incompatibleFields).flatMap { field ->
@@ -110,7 +110,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 							SelectionInfo(parentType = parentType, selection = selection)
 						}.orEmpty()
 					},
-					context = context
+					data = data
 				)
 		}
 		else {
@@ -122,7 +122,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 						SelectionInfo(parentType = parentType, selection = selection)
 					}.orEmpty()
 				},
-				context = context
+				data = data
 			)
 		}
 	}
@@ -130,15 +130,15 @@ internal object SelectionUnambiguityRule : ValidationRule {
 
 	private fun findConflictsInSet(
 		set: List<SelectionInfo>,
-		context: ValidationContext
+		data: ValidationContext
 	) {
-		val fieldsByResponseName = set.groupByResponseName(context = context)
+		val fieldsByResponseName = set.groupByResponseName(context = data)
 
 		for ((responseName, fields) in fieldsByResponseName)
 			findConflictsForResponseName(
 				responseName = responseName,
 				fields = fields,
-				context = context
+				data = data
 			)
 	}
 
@@ -147,16 +147,16 @@ internal object SelectionUnambiguityRule : ValidationRule {
 		parentType: GNamedType,
 		result: MutableMap<String, MutableList<ResolvedField>>,
 		visitedFragments: MutableSet<String>,
-		context: ValidationContext
+		data: ValidationContext
 	) {
 		when (this) {
 			is GFieldSelection -> {
 				// Cannot validate a selection of a nonexistent field.
-				val fieldDefinition = context.schema.getFieldDefinition(type = parentType, name = name)
+				val fieldDefinition = data.schema.getFieldDefinition(type = parentType, name = name)
 					?: return
 
 				// Cannot validate a selection of a field of an unknown type.
-				val fieldType = context.schema.resolveType(fieldDefinition.type)
+				val fieldType = data.schema.resolveType(fieldDefinition.type)
 					?: return
 
 				result.getOrPut(alias ?: name) { mutableListOf() } += ResolvedField(
@@ -169,10 +169,10 @@ internal object SelectionUnambiguityRule : ValidationRule {
 
 			is GFragmentSelection -> {
 				// Cannot validate a selection that refers to a nonexistent fragment.
-				val fragment = context.document.fragment(name) ?: return
+				val fragment = data.document.fragment(name) ?: return
 
 				// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
-				val fragmentType = context.schema.resolveType(fragment.typeCondition)
+				val fragmentType = data.schema.resolveType(fragment.typeCondition)
 					?.takeIf { it.isOutputType() }
 					?: return
 
@@ -181,14 +181,14 @@ internal object SelectionUnambiguityRule : ValidationRule {
 					.groupByResponseName(
 						result = result,
 						visitedFragments = visitedFragments,
-						context = context
+						context = data
 					)
 			}
 
 			is GInlineFragmentSelection -> {
 				val fragmentType = typeCondition?.let { typeCondition ->
 					// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
-					context.schema.resolveType(typeCondition)
+					data.schema.resolveType(typeCondition)
 						?.takeIf { it.isOutputType() }
 						?: return
 				} ?: parentType
@@ -198,7 +198,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 					.groupByResponseName(
 						result = result,
 						visitedFragments = visitedFragments,
-						context = context
+						context = data
 					)
 			}
 		}
@@ -255,7 +255,7 @@ internal object SelectionUnambiguityRule : ValidationRule {
 	) {
 		for ((parentType, selection) in this)
 			selection.groupByResponseName(
-				context = context,
+				data = context,
 				parentType = parentType,
 				result = result,
 				visitedFragments = visitedFragments

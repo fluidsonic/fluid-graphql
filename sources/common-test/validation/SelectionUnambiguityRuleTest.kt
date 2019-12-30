@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class SelectionUnambiguityRuleTest : ValidationRule {
+class SelectionUnambiguityRuleTest {
 
 	@Test
 	fun `accepts duplicate but identical name and alias selection`() {

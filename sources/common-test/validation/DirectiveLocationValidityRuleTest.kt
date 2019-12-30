@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class DirectiveLocationValidityRuleTest : ValidationRule {
+class DirectiveLocationValidityRuleTest {
 
 	@Test
 	fun `accepts directive in specified locations`() {

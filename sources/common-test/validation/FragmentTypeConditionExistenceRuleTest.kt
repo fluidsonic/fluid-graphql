@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentTypeConditionExistenceRuleTest : ValidationRule {
+class FragmentTypeConditionExistenceRuleTest {
 
 	@Test
 	fun `accepts inline fragment on existing type`() {

@@ -2,9 +2,9 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Lone-Anonymous-Operation
-internal object AnonymousOperationExclusivityRule : ValidationRule {
+internal object AnonymousOperationExclusivityRule : ValidationRule.Singleton() {
 
-	override fun validateDocument(document: GDocument, context: ValidationContext) {
+	override fun onDocument(document: GDocument, data: ValidationContext, visit: Visit) {
 		val operations = document.definitions.filterIsInstance<GOperationDefinition>()
 		if (operations.size <= 1)
 			return
@@ -13,7 +13,7 @@ internal object AnonymousOperationExclusivityRule : ValidationRule {
 		if (anonymousOperations.isEmpty())
 			return
 
-		context.reportError(
+		data.reportError(
 			message = "The document must not contain more than one operation if it contains an anonymous operation.",
 			nodes = anonymousOperations
 		)

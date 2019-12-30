@@ -4,12 +4,12 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentDefinitionUsageRuleTest : ValidationRule {
+class FragmentDefinitionUsageRuleTest {
 
 	@Test
 	fun `accepts fragments referenced by an operation`() {
 		assertValidationRule(
-			rule = FragmentDefinitionUsageRule(),
+			rule = FragmentDefinitionUsageRule,
 			errors = emptyList(),
 			document = """
 				|{
@@ -37,7 +37,7 @@ class FragmentDefinitionUsageRuleTest : ValidationRule {
 	@Test
 	fun `ignores recursive references`() {
 		assertValidationRule(
-			rule = FragmentDefinitionUsageRule(),
+			rule = FragmentDefinitionUsageRule,
 			errors = emptyList(),
 			document = """
 				|{
@@ -61,7 +61,7 @@ class FragmentDefinitionUsageRuleTest : ValidationRule {
 	@Test
 	fun `rejects unreferenced fragments`() {
 		assertValidationRule(
-			rule = FragmentDefinitionUsageRule(),
+			rule = FragmentDefinitionUsageRule,
 			errors = listOf(
 				"""
 					Fragment 'nameFragment' is not used by any operation.

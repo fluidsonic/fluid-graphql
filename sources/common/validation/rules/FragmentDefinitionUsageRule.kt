@@ -2,18 +2,20 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-Name-Uniqueness
-internal class FragmentDefinitionUsageRule : ValidationRule {
+internal class FragmentDefinitionUsageRule : ValidationRule() {
 
 	private val fragmentDefinitions = mutableListOf<GFragmentDefinition>()
 	private val operationDefinitions = mutableListOf<GOperationDefinition>()
 
 
-	override fun beforeTraversal(context: ValidationContext) {
+	override fun onDocument(document: GDocument, data: ValidationContext, visit: Visit) {
+		visit.visitChildren()
+
 		val referencedFragmentNames = mutableSetOf<String>()
 
 		for (operationDefinition in operationDefinitions)
 			collectReferencedFragmentNames(
-				document = context.document,
+				document = data.document,
 				set = operationDefinition.selectionSet,
 				target = referencedFragmentNames
 			)
@@ -24,7 +26,7 @@ internal class FragmentDefinitionUsageRule : ValidationRule {
 			.values
 			.map { it.first() }
 			.forEach { fragment ->
-				context.reportError(
+				data.reportError(
 					message = "Fragment '${fragment.name}' is not used by any operation.",
 					nodes = listOf(fragment.nameNode)
 				)
@@ -32,12 +34,12 @@ internal class FragmentDefinitionUsageRule : ValidationRule {
 	}
 
 
-	override fun validateFragmentDefinition(definition: GFragmentDefinition, context: ValidationContext) {
+	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {
 		fragmentDefinitions += definition
 	}
 
 
-	override fun validateOperationDefinition(definition: GOperationDefinition, context: ValidationContext) {
+	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		operationDefinitions += definition
 	}
 
@@ -76,4 +78,7 @@ internal class FragmentDefinitionUsageRule : ValidationRule {
 					)
 			}
 	}
+
+
+	companion object : Factory(::FragmentDefinitionUsageRule)
 }

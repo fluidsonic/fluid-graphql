@@ -1,101 +1,92 @@
 package io.fluidsonic.graphql
 
 
-internal interface Visit<out Result> {
+private class ParallelVisitor<Data>(
+	private val children: List<Visitor<Unit, Data>>
+) : Visitor<Unit, Data>() {
 
-	fun run(): Result
-
-
-	companion object
+	// FIXME We must use Visit to orchestrate node traversal rather than doing so by ourself in ParallelVisit.
+	override fun onNode(node: GAst, data: Data, visit: Visit) =
+		ParallelVisit(node = node, data = data, children = children).run()
+			.also { visit.skipChildren() }
 }
 
 
-internal interface VisitCoordination<in Data> {
-
-	var automaticallyVisitsChildren: Boolean
-	val isAborting: Boolean
-	val isSkippingChildren: Boolean
-
-	fun abort()
-	fun skipChildren()
-	fun visitChildren(): Boolean
-	fun visitChildren(data: Data): Boolean
-
-
-	companion object;
-
-
-	abstract class Wrapped<in Data, in TransformedData>(
-		protected val next: VisitCoordination<TransformedData>
-	) : VisitCoordination<Data> {
-
-		override var automaticallyVisitsChildren: Boolean
-			get() = next.automaticallyVisitsChildren
-			set(value) {
-				next.automaticallyVisitsChildren = value
-			}
-
-		override val isAborting get() = next.isAborting
-		override val isSkippingChildren get() = next.isSkippingChildren
-
-
-		override fun abort() =
-			next.abort()
-
-
-		override fun skipChildren() =
-			next.skipChildren()
-
-
-		override fun visitChildren() =
-			next.visitChildren()
-	}
-}
-
-
-private class ParallelVisitCoordination<Data>(
+private class ParallelVisit<in Data>(
 	node: GAst,
 	data: Data,
-	dispatchers: List<VisitDispatcher<Unit, Data>>
-) : Visit<Unit> {
+	children: List<Visitor<Unit, Data>>
+) {
 
 	init {
-		require(dispatchers.isNotEmpty()) { "'dispatchers' must not be empty." }
+		require(children.isNotEmpty()) { "'children' must not be empty." }
 	}
+
 
 	private var childIndex = 0
 	private var state = State.initial
 	private val walker = node.walk()
 
-	private val children = dispatchers.mapIndexed { index, dispatcher ->
-		DispatcherInfo(
+	private val children = children.mapIndexed { index, dispatcher ->
+		ChildVisit(
 			parent = this,
-			dispatcher = dispatcher,
+			visitor = dispatcher,
 			index = index,
 			data = data
 		)
 	}
 
 
-	val isAborting
+	private val isAborting
 		get() = state == State.aborted
 
 
-	private fun runDescendent() {
-		check(childIndex == children.size)
+	private fun onChildAbort() {
+		if (children.all { it.state === ChildVisit.State.aborted })
+			state = State.aborted
+		else
+			runNext()
+	}
 
-		println("$childIndex: runDescendent()")
 
-		if (walker.descend()) {
-			childIndex = 0
-			walker.nextChild()
+	private fun onChildSkipChildren() {
+		if (children.any { it.state !== ChildVisit.State.skippingChildren })
+			runNext()
+	}
 
-			runChildren()
 
-			walker.ascend()
+	private fun onChildVisitChildren() {
+		runNext()
+	}
+
+
+	fun run() {
+		println("INITIAL RUN")
+
+		state = State.visiting
+
+		try {
+			runNext()
+
+			state = State.completed
 		}
+		catch (e: Throwable) {
+			state = State.aborted
 
-		println("$childIndex: return from runDescendent()")
+			throw e
+		}
+	}
+
+
+	private fun runChild(node: GAst) {
+		println("$childIndex: runChild() { node: ${node::class} }")
+
+		val index = childIndex
+		childIndex += 1
+
+		children[index].dispatchVisit(node = node)
+
+		println("$childIndex: return from runChild() (from $index)")
 	}
 
 
@@ -119,19 +110,25 @@ private class ParallelVisitCoordination<Data>(
 	}
 
 
-	private fun runChild(node: GAst) {
-		println("$childIndex: runChild() { node: ${node::class} }")
+	private fun runDescendent() {
+		check(childIndex == children.size)
 
-		val index = childIndex
-		childIndex += 1
+		println("$childIndex: runDescendent()")
 
-		children[index].dispatchVisit(node = node)
+		if (walker.descend()) {
+			childIndex = 0
+			walker.nextChild()
 
-		println("$childIndex: return from runChild() (from $index)")
+			runChildren()
+
+			walker.ascend()
+		}
+
+		println("$childIndex: return from runDescendent()")
 	}
 
 
-	private fun next() {
+	private fun runNext() {
 		println("$childIndex: next()")
 
 		if (childIndex == children.size)
@@ -141,51 +138,17 @@ private class ParallelVisitCoordination<Data>(
 	}
 
 
-	private fun onChildAbort() {
-		if (children.all { it.state === DispatcherInfo.State.aborted })
-			state = State.aborted
-		else
-			next()
-	}
+	private class ChildVisit<in Data>(
+		private val parent: ParallelVisit<Data>,
+		private val visitor: Visitor<Unit, Data>,
+		private val index: Int,
+		private var data: Data,
+		state: State = State.initial
+	) : Visit {
 
+		var state = state
+			private set
 
-	private fun onChildSkipChildren() {
-		if (children.any { it.state !== DispatcherInfo.State.skippingChildren })
-			next()
-	}
-
-
-	private fun onChildVisitChildren() {
-		next()
-	}
-
-
-	override fun run() {
-		check(state == State.initial) { "A Visit cannot be run multiple times." }
-
-		state = State.visiting
-
-		try {
-			next()
-
-			state = State.completed
-		}
-		catch (e: Throwable) {
-			state = State.aborted
-
-			throw e
-		}
-	}
-
-
-	private class DispatcherInfo<Data>(
-		private val parent: ParallelVisitCoordination<Data>,
-		val dispatcher: VisitDispatcher<Unit, Data>,
-		val index: Int,
-		var data: Data,
-		override var automaticallyVisitsChildren: Boolean = true,
-		var state: State = State.initial
-	) : VisitCoordination<Data> {
 
 		override fun abort() {
 			println("${index}: abort() { state: $state }")
@@ -217,17 +180,17 @@ private class ParallelVisitCoordination<Data>(
 
 			val previousState = state
 
-			this.state = State.beforeVisitingChildren
+			state = State.beforeVisitingChildren
 
 			try {
-				dispatcher.dispatchVisit(node = node, data = data, coordination = this)
+				visitor.onNode(node, data = data, visit = this)
 
-				if (state === State.beforeVisitingChildren && automaticallyVisitsChildren)
+				if (state === State.beforeVisitingChildren)
 					visitChildren()
 			}
 			finally {
 				if (!isAborting)
-					this.state = previousState
+					state = previousState
 			}
 		}
 
@@ -268,13 +231,13 @@ private class ParallelVisitCoordination<Data>(
 			visitChildren(data = data)
 
 
-		override fun visitChildren(data: Data): Boolean {
+		private fun visitChildren(data: Data) {
 			println("${index}: visitChildren(data: $data) { state: $state }")
 
-			return when (state) {
+			when (state) {
 				State.aborted,
 				State.skippingChildren ->
-					false
+					Unit
 
 				State.afterVisitingChildren ->
 					error("Cannot call .visitChildren() multiple times for the same node.")
@@ -304,6 +267,11 @@ private class ParallelVisitCoordination<Data>(
 		}
 
 
+		@Suppress("UNCHECKED_CAST")
+		override fun __unsafeVisitChildren(data: Any?) =
+			visitChildren(data as Data)
+
+
 		enum class State {
 
 			aborted,
@@ -326,10 +294,8 @@ private class ParallelVisitCoordination<Data>(
 }
 
 
-// FIXME nonsense
 internal fun <Data> Iterable<Visitor<Unit, Data>>.parallelize(): Visitor<Unit, Data> =
-	ParallelVisitCoordination(
-		dispatchers = map(::VisitDispatcher),
-		node = node,
-		data = data
-	)
+	toList()
+		.ifEmpty { null }
+		?.let(::ParallelVisitor)
+		?: Visitor.noop()

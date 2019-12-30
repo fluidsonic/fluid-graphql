@@ -2,27 +2,27 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-Name-Uniqueness
-internal object FragmentTypeConditionExistenceRule : ValidationRule {
+internal object FragmentTypeConditionExistenceRule : ValidationRule.Singleton() {
 
-	override fun validateFragmentDefinition(definition: GFragmentDefinition, context: ValidationContext) {
-		if (context.schema.resolveType(definition.typeCondition) !== null)
+	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {
+		if (data.schema.resolveType(definition.typeCondition) !== null)
 			return // Type exists.
 
-		context.reportError(
+		data.reportError(
 			message = "A fragment must be specified on a type that exist in the schema.",
 			nodes = listOf(definition.typeCondition)
 		)
 	}
 
 
-	override fun validateInlineFragmentSelection(selection: GInlineFragmentSelection, context: ValidationContext) {
+	override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: ValidationContext, visit: Visit) {
 		val typeCondition = selection.typeCondition
 			?: return // Type condition is optional.
 
-		if (context.schema.resolveType(typeCondition) !== null)
+		if (data.schema.resolveType(typeCondition) !== null)
 			return // Type exists.
 
-		context.reportError(
+		data.reportError(
 			message = "A fragment spread must be specified on a type that exist in the schema.",
 			nodes = listOf(typeCondition)
 		)

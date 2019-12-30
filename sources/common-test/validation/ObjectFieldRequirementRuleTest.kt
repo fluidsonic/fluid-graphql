@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class ObjectFieldRequirementRuleTest : ValidationRule {
+class ObjectFieldRequirementRuleTest {
 
 	@Test
 	fun `accepts absence of optional fields`() {

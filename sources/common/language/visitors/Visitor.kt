@@ -1,850 +1,635 @@
 package io.fluidsonic.graphql
 
-import kotlin.jvm.*
 
+abstract class Visitor<out Result, in Data> {
 
-internal abstract class Visitor<out Result, Data>(
-	automaticallyVisitsChildren: Boolean = true
-) {
-
-	private var coordination: VisitCoordination<Data>? = null
-
-
-	protected fun abort() {
-		coordination?.abort()
-			?: error(".abort() can only be called from within a visited function.")
-	}
-
-
-	private var _automaticallyVisitsChildren = automaticallyVisitsChildren
-	protected var automaticallyVisitsChildren
-		get() = coordination?.automaticallyVisitsChildren ?: _automaticallyVisitsChildren
-		set(value) {
-			_automaticallyVisitsChildren = value
-			coordination?.automaticallyVisitsChildren = value
-		}
-
-
-	internal open fun dispatchVisit(node: GAst, data: Data, coordination: VisitCoordination<Data>): Result {
-		val isInitialDispatch: Boolean
-
-		when {
-			this.coordination === null -> {
-				isInitialDispatch = true
-
-				coordination.automaticallyVisitsChildren = _automaticallyVisitsChildren
-				this.coordination = coordination
-			}
-
-			coordination !== this.coordination ->
-				error(
-					"A visitor cannot be used multiple times concurrently.\n\n" +
-						"`dispatcher.dispatchVisit()` was called while visiting with a different coordination:\n\n" +
-						"Current: ${this.coordination}\n\n" +
-						"New: $coordination"
-				)
-
-			else ->
-				isInitialDispatch = false
-		}
-
-		return try {
-			when (node) {
-				is GArgument -> visitArgument(node, data)
-				is GBooleanType -> visitBooleanType(node, data)
-				is GBooleanValue -> visitBooleanValue(node, data)
-				is GCustomScalarType -> visitCustomScalarType(node, data)
-				is GDirective -> visitDirective(node, data)
-				is GDirectiveArgumentDefinition -> visitDirectiveArgumentDefinition(node, data)
-				is GDirectiveDefinition -> visitDirectiveDefinition(node, data)
-				is GDocument -> visitDocument(node, data)
-				is GEnumType -> visitEnumType(node, data)
-				is GEnumTypeExtension -> visitEnumTypeExtension(node, data)
-				is GEnumValue -> visitEnumValue(node, data)
-				is GEnumValueDefinition -> visitEnumValueDefinition(node, data)
-				is GFieldArgumentDefinition -> visitFieldArgumentDefinition(node, data)
-				is GFieldDefinition -> visitFieldDefinition(node, data)
-				is GFieldSelection -> visitFieldSelection(node, data)
-				is GFloatType -> visitFloatType(node, data)
-				is GFloatValue -> visitFloatValue(node, data)
-				is GFragmentDefinition -> visitFragmentDefinition(node, data)
-				is GFragmentSelection -> visitFragmentSelection(node, data)
-				is GIdType -> visitIdType(node, data)
-				is GInlineFragmentSelection -> visitInlineFragmentSelection(node, data)
-				is GInputObjectArgumentDefinition -> visitInputObjectArgumentDefinition(node, data)
-				is GInputObjectType -> visitInputObjectType(node, data)
-				is GInputObjectTypeExtension -> visitInputObjectTypeExtension(node, data)
-				is GIntType -> visitIntType(node, data)
-				is GIntValue -> visitIntValue(node, data)
-				is GInterfaceType -> visitInterfaceType(node, data)
-				is GInterfaceTypeExtension -> visitInterfaceTypeExtension(node, data)
-				is GListType -> visitSyntheticNode(node, data)
-				is GListTypeRef -> visitListTypeRef(node, data)
-				is GListValue -> visitListValue(node, data)
-				is GName -> visitName(node, data)
-				is GNamedTypeRef -> visitNamedTypeRef(node, data)
-				is GNonNullType -> visitSyntheticNode(node, data)
-				is GNonNullTypeRef -> visitNonNullTypeRef(node, data)
-				is GNullValue -> visitNullValue(node, data)
-				is GObjectType -> visitObjectType(node, data)
-				is GObjectTypeExtension -> visitObjectTypeExtension(node, data)
-				is GObjectValue -> visitObjectValue(node, data)
-				is GObjectValueField -> visitObjectValueField(node, data)
-				is GOperationDefinition -> visitOperationDefinition(node, data)
-				is GOperationTypeDefinition -> visitOperationTypeDefinition(node, data)
-				is GScalarTypeExtension -> visitScalarTypeExtension(node, data)
-				is GSchemaDefinition -> visitSchemaDefinition(node, data)
-				is GSchemaExtension -> visitSchemaExtensionDefinition(node, data)
-				is GSelectionSet -> visitSelectionSet(node, data)
-				is GStringType -> visitStringType(node, data)
-				is GStringValue -> visitStringValue(node, data)
-				is GUnionType -> visitUnionType(node, data)
-				is GUnionTypeExtension -> visitUnionTypeExtension(node, data)
-				is GVariableDefinition -> visitVariableDefinition(node, data)
-				is GVariableRef -> visitVariableRef(node, data)
-			}
-		}
-		finally {
-			if (isInitialDispatch)
-				this.coordination = null
-		}
-	}
-
-
-	protected val isAborting
-		get() = coordination?.isAborting ?: error(".isAborting can only be called from within a visited function.")
-
-
-	protected val isSkippingChildren
-		get() = coordination?.isSkippingChildren ?: error(".isSkippingChildren can only be called from within a visited function.")
-
-
-	protected fun skipChildren() {
-		coordination?.skipChildren()
-			?: error(".skipChildren() can only be called from within a visited function.")
-	}
-
-
-	protected fun visitChildren() {
-		coordination?.visitChildren()
-			?: error(".visitChildren() can only be called from within a visited function.")
-	}
-
-
-	protected fun visitChildren(data: Data) {
-		coordination?.visitChildren(data = data)
-			?: error(".visitChildren() can only be called from within a visited function.")
-	}
-
-
-	protected abstract fun visitArgument(argument: GArgument, data: Data): Result
-	protected abstract fun visitBooleanType(type: GBooleanType, data: Data): Result
-	protected abstract fun visitBooleanValue(value: GBooleanValue, data: Data): Result
-	protected abstract fun visitCustomScalarType(type: GCustomScalarType, data: Data): Result
-	protected abstract fun visitDirective(directive: GDirective, data: Data): Result
-	protected abstract fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition, data: Data): Result
-	protected abstract fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: Data): Result
-	protected abstract fun visitDocument(document: GDocument, data: Data): Result
-	protected abstract fun visitEnumType(type: GEnumType, data: Data): Result
-	protected abstract fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: Data): Result
-	protected abstract fun visitEnumValue(value: GEnumValue, data: Data): Result
-	protected abstract fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Data): Result
-	protected abstract fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition, data: Data): Result
-	protected abstract fun visitFieldDefinition(definition: GFieldDefinition, data: Data): Result
-	protected abstract fun visitFieldSelection(selection: GFieldSelection, data: Data): Result
-	protected abstract fun visitFloatType(type: GFloatType, data: Data): Result
-	protected abstract fun visitFloatValue(value: GFloatValue, data: Data): Result
-	protected abstract fun visitFragmentDefinition(definition: GFragmentDefinition, data: Data): Result
-	protected abstract fun visitFragmentSelection(selection: GFragmentSelection, data: Data): Result
-	protected abstract fun visitIdType(type: GIdType, data: Data): Result
-	protected abstract fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data): Result
-	protected abstract fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition, data: Data): Result
-	protected abstract fun visitInputObjectType(type: GInputObjectType, data: Data): Result
-	protected abstract fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data): Result
-	protected abstract fun visitIntType(type: GIntType, data: Data): Result
-	protected abstract fun visitIntValue(value: GIntValue, data: Data): Result
-	protected abstract fun visitInterfaceType(type: GInterfaceType, data: Data): Result
-	protected abstract fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data): Result
-	protected abstract fun visitListTypeRef(ref: GListTypeRef, data: Data): Result
-	protected abstract fun visitListValue(value: GListValue, data: Data): Result
-	protected abstract fun visitName(name: GName, data: Data): Result
-	protected abstract fun visitNamedTypeRef(ref: GNamedTypeRef, data: Data): Result
-	protected abstract fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: Data): Result
-	protected abstract fun visitNullValue(value: GNullValue, data: Data): Result
-	protected abstract fun visitObjectType(type: GObjectType, data: Data): Result
-	protected abstract fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: Data): Result
-	protected abstract fun visitObjectValue(value: GObjectValue, data: Data): Result
-	protected abstract fun visitObjectValueField(field: GObjectValueField, data: Data): Result
-	protected abstract fun visitOperationDefinition(definition: GOperationDefinition, data: Data): Result
-	protected abstract fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data): Result
-	protected abstract fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: Data): Result
-	protected abstract fun visitSchemaDefinition(definition: GSchemaDefinition, data: Data): Result
-	protected abstract fun visitSchemaExtensionDefinition(definition: GSchemaExtension, data: Data): Result
-	protected abstract fun visitSelectionSet(set: GSelectionSet, data: Data): Result
-	protected abstract fun visitStringType(type: GStringType, data: Data): Result
-	protected abstract fun visitStringValue(value: GStringValue, data: Data): Result
-	protected abstract fun visitSyntheticNode(node: GAst, data: Data): Result
-	protected abstract fun visitUnionType(type: GUnionType, data: Data): Result
-	protected abstract fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Data): Result
-	protected abstract fun visitVariableDefinition(definition: GVariableDefinition, data: Data): Result
-	protected abstract fun visitVariableRef(ref: GVariableRef, data: Data): Result
+	abstract fun onNode(node: GAst, data: Data, visit: Visit): Result
 
 
 	companion object {
 
-		@Suppress("UNCHECKED_CAST")
-		fun <Data> identity(): Visitor<Data, Data> =
-			Identity()
-	}
+		fun <Result> ofResult(result: Result) = object : Visitor<Result, Any?>() {
 
-
-	abstract class Hierarchical<out Result, Data> internal constructor(
-		descendsAutomatically: Boolean = true
-	) : Visitor<Result, Data>(
-		automaticallyVisitsChildren = descendsAutomatically
-	) {
-
-		protected abstract fun visitNode(node: GAst, data: Data): Result
-
-		protected open fun visitAbstractType(type: GAbstractType, data: Data) = visitCompositeType(type, data)
-		protected open fun visitArgumentDefinition(definition: GArgumentDefinition, data: Data) = visitNode(definition, data)
-		protected open fun visitCompositeType(type: GCompositeType, data: Data) = visitNamedType(type, data)
-		protected open fun visitDefinition(definition: GDefinition, data: Data) = visitNode(definition, data)
-		protected open fun visitExecutableDefinition(definition: GExecutableDefinition, data: Data) = visitDefinition(definition, data)
-		protected open fun visitLeafType(type: GLeafType, data: Data) = visitNamedType(type, data)
-		protected open fun visitNamedType(type: GNamedType, data: Data) = visitType(type, data)
-		protected open fun visitScalarType(type: GScalarType, data: Data) = visitNamedType(type, data)
-		protected open fun visitSelection(selection: GSelection, data: Data) = visitNode(selection, data)
-		protected open fun visitType(type: GType, data: Data) = visitTypeSystemDefinition(type, data)
-		protected open fun visitTypeExtension(extension: GTypeExtension, data: Data) = visitTypeSystemExtension(extension, data)
-		protected open fun visitTypeRef(ref: GTypeRef, data: Data) = visitNode(ref, data)
-		protected open fun visitTypeSystemDefinition(definition: GTypeSystemDefinition, data: Data) = visitDefinition(definition, data)
-		protected open fun visitTypeSystemExtension(extension: GTypeSystemExtension, data: Data) = visitDefinition(extension, data)
-		protected open fun visitValue(value: GValue, data: Data) = visitNode(value, data)
-
-		override fun visitArgument(argument: GArgument, data: Data) = visitNode(argument, data)
-		override fun visitBooleanType(type: GBooleanType, data: Data) = visitScalarType(type, data)
-		override fun visitBooleanValue(value: GBooleanValue, data: Data) = visitValue(value, data)
-		override fun visitCustomScalarType(type: GCustomScalarType, data: Data) = visitScalarType(type, data)
-		override fun visitDirective(directive: GDirective, data: Data) = visitNode(directive, data)
-		override fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition, data: Data) = visitArgumentDefinition(definition, data)
-		override fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: Data) = visitTypeSystemDefinition(definition, data)
-		override fun visitDocument(document: GDocument, data: Data) = visitNode(document, data)
-		override fun visitEnumType(type: GEnumType, data: Data) = visitLeafType(type, data)
-		override fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: Data) = visitTypeExtension(extension, data)
-		override fun visitEnumValue(value: GEnumValue, data: Data) = visitValue(value, data)
-		override fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Data) = visitNode(definition, data)
-		override fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition, data: Data) = visitArgumentDefinition(definition, data)
-		override fun visitFieldDefinition(definition: GFieldDefinition, data: Data) = visitNode(definition, data)
-		override fun visitFieldSelection(selection: GFieldSelection, data: Data) = visitSelection(selection, data)
-		override fun visitFloatType(type: GFloatType, data: Data) = visitScalarType(type, data)
-		override fun visitFloatValue(value: GFloatValue, data: Data) = visitValue(value, data)
-		override fun visitFragmentDefinition(definition: GFragmentDefinition, data: Data) = visitExecutableDefinition(definition, data)
-		override fun visitFragmentSelection(selection: GFragmentSelection, data: Data) = visitSelection(selection, data)
-		override fun visitIdType(type: GIdType, data: Data) = visitScalarType(type, data)
-		override fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data) = visitSelection(selection, data)
-		override fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition, data: Data) = visitArgumentDefinition(definition, data)
-		override fun visitInputObjectType(type: GInputObjectType, data: Data) = visitCompositeType(type, data)
-		override fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data) = visitTypeExtension(extension, data)
-		override fun visitIntType(type: GIntType, data: Data) = visitScalarType(type, data)
-		override fun visitIntValue(value: GIntValue, data: Data) = visitValue(value, data)
-		override fun visitInterfaceType(type: GInterfaceType, data: Data) = visitAbstractType(type, data)
-		override fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data) = visitTypeExtension(extension, data)
-		override fun visitListTypeRef(ref: GListTypeRef, data: Data) = visitTypeRef(ref, data)
-		override fun visitListValue(value: GListValue, data: Data) = visitValue(value, data)
-		override fun visitName(name: GName, data: Data) = visitNode(name, data)
-		override fun visitNamedTypeRef(ref: GNamedTypeRef, data: Data) = visitTypeRef(ref, data)
-		override fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: Data) = visitTypeRef(ref, data)
-		override fun visitNullValue(value: GNullValue, data: Data) = visitValue(value, data)
-		override fun visitObjectType(type: GObjectType, data: Data) = visitCompositeType(type, data)
-		override fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: Data) = visitTypeExtension(extension, data)
-		override fun visitObjectValue(value: GObjectValue, data: Data) = visitValue(value, data)
-		override fun visitObjectValueField(field: GObjectValueField, data: Data) = visitNode(field, data)
-		override fun visitOperationDefinition(definition: GOperationDefinition, data: Data) = visitExecutableDefinition(definition, data)
-		override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data) = visitNode(definition, data)
-		override fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: Data) = visitTypeExtension(extension, data)
-		override fun visitSchemaDefinition(definition: GSchemaDefinition, data: Data) = visitTypeSystemDefinition(definition, data)
-		override fun visitSchemaExtensionDefinition(definition: GSchemaExtension, data: Data) = visitTypeSystemExtension(definition, data)
-		override fun visitSelectionSet(set: GSelectionSet, data: Data) = visitNode(set, data)
-		override fun visitStringType(type: GStringType, data: Data) = visitScalarType(type, data)
-		override fun visitStringValue(value: GStringValue, data: Data) = visitValue(value, data)
-		override fun visitSyntheticNode(node: GAst, data: Data) = visitNode(node, data)
-		override fun visitUnionType(type: GUnionType, data: Data) = visitAbstractType(type, data)
-		override fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Data) = visitTypeExtension(extension, data)
-		override fun visitVariableDefinition(definition: GVariableDefinition, data: Data) = visitNode(definition, data)
-		override fun visitVariableRef(ref: GVariableRef, data: Data) = visitValue(ref, data)
-
-
-		abstract class WithoutData<out Result>(
-			descendsAutomatically: Boolean = true
-		) : Hierarchical<Result, Nothing?>(
-			descendsAutomatically = descendsAutomatically
-		) {
-
-			protected abstract fun visitNode(node: GAst): Result
-
-			protected open fun visitAbstractType(type: GAbstractType) = visitCompositeType(type)
-			protected open fun visitArgument(argument: GArgument) = visitNode(argument)
-			protected open fun visitArgumentDefinition(definition: GArgumentDefinition) = visitNode(definition)
-			protected open fun visitBooleanType(type: GBooleanType) = visitScalarType(type)
-			protected open fun visitBooleanValue(value: GBooleanValue) = visitValue(value)
-			protected open fun visitCompositeType(type: GCompositeType) = visitNamedType(type)
-			protected open fun visitCustomScalarType(type: GCustomScalarType) = visitScalarType(type)
-			protected open fun visitDefinition(definition: GDefinition) = visitNode(definition)
-			protected open fun visitDirective(directive: GDirective) = visitNode(directive)
-			protected open fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition) = visitArgumentDefinition(definition)
-			protected open fun visitDirectiveDefinition(definition: GDirectiveDefinition) = visitTypeSystemDefinition(definition)
-			protected open fun visitDocument(document: GDocument) = visitNode(document)
-			protected open fun visitEnumType(type: GEnumType) = visitLeafType(type)
-			protected open fun visitEnumTypeExtension(extension: GEnumTypeExtension) = visitTypeExtension(extension)
-			protected open fun visitEnumValue(value: GEnumValue) = visitValue(value)
-			protected open fun visitEnumValueDefinition(definition: GEnumValueDefinition) = visitNode(definition)
-			protected open fun visitExecutableDefinition(definition: GExecutableDefinition) = visitDefinition(definition)
-			protected open fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition) = visitArgumentDefinition(definition)
-			protected open fun visitFieldDefinition(definition: GFieldDefinition) = visitNode(definition)
-			protected open fun visitFieldSelection(selection: GFieldSelection) = visitSelection(selection)
-			protected open fun visitFloatType(type: GFloatType) = visitScalarType(type)
-			protected open fun visitFloatValue(value: GFloatValue) = visitValue(value)
-			protected open fun visitFragmentDefinition(definition: GFragmentDefinition) = visitExecutableDefinition(definition)
-			protected open fun visitFragmentSelection(selection: GFragmentSelection) = visitSelection(selection)
-			protected open fun visitIdType(type: GIdType) = visitScalarType(type)
-			protected open fun visitInlineFragmentSelection(selection: GInlineFragmentSelection) = visitSelection(selection)
-			protected open fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition) = visitArgumentDefinition(definition)
-			protected open fun visitInputObjectType(type: GInputObjectType) = visitCompositeType(type)
-			protected open fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension) = visitTypeExtension(extension)
-			protected open fun visitIntType(type: GIntType) = visitScalarType(type)
-			protected open fun visitIntValue(value: GIntValue) = visitValue(value)
-			protected open fun visitInterfaceType(type: GInterfaceType) = visitAbstractType(type)
-			protected open fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension) = visitTypeExtension(extension)
-			protected open fun visitLeafType(type: GLeafType) = visitNamedType(type)
-			protected open fun visitListTypeRef(ref: GListTypeRef) = visitTypeRef(ref)
-			protected open fun visitListValue(value: GListValue) = visitValue(value)
-			protected open fun visitName(name: GName) = visitNode(name)
-			protected open fun visitNamedType(type: GNamedType) = visitType(type)
-			protected open fun visitNamedTypeRef(ref: GNamedTypeRef) = visitTypeRef(ref)
-			protected open fun visitNonNullTypeRef(ref: GNonNullTypeRef) = visitTypeRef(ref)
-			protected open fun visitNullValue(value: GNullValue) = visitValue(value)
-			protected open fun visitObjectType(type: GObjectType) = visitCompositeType(type)
-			protected open fun visitObjectTypeExtension(extension: GObjectTypeExtension) = visitTypeExtension(extension)
-			protected open fun visitObjectValue(value: GObjectValue) = visitValue(value)
-			protected open fun visitObjectValueField(field: GObjectValueField) = visitNode(field)
-			protected open fun visitOperationDefinition(definition: GOperationDefinition) = visitExecutableDefinition(definition)
-			protected open fun visitOperationTypeDefinition(definition: GOperationTypeDefinition) = visitNode(definition)
-			protected open fun visitScalarType(type: GScalarType) = visitNamedType(type)
-			protected open fun visitScalarTypeExtension(extension: GScalarTypeExtension) = visitTypeExtension(extension)
-			protected open fun visitSchemaDefinition(definition: GSchemaDefinition) = visitTypeSystemDefinition(definition)
-			protected open fun visitSchemaExtensionDefinition(definition: GSchemaExtension) = visitTypeSystemExtension(definition)
-			protected open fun visitSelection(selection: GSelection) = visitNode(selection)
-			protected open fun visitSelectionSet(set: GSelectionSet) = visitNode(set)
-			protected open fun visitStringType(type: GStringType) = visitScalarType(type)
-			protected open fun visitStringValue(value: GStringValue) = visitValue(value)
-			protected open fun visitSyntheticNode(node: GAst) = visitNode(node)
-			protected open fun visitType(type: GType) = visitTypeSystemDefinition(type)
-			protected open fun visitTypeExtension(extension: GTypeExtension) = visitTypeSystemExtension(extension)
-			protected open fun visitTypeRef(ref: GTypeRef) = visitNode(ref)
-			protected open fun visitTypeSystemDefinition(definition: GTypeSystemDefinition) = visitDefinition(definition)
-			protected open fun visitTypeSystemExtension(extension: GTypeSystemExtension) = visitDefinition(extension)
-			protected open fun visitUnionType(type: GUnionType) = visitAbstractType(type)
-			protected open fun visitUnionTypeExtension(extension: GUnionTypeExtension) = visitTypeExtension(extension)
-			protected open fun visitValue(value: GValue) = visitNode(value)
-			protected open fun visitVariableDefinition(definition: GVariableDefinition) = visitNode(definition)
-			protected open fun visitVariableRef(ref: GVariableRef) = visitValue(ref)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitAbstractType(type: GAbstractType, data: Nothing?) = visitCompositeType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitArgument(argument: GArgument, data: Nothing?) = visitArgument(argument)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitArgumentDefinition(definition: GArgumentDefinition, data: Nothing?) = visitNode(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitBooleanType(type: GBooleanType, data: Nothing?) = visitBooleanType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitBooleanValue(value: GBooleanValue, data: Nothing?) = visitBooleanValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitCompositeType(type: GCompositeType, data: Nothing?) = visitNamedType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitCustomScalarType(type: GCustomScalarType, data: Nothing?) = visitCustomScalarType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitDefinition(definition: GDefinition, data: Nothing?) = visitNode(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitDirective(directive: GDirective, data: Nothing?) = visitDirective(directive)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition, data: Nothing?) = visitDirectiveArgumentDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: Nothing?) = visitDirectiveDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitDocument(document: GDocument, data: Nothing?) = visitDocument(document)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitEnumType(type: GEnumType, data: Nothing?) = visitEnumType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: Nothing?) = visitEnumTypeExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitEnumValue(value: GEnumValue, data: Nothing?) = visitEnumValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Nothing?) = visitEnumValueDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitExecutableDefinition(definition: GExecutableDefinition, data: Nothing?) = visitDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition, data: Nothing?) = visitFieldArgumentDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFieldDefinition(definition: GFieldDefinition, data: Nothing?) = visitFieldDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFieldSelection(selection: GFieldSelection, data: Nothing?) = visitFieldSelection(selection)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFloatType(type: GFloatType, data: Nothing?) = visitFloatType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFloatValue(value: GFloatValue, data: Nothing?) = visitFloatValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFragmentDefinition(definition: GFragmentDefinition, data: Nothing?) = visitFragmentDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitFragmentSelection(selection: GFragmentSelection, data: Nothing?) = visitFragmentSelection(selection)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitIdType(type: GIdType, data: Nothing?) = visitIdType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?) = visitInlineFragmentSelection(selection)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition, data: Nothing?) = visitInputObjectArgumentDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitInputObjectType(type: GInputObjectType, data: Nothing?) = visitInputObjectType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?) = visitInputObjectTypeExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitIntType(type: GIntType, data: Nothing?) = visitIntType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitIntValue(value: GIntValue, data: Nothing?) = visitIntValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitInterfaceType(type: GInterfaceType, data: Nothing?) = visitInterfaceType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?) = visitInterfaceTypeExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitLeafType(type: GLeafType, data: Nothing?) = visitNamedType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitListTypeRef(ref: GListTypeRef, data: Nothing?) = visitListTypeRef(ref)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitListValue(value: GListValue, data: Nothing?) = visitListValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitName(name: GName, data: Nothing?) = visitName(name)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitNamedType(type: GNamedType, data: Nothing?) = visitType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitNamedTypeRef(ref: GNamedTypeRef, data: Nothing?) = visitNamedTypeRef(ref)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitNode(node: GAst, data: Nothing?) = visitNode(node)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: Nothing?) = visitNonNullTypeRef(ref)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitNullValue(value: GNullValue, data: Nothing?) = visitNullValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitObjectType(type: GObjectType, data: Nothing?) = visitObjectType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: Nothing?) = visitObjectTypeExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitObjectValue(value: GObjectValue, data: Nothing?) = visitObjectValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitObjectValueField(field: GObjectValueField, data: Nothing?) = visitObjectValueField(field)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitOperationDefinition(definition: GOperationDefinition, data: Nothing?) = visitOperationDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?) = visitOperationTypeDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitScalarType(type: GScalarType, data: Nothing?) = visitNamedType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: Nothing?) = visitScalarTypeExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitSchemaDefinition(definition: GSchemaDefinition, data: Nothing?) = visitSchemaDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?) = visitSchemaExtensionDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitSelection(selection: GSelection, data: Nothing?) = visitNode(selection)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitSelectionSet(set: GSelectionSet, data: Nothing?) = visitSelectionSet(set)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitStringType(type: GStringType, data: Nothing?) = visitStringType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitStringValue(value: GStringValue, data: Nothing?) = visitStringValue(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitSyntheticNode(node: GAst, data: Nothing?) = visitSyntheticNode(node)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitType(type: GType, data: Nothing?) = visitTypeSystemDefinition(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitTypeExtension(extension: GTypeExtension, data: Nothing?) = visitTypeSystemExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitTypeRef(ref: GTypeRef, data: Nothing?) = visitNode(ref)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitTypeSystemDefinition(definition: GTypeSystemDefinition, data: Nothing?) = visitDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitTypeSystemExtension(extension: GTypeSystemExtension, data: Nothing?) = visitDefinition(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitUnionType(type: GUnionType, data: Nothing?) = visitUnionType(type)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Nothing?) = visitUnionTypeExtension(extension)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitValue(value: GValue, data: Nothing?) = visitNode(value)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitVariableDefinition(definition: GVariableDefinition, data: Nothing?) = visitVariableDefinition(definition)
-
-			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun visitVariableRef(ref: GVariableRef, data: Nothing?) = visitVariableRef(ref)
+			override fun onNode(node: GAst, data: Any?, visit: Visit) =
+				result
 		}
-
-
-		abstract class WithoutResult<Data>(
-			descendsAutomatically: Boolean = true
-		) : Hierarchical<Unit, Data>(
-			descendsAutomatically = descendsAutomatically
-		)
-
-
-		abstract class WithoutResultAndData(
-			descendsAutomatically: Boolean = true
-		) : WithoutData<Unit>(
-			descendsAutomatically = descendsAutomatically
-		)
 	}
 
 
-	internal class Identity<Data> : Visitor.Hierarchical<Data, Data>(descendsAutomatically = false) {
+	abstract class Hierarchical<out Result, in Data> : Typed<Result, Data>() {
 
-		override fun visitNode(node: GAst, data: Data) =
-			data
+		protected abstract fun onAny(node: GAst, data: Data, visit: Visit): Result
+
+		protected open fun onAbstractType(type: GAbstractType, data: Data, visit: Visit) = onCompositeType(type, data, visit)
+		protected open fun onCompositeType(type: GCompositeType, data: Data, visit: Visit) = onNamedType(type, data, visit)
+		protected open fun onDefinition(definition: GDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
+		protected open fun onExecutableDefinition(definition: GExecutableDefinition, data: Data, visit: Visit) = onDefinition(definition, data, visit)
+		protected open fun onLeafType(type: GLeafType, data: Data, visit: Visit) = onNamedType(type, data, visit)
+		protected open fun onNamedType(type: GNamedType, data: Data, visit: Visit) = onType(type, data, visit)
+		protected open fun onSelection(selection: GSelection, data: Data, visit: Visit) = onAny(selection, data, visit)
+		protected open fun onType(type: GType, data: Data, visit: Visit) = onTypeSystemDefinition(type, data, visit)
+		protected open fun onTypeExtension(extension: GTypeExtension, data: Data, visit: Visit) = onTypeSystemExtension(extension, data, visit)
+		protected open fun onTypeRef(ref: GTypeRef, data: Data, visit: Visit) = onAny(ref, data, visit)
+		protected open fun onTypeSystemDefinition(definition: GTypeSystemDefinition, data: Data, visit: Visit) = onDefinition(definition, data, visit)
+		protected open fun onTypeSystemExtension(extension: GTypeSystemExtension, data: Data, visit: Visit) = onDefinition(extension, data, visit)
+		protected open fun onValue(value: GValue, data: Data, visit: Visit) = onAny(value, data, visit)
+
+		override fun onArgument(argument: GArgument, data: Data, visit: Visit) = onAny(argument, data, visit)
+		override fun onArgumentDefinition(definition: GArgumentDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
+		override fun onBooleanValue(value: GBooleanValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onDirective(directive: GDirective, data: Data, visit: Visit) = onAny(directive, data, visit)
+		override fun onDirectiveDefinition(definition: GDirectiveDefinition, data: Data, visit: Visit) = onTypeSystemDefinition(definition, data, visit)
+		override fun onDocument(document: GDocument, data: Data, visit: Visit) = onAny(document, data, visit)
+		override fun onEnumType(type: GEnumType, data: Data, visit: Visit) = onLeafType(type, data, visit)
+		override fun onEnumTypeExtension(extension: GEnumTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
+		override fun onEnumValue(value: GEnumValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onEnumValueDefinition(definition: GEnumValueDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
+		override fun onFieldDefinition(definition: GFieldDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
+		override fun onFieldSelection(selection: GFieldSelection, data: Data, visit: Visit) = onSelection(selection, data, visit)
+		override fun onFloatValue(value: GFloatValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onFragmentDefinition(definition: GFragmentDefinition, data: Data, visit: Visit) = onExecutableDefinition(definition, data, visit)
+		override fun onFragmentSelection(selection: GFragmentSelection, data: Data, visit: Visit) = onSelection(selection, data, visit)
+		override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data, visit: Visit) = onSelection(selection, data, visit)
+		override fun onInputObjectType(type: GInputObjectType, data: Data, visit: Visit) = onCompositeType(type, data, visit)
+		override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
+		override fun onIntValue(value: GIntValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onInterfaceType(type: GInterfaceType, data: Data, visit: Visit) = onAbstractType(type, data, visit)
+		override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
+		override fun onListTypeRef(ref: GListTypeRef, data: Data, visit: Visit) = onTypeRef(ref, data, visit)
+		override fun onListValue(value: GListValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onName(name: GName, data: Data, visit: Visit) = onAny(name, data, visit)
+		override fun onNamedTypeRef(ref: GNamedTypeRef, data: Data, visit: Visit) = onTypeRef(ref, data, visit)
+		override fun onNonNullTypeRef(ref: GNonNullTypeRef, data: Data, visit: Visit) = onTypeRef(ref, data, visit)
+		override fun onNullValue(value: GNullValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onObjectType(type: GObjectType, data: Data, visit: Visit) = onCompositeType(type, data, visit)
+		override fun onObjectTypeExtension(extension: GObjectTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
+		override fun onObjectValue(value: GObjectValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onObjectValueField(field: GObjectValueField, data: Data, visit: Visit) = onAny(field, data, visit)
+		override fun onOperationDefinition(definition: GOperationDefinition, data: Data, visit: Visit) = onExecutableDefinition(definition, data, visit)
+		override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
+		override fun onScalarType(type: GScalarType, data: Data, visit: Visit) = onNamedType(type, data, visit)
+		override fun onScalarTypeExtension(extension: GScalarTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
+		override fun onSchemaDefinition(definition: GSchemaDefinition, data: Data, visit: Visit) = onTypeSystemDefinition(definition, data, visit)
+		override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Data, visit: Visit) = onTypeSystemExtension(definition, data, visit)
+		override fun onSelectionSet(set: GSelectionSet, data: Data, visit: Visit) = onAny(set, data, visit)
+		override fun onStringValue(value: GStringValue, data: Data, visit: Visit) = onValue(value, data, visit)
+		override fun onSyntheticNode(node: GAst, data: Data, visit: Visit) = onAny(node, data, visit)
+		override fun onUnionType(type: GUnionType, data: Data, visit: Visit) = onAbstractType(type, data, visit)
+		override fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit) = onTypeExtension(extension, data, visit)
+		override fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit) = onAny(definition, data, visit)
+		override fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit) = onValue(ref, data, visit)
+
+
+		abstract class WithoutData<out Result> : Hierarchical<Result, Nothing?>() {
+
+			protected abstract fun onAny(node: GAst, visit: Visit): Result
+
+			protected open fun onAbstractType(type: GAbstractType, visit: Visit) = onCompositeType(type, visit)
+			protected open fun onArgument(argument: GArgument, visit: Visit) = onAny(argument, visit)
+			protected open fun onArgumentDefinition(definition: GArgumentDefinition, visit: Visit) = onAny(definition, visit)
+			protected open fun onBooleanValue(value: GBooleanValue, visit: Visit) = onValue(value, visit)
+			protected open fun onCompositeType(type: GCompositeType, visit: Visit) = onNamedType(type, visit)
+			protected open fun onDefinition(definition: GDefinition, visit: Visit) = onAny(definition, visit)
+			protected open fun onDirective(directive: GDirective, visit: Visit) = onAny(directive, visit)
+			protected open fun onDirectiveDefinition(definition: GDirectiveDefinition, visit: Visit) = onTypeSystemDefinition(definition, visit)
+			protected open fun onDocument(document: GDocument, visit: Visit) = onAny(document, visit)
+			protected open fun onEnumType(type: GEnumType, visit: Visit) = onLeafType(type, visit)
+			protected open fun onEnumTypeExtension(extension: GEnumTypeExtension, visit: Visit) = onTypeExtension(extension, visit)
+			protected open fun onEnumValue(value: GEnumValue, visit: Visit) = onValue(value, visit)
+			protected open fun onEnumValueDefinition(definition: GEnumValueDefinition, visit: Visit) = onAny(definition, visit)
+			protected open fun onExecutableDefinition(definition: GExecutableDefinition, visit: Visit) = onDefinition(definition, visit)
+			protected open fun onFieldDefinition(definition: GFieldDefinition, visit: Visit) = onAny(definition, visit)
+			protected open fun onFieldSelection(selection: GFieldSelection, visit: Visit) = onSelection(selection, visit)
+			protected open fun onFloatValue(value: GFloatValue, visit: Visit) = onValue(value, visit)
+			protected open fun onFragmentDefinition(definition: GFragmentDefinition, visit: Visit) = onExecutableDefinition(definition, visit)
+			protected open fun onFragmentSelection(selection: GFragmentSelection, visit: Visit) = onSelection(selection, visit)
+			protected open fun onInlineFragmentSelection(selection: GInlineFragmentSelection, visit: Visit) = onSelection(selection, visit)
+			protected open fun onInputObjectType(type: GInputObjectType, visit: Visit) = onCompositeType(type, visit)
+			protected open fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, visit: Visit) = onTypeExtension(extension, visit)
+			protected open fun onIntValue(value: GIntValue, visit: Visit) = onValue(value, visit)
+			protected open fun onInterfaceType(type: GInterfaceType, visit: Visit) = onAbstractType(type, visit)
+			protected open fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, visit: Visit) = onTypeExtension(extension, visit)
+			protected open fun onLeafType(type: GLeafType, visit: Visit) = onNamedType(type, visit)
+			protected open fun onListTypeRef(ref: GListTypeRef, visit: Visit) = onTypeRef(ref, visit)
+			protected open fun onListValue(value: GListValue, visit: Visit) = onValue(value, visit)
+			protected open fun onName(name: GName, visit: Visit) = onAny(name, visit)
+			protected open fun onNamedType(type: GNamedType, visit: Visit) = onType(type, visit)
+			protected open fun onNamedTypeRef(ref: GNamedTypeRef, visit: Visit) = onTypeRef(ref, visit)
+			protected open fun onNonNullTypeRef(ref: GNonNullTypeRef, visit: Visit) = onTypeRef(ref, visit)
+			protected open fun onNullValue(value: GNullValue, visit: Visit) = onValue(value, visit)
+			protected open fun onObjectType(type: GObjectType, visit: Visit) = onCompositeType(type, visit)
+			protected open fun onObjectTypeExtension(extension: GObjectTypeExtension, visit: Visit) = onTypeExtension(extension, visit)
+			protected open fun onObjectValue(value: GObjectValue, visit: Visit) = onValue(value, visit)
+			protected open fun onObjectValueField(field: GObjectValueField, visit: Visit) = onAny(field, visit)
+			protected open fun onOperationDefinition(definition: GOperationDefinition, visit: Visit) = onExecutableDefinition(definition, visit)
+			protected open fun onOperationTypeDefinition(definition: GOperationTypeDefinition, visit: Visit) = onAny(definition, visit)
+			protected open fun onScalarType(type: GScalarType, visit: Visit) = onNamedType(type, visit)
+			protected open fun onScalarTypeExtension(extension: GScalarTypeExtension, visit: Visit) = onTypeExtension(extension, visit)
+			protected open fun onSchemaDefinition(definition: GSchemaDefinition, visit: Visit) = onTypeSystemDefinition(definition, visit)
+			protected open fun onSchemaExtensionDefinition(definition: GSchemaExtension, visit: Visit) = onTypeSystemExtension(definition, visit)
+			protected open fun onSelection(selection: GSelection, visit: Visit) = onAny(selection, visit)
+			protected open fun onSelectionSet(set: GSelectionSet, visit: Visit) = onAny(set, visit)
+			protected open fun onStringValue(value: GStringValue, visit: Visit) = onValue(value, visit)
+			protected open fun onSyntheticNode(node: GAst, visit: Visit) = onAny(node, visit)
+			protected open fun onType(type: GType, visit: Visit) = onTypeSystemDefinition(type, visit)
+			protected open fun onTypeExtension(extension: GTypeExtension, visit: Visit) = onTypeSystemExtension(extension, visit)
+			protected open fun onTypeRef(ref: GTypeRef, visit: Visit) = onAny(ref, visit)
+			protected open fun onTypeSystemDefinition(definition: GTypeSystemDefinition, visit: Visit) = onDefinition(definition, visit)
+			protected open fun onTypeSystemExtension(extension: GTypeSystemExtension, visit: Visit) = onDefinition(extension, visit)
+			protected open fun onUnionType(type: GUnionType, visit: Visit) = onAbstractType(type, visit)
+			protected open fun onUnionTypeExtension(extension: GUnionTypeExtension, visit: Visit) = onTypeExtension(extension, visit)
+			protected open fun onValue(value: GValue, visit: Visit) = onAny(value, visit)
+			protected open fun onVariableDefinition(definition: GVariableDefinition, visit: Visit) = onAny(definition, visit)
+			protected open fun onVariableRef(ref: GVariableRef, visit: Visit) = onValue(ref, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onAbstractType(type: GAbstractType, data: Nothing?, visit: Visit) = onCompositeType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onAny(node: GAst, data: Nothing?, visit: Visit) = onAny(node, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onArgument(argument: GArgument, data: Nothing?, visit: Visit) = onArgument(argument, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onArgumentDefinition(definition: GArgumentDefinition, data: Nothing?, visit: Visit) = onAny(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onBooleanValue(value: GBooleanValue, data: Nothing?, visit: Visit) = onBooleanValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onCompositeType(type: GCompositeType, data: Nothing?, visit: Visit) = onNamedType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDefinition(definition: GDefinition, data: Nothing?, visit: Visit) = onAny(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDirective(directive: GDirective, data: Nothing?, visit: Visit) = onDirective(directive, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDirectiveDefinition(definition: GDirectiveDefinition, data: Nothing?, visit: Visit) = onDirectiveDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDocument(document: GDocument, data: Nothing?, visit: Visit) = onDocument(document, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumType(type: GEnumType, data: Nothing?, visit: Visit) = onEnumType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumTypeExtension(extension: GEnumTypeExtension, data: Nothing?, visit: Visit) = onEnumTypeExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumValue(value: GEnumValue, data: Nothing?, visit: Visit) = onEnumValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumValueDefinition(definition: GEnumValueDefinition, data: Nothing?, visit: Visit) = onEnumValueDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onExecutableDefinition(definition: GExecutableDefinition, data: Nothing?, visit: Visit) = onDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFieldDefinition(definition: GFieldDefinition, data: Nothing?, visit: Visit) = onFieldDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFieldSelection(selection: GFieldSelection, data: Nothing?, visit: Visit) = onFieldSelection(selection, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFloatValue(value: GFloatValue, data: Nothing?, visit: Visit) = onFloatValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFragmentDefinition(definition: GFragmentDefinition, data: Nothing?, visit: Visit) = onFragmentDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFragmentSelection(selection: GFragmentSelection, data: Nothing?, visit: Visit) = onFragmentSelection(selection, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?, visit: Visit) = onInlineFragmentSelection(selection, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInputObjectType(type: GInputObjectType, data: Nothing?, visit: Visit) = onInputObjectType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?, visit: Visit) = onInputObjectTypeExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onIntValue(value: GIntValue, data: Nothing?, visit: Visit) = onIntValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInterfaceType(type: GInterfaceType, data: Nothing?, visit: Visit) = onInterfaceType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?, visit: Visit) = onInterfaceTypeExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onLeafType(type: GLeafType, data: Nothing?, visit: Visit) = onNamedType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onListTypeRef(ref: GListTypeRef, data: Nothing?, visit: Visit) = onListTypeRef(ref, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onListValue(value: GListValue, data: Nothing?, visit: Visit) = onListValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onName(name: GName, data: Nothing?, visit: Visit) = onName(name, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNamedType(type: GNamedType, data: Nothing?, visit: Visit) = onType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNamedTypeRef(ref: GNamedTypeRef, data: Nothing?, visit: Visit) = onNamedTypeRef(ref, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNonNullTypeRef(ref: GNonNullTypeRef, data: Nothing?, visit: Visit) = onNonNullTypeRef(ref, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNullValue(value: GNullValue, data: Nothing?, visit: Visit) = onNullValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectType(type: GObjectType, data: Nothing?, visit: Visit) = onObjectType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectTypeExtension(extension: GObjectTypeExtension, data: Nothing?, visit: Visit) = onObjectTypeExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectValue(value: GObjectValue, data: Nothing?, visit: Visit) = onObjectValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectValueField(field: GObjectValueField, data: Nothing?, visit: Visit) = onObjectValueField(field, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onOperationDefinition(definition: GOperationDefinition, data: Nothing?, visit: Visit) = onOperationDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?, visit: Visit) = onOperationTypeDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onScalarType(type: GScalarType, data: Nothing?, visit: Visit) = onNamedType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onScalarTypeExtension(extension: GScalarTypeExtension, data: Nothing?, visit: Visit) = onScalarTypeExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSchemaDefinition(definition: GSchemaDefinition, data: Nothing?, visit: Visit) = onSchemaDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?, visit: Visit) = onSchemaExtensionDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSelection(selection: GSelection, data: Nothing?, visit: Visit) = onAny(selection, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSelectionSet(set: GSelectionSet, data: Nothing?, visit: Visit) = onSelectionSet(set, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onStringValue(value: GStringValue, data: Nothing?, visit: Visit) = onStringValue(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSyntheticNode(node: GAst, data: Nothing?, visit: Visit) = onSyntheticNode(node, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onType(type: GType, data: Nothing?, visit: Visit) = onTypeSystemDefinition(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onTypeExtension(extension: GTypeExtension, data: Nothing?, visit: Visit) = onTypeSystemExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onTypeRef(ref: GTypeRef, data: Nothing?, visit: Visit) = onAny(ref, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onTypeSystemDefinition(definition: GTypeSystemDefinition, data: Nothing?, visit: Visit) = onDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onTypeSystemExtension(extension: GTypeSystemExtension, data: Nothing?, visit: Visit) = onDefinition(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onUnionType(type: GUnionType, data: Nothing?, visit: Visit) = onUnionType(type, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Nothing?, visit: Visit) = onUnionTypeExtension(extension, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onValue(value: GValue, data: Nothing?, visit: Visit) = onAny(value, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onVariableDefinition(definition: GVariableDefinition, data: Nothing?, visit: Visit) = onVariableDefinition(definition, visit)
+
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onVariableRef(ref: GVariableRef, data: Nothing?, visit: Visit) = onVariableRef(ref, visit)
+		}
 	}
 
 
-	abstract class WithoutData<out Result>(
-		descendsAutomatically: Boolean = true
-	) : Visitor<Result, Nothing?>(
-		automaticallyVisitsChildren = descendsAutomatically
-	) {
-
-		protected abstract fun visitArgument(argument: GArgument): Result
-		protected abstract fun visitBooleanType(type: GBooleanType): Result
-		protected abstract fun visitBooleanValue(value: GBooleanValue): Result
-		protected abstract fun visitCustomScalarType(type: GCustomScalarType): Result
-		protected abstract fun visitDirective(directive: GDirective): Result
-		protected abstract fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition): Result
-		protected abstract fun visitDirectiveDefinition(definition: GDirectiveDefinition): Result
-		protected abstract fun visitDocument(document: GDocument): Result
-		protected abstract fun visitEnumType(type: GEnumType): Result
-		protected abstract fun visitEnumTypeExtension(extension: GEnumTypeExtension): Result
-		protected abstract fun visitEnumValue(value: GEnumValue): Result
-		protected abstract fun visitEnumValueDefinition(definition: GEnumValueDefinition): Result
-		protected abstract fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition): Result
-		protected abstract fun visitFieldDefinition(definition: GFieldDefinition): Result
-		protected abstract fun visitFieldSelection(selection: GFieldSelection): Result
-		protected abstract fun visitFloatType(type: GFloatType): Result
-		protected abstract fun visitFloatValue(value: GFloatValue): Result
-		protected abstract fun visitFragmentDefinition(definition: GFragmentDefinition): Result
-		protected abstract fun visitFragmentSelection(selection: GFragmentSelection): Result
-		protected abstract fun visitIdType(type: GIdType): Result
-		protected abstract fun visitInlineFragmentSelection(selection: GInlineFragmentSelection): Result
-		protected abstract fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition): Result
-		protected abstract fun visitInputObjectType(type: GInputObjectType): Result
-		protected abstract fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension): Result
-		protected abstract fun visitIntType(type: GIntType): Result
-		protected abstract fun visitIntValue(value: GIntValue): Result
-		protected abstract fun visitInterfaceType(type: GInterfaceType): Result
-		protected abstract fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension): Result
-		protected abstract fun visitListTypeRef(ref: GListTypeRef): Result
-		protected abstract fun visitListValue(value: GListValue): Result
-		protected abstract fun visitName(name: GName): Result
-		protected abstract fun visitNamedTypeRef(ref: GNamedTypeRef): Result
-		protected abstract fun visitNonNullTypeRef(ref: GNonNullTypeRef): Result
-		protected abstract fun visitNullValue(value: GNullValue): Result
-		protected abstract fun visitObjectType(type: GObjectType): Result
-		protected abstract fun visitObjectTypeExtension(extension: GObjectTypeExtension): Result
-		protected abstract fun visitObjectValue(value: GObjectValue): Result
-		protected abstract fun visitObjectValueField(field: GObjectValueField): Result
-		protected abstract fun visitOperationDefinition(definition: GOperationDefinition): Result
-		protected abstract fun visitOperationTypeDefinition(definition: GOperationTypeDefinition): Result
-		protected abstract fun visitScalarTypeExtension(extension: GScalarTypeExtension): Result
-		protected abstract fun visitSchemaDefinition(definition: GSchemaDefinition): Result
-		protected abstract fun visitSchemaExtensionDefinition(definition: GSchemaExtension): Result
-		protected abstract fun visitSelectionSet(set: GSelectionSet): Result
-		protected abstract fun visitStringType(type: GStringType): Result
-		protected abstract fun visitStringValue(value: GStringValue): Result
-		protected abstract fun visitSyntheticNode(node: GAst): Result
-		protected abstract fun visitUnionType(type: GUnionType): Result
-		protected abstract fun visitUnionTypeExtension(extension: GUnionTypeExtension): Result
-		protected abstract fun visitVariableDefinition(definition: GVariableDefinition): Result
-		protected abstract fun visitVariableRef(ref: GVariableRef): Result
+	abstract class Typed<out Result, in Data> : Visitor<Result, Data>() {
 
 		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitArgument(argument: GArgument, data: Nothing?) = visitArgument(argument)
+		final override fun onNode(node: GAst, data: Data, visit: Visit) =
+			when (node) {
+				is GArgument -> onArgument(node, data, visit)
+				is GArgumentDefinition -> onArgumentDefinition(node, data, visit)
+				is GBooleanValue -> onBooleanValue(node, data, visit)
+				is GDirective -> onDirective(node, data, visit)
+				is GDirectiveDefinition -> onDirectiveDefinition(node, data, visit)
+				is GDocument -> onDocument(node, data, visit)
+				is GEnumType -> onEnumType(node, data, visit)
+				is GEnumTypeExtension -> onEnumTypeExtension(node, data, visit)
+				is GEnumValue -> onEnumValue(node, data, visit)
+				is GEnumValueDefinition -> onEnumValueDefinition(node, data, visit)
+				is GFieldDefinition -> onFieldDefinition(node, data, visit)
+				is GFieldSelection -> onFieldSelection(node, data, visit)
+				is GFloatValue -> onFloatValue(node, data, visit)
+				is GFragmentDefinition -> onFragmentDefinition(node, data, visit)
+				is GFragmentSelection -> onFragmentSelection(node, data, visit)
+				is GInlineFragmentSelection -> onInlineFragmentSelection(node, data, visit)
+				is GInputObjectType -> onInputObjectType(node, data, visit)
+				is GInputObjectTypeExtension -> onInputObjectTypeExtension(node, data, visit)
+				is GIntValue -> onIntValue(node, data, visit)
+				is GInterfaceType -> onInterfaceType(node, data, visit)
+				is GInterfaceTypeExtension -> onInterfaceTypeExtension(node, data, visit)
+				is GListType -> onSyntheticNode(node, data, visit)
+				is GListTypeRef -> onListTypeRef(node, data, visit)
+				is GListValue -> onListValue(node, data, visit)
+				is GName -> onName(node, data, visit)
+				is GNamedTypeRef -> onNamedTypeRef(node, data, visit)
+				is GNonNullType -> onSyntheticNode(node, data, visit)
+				is GNonNullTypeRef -> onNonNullTypeRef(node, data, visit)
+				is GNullValue -> onNullValue(node, data, visit)
+				is GObjectType -> onObjectType(node, data, visit)
+				is GObjectTypeExtension -> onObjectTypeExtension(node, data, visit)
+				is GObjectValue -> onObjectValue(node, data, visit)
+				is GObjectValueField -> onObjectValueField(node, data, visit)
+				is GOperationDefinition -> onOperationDefinition(node, data, visit)
+				is GOperationTypeDefinition -> onOperationTypeDefinition(node, data, visit)
+				is GScalarType -> onScalarType(node, data, visit)
+				is GScalarTypeExtension -> onScalarTypeExtension(node, data, visit)
+				is GSchemaDefinition -> onSchemaDefinition(node, data, visit)
+				is GSchemaExtension -> onSchemaExtensionDefinition(node, data, visit)
+				is GSelectionSet -> onSelectionSet(node, data, visit)
+				is GStringValue -> onStringValue(node, data, visit)
+				is GUnionType -> onUnionType(node, data, visit)
+				is GUnionTypeExtension -> onUnionTypeExtension(node, data, visit)
+				is GVariableDefinition -> onVariableDefinition(node, data, visit)
+				is GVariableRef -> onVariableRef(node, data, visit)
+			}
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitBooleanType(type: GBooleanType, data: Nothing?) = visitBooleanType(type)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitBooleanValue(value: GBooleanValue, data: Nothing?) = visitBooleanValue(value)
+		protected abstract fun onArgument(argument: GArgument, data: Data, visit: Visit): Result
+		protected abstract fun onArgumentDefinition(definition: GArgumentDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onBooleanValue(value: GBooleanValue, data: Data, visit: Visit): Result
+		protected abstract fun onDirective(directive: GDirective, data: Data, visit: Visit): Result
+		protected abstract fun onDirectiveDefinition(definition: GDirectiveDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onDocument(document: GDocument, data: Data, visit: Visit): Result
+		protected abstract fun onEnumType(type: GEnumType, data: Data, visit: Visit): Result
+		protected abstract fun onEnumTypeExtension(extension: GEnumTypeExtension, data: Data, visit: Visit): Result
+		protected abstract fun onEnumValue(value: GEnumValue, data: Data, visit: Visit): Result
+		protected abstract fun onEnumValueDefinition(definition: GEnumValueDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onFieldDefinition(definition: GFieldDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onFieldSelection(selection: GFieldSelection, data: Data, visit: Visit): Result
+		protected abstract fun onFloatValue(value: GFloatValue, data: Data, visit: Visit): Result
+		protected abstract fun onFragmentDefinition(definition: GFragmentDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onFragmentSelection(selection: GFragmentSelection, data: Data, visit: Visit): Result
+		protected abstract fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data, visit: Visit): Result
+		protected abstract fun onInputObjectType(type: GInputObjectType, data: Data, visit: Visit): Result
+		protected abstract fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data, visit: Visit): Result
+		protected abstract fun onIntValue(value: GIntValue, data: Data, visit: Visit): Result
+		protected abstract fun onInterfaceType(type: GInterfaceType, data: Data, visit: Visit): Result
+		protected abstract fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data, visit: Visit): Result
+		protected abstract fun onListTypeRef(ref: GListTypeRef, data: Data, visit: Visit): Result
+		protected abstract fun onListValue(value: GListValue, data: Data, visit: Visit): Result
+		protected abstract fun onName(name: GName, data: Data, visit: Visit): Result
+		protected abstract fun onNamedTypeRef(ref: GNamedTypeRef, data: Data, visit: Visit): Result
+		protected abstract fun onNonNullTypeRef(ref: GNonNullTypeRef, data: Data, visit: Visit): Result
+		protected abstract fun onNullValue(value: GNullValue, data: Data, visit: Visit): Result
+		protected abstract fun onObjectType(type: GObjectType, data: Data, visit: Visit): Result
+		protected abstract fun onObjectTypeExtension(extension: GObjectTypeExtension, data: Data, visit: Visit): Result
+		protected abstract fun onObjectValue(value: GObjectValue, data: Data, visit: Visit): Result
+		protected abstract fun onObjectValueField(field: GObjectValueField, data: Data, visit: Visit): Result
+		protected abstract fun onOperationDefinition(definition: GOperationDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onScalarType(type: GScalarType, data: Data, visit: Visit): Result
+		protected abstract fun onScalarTypeExtension(extension: GScalarTypeExtension, data: Data, visit: Visit): Result
+		protected abstract fun onSchemaDefinition(definition: GSchemaDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Data, visit: Visit): Result
+		protected abstract fun onSelectionSet(set: GSelectionSet, data: Data, visit: Visit): Result
+		protected abstract fun onStringValue(value: GStringValue, data: Data, visit: Visit): Result
+		protected abstract fun onSyntheticNode(node: GAst, data: Data, visit: Visit): Result
+		protected abstract fun onUnionType(type: GUnionType, data: Data, visit: Visit): Result
+		protected abstract fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit): Result
+		protected abstract fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit): Result
+		protected abstract fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit): Result
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitCustomScalarType(type: GCustomScalarType, data: Nothing?) = visitCustomScalarType(type)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitDirective(directive: GDirective, data: Nothing?) = visitDirective(directive)
+		abstract class WithoutData<out Result> : Typed<Result, Nothing?>() {
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitDirectiveArgumentDefinition(definition: GDirectiveArgumentDefinition, data: Nothing?) = visitDirectiveArgumentDefinition(definition)
+			protected abstract fun onArgument(argument: GArgument, visit: Visit): Result
+			protected abstract fun onArgumentDefinition(definition: GArgumentDefinition, visit: Visit): Result
+			protected abstract fun onBooleanValue(value: GBooleanValue, visit: Visit): Result
+			protected abstract fun onDirective(directive: GDirective, visit: Visit): Result
+			protected abstract fun onDirectiveDefinition(definition: GDirectiveDefinition, visit: Visit): Result
+			protected abstract fun onDocument(document: GDocument, visit: Visit): Result
+			protected abstract fun onEnumType(type: GEnumType, visit: Visit): Result
+			protected abstract fun onEnumTypeExtension(extension: GEnumTypeExtension, visit: Visit): Result
+			protected abstract fun onEnumValue(value: GEnumValue, visit: Visit): Result
+			protected abstract fun onEnumValueDefinition(definition: GEnumValueDefinition, visit: Visit): Result
+			protected abstract fun onFieldDefinition(definition: GFieldDefinition, visit: Visit): Result
+			protected abstract fun onFieldSelection(selection: GFieldSelection, visit: Visit): Result
+			protected abstract fun onFloatValue(value: GFloatValue, visit: Visit): Result
+			protected abstract fun onFragmentDefinition(definition: GFragmentDefinition, visit: Visit): Result
+			protected abstract fun onFragmentSelection(selection: GFragmentSelection, visit: Visit): Result
+			protected abstract fun onInlineFragmentSelection(selection: GInlineFragmentSelection, visit: Visit): Result
+			protected abstract fun onInputObjectType(type: GInputObjectType, visit: Visit): Result
+			protected abstract fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, visit: Visit): Result
+			protected abstract fun onIntValue(value: GIntValue, visit: Visit): Result
+			protected abstract fun onInterfaceType(type: GInterfaceType, visit: Visit): Result
+			protected abstract fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, visit: Visit): Result
+			protected abstract fun onListTypeRef(ref: GListTypeRef, visit: Visit): Result
+			protected abstract fun onListValue(value: GListValue, visit: Visit): Result
+			protected abstract fun onName(name: GName, visit: Visit): Result
+			protected abstract fun onNamedTypeRef(ref: GNamedTypeRef, visit: Visit): Result
+			protected abstract fun onNonNullTypeRef(ref: GNonNullTypeRef, visit: Visit): Result
+			protected abstract fun onNullValue(value: GNullValue, visit: Visit): Result
+			protected abstract fun onObjectType(type: GObjectType, visit: Visit): Result
+			protected abstract fun onObjectTypeExtension(extension: GObjectTypeExtension, visit: Visit): Result
+			protected abstract fun onObjectValue(value: GObjectValue, visit: Visit): Result
+			protected abstract fun onObjectValueField(field: GObjectValueField, visit: Visit): Result
+			protected abstract fun onOperationDefinition(definition: GOperationDefinition, visit: Visit): Result
+			protected abstract fun onOperationTypeDefinition(definition: GOperationTypeDefinition, visit: Visit): Result
+			protected abstract fun onScalarType(type: GScalarType, visit: Visit): Result
+			protected abstract fun onScalarTypeExtension(extension: GScalarTypeExtension, visit: Visit): Result
+			protected abstract fun onSchemaDefinition(definition: GSchemaDefinition, visit: Visit): Result
+			protected abstract fun onSchemaExtensionDefinition(definition: GSchemaExtension, visit: Visit): Result
+			protected abstract fun onSelectionSet(set: GSelectionSet, visit: Visit): Result
+			protected abstract fun onStringValue(value: GStringValue, visit: Visit): Result
+			protected abstract fun onSyntheticNode(node: GAst, visit: Visit): Result
+			protected abstract fun onUnionType(type: GUnionType, visit: Visit): Result
+			protected abstract fun onUnionTypeExtension(extension: GUnionTypeExtension, visit: Visit): Result
+			protected abstract fun onVariableDefinition(definition: GVariableDefinition, visit: Visit): Result
+			protected abstract fun onVariableRef(ref: GVariableRef, visit: Visit): Result
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitDirectiveDefinition(definition: GDirectiveDefinition, data: Nothing?) = visitDirectiveDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onArgument(argument: GArgument, data: Nothing?, visit: Visit) = onArgument(argument, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitDocument(document: GDocument, data: Nothing?) = visitDocument(document)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onArgumentDefinition(definition: GArgumentDefinition, data: Nothing?, visit: Visit) = onArgumentDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitEnumType(type: GEnumType, data: Nothing?) = visitEnumType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onBooleanValue(value: GBooleanValue, data: Nothing?, visit: Visit) = onBooleanValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitEnumTypeExtension(extension: GEnumTypeExtension, data: Nothing?) = visitEnumTypeExtension(extension)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDirective(directive: GDirective, data: Nothing?, visit: Visit) = onDirective(directive, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitEnumValue(value: GEnumValue, data: Nothing?) = visitEnumValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDirectiveDefinition(definition: GDirectiveDefinition, data: Nothing?, visit: Visit) = onDirectiveDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitEnumValueDefinition(definition: GEnumValueDefinition, data: Nothing?) = visitEnumValueDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onDocument(document: GDocument, data: Nothing?, visit: Visit) = onDocument(document, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFieldArgumentDefinition(definition: GFieldArgumentDefinition, data: Nothing?) = visitFieldArgumentDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumType(type: GEnumType, data: Nothing?, visit: Visit) = onEnumType(type, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFieldDefinition(definition: GFieldDefinition, data: Nothing?) = visitFieldDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumTypeExtension(extension: GEnumTypeExtension, data: Nothing?, visit: Visit) = onEnumTypeExtension(extension, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFieldSelection(selection: GFieldSelection, data: Nothing?) = visitFieldSelection(selection)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumValue(value: GEnumValue, data: Nothing?, visit: Visit) = onEnumValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFloatType(type: GFloatType, data: Nothing?) = visitFloatType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onEnumValueDefinition(definition: GEnumValueDefinition, data: Nothing?, visit: Visit) = onEnumValueDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFloatValue(value: GFloatValue, data: Nothing?) = visitFloatValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFieldDefinition(definition: GFieldDefinition, data: Nothing?, visit: Visit) = onFieldDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFragmentDefinition(definition: GFragmentDefinition, data: Nothing?) = visitFragmentDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFieldSelection(selection: GFieldSelection, data: Nothing?, visit: Visit) = onFieldSelection(selection, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitFragmentSelection(selection: GFragmentSelection, data: Nothing?) = visitFragmentSelection(selection)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFloatValue(value: GFloatValue, data: Nothing?, visit: Visit) = onFloatValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitIdType(type: GIdType, data: Nothing?) = visitIdType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFragmentDefinition(definition: GFragmentDefinition, data: Nothing?, visit: Visit) = onFragmentDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?) = visitInlineFragmentSelection(selection)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onFragmentSelection(selection: GFragmentSelection, data: Nothing?, visit: Visit) = onFragmentSelection(selection, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitInputObjectArgumentDefinition(definition: GInputObjectArgumentDefinition, data: Nothing?) = visitInputObjectArgumentDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?, visit: Visit) = onInlineFragmentSelection(selection, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitInputObjectType(type: GInputObjectType, data: Nothing?) = visitInputObjectType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInputObjectType(type: GInputObjectType, data: Nothing?, visit: Visit) = onInputObjectType(type, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?) = visitInputObjectTypeExtension(extension)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?, visit: Visit) = onInputObjectTypeExtension(extension, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitIntType(type: GIntType, data: Nothing?) = visitIntType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onIntValue(value: GIntValue, data: Nothing?, visit: Visit) = onIntValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitIntValue(value: GIntValue, data: Nothing?) = visitIntValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInterfaceType(type: GInterfaceType, data: Nothing?, visit: Visit) = onInterfaceType(type, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitInterfaceType(type: GInterfaceType, data: Nothing?) = visitInterfaceType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?, visit: Visit) = onInterfaceTypeExtension(extension, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?) = visitInterfaceTypeExtension(extension)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onListTypeRef(ref: GListTypeRef, data: Nothing?, visit: Visit) = onListTypeRef(ref, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitListTypeRef(ref: GListTypeRef, data: Nothing?) = visitListTypeRef(ref)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onListValue(value: GListValue, data: Nothing?, visit: Visit) = onListValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitListValue(value: GListValue, data: Nothing?) = visitListValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onName(name: GName, data: Nothing?, visit: Visit) = onName(name, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitName(name: GName, data: Nothing?) = visitName(name)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNamedTypeRef(ref: GNamedTypeRef, data: Nothing?, visit: Visit) = onNamedTypeRef(ref, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitNamedTypeRef(ref: GNamedTypeRef, data: Nothing?) = visitNamedTypeRef(ref)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNonNullTypeRef(ref: GNonNullTypeRef, data: Nothing?, visit: Visit) = onNonNullTypeRef(ref, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitNonNullTypeRef(ref: GNonNullTypeRef, data: Nothing?) = visitNonNullTypeRef(ref)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onNullValue(value: GNullValue, data: Nothing?, visit: Visit) = onNullValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitNullValue(value: GNullValue, data: Nothing?) = visitNullValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectType(type: GObjectType, data: Nothing?, visit: Visit) = onObjectType(type, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitObjectType(type: GObjectType, data: Nothing?) = visitObjectType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectTypeExtension(extension: GObjectTypeExtension, data: Nothing?, visit: Visit) = onObjectTypeExtension(extension, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitObjectTypeExtension(extension: GObjectTypeExtension, data: Nothing?) = visitObjectTypeExtension(extension)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectValue(value: GObjectValue, data: Nothing?, visit: Visit) = onObjectValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitObjectValue(value: GObjectValue, data: Nothing?) = visitObjectValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onObjectValueField(field: GObjectValueField, data: Nothing?, visit: Visit) = onObjectValueField(field, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitObjectValueField(field: GObjectValueField, data: Nothing?) = visitObjectValueField(field)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onOperationDefinition(definition: GOperationDefinition, data: Nothing?, visit: Visit) = onOperationDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitOperationDefinition(definition: GOperationDefinition, data: Nothing?) = visitOperationDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?, visit: Visit) = onOperationTypeDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?) = visitOperationTypeDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onScalarType(type: GScalarType, data: Nothing?, visit: Visit) = onScalarType(type, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitScalarTypeExtension(extension: GScalarTypeExtension, data: Nothing?) = visitScalarTypeExtension(extension)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onScalarTypeExtension(extension: GScalarTypeExtension, data: Nothing?, visit: Visit) = onScalarTypeExtension(extension, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitSchemaDefinition(definition: GSchemaDefinition, data: Nothing?) = visitSchemaDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSchemaDefinition(definition: GSchemaDefinition, data: Nothing?, visit: Visit) = onSchemaDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?) = visitSchemaExtensionDefinition(definition)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?, visit: Visit) = onSchemaExtensionDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitSelectionSet(set: GSelectionSet, data: Nothing?) = visitSelectionSet(set)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSelectionSet(set: GSelectionSet, data: Nothing?, visit: Visit) = onSelectionSet(set, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitStringType(type: GStringType, data: Nothing?) = visitStringType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onStringValue(value: GStringValue, data: Nothing?, visit: Visit) = onStringValue(value, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitStringValue(value: GStringValue, data: Nothing?) = visitStringValue(value)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onSyntheticNode(node: GAst, data: Nothing?, visit: Visit) = onSyntheticNode(node, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitSyntheticNode(node: GAst, data: Nothing?) = visitSyntheticNode(node)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onUnionType(type: GUnionType, data: Nothing?, visit: Visit) = onUnionType(type, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitUnionType(type: GUnionType, data: Nothing?) = visitUnionType(type)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Nothing?, visit: Visit) = onUnionTypeExtension(extension, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitUnionTypeExtension(extension: GUnionTypeExtension, data: Nothing?) = visitUnionTypeExtension(extension)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onVariableDefinition(definition: GVariableDefinition, data: Nothing?, visit: Visit) = onVariableDefinition(definition, visit)
 
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitVariableDefinition(definition: GVariableDefinition, data: Nothing?) = visitVariableDefinition(definition)
-
-		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun visitVariableRef(ref: GVariableRef, data: Nothing?) = visitVariableRef(ref)
+			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+			final override fun onVariableRef(ref: GVariableRef, data: Nothing?, visit: Visit) = onVariableRef(ref, visit)
+		}
 	}
 
 
-	abstract class WithoutResult<Data>(
-		descendsAutomatically: Boolean = true
-	) : Visitor<Unit, Data>(
-		automaticallyVisitsChildren = descendsAutomatically
-	)
+	abstract class WithoutData<out Result> : Visitor<Result, Nothing?>() {
+
+		abstract fun onNode(node: GAst, visit: Visit): Result
 
 
-	abstract class WithoutResultAndData(
-		descendsAutomatically: Boolean = true
-	) : WithoutData<Unit>(
-		descendsAutomatically = descendsAutomatically
-	)
+		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
+		final override fun onNode(node: GAst, data: Nothing?, visit: Visit) =
+			onNode(node, visit)
+	}
+
+
+	fun <Data> Visit.visitChildren(data: Data) =
+		__unsafeVisitChildren(data)
 }
 
 
-//fun <Data> Iterable<GVisitor<Data, Data>>.serialize(): GVisitor<Data, Data> {
-//	var firstVisitor: GVisitor<Data, Data>? = null
-//	var previousVisitor: GVisitor<Data, Data>? = null
-//
-//	var count = 0
-//	for (visitor in this) {
-//		count += 1
-//
-//		if (previousVisitor !== null) {
-//			previousVisitor = previousVisitor.then(visitor)
-//
-//			if (firstVisitor === null)
-//				firstVisitor = previousVisitor
-//		}
-//
-//		previousVisitor = visitor
-//	}
-//
-//	firstVisitor ?: return GVisitor.identity()
-//
-//	return firstVisitor
-//}
+internal fun <Result> GAst.accept(visitor: Visitor<Result, Nothing?>) =
+	accept(visitor = visitor, data = null)
+
+
+internal fun <Result> GAst.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>) =
+	accept(visitCoordinator = visitCoordinator, data = null)
 
 
 internal fun <Result, Data> GAst.accept(
 	visitor: Visitor<Result, Data>,
-	data: Data,
-	coordinator: VisitCoordinator<Result, Data> = VisitCoordinator.default()
+	data: Data
 ) =
-	coordinator.coordinate(node = this, data = data, dispatcher = VisitDispatcher(visitor)).run()
+	accept(visitCoordinator = VisitCoordinator.default(visitor), data = data)
 
 
-internal fun <Result> GAst.accept(
-	visitor: Visitor<Result, Nothing?>,
-	coordinator: VisitCoordinator<Result, Nothing?> = VisitCoordinator.default()
-) =
-	accept(visitor, data = null, coordinator = coordinator)
-
-
-@JvmName("acceptSimple")
-internal fun GAst.accept(
-	visitor: Visitor<Unit, Nothing?>,
-	coordinator: VisitCoordinator<Unit, Nothing?> = VisitCoordinator.default()
-) =
-	accept(visitor, data = null, coordinator = coordinator)
+internal fun <Result, Data> GAst.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data) =
+	visitCoordinator.visit(node = this, data = data)

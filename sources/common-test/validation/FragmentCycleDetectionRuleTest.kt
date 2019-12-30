@@ -4,12 +4,12 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentCycleDetectionRuleTest : ValidationRule {
+class FragmentCycleDetectionRuleTest {
 
 	@Test
 	fun `accepts non-cyclic fragment references`() {
 		assertValidationRule(
-			rule = FragmentCycleDetectionRule(),
+			rule = FragmentCycleDetectionRule,
 			errors = emptyList(),
 			document = """
 				|{
@@ -38,7 +38,7 @@ class FragmentCycleDetectionRuleTest : ValidationRule {
 	@Test
 	fun `rejects cyclic fragment references`() {
 		assertValidationRule(
-			rule = FragmentCycleDetectionRule(),
+			rule = FragmentCycleDetectionRule,
 			errors = listOf(
 				"""
 					Fragment 'nameFragment' cannot recursively reference itself through 'barkVolumeFragment'.

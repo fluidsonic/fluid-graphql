@@ -27,10 +27,9 @@ class ParallelVisitorTest {
 			|}
 		""".trimMargin())
 
-		visitors.parallelize(node = document, data = StackCollectingVisitor.Data())
+		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
 		val expectedStacks: List<List<String>> = listOf(
-
 			listOf("Document.A(0)"),
 			listOf("Document.A(0)", "Document.B(0)"),
 			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)"),
@@ -218,7 +217,7 @@ class ParallelVisitorTest {
 			|}
 		""".trimMargin())
 
-		visitors.parallelize(node = document, data = StackCollectingVisitor.Data())
+		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
 		val expectedStacks: List<List<String>> = listOf(
 			listOf("Document.A(0)"),
@@ -274,7 +273,7 @@ class ParallelVisitorTest {
 			|}
 		""".trimMargin())
 
-		visitors.parallelize(node = document, data = StackCollectingVisitor.Data())
+		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
 		val expectedStacks: List<List<String>> = listOf(
 			listOf("Document.A(0)"),

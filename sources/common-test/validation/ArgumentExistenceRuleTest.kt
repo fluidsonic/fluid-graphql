@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class ArgumentExistenceRuleTest : ValidationRule {
+class ArgumentExistenceRuleTest {
 
 	@Test
 	fun `accepts argument that exist`() {

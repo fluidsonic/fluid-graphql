@@ -2,40 +2,40 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Values-of-Correct-Type
-internal object ValueValidityRule : ValidationRule {
+internal object ValueValidityRule : ValidationRule.Singleton() {
 
-	override fun validateArgument(argument: GArgument, context: ValidationContext) {
-		val argumentDefinition = context.relatedArgumentDefinition
+	override fun onArgument(argument: GArgument, data: ValidationContext, visit: Visit) {
+		val argumentDefinition = data.relatedArgumentDefinition
 			?: return // Cannot validate unknown argument.
 
-		context.schema.validateValue(argument.value, typeRef = argumentDefinition.type).forEach { error ->
-			context.reportError(error)
+		data.schema.validateValue(argument.value, typeRef = argumentDefinition.type).forEach { error ->
+			data.reportError(error)
 		}
 	}
 
 
-	override fun validateArgumentDefinition(definition: GArgumentDefinition, context: ValidationContext) {
+	override fun onArgumentDefinition(definition: GArgumentDefinition, data: ValidationContext, visit: Visit) {
 		val defaultValue = definition.defaultValue
 			?: return // Nothing to validate.
 
-		val type = context.relatedType
+		val type = data.relatedType
 			?: return // Cannot validate argument of unknown type.
 
-		context.schema.validateValue(defaultValue, type = type).forEach { error ->
-			context.reportError(error)
+		data.schema.validateValue(defaultValue, type = type).forEach { error ->
+			data.reportError(error)
 		}
 	}
 
 
-	override fun validateVariableDefinition(definition: GVariableDefinition, context: ValidationContext) {
+	override fun onVariableDefinition(definition: GVariableDefinition, data: ValidationContext, visit: Visit) {
 		val defaultValue = definition.defaultValue
 			?: return // Nothing to validate.
 
-		val type = context.relatedType
+		val type = data.relatedType
 			?: return // Cannot validate argument of unknown type.
 
-		context.schema.validateValue(defaultValue, type = type).forEach { error ->
-			context.reportError(error)
+		data.schema.validateValue(defaultValue, type = type).forEach { error ->
+			data.reportError(error)
 		}
 	}
 }

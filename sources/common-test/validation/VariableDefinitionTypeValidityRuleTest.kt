@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class VariableDefinitionTypeValidityRuleTest : ValidationRule {
+class VariableDefinitionTypeValidityRuleTest {
 
 	@Test
 	fun `accepts variables with input types`() {

@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class DocumentExecutabilityRuleTest : ValidationRule {
+class DocumentExecutabilityRuleTest {
 
 	@Test
 	fun `accepts single operation`() {

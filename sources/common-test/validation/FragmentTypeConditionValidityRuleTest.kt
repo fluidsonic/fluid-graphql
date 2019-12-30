@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentTypeConditionValidityRuleTest : ValidationRule {
+class FragmentTypeConditionValidityRuleTest {
 
 	@Test
 	fun `accepts fragments on composite types`() {

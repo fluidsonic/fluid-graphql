@@ -77,7 +77,7 @@ fun assertErrors(expected: List<String>, actual: List<GError>) {
 
 @Suppress("NAME_SHADOWING")
 internal fun assertValidationRule(
-	rule: ValidationRule,
+	rule: ValidationRule.Provider,
 	errors: List<String>,
 	document: String,
 	schema: String? = null
@@ -99,7 +99,7 @@ internal fun assertValidationRule(
 
 @Suppress("NAME_SHADOWING")
 internal fun assertValidationRule(
-	rule: ValidationRule,
+	rule: ValidationRule.Provider,
 	errors: List<String>,
 	document: GDocument,
 	schema: GSchema = document.schema ?: GSchema.parse("schema {}")!!
@@ -109,12 +109,7 @@ internal fun assertValidationRule(
 		schema = schema
 	)
 
-	document.accept(
-		visitor = ValidationRuleVisitor(rule).contextualize(context),
-		data = context
-	)
-
-	rule.beforeTraversal(context)
+	document.accept(rule.provide().contextualize(context))
 
 	assertErrors(
 		expected = errors,

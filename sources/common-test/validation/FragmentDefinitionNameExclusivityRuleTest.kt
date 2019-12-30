@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentDefinitionNameExclusivityRuleTest : ValidationRule {
+class FragmentDefinitionNameExclusivityRuleTest {
 
 	@Test
 	fun `accepts unique fragment names`() {

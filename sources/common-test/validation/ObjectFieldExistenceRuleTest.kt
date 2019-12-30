@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class ObjectFieldExistenceRuleTest : ValidationRule {
+class ObjectFieldExistenceRuleTest {
 
 	@Test
 	fun `accepts field names that exist`() {

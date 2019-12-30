@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FieldSelectionExistenceRuleTest : ValidationRule {
+class FieldSelectionExistenceRuleTest {
 
 	@Test
 	fun `accepts existing field in field selection`() {

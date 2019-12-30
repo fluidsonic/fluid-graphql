@@ -2,9 +2,9 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Input-Object-Field-Uniqueness
-internal object ObjectFieldNameExclusivityRule : ValidationRule {
+internal object ObjectFieldNameExclusivityRule : ValidationRule.Singleton() {
 
-	override fun validateValue(value: GValue, context: ValidationContext) {
+	override fun onValue(value: GValue, data: ValidationContext, visit: Visit) {
 		if (value !is GObjectValue)
 			return // Irrelevant.
 
@@ -12,7 +12,7 @@ internal object ObjectFieldNameExclusivityRule : ValidationRule {
 			.groupBy { it.name }
 			.filter { (_, fields) -> fields.size > 1 }
 			.forEach { (name, field) ->
-				context.reportError(
+				data.reportError(
 					message = "An input object can only have a single field named '$name'.",
 					nodes = field.map { it.nameNode }
 				)

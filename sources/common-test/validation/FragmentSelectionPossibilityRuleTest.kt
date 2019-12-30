@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class FragmentSelectionPossibilityRuleTest : ValidationRule {
+class FragmentSelectionPossibilityRuleTest {
 
 	@Test
 	fun `accepts fragment selections on possible types`() {

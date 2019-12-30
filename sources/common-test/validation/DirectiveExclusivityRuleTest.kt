@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class DirectiveExclusivityRuleTest : ValidationRule {
+class DirectiveExclusivityRuleTest {
 
 	@Test
 	fun `accepts directives that occur only once or that are repeatable`() {

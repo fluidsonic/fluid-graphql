@@ -4,7 +4,7 @@ import tests.*
 import kotlin.test.*
 
 
-class InputNameExclusivityRuleTest : ValidationRule {
+class InputNameExclusivityRuleTest {
 
 	@Test
 	fun `accepts unique operation names`() {

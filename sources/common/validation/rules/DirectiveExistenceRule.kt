@@ -1,14 +1,14 @@
 package io.fluidsonic.graphql
 
 
-internal object DirectiveExistenceRule : ValidationRule {
+internal object DirectiveExistenceRule : ValidationRule.Singleton() {
 
-	override fun validateDirective(directive: GDirective, context: ValidationContext) {
-		val definition = context.relatedDirectiveDefinition
+	override fun onDirective(directive: GDirective, data: ValidationContext, visit: Visit) {
+		val definition = data.relatedDirectiveDefinition
 		if (definition !== null)
 			return // Exists.
 
-		context.reportError(
+		data.reportError(
 			message = "Unknown directive '@${directive.name}'.",
 			nodes = listOf(directive.nameNode)
 		)

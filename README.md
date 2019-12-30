@@ -11,6 +11,4 @@ To-Do
 - to prefix or not to prefix all public class names?
 - unit test deep visitor recursion
 - unit test many scenarios how functions of VisitCoordination is (not) called
-- unit test visitor `descendsAutomatically`
 - unit test remaining visitor stuff
-- visitor API needs cleanup again!
