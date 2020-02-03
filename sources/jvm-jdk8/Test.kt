@@ -2,7 +2,7 @@ import io.fluidsonic.graphql.*
 import java.io.*
 
 
-fun main() {
+suspend fun main() {
 
 	val gql = schema {
 		val Character by type
@@ -177,7 +177,8 @@ fun main() {
 
 	val r = req.execute(
 		schema = gql,
-		rootValue = mapOf("id" to "Hey")
+		rootValue = mapOf("id" to "Hey"),
+		environment = Unit
 	)
 
 //	println(r)

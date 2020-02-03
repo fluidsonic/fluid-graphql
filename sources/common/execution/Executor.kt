@@ -1,9 +1,10 @@
 package io.fluidsonic.graphql
 
 
-internal class Executor private constructor(
-	private val defaultResolver: GFieldResolver<*>? = null,
+internal class Executor<out Environment : Any> private constructor(
+	private val defaultResolver: GFieldResolver<Environment, *>? = null,
 	private val document: GDocument,
+	private val environment: Environment,
 	private val externalContext: Any? = null,
 	private val operation: GOperationDefinition,
 	private val pathBuilder: GPath.Builder, // FIXME may not work as class property with later parallelization
@@ -91,7 +92,7 @@ internal class Executor private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#CompleteValue()
-	private fun completeValue(
+	private suspend fun completeValue(
 		value: Any?,
 		fieldType: GType,
 		fieldSelections: List<GFieldSelection>,
@@ -183,7 +184,7 @@ internal class Executor private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
-	fun execute(): Map<String, Any?> {
+	suspend fun execute(): Map<String, Any?> {
 		val result = when (operation.type) {
 			GOperationType.query -> executeQuery()
 			GOperationType.mutation -> TODO() // FIXME
@@ -198,7 +199,7 @@ internal class Executor private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
-	private fun executeField(
+	private suspend fun executeField(
 		objectType: GObjectType,
 		objectValue: Any,
 		fieldSelections: List<GFieldSelection>,
@@ -229,7 +230,7 @@ internal class Executor private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
-	private fun executeQuery(): GPartialResult<Map<String, Any?>> = GPartialResult {
+	private suspend fun executeQuery(): GPartialResult<Map<String, Any?>> = GPartialResult {
 		val rootType = schema.rootTypeForOperationType(operation.type) ?: run {
 			collectError(GError("Schema is not configured for ${operation.type} operations."))
 
@@ -246,7 +247,7 @@ internal class Executor private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteSelectionSet()
-	private fun executeSelectionSet(
+	private suspend fun executeSelectionSet(
 		selectionSet: GSelectionSet,
 		objectType: GObjectType,
 		objectValue: Any,
@@ -286,7 +287,7 @@ internal class Executor private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
-	private fun resolveFieldValue(
+	private suspend fun resolveFieldValue(
 		fieldDefinition: GFieldDefinition,
 		fieldSelections: List<GFieldSelection>,
 		objectType: GObjectType,
@@ -300,12 +301,13 @@ internal class Executor private constructor(
 
 		// FIXME type safety
 		// FIXME fallback resolver
-		val resolver = fieldDefinition.resolver as GFieldResolver<Any>?
+		val resolver = fieldDefinition.resolver as GFieldResolver<Environment, Any>?
 			?: error("No resolver registered for '${objectType.name}.${fieldDefinition.name}'.")
 
-		val resolverContext = object : GFieldResolver.Context {
+		val resolverContext = object : GFieldResolver.Context<Environment> {
 
 			override val arguments get() = argumentValues
+			override val environment get() = this@Executor.environment
 			override val parentType get() = objectType
 			override val schema get() = this@Executor.schema
 		}
@@ -369,15 +371,16 @@ internal class Executor private constructor(
 
 	companion object {
 
-		fun create(
+		fun <Environment : Any> create(
 			schema: GSchema,
 			document: GDocument,
+			environment: Environment,
 			rootValue: Any,
 			operationName: String? = null,
 			variableValues: Map<String, Any?> = emptyMap(),
 			externalContext: Any? = null,
-			defaultResolver: GFieldResolver<*>? = null
-		): GResult<Executor> = GResult {
+			defaultResolver: GFieldResolver<Environment, *>? = null
+		): GResult<Executor<Environment>> = GResult {
 			// FIXME check type
 			val operation = getOperation(
 				document = document,
@@ -396,6 +399,7 @@ internal class Executor private constructor(
 			Executor(
 				defaultResolver = defaultResolver,
 				document = document,
+				environment = environment,
 				externalContext = externalContext,
 				operation = operation,
 				pathBuilder = pathBuilder,

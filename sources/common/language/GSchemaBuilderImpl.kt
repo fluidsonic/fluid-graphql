@@ -1,16 +1,23 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GSchemaBuilder.*
+import kotlin.jvm.*
 import kotlin.reflect.*
 
 
 // FIXME change to schemaDocument as schema will be needed within for directives & op type definitions
+@JvmName("schemaWithoutContext")
 @SchemaBuilderKeywordB
-fun schema(configure: GSchemaBuilder.() -> Unit) =
-	GSchemaBuilderImpl().apply(configure).build()
+fun schema(configure: GSchemaBuilder<Nothing>.() -> Unit) =
+	GSchemaBuilderImpl<Nothing>().apply(configure).build()
 
 
-internal class GSchemaBuilderImpl : GSchemaBuilder {
+// FIXME change to schemaDocument as schema will be needed within for directives & op type definitions
+@SchemaBuilderKeywordB
+fun <Context : Any> schema(configure: GSchemaBuilder<Context>.() -> Unit) =
+	GSchemaBuilderImpl<Context>().apply(configure).build()
+
+
+internal class GSchemaBuilderImpl<out Environment : Any> : GSchemaBuilder<Environment>() {
 
 	private val definitions = mutableListOf<GTypeSystemDefinition>()
 	private var mutationType: GNamedTypeRef? = null
@@ -41,22 +48,22 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit) {
-		definitions += DirectiveDefinitionBuilderImpl(name = name).apply(configure).build()
+		definitions += DirectiveDefinitionBuilderImpl<Environment>(name = name).apply(configure).build()
 	}
 
 
 	override fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit) {
-		definitions += EnumTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		definitions += EnumTypeDefinitionBuilderImpl<Environment>(name = type.name).apply(configure).build()
 	}
 
 
 	override fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit) {
-		definitions += InputObjectTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		definitions += InputObjectTypeDefinitionBuilderImpl<Environment>(name = type.name).apply(configure).build()
 	}
 
 
 	override fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
-		definitions += InterfaceTypeDefinitionBuilderImpl(
+		definitions += InterfaceTypeDefinitionBuilderImpl<Environment>(
 			interfaces = emptyList(),
 			name = type.name
 		).apply(configure).build()
@@ -66,7 +73,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	override fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit) {
 		named as InterfacesImpl
 
-		definitions += InterfaceTypeDefinitionBuilderImpl(
+		definitions += InterfaceTypeDefinitionBuilderImpl<Environment>(
 			interfaces = named.interfaces,
 			name = named.name
 		).apply(configure).build()
@@ -78,15 +85,19 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) {
+	override fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Environment, Unit>.() -> Unit) {
 		mutationType = type
 
 		Object(type, configure)
 	}
 
 
-	override fun <T : Any> Object(type: GNamedTypeRef, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
-		definitions += ObjectTypeDefinitionBuilderImpl(
+	override fun <KotlinType : Any> Object(
+		type: GNamedTypeRef,
+		kotlinType: KClass<KotlinType>,
+		configure: ObjectTypeDefinitionBuilder<Environment, KotlinType>.() -> Unit
+	) {
+		definitions += ObjectTypeDefinitionBuilderImpl<Environment, KotlinType>(
 			interfaces = emptyList(),
 			kotlinType = kotlinType,
 			name = type.name
@@ -94,10 +105,14 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun <T : Any> Object(named: Interfaces, kotlinType: KClass<T>, configure: ObjectTypeDefinitionBuilder<T>.() -> Unit) {
+	override fun <KotlinType : Any> Object(
+		named: Interfaces,
+		kotlinType: KClass<KotlinType>,
+		configure: ObjectTypeDefinitionBuilder<Environment, KotlinType>.() -> Unit
+	) {
 		named as InterfacesImpl
 
-		definitions += ObjectTypeDefinitionBuilderImpl(
+		definitions += ObjectTypeDefinitionBuilderImpl<Environment, KotlinType>(
 			interfaces = named.interfaces,
 			kotlinType = kotlinType,
 			name = named.name
@@ -110,7 +125,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) {
+	override fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Environment, Unit>.() -> Unit) {
 		queryType = type
 
 		Object(type, configure)
@@ -118,7 +133,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit) {
-		definitions += ScalarTypeDefinitionBuilderImpl(name = type.name).apply(configure).build()
+		definitions += ScalarTypeDefinitionBuilderImpl<Environment>(name = type.name).apply(configure).build()
 	}
 
 
@@ -127,7 +142,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	override fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Unit>.() -> Unit) {
+	override fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder<Environment, Unit>.() -> Unit) {
 		subscriptionType = type
 
 		Object(type, configure)
@@ -135,7 +150,8 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit) {
-		definitions += (named as UnionTypeDefinitionBuilderImpl).apply(configure).build()
+		@Suppress("UNCHECKED_CAST")
+		definitions += (named as UnionTypeDefinitionBuilderImpl<Environment>).apply(configure).build()
 	}
 
 
@@ -147,7 +163,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 	override fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes =
-		UnionTypeDefinitionBuilderImpl(
+		UnionTypeDefinitionBuilderImpl<Environment>(
 			name = name,
 			possibleType = possibleType
 		)
@@ -165,12 +181,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class ArgumentDefinitionBuilderImpl(
+	private class ArgumentDefinitionBuilderImpl<out Environment : Any>(
 		val name: String,
 		val type: GTypeRef,
 		val definitionType: ArgumentDefinitionType,
 		var defaultValue: GValue? = null
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		ArgumentDefinitionBuilder,
 		ArgumentDefinitionContainer.NameAndType,
 		ArgumentDefinitionContainer.NameAndTypeAndDefault {
@@ -221,13 +237,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private open class ContainerImpl :
+	private open class ContainerImpl<out Environment : Any> :
 		ArgumentContainer,
 		DeprecationContainer,
 		DescriptionContainer,
 		DirectiveContainer,
 		TypeRefContainer {
-
 
 		protected val argumentDefinitions = mutableListOf<GArgumentDefinition>()
 		protected val arguments = mutableListOf<GArgument>()
@@ -241,12 +256,14 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		fun argument(name: ArgumentDefinitionContainer.NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit) {
-			argumentDefinitions += (name as ArgumentDefinitionBuilderImpl).apply(configure).build()
+			@Suppress("UNCHECKED_CAST")
+			argumentDefinitions += (name as ArgumentDefinitionBuilderImpl<Environment>).apply(configure).build()
 		}
 
 
 		fun argument(name: ArgumentDefinitionContainer.NameAndTypeAndDefault, configure: ArgumentDefinitionBuilder.() -> Unit) {
-			argumentDefinitions += (name as ArgumentDefinitionBuilderImpl).apply(configure).build()
+			@Suppress("UNCHECKED_CAST")
+			argumentDefinitions += (name as ArgumentDefinitionBuilderImpl<Environment>).apply(configure).build()
 		}
 
 
@@ -271,16 +288,16 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		override fun directive(name: String, configure: DirectiveBuilder.() -> Unit) {
-			directives += DirectiveBuilderImpl(name = name).apply(configure).build()
+			directives += DirectiveBuilderImpl<Environment>(name = name).apply(configure).build()
 		}
 
 
 		fun String.ofArgumentDefinitionType(type: GTypeRef, definitionType: ArgumentDefinitionType) =
-			ArgumentDefinitionBuilderImpl(name = this, type = type, definitionType = definitionType)
+			ArgumentDefinitionBuilderImpl<Environment>(name = this, type = type, definitionType = definitionType)
 
 
 		fun String.ofFieldDefinitionType(type: GTypeRef) =
-			FieldDefinitionBuilderImpl<Any>(name = this, type = type)
+			FieldDefinitionBuilderImpl<Any, Environment>(name = this, type = type)
 
 
 		override fun String.with(value: Any?) =
@@ -298,9 +315,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class DirectiveBuilderImpl(
+	private class DirectiveBuilderImpl<out Environment : Any>(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		DirectiveBuilder {
 
 		fun build() = GDirective(
@@ -310,9 +327,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class DirectiveDefinitionBuilderImpl(
+	private class DirectiveDefinitionBuilderImpl<out Environment : Any>(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		DirectiveDefinitionBuilder {
 
 		private var locations = emptySet<GDirectiveLocation>()
@@ -395,9 +412,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class EnumTypeDefinitionBuilderImpl(
+	private class EnumTypeDefinitionBuilderImpl<out Environment : Any>(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		EnumTypeDefinitionBuilder {
 
 		private val values = mutableListOf<GEnumValueDefinition>()
@@ -412,13 +429,13 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		override fun value(name: String, configure: EnumTypeDefinitionBuilder.ValueBuilder.() -> Unit) {
-			values += ValueBuilderImpl(name = name).apply(configure).build()
+			values += ValueBuilderImpl<Environment>(name = name).apply(configure).build()
 		}
 
 
-		private class ValueBuilderImpl(
+		private class ValueBuilderImpl<out Environment : Any>(
 			val name: String
-		) : ContainerImpl(),
+		) : ContainerImpl<Environment>(),
 			EnumTypeDefinitionBuilder.ValueBuilder {
 
 			fun build() = GEnumValueDefinition(
@@ -430,14 +447,14 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class FieldDefinitionBuilderImpl<Parent : Any>(
+	private class FieldDefinitionBuilderImpl<out Environment : Any, out ParentKotlinType : Any>(
 		var name: String,
 		var type: GTypeRef
-	) : ContainerImpl(),
-		FieldDefinitionBuilder.Resolvable<Parent>,
+	) : ContainerImpl<Environment>(),
+		FieldDefinitionBuilder.Resolvable<Environment, ParentKotlinType>,
 		FieldDefinitionContainer.NameAndType {
 
-		private var resolver: GFieldResolver<*>? = null
+		private var resolver: GFieldResolver<Environment, ParentKotlinType>? = null
 
 
 		@Suppress("UNCHECKED_CAST")
@@ -451,7 +468,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 		)
 
 
-		override fun <Result> resolve(resolver: Parent.(context: GFieldResolver.Context) -> Result) {
+		override fun <Result> resolve(resolver: suspend ParentKotlinType.(context: GFieldResolver.Context<Environment>) -> Result) {
 			this.resolver = GFieldResolver.of(resolver)
 		}
 
@@ -461,9 +478,9 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class InputObjectTypeDefinitionBuilderImpl(
+	private class InputObjectTypeDefinitionBuilderImpl<out Environment : Any>(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		InputObjectTypeDefinitionBuilder {
 
 		@Suppress("UNCHECKED_CAST")
@@ -480,10 +497,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class InterfaceTypeDefinitionBuilderImpl(
+	private class InterfaceTypeDefinitionBuilderImpl<out Environment : Any>(
 		val name: String,
 		val interfaces: List<GNamedTypeRef>
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		InterfaceTypeDefinitionBuilder {
 
 		private val fieldDefinitions = mutableListOf<GFieldDefinition>()
@@ -500,7 +517,7 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 		@Suppress("UNCHECKED_CAST")
 		override fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.() -> Unit) {
-			fieldDefinitions += (name as FieldDefinitionBuilderImpl<Unit>).apply(configure).build()
+			fieldDefinitions += (name as FieldDefinitionBuilderImpl<Unit, Environment>).apply(configure).build()
 		}
 
 
@@ -523,12 +540,12 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class ObjectTypeDefinitionBuilderImpl<T : Any>(
+	private class ObjectTypeDefinitionBuilderImpl<out Environment : Any, out KotlinType : Any>(
 		val name: String,
 		val interfaces: List<GNamedTypeRef>,
-		val kotlinType: KClass<out T>?
-	) : ContainerImpl(),
-		ObjectTypeDefinitionBuilder<T> {
+		val kotlinType: KClass<out KotlinType>?
+	) : ContainerImpl<Environment>(),
+		ObjectTypeDefinitionBuilder<Environment, KotlinType> {
 
 		private val fieldDefinitions = mutableListOf<GFieldDefinition>()
 
@@ -544,18 +561,22 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 
 
 		@Suppress("UNCHECKED_CAST")
-		override fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.Resolvable<T>.() -> Unit) {
-			fieldDefinitions += (name as FieldDefinitionBuilderImpl<T>).apply(configure).build()
+		override fun field(
+			name: FieldDefinitionContainer.NameAndType,
+			configure: FieldDefinitionBuilder.Resolvable<Environment, KotlinType>.() -> Unit
+		) {
+			fieldDefinitions += (name as FieldDefinitionBuilderImpl<Environment, KotlinType>).apply(configure).build()
 		}
+
 
 		override fun String.of(type: GTypeRef) =
 			ofFieldDefinitionType(type)
 	}
 
 
-	private class ScalarTypeDefinitionBuilderImpl(
+	private class ScalarTypeDefinitionBuilderImpl<out Environment : Any>(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		ScalarTypeDefinitionBuilder {
 
 		fun build() = GCustomScalarType(
@@ -566,10 +587,10 @@ internal class GSchemaBuilderImpl : GSchemaBuilder {
 	}
 
 
-	private class UnionTypeDefinitionBuilderImpl(
+	private class UnionTypeDefinitionBuilderImpl<out Environment : Any>(
 		val name: String,
 		possibleType: GNamedTypeRef
-	) : ContainerImpl(),
+	) : ContainerImpl<Environment>(),
 		PossibleTypes,
 		UnionTypeDefinitionBuilder {
 

@@ -714,13 +714,13 @@ class GDirectiveDefinition(
 		name: String,
 		locations: Set<GDirectiveLocation>,
 		isRepeatable: Boolean = false,
-		arguments: List<GDirectiveArgumentDefinition> = emptyList(),
+		argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
 		description: String? = null
 	) : this(
 		name = GName(name),
 		locations = locations.map { GName(it.name) },
 		isRepeatable = isRepeatable,
-		argumentDefinitions = arguments,
+		argumentDefinitions = argumentDefinitions,
 		description = description?.let { GStringValue(it) }
 	)
 
@@ -764,26 +764,49 @@ class GDocument(
 
 
 	// FIXME move to extension
-	// FIXME add a way to execute and returning either data or errors rather than a response containg serialized errors
-	fun execute(
+	// FIXME add a way to execute and returning either data or errors rather than a response containing serialized errors
+	suspend fun <Environment : Any> execute(
+		schema: GSchema,
+		rootValue: Any,
+		environment: Environment,
+		operationName: String? = null,
+		variableValues: Map<String, Any?> = emptyMap(),
+		externalContext: Any? = null,
+		defaultResolver: GFieldResolver<Environment, *>? = null
+	) =
+		Executor.create(
+				schema = schema,
+				document = this,
+				environment = environment,
+				rootValue = rootValue,
+				operationName = operationName,
+				variableValues = variableValues,
+				externalContext = externalContext,
+				defaultResolver = defaultResolver
+			)
+			.consumeErrors { throw it.errors.first() }
+			.execute()
+
+
+	// FIXME move to extension
+	// FIXME add a way to execute and returning either data or errors rather than a response containing serialized errors
+	suspend fun execute(
 		schema: GSchema,
 		rootValue: Any,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
 		externalContext: Any? = null,
-		defaultResolver: GFieldResolver<*>? = null
+		defaultResolver: GFieldResolver<Unit, *>? = null
 	) =
-		Executor.create(
+		execute(
 			schema = schema,
-			document = this,
 			rootValue = rootValue,
+			environment = Unit,
 			operationName = operationName,
 			variableValues = variableValues,
 			externalContext = externalContext,
 			defaultResolver = defaultResolver
 		)
-			.consumeErrors { throw it.errors.first() }
-			.execute()
 
 
 	fun fragment(name: String): GFragmentDefinition? {
@@ -1023,7 +1046,7 @@ class GFieldDefinition(
 	override val argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
-	val resolver: GFieldResolver<*>? = null,
+	val resolver: GFieldResolver<*, *>? = null,
 	origin: GOrigin? = null
 ) :
 	GNode(origin = origin),
@@ -1038,14 +1061,14 @@ class GFieldDefinition(
 	constructor(
 		name: String,
 		type: GTypeRef,
-		arguments: List<GFieldArgumentDefinition> = emptyList(),
+		argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		resolver: GFieldResolver<*>? = null
+		resolver: GFieldResolver<*, *>? = null
 	) : this(
 		name = GName(name),
 		type = type,
-		argumentDefinitions = arguments,
+		argumentDefinitions = argumentDefinitions,
 		description = description?.let { GStringValue(it) },
 		directives = directives,
 		resolver = resolver
@@ -1318,12 +1341,12 @@ class GInputObjectType(
 
 	constructor(
 		name: String,
-		arguments: List<GInputObjectArgumentDefinition>,
+		argumentDefinitions: List<GInputObjectArgumentDefinition>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		argumentDefinitions = arguments,
+		argumentDefinitions = argumentDefinitions,
 		description = description?.let { GStringValue(it) },
 		directives = directives
 	)
@@ -1368,11 +1391,11 @@ class GInputObjectTypeExtension(
 
 	constructor(
 		name: String,
-		arguments: List<GInputObjectArgumentDefinition> = emptyList(),
+		argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
 		directives: List<GDirective> = emptyList()
 	) : this(
 		name = GName(name),
-		argumentDefinitions = arguments,
+		argumentDefinitions = argumentDefinitions,
 		directives = directives
 	)
 

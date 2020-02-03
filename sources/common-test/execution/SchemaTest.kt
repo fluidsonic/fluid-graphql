@@ -8,7 +8,7 @@ import kotlin.test.*
 class SchemaTest {
 
 	@Test
-	fun `executes with a complex schema`() {
+	fun `executes with a complex schema`() = runBlockingTest {
 		val document = GDocument.parse("""
 			|{
 			|  feed {
