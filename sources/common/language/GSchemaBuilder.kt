@@ -199,40 +199,58 @@ abstract class GSchemaBuilder<out Environment : Any> {
 
 		@SchemaBuilderBuiltinTypeA
 		val ARGUMENT_DEFINITION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val ENUM: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val ENUM_VALUE: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val FIELD: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val FIELD_DEFINITION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val FRAGMENT_DEFINITION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val FRAGMENT_SPREAD: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val INLINE_FRAGMENT: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val INPUT_FIELD_DEFINITION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val INPUT_OBJECT: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val INTERFACE: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val MUTATION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val OBJECT: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val QUERY: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val SCALAR: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val SCHEMA: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val SUBSCRIPTION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val UNION: DirectiveLocation
+
 		@SchemaBuilderBuiltinTypeA
 		val VARIABLE_DEFINITION: DirectiveLocation
 
@@ -286,7 +304,7 @@ abstract class GSchemaBuilder<out Environment : Any> {
 		interface Resolvable<out Environment : Any, out ParentKotlinType : Any> : FieldDefinitionBuilder {
 
 			@SchemaBuilderKeywordB
-			fun <Result> resolve(resolver: suspend ParentKotlinType.(context: GFieldResolver.Context<Environment>) -> Result)
+			fun <Result> resolve(resolver: suspend GFieldResolverContext<Environment>.(context: ParentKotlinType) -> Result)
 		}
 	}
 
@@ -378,7 +396,7 @@ abstract class GSchemaBuilder<out Environment : Any> {
 
 		@SchemaBuilderBuiltinTypeA
 		val ID: GTypeRef
-			get() = GIDTypeRef
+			get() = GIdTypeRef
 
 		@SchemaBuilderBuiltinTypeA
 		val Int: GTypeRef

@@ -1,6 +1,15 @@
 package io.fluidsonic.graphql
 
 
+internal fun <T> identity(value: T) =
+	value
+
+
+@Suppress("unused")
+internal fun <R, T> R.identity(value: T) =
+	value
+
+
 internal fun invalidOperationError(
 	document: GDocument,
 	schema: GSchema,

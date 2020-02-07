@@ -25,27 +25,27 @@ internal object GIntrospection {
 
 			field("types" of !List(!Type)) {
 				description("A list of all types supported by this server.")
-				resolve<List<GType>> { types }
+				resolve<List<GType>> { it.types }
 			}
 
 			field("queryType" of !Type) {
 				description("The type that query operations will be rooted at.")
-				resolve<GType> { queryType!! } // FIXME optional or not?
+				resolve<GType> { it.queryType!! } // FIXME optional or not?
 			}
 
 			field("mutationType" of Type) {
 				description("If this server supports mutation, the type that mutation operations will be rooted at.")
-				resolve<GType?> { mutationType }
+				resolve<GType?> { it.mutationType }
 			}
 
 			field("subscriptionType" of Type) {
 				description("If this server support subscription, the type that subscription operations will be rooted at.")
-				resolve<GType?> { subscriptionType }
+				resolve<GType?> { it.subscriptionType }
 			}
 
 			field("directives" of !List(!Directive)) {
 				description("A list of all directives supported by this server.")
-				resolve<List<GDirectiveDefinition>> { directiveDefinitions }
+				resolve<List<GDirectiveDefinition>> { it.directiveDefinitions }
 			}
 		}
 
@@ -61,26 +61,26 @@ internal object GIntrospection {
 			)
 
 			field("kind" of !TypeKind) {
-				resolve<String> { kind.name }
+				resolve<String> { it.kind.name }
 			}
 
 			field("name" of String) {
-				resolve<String?> { (this as? GNamedType)?.name }
+				resolve<String?> { (it as? GNamedType)?.name }
 			}
 
 			field("description" of String) {
-				resolve<String?> { (this as? GNamedType)?.description }
+				resolve<String?> { (it as? GNamedType)?.description }
 			}
 
 			field("fields" of List(!Field)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve<List<GFieldDefinition>?> { context ->
-					if (this !is GNode.WithFieldDefinitions)
+				resolve<List<GFieldDefinition>?> { type ->
+					if (type !is GNode.WithFieldDefinitions)
 						return@resolve null
 
-					var fieldDefinitions = fieldDefinitions
-					if (!context.booleanArgument("includeDeprecated"))
+					var fieldDefinitions = type.fieldDefinitions
+					if (arguments["includeDeprecated"] as Boolean) // FIXME
 						fieldDefinitions = fieldDefinitions.filter { it.deprecation === null }
 
 					return@resolve fieldDefinitions
@@ -88,29 +88,29 @@ internal object GIntrospection {
 			}
 
 			field("interfaces" of List(!Type)) {
-				resolve<List<GInterfaceType>?> { context ->
-					(this as? GNode.WithInterfaces)
+				resolve<List<GInterfaceType>?> { type ->
+					(type as? GNode.WithInterfaces)
 						?.interfaces
-						?.mapNotNull { context.schema.resolveTypeAs<GInterfaceType>(it) }
+						?.mapNotNull { schema.resolveTypeAs<GInterfaceType>(it) }
 				}
 			}
 
 			field("possibleTypes" of List(!Type)) {
-				resolve<List<GType>?> { context ->
-					(this as? GAbstractType)
-						?.let { context.schema.getPossibleTypes(it) }
+				resolve<List<GType>?> { type ->
+					(type as? GAbstractType)
+						?.let { schema.getPossibleTypes(it) }
 				}
 			}
 
 			field("enumValues" of List(!EnumValue)) {
 				argument("includeDeprecated" of Boolean default false)
 
-				resolve<List<GEnumValueDefinition>?> { context ->
-					if (this !is GEnumType)
+				resolve<List<GEnumValueDefinition>?> { type ->
+					if (type !is GEnumType)
 						return@resolve null
 
-					var values = values
-					if (!context.booleanArgument("includeDeprecated"))
+					var values = type.values
+					if (arguments["includeDeprecated"] as Boolean) // FIXME
 						values = values.filter { it.deprecation === null }
 
 					return@resolve values
@@ -118,11 +118,11 @@ internal object GIntrospection {
 			}
 
 			field("inputFields" of List(!InputValue)) {
-				resolve<List<GArgumentDefinition>?> { (this as? GNode.WithArgumentDefinitions)?.argumentDefinitions }
+				resolve<List<GArgumentDefinition>?> { (it as? GNode.WithArgumentDefinitions)?.argumentDefinitions }
 			}
 
 			field("ofType" of Type) {
-				resolve<GType?> { (this as? GWrappingType)?.wrappedType }
+				resolve<GType?> { (it as? GWrappingType)?.wrappedType }
 			}
 		}
 
@@ -133,27 +133,27 @@ internal object GIntrospection {
 			)
 
 			field("name" of !String) {
-				resolve<String> { name }
+				resolve<String> { it.name }
 			}
 
 			field("description" of String) {
-				resolve<String?> { description }
+				resolve<String?> { it.description }
 			}
 
 			field("args" of !List(!InputValue)) {
-				resolve<List<GArgumentDefinition>> { argumentDefinitions }
+				resolve<List<GArgumentDefinition>> { it.argumentDefinitions }
 			}
 
 			field("type" of !Type) {
-				resolve<GType> { it.schema.resolveType(type)!! }
+				resolve<GType> { schema.resolveType(it.type)!! }
 			}
 
 			field("isDeprecated" of !Boolean) {
-				resolve<Boolean> { deprecation !== null }
+				resolve<Boolean> { it.deprecation !== null }
 			}
 
 			field("deprecationReason" of String) {
-				resolve<String?> { deprecationReason }
+				resolve<String?> { it.deprecationReason }
 			}
 
 		}
@@ -290,26 +290,27 @@ internal object GIntrospection {
 		name = "__schema",
 		type = Schema.nonNullableRef,
 		description = "Access the current type schema of this server.",
-		resolver = GFieldResolver.of<Any, Any> { it.schema }
+		resolver = GFieldResolver<Any, Any> { schema }
 	)
 
 	val typeField = GFieldDefinition(
 		name = "__type",
 		type = Type,
 		description = "Request the type information of a single type.",
-		arguments = listOf(
+		argumentDefinitions = listOf(
 			GFieldArgumentDefinition(
 				name = "name",
 				type = GStringTypeRef.nonNullableRef
 			)
 		),
-		resolver = GFieldResolver.of<Any, Any> { it.schema.resolveType(it.stringArgument("name")) }
+		// FIXME we need json/gql conversion functions as we cannot distinguish between both at this point - argument coercing has already happened
+		resolver = GFieldResolver<Any, Any> { schema.resolveType(arguments["name"] as String) }
 	)
 
 	val typenameField = GFieldDefinition(
 		name = "__typename",
 		type = GStringTypeRef.nonNullableRef,
 		description = "The name of the current Object type at runtime.",
-		resolver = GFieldResolver.of<Any, Any> { it.parentType.name }
+		resolver = GFieldResolver<Any, Any> { parentTypeDefinition.name }
 	)
 }

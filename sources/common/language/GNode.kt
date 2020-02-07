@@ -536,7 +536,13 @@ sealed class GArgumentDefinition(
 }
 
 
-object GBooleanType : GScalarType(name = "Boolean")
+// https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
+object GBooleanType : GScalarType(
+	name = "Boolean",
+	parseValue = { it as? Boolean },
+	parseValueNode = { (it as? GBooleanValue)?.value },
+	serializeValue = { it as? Boolean }
+)
 
 
 class GBooleanValue(
@@ -563,6 +569,10 @@ class GBooleanValue(
 		value.hashCode()
 
 
+	override fun unwrap() =
+		value
+
+
 	companion object
 }
 
@@ -585,26 +595,43 @@ sealed class GCompositeType(
 }
 
 
+// https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
 class GCustomScalarType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
+	parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity,
+	parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+		{ value -> value.unwrap()?.let { parseValue(it) } }
+	},
+	serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity,
 	origin: GOrigin? = null
 ) : GScalarType(
 	description = description,
 	directives = directives,
 	name = name,
+	parseValue = parseValue,
+	parseValueNode = parseValueNode,
+	serializeValue = serializeValue,
 	origin = origin
 ) {
 
 	constructor(
 		name: String,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity,
+		parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+			{ value -> value.unwrap()?.let { parseValue(it) } }
+		},
+		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		parseValue = parseValue,
+		parseValueNode = parseValueNode,
+		serializeValue = serializeValue
 	)
 
 
@@ -767,24 +794,22 @@ class GDocument(
 	// FIXME add a way to execute and returning either data or errors rather than a response containing serialized errors
 	suspend fun <Environment : Any> execute(
 		schema: GSchema,
-		rootValue: Any,
+		rootResolver: GRootResolver<Environment>,
 		environment: Environment,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		externalContext: Any? = null,
-		defaultResolver: GFieldResolver<Environment, *>? = null
+		defaultResolver: GFieldResolver<Environment, Any>? = null
 	) =
 		Executor.create(
 				schema = schema,
 				document = this,
 				environment = environment,
-				rootValue = rootValue,
+				rootResolver = rootResolver,
 				operationName = operationName,
 				variableValues = variableValues,
-				externalContext = externalContext,
 				defaultResolver = defaultResolver
 			)
-			.consumeErrors { throw it.errors.first() }
+			.consumeErrors { throw it.errors.first() } // FIXME ??
 			.execute()
 
 
@@ -792,19 +817,17 @@ class GDocument(
 	// FIXME add a way to execute and returning either data or errors rather than a response containing serialized errors
 	suspend fun execute(
 		schema: GSchema,
-		rootValue: Any,
+		rootResolver: GRootResolver<Unit>,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		externalContext: Any? = null,
-		defaultResolver: GFieldResolver<Unit, *>? = null
+		defaultResolver: GFieldResolver<Unit, Any>? = null
 	) =
 		execute(
 			schema = schema,
-			rootValue = rootValue,
+			rootResolver = rootResolver,
 			environment = Unit,
 			operationName = operationName,
 			variableValues = variableValues,
-			externalContext = externalContext,
 			defaultResolver = defaultResolver
 		)
 
@@ -839,31 +862,76 @@ class GDocument(
 }
 
 
+// FIXME better default parsers & serializers with better errors
 // https://graphql.github.io/graphql-spec/June2018/#sec-Enums
+// https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
 class GEnumType(
 	name: GName,
 	val values: List<GEnumValueDefinition>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
+	parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+		(value as? String)?.takeIf { valueName -> values.any { it.name == valueName } }
+	},
+	parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+		{ value ->
+			(value as? GEnumValue)
+				.ifNull { error("GraphQL enum '${name.value}' expects an enum value literal but got: $value") }
+				.let { parseValue(it) }
+		}
+	},
+	serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+		(value as? String)
+			.ifNull { error("The default serializer for GraphQL enum '${name.value}' expects a String value but got ${value::class}: $value") }
+			.also { valueName ->
+				if (values.none { it.name == valueName })
+					error("'$valueName' is not a valid value for GraphQL enum '${name.value}'.")
+			}
+	},
 	origin: GOrigin? = null
 ) : GLeafType(
 	description = description,
 	directives = directives,
 	kind = Kind.ENUM,
 	name = name,
+	parseValue = parseValue,
+	parseValueNode = parseValueNode,
+	serializeValue = serializeValue,
 	origin = origin
 ) {
 
+	// FIXME dedup parse/serialize (and in other classes)
 	constructor(
 		name: String,
 		values: List<GEnumValueDefinition>,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+			(value as? String)?.takeIf { valueName -> values.any { it.name == valueName } }
+		},
+		parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+			{ value ->
+				(value as? GEnumValue)
+					.ifNull { error("GraphQL enum '$name' expects an enum value literal but got: $value") }
+					.let { parseValue(it) }
+			}
+		},
+		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+			(value as? String)
+				.ifNull { error("The default serializer for GraphQL enum '$name' expects a String value but got ${value::class}: $value") }
+				.also { valueName ->
+					if (values.none { it.name == valueName })
+						error("'$valueName' is not a valid value for GraphQL enum '$name'.")
+				}
+		}
 	) : this(
 		name = GName(name),
 		values = values,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		parseValue = parseValue,
+		parseValueNode = parseValueNode,
+		serializeValue = serializeValue
 	)
 
 
@@ -953,6 +1021,10 @@ class GEnumValue(
 
 	override fun hashCode() =
 		name.hashCode()
+
+
+	override fun unwrap() =
+		name
 
 
 	companion object
@@ -1146,11 +1218,29 @@ class GFieldSelection(
 }
 
 
-object GFloatType : GScalarType(name = "Float")
+// https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
+object GFloatType : GScalarType(
+	name = "Float",
+	parseValue = { it.coerceToDoubleOrNull() },
+	parseValueNode = { value ->
+		when (value) {
+			is GFloatValue -> value.value
+			is GIntValue -> value.value.toDouble()
+			else -> null
+		}
+	},
+	serializeValue = { value ->
+		when (value) {
+			is Boolean -> if (value) 1.0 else 0.0
+			is String -> value.toDoubleOrNull()
+			else -> value.coerceToDoubleOrNull()
+		}
+	}
+)
 
 
 class GFloatValue(
-	val value: Float,
+	val value: Double,
 	origin: GOrigin? = null
 ) : GValue(origin = origin) {
 
@@ -1171,6 +1261,10 @@ class GFloatValue(
 
 	override fun hashCode() =
 		value.hashCode()
+
+
+	override fun unwrap() =
+		value
 
 
 	companion object
@@ -1260,7 +1354,29 @@ class GFragmentSelection(
 }
 
 
-object GIdType : GScalarType(name = "ID")
+// https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
+object GIdType : GScalarType(
+	name = "ID",
+	parseValue = { value ->
+		when (value) {
+			is String -> value
+			else -> value.coerceToIntOrNull()?.toString()
+		}
+	},
+	parseValueNode = { value ->
+		when (value) {
+			is GIntValue -> value.value.toString()
+			is GStringValue -> value.value
+			else -> null
+		}
+	},
+	serializeValue = { value ->
+		when (value) {
+			is String -> value
+			else -> value.coerceToIntOrNull()?.toString()
+		}
+	}
+)
 
 
 class GInlineFragmentSelection(
@@ -1328,6 +1444,7 @@ class GInputObjectType(
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
+	val parseValue: (GValueConversionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity,
 	origin: GOrigin? = null
 ) :
 	GCompositeType(
@@ -1343,12 +1460,14 @@ class GInputObjectType(
 		name: String,
 		argumentDefinitions: List<GInputObjectArgumentDefinition>,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		parseValue: (GValueConversionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity
 	) : this(
 		name = GName(name),
 		argumentDefinitions = argumentDefinitions,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		parseValue = parseValue
 	)
 
 
@@ -1414,7 +1533,19 @@ class GInputObjectTypeExtension(
 }
 
 
-object GIntType : GScalarType(name = "Int")
+// https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
+object GIntType : GScalarType(
+	name = "Int",
+	parseValue = { it.coerceToIntOrNull() },
+	parseValueNode = { (it as? GIntValue)?.value },
+	serializeValue = { value ->
+		when (value) {
+			is Boolean -> if (value) 1 else 0
+			is String -> value.toIntOrNull()
+			else -> value.coerceToIntOrNull()
+		}
+	}
+)
 
 
 class GIntValue(
@@ -1439,6 +1570,10 @@ class GIntValue(
 
 	override fun hashCode() =
 		value.hashCode()
+
+
+	override fun unwrap() =
+		value
 
 
 	companion object
@@ -1553,7 +1688,10 @@ sealed class GLeafType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	kind: Kind,
-	origin: GOrigin?
+	origin: GOrigin?,
+	val parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)?,
+	val parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)?,
+	val serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)?
 ) : GNamedType(
 	name = name,
 	description = description,
@@ -1647,6 +1785,10 @@ class GListValue(
 
 	override fun hashCode() =
 		elements.hashCode()
+
+
+	override fun unwrap() =
+		elements.map { it.unwrap() }
 
 
 	companion object
@@ -1818,6 +1960,10 @@ class GNullValue(
 		0
 
 
+	override fun unwrap() =
+		null
+
+
 	companion object {
 
 		val withoutOrigin = GNullValue()
@@ -1957,6 +2103,10 @@ class GObjectValue(
 		fieldsByName.hashCode()
 
 
+	override fun unwrap() =
+		fields.associate { it.name to it.value.unwrap() }
+
+
 	companion object
 }
 
@@ -2066,23 +2216,35 @@ sealed class GScalarType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
+	parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)?, // FIXME create types?
+	parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)?,
+	serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)?,
 	origin: GOrigin? = null
 ) : GLeafType(
 	description = description,
 	directives = directives,
 	kind = Kind.SCALAR,
 	name = name,
-	origin = origin
+	origin = origin,
+	parseValue = parseValue,
+	parseValueNode = parseValueNode,
+	serializeValue = serializeValue
 ) {
 
 	constructor(
 		name: String,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)?,
+		parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)?,
+		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)?
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		parseValue = parseValue,
+		parseValueNode = parseValueNode,
+		serializeValue = serializeValue
 	)
 
 
@@ -2209,7 +2371,19 @@ class GSelectionSet(
 }
 
 
-object GStringType : GScalarType(name = "String")
+// https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
+object GStringType : GScalarType(
+	name = "String",
+	parseValue = { it as? String },
+	parseValueNode = { (it as? GStringValue)?.value },
+	serializeValue = { value ->
+		when (value) {
+			is Boolean -> if (value) "true" else "false"
+			is String -> value
+			else -> value.coerceToIntOrNull()?.toString()
+		}
+	}
+)
 
 
 class GStringValue(
@@ -2236,6 +2410,10 @@ class GStringValue(
 
 	override fun hashCode() =
 		value.hashCode()
+
+
+	override fun unwrap() =
+		value
 
 
 	companion object
@@ -2373,7 +2551,7 @@ fun GTypeRef(name: String) =
 
 val GBooleanTypeRef = GTypeRef("Boolean")
 val GFloatTypeRef = GTypeRef("Float")
-val GIDTypeRef = GTypeRef("ID")
+val GIdTypeRef = GTypeRef("ID")
 val GIntTypeRef = GTypeRef("Int")
 val GStringTypeRef = GTypeRef("String")
 
@@ -2486,15 +2664,17 @@ sealed class GValue(
 
 	abstract val kind: Kind
 
+	abstract fun unwrap(): Any?
+
 
 	companion object {
 
-		// FIXME temporary
+		// FIXME temporary -- improve
 		fun of(value: Any?): GValue? =
 			when (value) {
 				null -> GNullValue.withoutOrigin
 				is Boolean -> GBooleanValue(value)
-				is Float -> GFloatValue(value)
+				is Double -> GFloatValue(value)
 				is Int -> GIntValue(value)
 				is Map<*, *> -> GObjectValue(value.map { (fieldName, fieldValue) ->
 					GObjectValueField(
@@ -2620,6 +2800,10 @@ class GVariableRef(
 
 	override fun hashCode() =
 		name.hashCode()
+
+
+	override fun unwrap() =
+		error("Cannot unwrap a GraphQL variable: $name")
 
 
 	companion object

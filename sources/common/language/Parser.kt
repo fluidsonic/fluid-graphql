@@ -973,7 +973,7 @@ internal class Parser private constructor(
 			TokenKind.FLOAT -> {
 				val stringValue = startToken.value!!
 				val floatValue = try {
-					stringValue.toFloat()
+					stringValue.toDouble()
 				}
 				catch (e: NumberFormatException) {
 					throw GError.syntax(

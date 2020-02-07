@@ -2,16 +2,22 @@ package io.fluidsonic.graphql
 
 
 internal class Executor<out Environment : Any> private constructor(
-	private val defaultResolver: GFieldResolver<Environment, *>? = null,
+	private val defaultResolver: GFieldResolver<Environment, Any>? = null,
 	private val document: GDocument,
 	private val environment: Environment,
-	private val externalContext: Any? = null,
 	private val operation: GOperationDefinition,
 	private val pathBuilder: GPath.Builder, // FIXME may not work as class property with later parallelization
-	private val rootValue: Any,
+	private val rootResolver: GRootResolver<Environment>,
 	private val schema: GSchema,
 	private val valueCoercer: ValueCoercer
 ) {
+
+	private val valueConversionContext = object : GValueConversionContext<Environment> {
+
+		override val environment get() = this@Executor.environment
+		override val schema get() = this@Executor.schema
+	}
+
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
 	private fun collectFieldSelections(
@@ -122,13 +128,20 @@ internal class Executor<out Environment : Any> private constructor(
 					pathBuilder = pathBuilder
 				).consumeErrors()
 
-			is GEnumType ->
-				value
-
 			is GInputObjectType ->
 				invalidOperationError(
 					message = "Field '$fieldName' of object '${parentType.name}' must have an output type but has input type '${fieldType.name}'."
 				)
+
+			is GLeafType ->
+				with(fieldType) {
+					val serializeValue = serializeValue
+						?: error("Field cannot result in GraphQL input type '${fieldType.name}'.")
+
+					with(valueConversionContext) {
+						serializeValue(value) ?: error("Cannot serialize value of unrelated type ${value::class} to GraphQL type '${fieldType.name}'")
+					}
+				}
 
 			is GListType ->
 				(value as Collection<*>).mapIndexed { index, element ->
@@ -168,9 +181,6 @@ internal class Executor<out Environment : Any> private constructor(
 
 				completedResult.orNull()
 			}
-
-			is GScalarType ->
-				value
 		}
 	}
 
@@ -183,19 +193,27 @@ internal class Executor<out Environment : Any> private constructor(
 		to.isSubtypeOf(fragmentType)
 
 
+	// FIXME return structured data and separate serialization
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
 	suspend fun execute(): Map<String, Any?> {
 		val result = when (operation.type) {
 			GOperationType.query -> executeQuery()
-			GOperationType.mutation -> TODO() // FIXME
+			GOperationType.mutation -> executeMutation()
 			GOperationType.subscription -> TODO() // FIXME
 		}
 
 		return if (result.errors.isEmpty())
 			mapOf("data" to result.value)
 		else
-			mapOf("errors" to result.errors, "data" to result.value)
+			mapOf("errors" to result.errors.map(this::serializeError), "data" to result.value)
 	}
+
+
+	// FIXME
+	private fun serializeError(error: GError) =
+		mapOf(
+			"message" to error.message
+		)
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
@@ -230,6 +248,24 @@ internal class Executor<out Environment : Any> private constructor(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
+	private suspend fun executeMutation(): GPartialResult<Map<String, Any?>> = GPartialResult {
+		val rootType = schema.rootTypeForOperationType(operation.type) ?: run {
+			collectError(GError("Schema is not configured for ${operation.type} operations."))
+
+			return@GPartialResult emptyMap<String, Any?>()
+		}
+
+		return executeSelectionSet(
+			selectionSet = operation.selectionSet,
+			objectType = rootType,
+			objectValue = resolveRootValue(operationType = GOperationType.mutation, operationTypeDefinition = rootType),
+			pathBuilder = GPath.Builder()
+		)
+	}
+
+
+	// FIXME parallelize
+	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	private suspend fun executeQuery(): GPartialResult<Map<String, Any?>> = GPartialResult {
 		val rootType = schema.rootTypeForOperationType(operation.type) ?: run {
 			collectError(GError("Schema is not configured for ${operation.type} operations."))
@@ -240,7 +276,7 @@ internal class Executor<out Environment : Any> private constructor(
 		return executeSelectionSet(
 			selectionSet = operation.selectionSet,
 			objectType = rootType,
-			objectValue = rootValue,
+			objectValue = resolveRootValue(operationType = GOperationType.query, operationTypeDefinition = rootType),
 			pathBuilder = GPath.Builder()
 		)
 	}
@@ -300,20 +336,21 @@ internal class Executor<out Environment : Any> private constructor(
 		).or { return it } // FIXME possible if validated?
 
 		// FIXME type safety
-		// FIXME fallback resolver
 		val resolver = fieldDefinition.resolver as GFieldResolver<Environment, Any>?
-			?: error("No resolver registered for '${objectType.name}.${fieldDefinition.name}'.")
+			?: defaultResolver
+			?: error("No resolver registered for '${objectType.name}.${fieldDefinition.name}' and no default resolver was specified.")
 
-		val resolverContext = object : GFieldResolver.Context<Environment> {
+		val resolverContext = object : GFieldResolverContext<Environment> {
 
 			override val arguments get() = argumentValues
 			override val environment get() = this@Executor.environment
-			override val parentType get() = objectType
+			override val fieldDefinition get() = fieldDefinition
+			override val parentTypeDefinition get() = objectType
 			override val schema get() = this@Executor.schema
 		}
 
 		try {
-			with(resolver) { objectValue.resolve(resolverContext) }
+			resolver.resolveField(parent = objectValue, context = resolverContext)
 		}
 		catch (cause: GError) {
 			collectError(cause.copy(
@@ -334,6 +371,16 @@ internal class Executor<out Environment : Any> private constructor(
 			))
 		}
 	}
+
+
+	private suspend fun resolveRootValue(operationType: GOperationType, operationTypeDefinition: GObjectType) =
+		rootResolver.resolveRoot(context = object : GRootResolverContext<Environment> {
+
+			override val environment = this@Executor.environment
+			override val operationType = operationType
+			override val operationTypeDefinition = operationTypeDefinition
+			override val schema = this@Executor.schema
+		})
 
 
 	private fun GNode.WithDirectives.getDirectiveValues(definition: GDirectiveDefinition): Map<String, Any?>? =
@@ -375,11 +422,10 @@ internal class Executor<out Environment : Any> private constructor(
 			schema: GSchema,
 			document: GDocument,
 			environment: Environment,
-			rootValue: Any,
+			rootResolver: GRootResolver<Environment>,
 			operationName: String? = null,
 			variableValues: Map<String, Any?> = emptyMap(),
-			externalContext: Any? = null,
-			defaultResolver: GFieldResolver<Environment, *>? = null
+			defaultResolver: GFieldResolver<Environment, Any>? = null
 		): GResult<Executor<Environment>> = GResult {
 			// FIXME check type
 			val operation = getOperation(
@@ -392,6 +438,7 @@ internal class Executor<out Environment : Any> private constructor(
 			val valueCoercer = ValueCoercer.create(
 				document = document,
 				schema = schema,
+				environment = environment,
 				variableValues = variableValues,
 				pathBuilder = pathBuilder
 			).or { return it }
@@ -400,10 +447,9 @@ internal class Executor<out Environment : Any> private constructor(
 				defaultResolver = defaultResolver,
 				document = document,
 				environment = environment,
-				externalContext = externalContext,
 				operation = operation,
 				pathBuilder = pathBuilder,
-				rootValue = rootValue,
+				rootResolver = rootResolver,
 				schema = schema,
 				valueCoercer = valueCoercer
 			)

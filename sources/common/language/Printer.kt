@@ -3,27 +3,73 @@ package io.fluidsonic.graphql
 
 internal object Printer {
 
-	fun print(node: GNode, indent: String = "\t"): String {
-		val writer = GWriter(indent = indent)
-		node.accept(PrintVisitor(writer))
+	fun print(node: GNode, indent: String = "\t") =
+		GWriter(indent = indent).run {
+			writeNode(node)
+			toString()
+		}
 
-		return writer.toString()
+
+	private fun GWriter.writeNode(node: GNode?) {
+		when (node) {
+			null -> Unit
+			is GArgument -> writeNode(node)
+			is GArgumentDefinition -> writeNode(node)
+			is GBooleanValue -> writeNode(node)
+			is GDirective -> writeNode(node)
+			is GDirectiveDefinition -> writeNode(node)
+			is GDocument -> writeNode(node)
+			is GEnumType -> writeNode(node)
+			is GEnumTypeExtension -> writeNode(node)
+			is GEnumValue -> writeNode(node)
+			is GEnumValueDefinition -> writeNode(node)
+			is GFieldDefinition -> writeNode(node)
+			is GFieldSelection -> writeNode(node)
+			is GFloatValue -> writeNode(node)
+			is GFragmentDefinition -> writeNode(node)
+			is GFragmentSelection -> writeNode(node)
+			is GInlineFragmentSelection -> writeNode(node)
+			is GInputObjectType -> writeNode(node)
+			is GInputObjectTypeExtension -> writeNode(node)
+			is GIntValue -> writeNode(node)
+			is GInterfaceType -> writeNode(node)
+			is GInterfaceTypeExtension -> writeNode(node)
+			is GListType -> error("Cannot print AST of ${node::class}")
+			is GListTypeRef -> writeNode(node)
+			is GListValue -> writeNode(node)
+			is GName -> writeNode(node)
+			is GNamedTypeRef -> writeNode(node)
+			is GNonNullType -> error("Cannot print AST of ${node::class}")
+			is GNonNullTypeRef -> writeNode(node)
+			is GNullValue -> writeNode(node)
+			is GObjectType -> writeNode(node)
+			is GObjectTypeExtension -> writeNode(node)
+			is GObjectValue -> writeNode(node)
+			is GObjectValueField -> writeNode(node)
+			is GOperationDefinition -> writeNode(node)
+			is GOperationTypeDefinition -> writeNode(node)
+			is GScalarType -> writeNode(node)
+			is GScalarTypeExtension -> writeNode(node)
+			is GSchemaDefinition -> writeNode(node)
+			is GSchemaExtension -> writeNode(node)
+			is GSelectionSet -> writeNode(node)
+			is GStringValue -> writeNode(node)
+			is GUnionType -> writeNode(node)
+			is GUnionTypeExtension -> writeNode(node)
+			is GVariableDefinition -> writeNode(node)
+			is GVariableRef -> writeNode(node)
+		}
 	}
-}
 
 
-private class PrintVisitor(
-	private val writer: GWriter
-) : Visitor.Typed.WithoutData<Unit>() {
-
-	override fun onArgument(argument: GArgument, visit: Visit) = writer {
+	private fun GWriter.writeNode(argument: GArgument) {
 		writeNode(argument.nameNode)
 		writeRaw(": ")
 		writeNode(argument.value)
 	}
 
 
-	override fun onArgumentDefinition(definition: GArgumentDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GArgumentDefinition) {
 		writeNode(definition.descriptionNode)
 		writeNode(definition.nameNode)
 		writeRaw(": ")
@@ -38,19 +84,19 @@ private class PrintVisitor(
 	}
 
 
-	override fun onBooleanValue(value: GBooleanValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GBooleanValue) {
 		writeRaw(if (value.value) "true" else "false")
 	}
 
 
-	override fun onDirective(directive: GDirective, visit: Visit) = writer {
+	private fun GWriter.writeNode(directive: GDirective) {
 		writeRaw("@")
 		writeNode(directive.nameNode)
 		writeArguments(directive.arguments)
 	}
 
 
-	override fun onDirectiveDefinition(definition: GDirectiveDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GDirectiveDefinition) {
 		writeNode(definition.descriptionNode)
 		writeRaw("directive @")
 		writeNode(definition.nameNode)
@@ -65,7 +111,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onDocument(document: GDocument, visit: Visit) = writer {
+	private fun GWriter.writeNode(document: GDocument) {
 		val startLength = length
 
 		document.definitions.forEach { definition ->
@@ -80,7 +126,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onEnumType(type: GEnumType, visit: Visit) = writer {
+	private fun GWriter.writeNode(type: GEnumType) {
 		writeNode(type.descriptionNode)
 		writeRaw("enum ")
 		writeNode(type.nameNode)
@@ -90,7 +136,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onEnumTypeExtension(extension: GEnumTypeExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(extension: GEnumTypeExtension) {
 		writeRaw("extend enum ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
@@ -99,19 +145,19 @@ private class PrintVisitor(
 	}
 
 
-	override fun onEnumValue(value: GEnumValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GEnumValue) {
 		writeRaw(value.name)
 	}
 
 
-	override fun onEnumValueDefinition(definition: GEnumValueDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GEnumValueDefinition) {
 		writeNode(definition.descriptionNode)
 		writeNode(definition.nameNode)
 		writeDirectives(definition.directives)
 	}
 
 
-	override fun onFieldDefinition(definition: GFieldDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GFieldDefinition) {
 		writeNode(definition.descriptionNode)
 		writeNode(definition.nameNode)
 		writeArgumentDefinitions(definition.argumentDefinitions)
@@ -121,7 +167,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onFieldSelection(selection: GFieldSelection, visit: Visit) = writer {
+	private fun GWriter.writeNode(selection: GFieldSelection) {
 		selection.aliasNode?.let { alias ->
 			writeNode(alias)
 			writeRaw(": ")
@@ -136,12 +182,12 @@ private class PrintVisitor(
 	}
 
 
-	override fun onFloatValue(value: GFloatValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GFloatValue) {
 		writeRaw(value.value.toString())
 	}
 
 
-	override fun onFragmentDefinition(definition: GFragmentDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GFragmentDefinition) {
 		writeRaw("fragment ")
 		writeNode(definition.nameNode)
 		writeVariableDefinitions(definition.variableDefinitions)
@@ -154,14 +200,14 @@ private class PrintVisitor(
 	}
 
 
-	override fun onFragmentSelection(selection: GFragmentSelection, visit: Visit) = writer {
+	private fun GWriter.writeNode(selection: GFragmentSelection) {
 		writeRaw("...")
 		writeNode(selection.nameNode)
 		writeDirectives(selection.directives)
 	}
 
 
-	override fun onInputObjectType(type: GInputObjectType, visit: Visit) = writer {
+	private fun GWriter.writeNode(type: GInputObjectType) {
 		writeNode(type.descriptionNode)
 		writeRaw("input ")
 		writeNode(type.nameNode)
@@ -170,7 +216,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(extension: GInputObjectTypeExtension) {
 		writeRaw("extend input ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
@@ -178,7 +224,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, visit: Visit) = writer {
+	private fun GWriter.writeNode(selection: GInlineFragmentSelection) {
 		writeRaw("...")
 		selection.typeCondition?.let { typeCondition ->
 			writeRaw(" on")
@@ -190,12 +236,12 @@ private class PrintVisitor(
 	}
 
 
-	override fun onIntValue(value: GIntValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GIntValue) {
 		writeRaw(value.value.toString())
 	}
 
 
-	override fun onInterfaceType(type: GInterfaceType, visit: Visit) = writer {
+	private fun GWriter.writeNode(type: GInterfaceType) {
 		writeNode(type.descriptionNode)
 		writeRaw("interface ")
 		writeNode(type.nameNode)
@@ -205,7 +251,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(extension: GInterfaceTypeExtension) {
 		writeRaw("extend interface ")
 		writeNode(extension.nameNode)
 		writeImplementedInterfaces(extension.interfaces)
@@ -214,7 +260,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onListValue(value: GListValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GListValue) {
 		writeRaw("[")
 		value.elements.forEachIndexed { index, element ->
 			if (index > 0)
@@ -226,35 +272,35 @@ private class PrintVisitor(
 	}
 
 
-	override fun onListTypeRef(ref: GListTypeRef, visit: Visit) = writer {
+	private fun GWriter.writeNode(ref: GListTypeRef) {
 		writeRaw("[")
 		writeNode(ref.elementType)
 		writeRaw("]")
 	}
 
 
-	override fun onName(name: GName, visit: Visit) = writer {
+	private fun GWriter.writeNode(name: GName) {
 		writeRaw(name.value)
 	}
 
 
-	override fun onNamedTypeRef(ref: GNamedTypeRef, visit: Visit) = writer {
+	private fun GWriter.writeNode(ref: GNamedTypeRef) {
 		writeNode(ref.nameNode)
 	}
 
 
-	override fun onNonNullTypeRef(ref: GNonNullTypeRef, visit: Visit) = writer {
+	private fun GWriter.writeNode(ref: GNonNullTypeRef) {
 		writeNode(ref.nullableRef)
 		writeRaw("!")
 	}
 
 
-	override fun onNullValue(value: GNullValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GNullValue) {
 		writeRaw("null")
 	}
 
 
-	override fun onObjectType(type: GObjectType, visit: Visit) = writer {
+	private fun GWriter.writeNode(type: GObjectType) {
 		writeNode(type.descriptionNode)
 		writeRaw("type ")
 		writeNode(type.nameNode)
@@ -263,7 +309,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onObjectTypeExtension(extension: GObjectTypeExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(extension: GObjectTypeExtension) {
 		writeRaw("extend type ")
 		writeNode(extension.nameNode)
 		writeImplementedInterfaces(extension.interfaces)
@@ -271,7 +317,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onObjectValue(value: GObjectValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GObjectValue) {
 		if (value.fields.isNotEmpty())
 			writeBlock {
 				value.fields.forEachIndexed { index, field ->
@@ -290,14 +336,14 @@ private class PrintVisitor(
 	}
 
 
-	override fun onObjectValueField(field: GObjectValueField, visit: Visit) = writer {
+	private fun GWriter.writeNode(field: GObjectValueField) {
 		writeNode(field.nameNode)
 		writeRaw(": ")
 		writeNode(field.value)
 	}
 
 
-	override fun onOperationDefinition(definition: GOperationDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GOperationDefinition) {
 		val canUseShortSyntax = definition.nameNode === null &&
 			definition.directives.isEmpty() &&
 			definition.variableDefinitions.isEmpty() &&
@@ -327,14 +373,14 @@ private class PrintVisitor(
 	}
 
 
-	override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GOperationTypeDefinition) {
 		writeRaw(definition.operationType.name)
 		writeRaw(": ")
 		writeNode(definition.type)
 	}
 
 
-	override fun onScalarType(type: GScalarType, visit: Visit) = writer {
+	private fun GWriter.writeNode(type: GScalarType) {
 		writeNode(type.descriptionNode)
 		writeRaw("scalar ")
 		writeNode(type.nameNode)
@@ -342,14 +388,14 @@ private class PrintVisitor(
 	}
 
 
-	override fun onScalarTypeExtension(extension: GScalarTypeExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(extension: GScalarTypeExtension) {
 		writeRaw("extend scalar ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 	}
 
 
-	override fun onSchemaDefinition(definition: GSchemaDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GSchemaDefinition) {
 		val queryOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.query }
 			?.takeIf { it.type.name != GSpecification.defaultQueryTypeName }
 
@@ -382,14 +428,14 @@ private class PrintVisitor(
 	}
 
 
-	override fun onSchemaExtensionDefinition(definition: GSchemaExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GSchemaExtension) {
 		writeRaw("extend schema")
 		writeDirectives(definition.directives)
 		writeOperationTypeDefinitions(definition.operationTypeDefinitions)
 	}
 
 
-	override fun onSelectionSet(set: GSelectionSet, visit: Visit) = writer {
+	private fun GWriter.writeNode(set: GSelectionSet) {
 		writeBlock {
 			set.selections.forEach { selection ->
 				writeNode(selection)
@@ -400,7 +446,7 @@ private class PrintVisitor(
 
 
 	// FIXME escaping, line wrapping, indentation
-	override fun onStringValue(value: GStringValue, visit: Visit) = writer {
+	private fun GWriter.writeNode(value: GStringValue) {
 		val string = value.value
 
 		if (value.isBlock) {
@@ -424,12 +470,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onSyntheticNode(node: GNode, visit: Visit) {
-		error("Cannot print AST of ${node::class}")
-	}
-
-
-	override fun onUnionType(type: GUnionType, visit: Visit) = writer {
+	private fun GWriter.writeNode(type: GUnionType) {
 		writeNode(type.descriptionNode)
 		writeRaw("union ")
 		writeNode(type.nameNode)
@@ -438,7 +479,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onUnionTypeExtension(extension: GUnionTypeExtension, visit: Visit) = writer {
+	private fun GWriter.writeNode(extension: GUnionTypeExtension) {
 		writeRaw("union ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
@@ -446,7 +487,7 @@ private class PrintVisitor(
 	}
 
 
-	override fun onVariableDefinition(definition: GVariableDefinition, visit: Visit) = writer {
+	private fun GWriter.writeNode(definition: GVariableDefinition) {
 		writeRaw("$")
 		writeNode(definition.nameNode)
 		writeRaw(": ")
@@ -459,14 +500,9 @@ private class PrintVisitor(
 	}
 
 
-	override fun onVariableRef(ref: GVariableRef, visit: Visit) = writer {
+	private fun GWriter.writeNode(ref: GVariableRef) {
 		writeRaw("$")
 		writeNode(ref.nameNode)
-	}
-
-
-	private fun writeNode(node: GNode?) {
-		node?.accept(this)
 	}
 
 

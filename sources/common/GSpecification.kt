@@ -18,7 +18,7 @@ object GSpecification {
 	// FIXME add default directives to schemas
 	val defaultDeprecatedDirective = GDirectiveDefinition(
 		name = "deprecated",
-		arguments = listOf(
+		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
 				name = "reason",
 				type = GStringTypeRef,
@@ -37,7 +37,7 @@ object GSpecification {
 
 	val defaultIncludeDirective = GDirectiveDefinition(
 		name = "include",
-		arguments = listOf(
+		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
 				name = "if",
 				type = GBooleanTypeRef.nonNullableRef,
@@ -55,7 +55,7 @@ object GSpecification {
 
 	val defaultSkipDirective = GDirectiveDefinition(
 		name = "skip",
-		arguments = listOf(
+		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
 				name = "if",
 				type = GBooleanTypeRef.nonNullableRef,

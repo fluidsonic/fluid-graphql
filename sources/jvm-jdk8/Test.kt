@@ -177,7 +177,7 @@ suspend fun main() {
 
 	val r = req.execute(
 		schema = gql,
-		rootValue = mapOf("id" to "Hey"),
+		rootResolver = GRootResolver { mapOf("id" to "Hey") },
 		environment = Unit
 	)
 

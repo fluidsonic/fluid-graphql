@@ -2,82 +2,94 @@ package io.fluidsonic.graphql
 
 
 // Internal for now. Review API before making it public.
-internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if not then move some local functions below to this class
+// FIXME refactor!
+internal class ValueCoercer( // FIXME do we need this outside of Executor? if not then move some local functions below to that class
 	private val document: GDocument,
 	private val schema: GSchema,
+	environment: Any,
 	private val variableValues: Map<String, Any?> = emptyMap(),
-	private val pathBuilder: GPath.Builder? = null // FIXME may not work as class property with later parallelization
+	private val pathBuilder: GPath.Builder? = null // FIXME may not work as instance property with later parallelization
 ) {
 
+	private val context = object : GValueConversionContext<Any> {
+
+		override val environment = environment
+		override val schema get() = this@ValueCoercer.schema
+	}
+
+
 	private fun coerceArgumentValue(
-		value: GValue,
-		typeRef: GTypeRef,
-		rootTypeRef: GTypeRef = typeRef
+		value: GValue?,
+		definition: GArgumentDefinition,
+		typeRef: GTypeRef
 	): GResult<Any?> = GResult {
 
-		val _rootTypeRef = rootTypeRef // https://youtrack.jetbrains.com/issue/KT-35677
-
-		fun GValue.coerceToType(
-			typeRef: GTypeRef,
-			rootTypeRef: GTypeRef = _rootTypeRef
-		) =
+		fun GValue.coerceToType(typeRef: GTypeRef) =
 			coerceArgumentValue(
 				value = this,
-				typeRef = typeRef,
-				rootTypeRef = rootTypeRef
+				definition = definition,
+				typeRef = typeRef
 			).orNull()
-
-		fun GVariableRef.resolve() =
-			variableValues.getOrElseNullable(name) {
-				invalidOperationError("Variable '$$name' cannot be resolved.")
-			}
 
 		fun invalidValueError(message: String, cause: Throwable? = null) =
 			collectError(GError(
 				message = message,
 				path = pathBuilder?.snapshot(),
-				nodes = listOf(value),
+				nodes = value?.let(::listOf).orEmpty(),
 				cause = cause
 			))
 
 		fun invalidValueTypeError() =
-			invalidValueError("Unexpected '${value.kind}' for argument of type '${rootTypeRef}'.")
+			invalidValueError("Unexpected '${value!!.kind}' for argument of type '${definition.type}'.")
 
+		@Suppress("NAME_SHADOWING")
+		var value = value
+
+		if (value is GVariableRef) {
+			if (variableValues.containsKey(value.name))
+				return@GResult coerceArgumentVariableValue(
+					value = variableValues[value.name],
+					definition = definition,
+					typeRef = typeRef
+				)
+			else
+				value = null
+		}
+
+		if (value === null) {
+			val defaultValue = definition.defaultValue
+			if (defaultValue !== null)
+				value = defaultValue
+			else
+				return failWith(GError(
+					message = "Missing argument '${definition.name}' of type '${definition.type}'.",
+					path = pathBuilder?.snapshot()
+				))
+		}
+
+		if (value is GNullValue && typeRef is GNonNullTypeRef)
+			return@GResult invalidValueTypeError()
 
 		when (typeRef) {
 			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.List.Input-Coercion
 			is GListTypeRef ->
 				when (value) {
-					is GListValue -> value.elements.mapIndexed { index, element ->
-						pathBuilder.withListIndex(index) {
-							element.coerceToType(typeRef.elementType)
+					is GListValue ->
+						value.elements.mapIndexed { index, element ->
+							pathBuilder.withListIndex(index) {
+								element.coerceToType(typeRef.elementType)
+							}
 						}
-					}
-					is GNullValue -> null
-					is GVariableRef -> value.resolve()
 
-					is GBooleanValue,
-					is GEnumValue,
-					is GFloatValue,
-					is GIntValue,
-					is GObjectValue,
-					is GStringValue -> listOf(value.coerceToType(typeRef.elementType))
+					is GNullValue -> null
+					else -> listOf(value.coerceToType(typeRef.elementType))
 				}
 
 			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.Non-Null.Input-Coercion
 			is GNonNullTypeRef ->
 				when (value) {
 					is GNullValue -> invalidValueTypeError()
-
-					is GBooleanValue,
-					is GEnumValue,
-					is GFloatValue,
-					is GIntValue,
-					is GListValue,
-					is GObjectValue,
-					is GStringValue -> value.coerceToType(typeRef.nullableRef)
-
-					is GVariableRef -> value.resolve()
+					else -> value.coerceToType(typeRef.nullableRef) ?: invalidValueTypeError()
 				}
 
 			is GNamedTypeRef -> {
@@ -85,154 +97,147 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 					?: invalidOperationError("Type '$typeRef' cannot be resolved.")
 
 				when (type) {
-					// https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
-					is GBooleanType ->
-						when (value) {
-							is GBooleanValue -> value.value
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GEnumValue,
-							is GFloatValue,
-							is GIntValue,
-							is GListValue,
-							is GObjectValue,
-							is GStringValue -> invalidValueTypeError()
-						}
-
-					// https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
-					is GCustomScalarType ->
-						// FIXME support conversion function
-						when (value) {
-							is GBooleanValue -> value.value
-							is GFloatValue -> value.value
-							is GIntValue -> value.value
-							is GStringValue -> value.value
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GEnumValue,
-							is GListValue,
-							is GObjectValue -> invalidValueTypeError()
-						}
-
-					// https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
-					is GEnumType ->
-						when (value) {
-							is GEnumValue -> type.value(value.name)
-								?: invalidValueError("Invalid value '${value.name}' for enum '${type.name}'.")
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GBooleanValue,
-							is GFloatValue,
-							is GIntValue,
-							is GListValue,
-							is GObjectValue,
-							is GStringValue -> invalidValueTypeError()
-						}
-
-					// https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
-					is GFloatType ->
-						when (value) {
-							is GFloatValue -> value.value
-							is GIntValue -> value.value.toFloat()
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GBooleanValue,
-							is GEnumValue,
-							is GListValue,
-							is GObjectValue,
-							is GStringValue -> invalidValueTypeError()
-						}
-
-					// https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
-					is GIdType ->
-						when (value) {
-							is GIntValue -> value.value
-							is GStringValue -> value.value
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GBooleanValue,
-							is GEnumValue,
-							is GFloatValue,
-							is GListValue,
-							is GObjectValue -> invalidValueTypeError()
-						}
-
 					// https://graphql.github.io/graphql-spec/draft/#sec-Input-Objects.Input-Coercion
 					is GInputObjectType ->
 						when (value) {
 							is GObjectValue ->
-								type.argumentDefinitions.associate { argument ->
-									val argumentValue = value.field(argument.name)?.value ?: argument.defaultValue
-									if (argumentValue !== null)
+								type.argumentDefinitions
+									.associate { argument ->
 										pathBuilder.withFieldName(argument.name) {
-											argument.name to argumentValue.coerceToType(
-												typeRef = argument.type,
-												rootTypeRef = argument.type
-											)
+											argument.name to coerceArgumentValue(
+												value = value.field(argument.name)?.value,
+												definition = argument,
+												typeRef = argument.type
+											).orNull()
 										}
-									else
-										argument.name to invalidValueError(
-											"Missing field '${argument.name}' of type '${argument.type}' " +
-												"in value for input object '${type.name}'."
-										)
+									}
+									.let { argumentValues ->
+										with(type) {
+											with(context) {
+												parseValue(argumentValues)
+											}
+										}
+									}
+
+							is GNullValue -> null
+							else -> invalidValueTypeError()
+						}
+
+
+					is GLeafType ->
+						when (value) {
+							is GNullValue -> null
+							else ->
+								with(context) {
+									checkNotNull(type.parseValueNode)(value) // FIXME validation has to check that type is allowed for input
 								}
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GBooleanValue,
-							is GEnumValue,
-							is GFloatValue,
-							is GIntValue,
-							is GListValue,
-							is GStringValue -> invalidValueTypeError()
 						}
 
-					// https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
-					is GIntType ->
+					is GCompositeType ->
+						invalidOperationError("Argument '$pathBuilder' must have an input type but has output type '${type.name}'.")
+				}
+			}
+		}
+	}
+
+
+	private fun coerceArgumentVariableValue(
+		value: Any?,
+		definition: GArgumentDefinition,
+		typeRef: GTypeRef
+	): GResult<Any?> = GResult {
+
+		fun Any?.coerceToType(typeRef: GTypeRef) =
+			coerceArgumentVariableValue(
+				value = this,
+				definition = definition,
+				typeRef = typeRef
+			).orNull()
+
+		fun invalidValueError(message: String, cause: Throwable? = null) =
+			collectError(GError(
+				message = message,
+				path = pathBuilder?.snapshot(),
+				cause = cause
+			))
+
+		fun invalidValueTypeError() =
+			invalidValueError("Variable value '$value' has incorrect type for argument of type '${definition.type}'.")
+
+		when (typeRef) {
+			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.List.Input-Coercion
+			is GListTypeRef ->
+				when (value) {
+					is List<*> ->
+						value.mapIndexed { index, element ->
+							pathBuilder.withListIndex(index) {
+								element.coerceToType(typeRef.elementType)
+							}
+						}
+
+					null -> null
+					else -> value.coerceToType(typeRef.elementType)
+				}
+
+			// https://graphql.github.io/graphql-spec/draft/#sec-Type-System.Non-Null.Input-Coercion
+			is GNonNullTypeRef ->
+				when (value) {
+					null -> invalidValueTypeError()
+					else -> value.coerceToType(typeRef.nullableRef) ?: invalidValueTypeError()
+				}
+
+			is GNamedTypeRef -> {
+				val type = schema.resolveType(typeRef)
+					?: invalidOperationError("Type '$typeRef' cannot be resolved.")
+
+				when (type) {
+					// https://graphql.github.io/graphql-spec/draft/#sec-Input-Objects.Input-Coercion
+					is GInputObjectType ->
 						when (value) {
-							is GIntValue -> value.value
+							is Map<*, *> ->
+								type.argumentDefinitions
+									.associate { argument ->
+										val defaultValue = argument.defaultValue
 
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
+										when {
+											value.containsKey(argument.name) ->
+												pathBuilder.withFieldName(argument.name) {
+													argument.name to value[argument.name].coerceToType(argument.type)
+												}
 
-							is GBooleanValue,
-							is GEnumValue,
-							is GFloatValue,
-							is GListValue,
-							is GObjectValue,
-							is GStringValue -> invalidValueTypeError()
+											else ->
+												pathBuilder.withFieldName(argument.name) {
+													argument.name to coerceArgumentValue(
+														value = defaultValue,
+														definition = argument,
+														typeRef = argument.type
+													).orNull()
+												}
+										}
+									}
+									.let { argumentValues ->
+										with(type) {
+											with(context) {
+												parseValue(argumentValues)
+											}
+										}
+									}
+
+							null -> null
+							else -> invalidValueTypeError()
 						}
 
-					// https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
-					is GStringType ->
+
+					is GLeafType ->
 						when (value) {
-							is GStringValue -> value.value
-
-							is GNullValue -> null
-							is GVariableRef -> value.resolve()
-
-							is GBooleanValue,
-							is GEnumValue,
-							is GFloatValue,
-							is GIntValue,
-							is GListValue,
-							is GObjectValue -> invalidValueTypeError()
+							null -> null
+							else ->
+								with(context) {
+									checkNotNull(type.parseValue)(value) // FIXME validation has to check that type is allowed for input
+								}
 						}
 
-					is GInterfaceType,
-					is GObjectType,
-					is GUnionType ->
+					is GCompositeType ->
 						invalidOperationError("Argument '$pathBuilder' must have an input type but has output type '${type.name}'.")
 				}
 			}
@@ -248,19 +253,13 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 		val argumentValues = arguments.associate { it.name to it.value }
 
 		argumentDefinitions.associate { argument ->
-			val argumentValue = argumentValues.getOrElseNullable(argument.name) { argument.defaultValue }
-			if (argumentValue !== null)
-				pathBuilder.withFieldName(argument.name) {
-					argument.name to coerceArgumentValue(
-						value = argumentValue,
-						typeRef = argument.type
-					).orNull()
-				}
-			else
-				argument.name to collectError(GError(
-					message = "Missing argument '${argument.name}' of type '${argument.type}'.",
-					path = pathBuilder?.snapshot()
-				))
+			pathBuilder.withFieldName(argument.name) {
+				argument.name to coerceArgumentValue(
+					value = argumentValues[argument.name],
+					definition = argument,
+					typeRef = argument.type
+				).orNull()
+			}
 		}
 	}
 
@@ -409,6 +408,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 	}
 
 
+	// FIXME use parsing functions
 	// https://graphql.github.io/graphql-spec/June2018/#CoerceVariableValues()
 	fun coerceVariableValues(
 		variableValues: Map<String, Any?>,
@@ -447,13 +447,15 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 		fun create(
 			document: GDocument,
 			schema: GSchema,
+			environment: Any,
 			variableDefinitions: List<GVariableDefinition> = emptyList(),
 			variableValues: Map<String, Any?> = emptyMap(),
 			pathBuilder: GPath.Builder? = null
 		): GResult<ValueCoercer> = GResult {
 			val variableCoercer = ValueCoercer(
 				document = document,
-				schema = schema
+				schema = schema,
+				environment = environment
 			)
 
 			@Suppress("NAME_SHADOWING")
@@ -465,6 +467,7 @@ internal class ValueCoercer( // FIXME do we need this outside of GExecutor? if n
 			ValueCoercer(
 				document = document,
 				schema = schema,
+				environment = environment,
 				variableValues = variableValues,
 				pathBuilder = pathBuilder
 			)

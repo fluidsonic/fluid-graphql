@@ -1,44 +1,20 @@
 package io.fluidsonic.graphql
 
 
-interface GFieldResolver<in Environment : Any, in ParentKotlinType : Any> {
+interface GFieldResolver<in Environment : Any, in Parent : Any> {
 
-	suspend fun Context<Environment>.resolve(parent: ParentKotlinType): Any?
+	suspend fun resolveField(parent: Parent, context: GFieldResolverContext<Environment>): Any?
 
 
 	companion object {
 
-		fun <Environment : Any, ParentKotlinType : Any> of(
-			resolver: suspend Context<Environment>.(parent: ParentKotlinType) -> Any?
+		operator fun <Environment : Any, Parent : Any> invoke(
+			resolver: suspend GFieldResolverContext<Environment>.(parent: Parent) -> Any?
 		) =
-			object : GFieldResolver<Environment, ParentKotlinType> {
+			object : GFieldResolver<Environment, Parent> {
 
-				override suspend fun Context<Environment>.resolve(parent: ParentKotlinType) =
-					resolver(parent)
+				override suspend fun resolveField(parent: Parent, context: GFieldResolverContext<Environment>) =
+					with(context) { resolver(parent) }
 			}
 	}
-
-
-	@SchemaBuilderDsl
-	interface Context<out Environment : Any> {
-
-		val arguments: Map<String, Any?>
-		val environment: Environment
-		val parentType: GNamedType
-		val schema: GSchema
-	}
 }
-
-
-// FIXME improve this
-
-fun GFieldResolver.Context<*>.booleanArgument(name: String) =
-	arguments[name] as Boolean
-
-
-fun GFieldResolver.Context<*>.intArgument(name: String) =
-	arguments[name] as Int
-
-
-fun GFieldResolver.Context<*>.stringArgument(name: String) =
-	arguments[name] as String

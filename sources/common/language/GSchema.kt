@@ -383,9 +383,8 @@ class GSchema internal constructor(
 }
 
 
-fun GSchema(document: GDocument): GSchema? {
+fun GSchema(document: GDocument): GSchema {
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
-		.ifEmpty { return null }
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
 	if (directiveDefinitions.none { it.name == "deprecated" })

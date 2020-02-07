@@ -43,7 +43,7 @@ internal class GSchemaBuilderImpl<out Environment : Any> : GSchemaBuilder<Enviro
 			document = GDocument(
 				definitions = definitions
 			)
-		)!! // Can only be `null` if there are no type definitions, but we've for checked that above.
+		)
 	}
 
 
@@ -337,7 +337,7 @@ internal class GSchemaBuilderImpl<out Environment : Any> : GSchemaBuilder<Enviro
 
 		@Suppress("UNCHECKED_CAST")
 		fun build() = GDirectiveDefinition(
-			arguments = argumentDefinitions as List<GDirectiveArgumentDefinition>,
+			argumentDefinitions = argumentDefinitions as List<GDirectiveArgumentDefinition>,
 			description = description,
 			locations = locations,
 			name = name
@@ -459,7 +459,7 @@ internal class GSchemaBuilderImpl<out Environment : Any> : GSchemaBuilder<Enviro
 
 		@Suppress("UNCHECKED_CAST")
 		fun build() = GFieldDefinition(
-			arguments = argumentDefinitions as List<GFieldArgumentDefinition>,
+			argumentDefinitions = argumentDefinitions as List<GFieldArgumentDefinition>,
 			description = description,
 			directives = directives,
 			name = name,
@@ -468,8 +468,8 @@ internal class GSchemaBuilderImpl<out Environment : Any> : GSchemaBuilder<Enviro
 		)
 
 
-		override fun <Result> resolve(resolver: suspend ParentKotlinType.(context: GFieldResolver.Context<Environment>) -> Result) {
-			this.resolver = GFieldResolver.of(resolver)
+		override fun <Result> resolve(resolver: suspend GFieldResolverContext<Environment>.(context: ParentKotlinType) -> Result) {
+			this.resolver = GFieldResolver(resolver)
 		}
 
 
@@ -485,7 +485,7 @@ internal class GSchemaBuilderImpl<out Environment : Any> : GSchemaBuilder<Enviro
 
 		@Suppress("UNCHECKED_CAST")
 		fun build() = GInputObjectType(
-			arguments = argumentDefinitions as List<GInputObjectArgumentDefinition>,
+			argumentDefinitions = argumentDefinitions as List<GInputObjectArgumentDefinition>,
 			description = description,
 			directives = directives,
 			name = name
