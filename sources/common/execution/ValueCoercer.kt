@@ -40,7 +40,7 @@ internal class ValueCoercer( // FIXME do we need this outside of Executor? if no
 			))
 
 		fun invalidValueTypeError() =
-			invalidValueError("Unexpected '${value!!.kind}' for argument of type '${definition.type}'.")
+			invalidValueError("Unexpected ${value!!.kind} value for argument of type '${definition.type}'.")
 
 		@Suppress("NAME_SHADOWING")
 		var value = value

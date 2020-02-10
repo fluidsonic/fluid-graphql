@@ -2,7 +2,7 @@ import io.fluidsonic.graphql.*
 import java.io.*
 
 
-suspend fun main() {
+internal suspend fun main() {
 
 	val gql = schema {
 		val Character by type

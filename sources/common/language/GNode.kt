@@ -2711,7 +2711,7 @@ sealed class GValue(
 
 		override fun toString() = when (this) {
 			BOOLEAN -> "boolean"
-			ENUM -> "enum value"
+			ENUM -> "enum"
 			FLOAT -> "float"
 			INT -> "int"
 			NULL -> "null"
