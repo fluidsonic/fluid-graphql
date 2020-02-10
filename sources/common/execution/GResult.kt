@@ -92,6 +92,10 @@ internal sealed class GResult<out Value> {
 		}
 
 
+		val hasErrors
+			get() = !errors.isNullOrEmpty()
+
+
 		inline fun <Value> run(block: Builder.() -> Value): GResult<Value> {
 			val value = block()
 			if (value is GResult<*> || value is GPartialResult<*>)
