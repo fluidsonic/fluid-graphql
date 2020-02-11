@@ -15,7 +15,7 @@ class GPath(elements: List<Element> = emptyList()) {
 
 
 	override fun toString() =
-		elements.joinToString()
+		elements.joinToString(separator = "")
 
 
 	companion object {
