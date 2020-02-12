@@ -913,7 +913,7 @@ class GEnumType(
 			{ value ->
 				(value as? GEnumValue)
 					.ifNull { error("GraphQL enum '$name' expects an enum value literal but got: $value") }
-					.let { parseValue(it) }
+					.let { parseValue(it.name) }
 			}
 		},
 		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
