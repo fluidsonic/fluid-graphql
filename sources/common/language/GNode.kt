@@ -600,11 +600,11 @@ class GCustomScalarType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity,
-	parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+	parseValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity,
+	parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 		{ value -> value.unwrap()?.let { parseValue(it) } }
 	},
-	serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity,
+	serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity,
 	origin: GOrigin? = null
 ) : GScalarType(
 	description = description,
@@ -620,11 +620,11 @@ class GCustomScalarType(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity,
-		parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+		parseValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity,
+		parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 			{ value -> value.unwrap()?.let { parseValue(it) } }
 		},
-		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = Any?::identity
+		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
@@ -870,17 +870,17 @@ class GEnumType(
 	val values: List<GEnumValueDefinition>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+	parseValue: (GCoercionContext<*>.(value: Any) -> Any?)? = { value ->
 		(value as? String)?.takeIf { valueName -> values.any { it.name == valueName } }
 	},
-	parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+	parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 		{ value ->
 			(value as? GEnumValue)
 				.ifNull { error("GraphQL enum '${name.value}' expects an enum value literal but got: $value") }
 				.let { parseValue(it) }
 		}
 	},
-	serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+	serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = { value ->
 		(value as? String)
 			.ifNull { error("The default serializer for GraphQL enum '${name.value}' expects a String value but got ${value::class}: $value") }
 			.also { valueName ->
@@ -906,17 +906,17 @@ class GEnumType(
 		values: List<GEnumValueDefinition>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+		parseValue: (GCoercionContext<*>.(value: Any) -> Any?)? = { value ->
 			(value as? String)?.takeIf { valueName -> values.any { it.name == valueName } }
 		},
-		parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
+		parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 			{ value ->
 				(value as? GEnumValue)
 					.ifNull { error("GraphQL enum '$name' expects an enum value literal but got: $value") }
 					.let { parseValue(it.name) }
 			}
 		},
-		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)? = { value ->
+		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = { value ->
 			(value as? String)
 				.ifNull { error("The default serializer for GraphQL enum '$name' expects a String value but got ${value::class}: $value") }
 				.also { valueName ->
@@ -1444,7 +1444,7 @@ class GInputObjectType(
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	val parseValue: (GValueConversionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity,
+	val parseValue: (GNodeInputCoercionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity,
 	origin: GOrigin? = null
 ) :
 	GCompositeType(
@@ -1461,7 +1461,7 @@ class GInputObjectType(
 		argumentDefinitions: List<GInputObjectArgumentDefinition>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		parseValue: (GValueConversionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity
+		parseValue: (GCoercionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity
 	) : this(
 		name = GName(name),
 		argumentDefinitions = argumentDefinitions,
@@ -1689,9 +1689,9 @@ sealed class GLeafType(
 	directives: List<GDirective> = emptyList(),
 	kind: Kind,
 	origin: GOrigin?,
-	val parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)?,
-	val parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)?,
-	val serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)?
+	val parseValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
+	val parseValueNode: (GNodeInputCoercionContext<*>.(value: GValue) -> Any?)?,
+	val serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)?
 ) : GNamedType(
 	name = name,
 	description = description,
@@ -2216,9 +2216,9 @@ sealed class GScalarType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)?, // FIXME create types?
-	parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)?,
-	serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)?,
+	parseValue: (GCoercionContext<*>.(value: Any) -> Any?)?, // FIXME create types?
+	parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)?,
+	serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
 	origin: GOrigin? = null
 ) : GLeafType(
 	description = description,
@@ -2235,9 +2235,9 @@ sealed class GScalarType(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		parseValue: (GValueConversionContext<*>.(value: Any) -> Any?)?,
-		parseValueNode: (GValueConversionContext<*>.(value: GValue) -> Any?)?,
-		serializeValue: (GValueConversionContext<*>.(value: Any) -> Any?)?
+		parseValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
+		parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)?,
+		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)?
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
@@ -2710,14 +2710,14 @@ sealed class GValue(
 
 
 		override fun toString() = when (this) {
-			BOOLEAN -> "boolean"
-			ENUM -> "enum"
-			FLOAT -> "float"
-			INT -> "int"
-			NULL -> "null"
-			OBJECT -> "input object"
-			STRING -> "string"
-			VARIABLE -> "variable"
+			BOOLEAN -> "Boolean"
+			ENUM -> "Enum"
+			FLOAT -> "Float"
+			INT -> "Int"
+			NULL -> "Null"
+			OBJECT -> "Input Object"
+			STRING -> "String"
+			VARIABLE -> "Variable"
 		}
 
 

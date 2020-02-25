@@ -1,22 +1,42 @@
 package io.fluidsonic.graphql
 
 
-internal class Executor<out Environment : Any> private constructor(
+internal class Executor<Environment : Any> private constructor(
 	private val defaultResolver: GFieldResolver<Environment, Any>? = null,
 	private val document: GDocument,
 	private val environment: Environment,
+	private val nodeInputCoercion: GNodeInputCoercion<Environment>,
 	private val operation: GOperationDefinition,
 	private val pathBuilder: GPath.Builder, // FIXME may not work as class property with later parallelization
 	private val rootResolver: GRootResolver<Environment>,
 	private val schema: GSchema,
-	private val valueCoercer: ValueCoercer
+	private val variableValues: Map<String, Any?>
 ) {
 
-	private val valueConversionContext = object : GValueConversionContext<Environment> {
+	private val outputCoercionContext = object : GCoercionContext<Environment> {
 
-		override val environment get() = this@Executor.environment
-		override val schema get() = this@Executor.schema
+		override val environment = this@Executor.environment
+		override val schema = this@Executor.schema
 	}
+
+
+	// FIXME error handling
+	private fun coerceArgumentValues(values: Collection<GArgument>, arguments: Collection<GArgumentDefinition>) =
+		if (arguments.isNotEmpty())
+			nodeInputCoercion.coerceValues(
+				values = values.associate { it.name to it.value },
+				arguments = arguments,
+				context = object : GNodeInputCoercionContext<Environment> {
+
+					override val coercion = this@Executor.nodeInputCoercion
+					override val environment = this@Executor.environment
+					override val path = this@Executor.pathBuilder
+					override val schema = this@Executor.schema
+					override val variableValues = this@Executor.variableValues
+				}
+			)
+		else
+			emptyMap()
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
@@ -138,14 +158,14 @@ internal class Executor<out Environment : Any> private constructor(
 					val serializeValue = serializeValue
 						?: error("Field cannot result in GraphQL input type '${fieldType.name}'.")
 
-					with(valueConversionContext) {
+					with(outputCoercionContext) {
 						serializeValue(value) ?: error("Cannot serialize value of unrelated type ${value::class} to GraphQL type '${fieldType.name}'")
 					}
 				}
 
 			is GListType ->
 				(value as Collection<*>).mapIndexed { index, element ->
-					pathBuilder.withListIndex(index) {
+					pathBuilder.withIndex(index) {
 						completeValue(
 							value = element,
 							fieldType = fieldType.elementType,
@@ -330,10 +350,10 @@ internal class Executor<out Environment : Any> private constructor(
 		objectValue: Any,
 		pathBuilder: GPath.Builder
 	): GResult<Any?> = GResult {
-		val argumentValues = valueCoercer.coerceArgumentValues(
-			arguments = fieldSelections.first().arguments,
-			argumentDefinitions = fieldDefinition.argumentDefinitions
-		).or { return it } // FIXME possible if validated?
+		val argumentValues = coerceArgumentValues(
+			values = fieldSelections.first().arguments,
+			arguments = fieldDefinition.argumentDefinitions
+		)
 
 		// FIXME type safety
 		val resolver = fieldDefinition.resolver as GFieldResolver<Environment, Any>?
@@ -386,15 +406,10 @@ internal class Executor<out Environment : Any> private constructor(
 	private fun GNode.WithDirectives.getDirectiveValues(definition: GDirectiveDefinition): Map<String, Any?>? =
 		directives.firstOrNull { it.name == definition.name }
 			?.let { directive ->
-				valueCoercer.coerceArgumentValues(
-					arguments = directive.arguments,
-					argumentDefinitions = definition.argumentDefinitions
-				).or { failure ->
-					invalidOperationError(
-						message = "Invalid '${definition.name}' directive arguments.",
-						errors = failure.errors
-					)
-				}
+				coerceArgumentValues(
+					values = directive.arguments,
+					arguments = definition.argumentDefinitions
+				)
 			}
 
 
@@ -435,23 +450,28 @@ internal class Executor<out Environment : Any> private constructor(
 
 			val pathBuilder = GPath.Builder()
 
-			val valueCoercer = ValueCoercer.create(
-				document = document,
-				schema = schema,
-				environment = environment,
-				variableValues = variableValues,
-				pathBuilder = pathBuilder
-			).or { return it }
-
 			Executor(
 				defaultResolver = defaultResolver,
 				document = document,
 				environment = environment,
+				nodeInputCoercion = GNodeInputCoercion.default(), // FIXME make configurable
 				operation = operation,
 				pathBuilder = pathBuilder,
 				rootResolver = rootResolver,
 				schema = schema,
-				valueCoercer = valueCoercer
+				variableValues = GVariableInputCoercion.default<Environment>().let { coercion ->
+					coercion.coerceValues( // FIXME error handling
+						values = variableValues,
+						variables = document.definitions.filterIsInstance<GVariableDefinition>(),
+						context = object : GVariableInputCoercionContext<Environment> {
+
+							override val coercion = coercion
+							override val environment = environment
+							override val path = pathBuilder
+							override val schema = schema
+						}
+					)
+				}
 			)
 		}
 

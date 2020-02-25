@@ -24,17 +24,17 @@ class GPath(elements: List<Element> = emptyList()) {
 	}
 
 
-	// Internal for now. Review API before making it public.
-	internal class Builder {
+	class Builder {
 
-		private val stack = mutableListOf<Any>()
+		@PublishedApi
+		internal val stack = mutableListOf<Any>()
 
 
 		fun snapshot() =
 			GPath(stack.map { element ->
 				when (element) {
-					is Int -> Element.ListIndex(element)
-					is String -> Element.FieldName(element)
+					is Int -> Element.Index(element)
+					is String -> Element.Name(element)
 					else -> error("not possible")
 				}
 			})
@@ -44,7 +44,7 @@ class GPath(elements: List<Element> = emptyList()) {
 			snapshot().toString()
 
 
-		inline fun <R> withFieldName(name: String, block: () -> R): R {
+		inline fun <R> withName(name: String, block: () -> R): R {
 			stack += name
 
 			return try {
@@ -56,7 +56,7 @@ class GPath(elements: List<Element> = emptyList()) {
 		}
 
 
-		inline fun <R> withListIndex(index: Int, block: () -> R): R {
+		inline fun <R> withIndex(index: Int, block: () -> R): R {
 			stack += index
 
 			return try {
@@ -71,10 +71,10 @@ class GPath(elements: List<Element> = emptyList()) {
 
 	sealed class Element {
 
-		class FieldName(val value: String) : Element() {
+		class Name(val value: String) : Element() {
 
 			override fun equals(other: Any?) =
-				(this === other || (other is FieldName && value == other.value))
+				(this === other || (other is Name && value == other.value))
 
 
 			override fun hashCode() =
@@ -86,10 +86,10 @@ class GPath(elements: List<Element> = emptyList()) {
 		}
 
 
-		class ListIndex(val value: Int) : Element() {
+		class Index(val value: Int) : Element() {
 
 			override fun equals(other: Any?) =
-				(this === other || (other is ListIndex && value == other.value))
+				(this === other || (other is Index && value == other.value))
 
 
 			override fun hashCode() =
@@ -103,11 +103,11 @@ class GPath(elements: List<Element> = emptyList()) {
 }
 
 
-internal inline fun <R> GPath.Builder?.withFieldName(name: String, block: () -> R) =
-	if (this !== null) withFieldName(name, block)
+internal inline fun <R> GPath.Builder?.withName(name: String, block: () -> R) =
+	if (this !== null) withName(name, block)
 	else block()
 
 
-internal inline fun <R> GPath.Builder?.withListIndex(index: Int, block: () -> R) =
-	if (this !== null) withListIndex(index, block)
+internal inline fun <R> GPath.Builder?.withIndex(index: Int, block: () -> R) =
+	if (this !== null) withIndex(index, block)
 	else block()
