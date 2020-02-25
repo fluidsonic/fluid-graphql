@@ -227,7 +227,7 @@ internal object Printer {
 	private fun GWriter.writeNode(selection: GInlineFragmentSelection) {
 		writeRaw("...")
 		selection.typeCondition?.let { typeCondition ->
-			writeRaw(" on")
+			writeRaw(" on ")
 			writeNode(typeCondition)
 		}
 		writeDirectives(selection.directives)
