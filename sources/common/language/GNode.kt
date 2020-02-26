@@ -933,7 +933,7 @@ class GEnumType(
 	parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 		{ value ->
 			(value as? GEnumValue)
-				.ifNull { error("GraphQL enum '${name.value}' expects an enum value literal but got: $value") }
+				.ifNull { error("GraphQL enum '${name.value}' expects an enum value literal but got ${value.kind}: $value") }
 				.let { parseValue(it) }
 		}
 	},
@@ -971,7 +971,7 @@ class GEnumType(
 		parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 			{ value ->
 				(value as? GEnumValue)
-					.ifNull { error("GraphQL enum '$name' expects an enum value literal but got: $value") }
+					.ifNull { error("GraphQL enum '$name' expects an enum value literal but got ${value.kind}: $value") }
 					.let { parseValue(it.name) }
 			}
 		},
