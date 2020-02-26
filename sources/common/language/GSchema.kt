@@ -67,9 +67,9 @@ class GSchema internal constructor(
 
 	fun resolveType(ref: GTypeRef): GType? =
 		when (ref) {
-			is GListTypeRef -> resolveType(ref.elementType)?.let(::GListType)
+			is GListTypeRef -> resolveType(ref.elementType)?.let { GListType(elementType = it) }
 			is GNamedTypeRef -> resolveType(ref)
-			is GNonNullTypeRef -> resolveType(ref.nullableRef)?.let(::GNonNullType)
+			is GNonNullTypeRef -> resolveType(ref.nullableRef)?.let { GNonNullType(nullableType = it) }
 		}
 
 

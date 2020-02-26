@@ -5,6 +5,7 @@ import kotlin.reflect.*
 
 // FIXME hashCode
 sealed class GNode(
+	val extensions: Map<ExtensionKey<*>, *>,
 	val origin: GOrigin?
 ) {
 
@@ -295,6 +296,11 @@ sealed class GNode(
 	}
 
 
+	// FIXME Is there a good way to make this.extensions type-safe without making the API too complicated?
+	operator fun <Value : Any> get(extensionKey: ExtensionKey<Value>) =
+		extensions[extensionKey] as Value?
+
+
 	fun hasChildren(): Boolean {
 		forEachChild { return true }
 
@@ -311,6 +317,9 @@ sealed class GNode(
 		fun print(node: GNode, indent: String = "\t") =
 			Printer.print(node = node, indent = indent)
 	}
+
+
+	interface ExtensionKey<Value : Any>
 
 
 	interface WithArguments {
@@ -447,12 +456,14 @@ fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean): Bool
 sealed class GAbstractType(
 	description: GStringValue?,
 	directives: List<GDirective>,
+	extensions: Map<ExtensionKey<*>, *>,
 	kind: Kind,
 	name: GName,
 	origin: GOrigin?
 ) : GCompositeType(
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	kind = kind,
 	name = name,
 	origin = origin
@@ -465,9 +476,13 @@ sealed class GAbstractType(
 class GArgument(
 	name: GName,
 	val value: GValue,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithName {
 
 	override val nameNode = name
@@ -496,14 +511,18 @@ class GArgument(
 
 
 sealed class GArgumentDefinition(
-	name: GName,
-	val type: GTypeRef,
 	val defaultValue: GValue?,
 	description: GStringValue?,
 	override val directives: List<GDirective>,
-	origin: GOrigin? = null
+	extensions: Map<ExtensionKey<*>, *>,
+	name: GName,
+	origin: GOrigin?,
+	val type: GTypeRef
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithName,
 	GNode.WithOptionalDescription {
@@ -547,8 +566,12 @@ object GBooleanType : GScalarType(
 
 class GBooleanValue(
 	val value: Boolean,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.BOOLEAN
 
@@ -578,16 +601,18 @@ class GBooleanValue(
 
 
 sealed class GCompositeType(
-	name: GName,
-	description: GStringValue? = null,
-	directives: List<GDirective> = emptyList(),
+	description: GStringValue?,
+	directives: List<GDirective>,
+	extensions: Map<ExtensionKey<*>, *>,
 	kind: Kind,
+	name: GName,
 	origin: GOrigin?
 ) : GNamedType(
-	name = name,
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	kind = kind,
+	name = name,
 	origin = origin
 ) {
 
@@ -605,10 +630,12 @@ class GCustomScalarType(
 		{ value -> value.unwrap()?.let { parseValue(it) } }
 	},
 	serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GScalarType(
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	name = name,
 	parseValue = parseValue,
 	parseValueNode = parseValueNode,
@@ -624,14 +651,16 @@ class GCustomScalarType(
 		parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)? = parseValue?.let {
 			{ value -> value.unwrap()?.let { parseValue(it) } }
 		},
-		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity
+		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)? = Any?::identity,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
 		directives = directives,
 		parseValue = parseValue,
 		parseValueNode = parseValueNode,
-		serializeValue = serializeValue
+		serializeValue = serializeValue,
+		extensions = extensions
 	)
 
 
@@ -640,8 +669,12 @@ class GCustomScalarType(
 
 
 sealed class GDefinition(
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
-) : GNode(origin = origin) {
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	companion object
 }
@@ -650,9 +683,13 @@ sealed class GDefinition(
 class GDirective(
 	name: GName,
 	override val arguments: List<GArgument> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithArguments,
 	GNode.WithName {
 
@@ -661,10 +698,12 @@ class GDirective(
 
 	constructor(
 		name: String,
-		arguments: List<GArgument> = emptyList()
+		arguments: List<GArgument> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
-		arguments = arguments
+		arguments = arguments,
+		extensions = extensions
 	)
 
 
@@ -687,13 +726,15 @@ class GDirectiveArgumentDefinition(
 	defaultValue: GValue? = null,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GArgumentDefinition(
-	name = name,
-	type = type,
 	defaultValue = defaultValue,
 	description = description,
 	directives = directives,
+	extensions = extensions,
+	name = name,
+	type = type,
 	origin = origin
 ) {
 
@@ -702,13 +743,15 @@ class GDirectiveArgumentDefinition(
 		type: GTypeRef,
 		defaultValue: GValue? = null,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		type = type,
 		defaultValue = defaultValue,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 	companion object
@@ -721,9 +764,13 @@ class GDirectiveDefinition(
 	val isRepeatable: Boolean = false,
 	override val argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
 	description: GStringValue? = null,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GTypeSystemDefinition(origin = origin),
+	GTypeSystemDefinition(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithArgumentDefinitions,
 	GNode.WithName,
 	GNode.WithOptionalDescription {
@@ -742,13 +789,15 @@ class GDirectiveDefinition(
 		locations: Set<GDirectiveLocation>,
 		isRepeatable: Boolean = false,
 		argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
-		description: String? = null
+		description: String? = null,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		locations = locations.map { GName(it.name) },
 		isRepeatable = isRepeatable,
 		argumentDefinitions = argumentDefinitions,
-		description = description?.let { GStringValue(it) }
+		description = description?.let { GStringValue(it) },
+		extensions = extensions
 	)
 
 
@@ -774,8 +823,12 @@ class GDirectiveDefinition(
 
 class GDocument(
 	val definitions: List<GDefinition>,
-	origin: GOrigin? = null
-) : GNode(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	// FIXME this is confusing. It may indicate that this is the schema related to this document instead of representing the
 	// type definitions within this document.
@@ -798,7 +851,8 @@ class GDocument(
 		environment: Environment,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		defaultResolver: GFieldResolver<Environment, Any>? = null
+		defaultResolver: GFieldResolver<Environment, Any>? = null,
+		nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default()
 	) =
 		Executor.create(
 				schema = schema,
@@ -807,7 +861,8 @@ class GDocument(
 				rootResolver = rootResolver,
 				operationName = operationName,
 				variableValues = variableValues,
-				defaultResolver = defaultResolver
+				defaultResolver = defaultResolver,
+				nodeInputCoercion = nodeInputCoercion
 			)
 			.consumeErrors { throw it.errors.first() } // FIXME ??
 			.execute()
@@ -820,7 +875,8 @@ class GDocument(
 		rootResolver: GRootResolver<Unit>,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		defaultResolver: GFieldResolver<Unit, Any>? = null
+		defaultResolver: GFieldResolver<Unit, Any>? = null,
+		nodeInputCoercion: GNodeInputCoercion<Unit> = GNodeInputCoercion.default()
 	) =
 		execute(
 			schema = schema,
@@ -828,7 +884,8 @@ class GDocument(
 			environment = Unit,
 			operationName = operationName,
 			variableValues = variableValues,
-			defaultResolver = defaultResolver
+			defaultResolver = defaultResolver,
+			nodeInputCoercion = nodeInputCoercion
 		)
 
 
@@ -888,10 +945,12 @@ class GEnumType(
 					error("'$valueName' is not a valid value for GraphQL enum '${name.value}'.")
 			}
 	},
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GLeafType(
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	kind = Kind.ENUM,
 	name = name,
 	parseValue = parseValue,
@@ -923,7 +982,8 @@ class GEnumType(
 					if (values.none { it.name == valueName })
 						error("'$valueName' is not a valid value for GraphQL enum '$name'.")
 				}
-		}
+		},
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		values = values,
@@ -931,7 +991,8 @@ class GEnumType(
 		directives = directives,
 		parseValue = parseValue,
 		parseValueNode = parseValueNode,
-		serializeValue = serializeValue
+		serializeValue = serializeValue,
+		extensions = extensions
 	)
 
 
@@ -963,9 +1024,11 @@ class GEnumTypeExtension(
 	name: GName,
 	val values: List<GEnumValueDefinition>,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GTypeExtension(
 	directives = directives,
+	extensions = extensions,
 	name = name,
 	origin = origin
 ) {
@@ -973,11 +1036,13 @@ class GEnumTypeExtension(
 	constructor(
 		name: String,
 		values: List<GEnumValueDefinition>,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		values = values,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1001,8 +1066,12 @@ class GEnumTypeExtension(
 
 class GEnumValue(
 	val name: String,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.ENUM
 
@@ -1035,9 +1104,13 @@ class GEnumValueDefinition(
 	name: GName,
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithOptionalDeprecation,
 	GNode.WithOptionalDescription {
 
@@ -1048,11 +1121,13 @@ class GEnumValueDefinition(
 	constructor(
 		name: String,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1071,8 +1146,12 @@ class GEnumValueDefinition(
 
 
 sealed class GExecutableDefinition(
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
-) : GDefinition(origin = origin) {
+) : GDefinition(
+	extensions = extensions,
+	origin = origin
+) {
 
 	companion object
 }
@@ -1084,14 +1163,16 @@ class GFieldArgumentDefinition(
 	defaultValue: GValue? = null,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GArgumentDefinition(
 	name = name,
 	type = type,
 	defaultValue = defaultValue,
 	description = description,
 	directives = directives,
-	origin = origin
+	origin = origin,
+	extensions = extensions
 ) {
 
 	constructor(
@@ -1099,13 +1180,15 @@ class GFieldArgumentDefinition(
 		type: GTypeRef,
 		defaultValue: GValue? = null,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		type = type,
 		defaultValue = defaultValue,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 	companion object
@@ -1119,9 +1202,13 @@ class GFieldDefinition(
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
 	val resolver: GFieldResolver<*, *>? = null,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithArgumentDefinitions,
 	GNode.WithOptionalDescription,
 	GNode.WithOptionalDeprecation {
@@ -1136,14 +1223,16 @@ class GFieldDefinition(
 		argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		resolver: GFieldResolver<*, *>? = null
+		resolver: GFieldResolver<*, *>? = null,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		type = type,
 		argumentDefinitions = argumentDefinitions,
 		description = description?.let { GStringValue(it) },
 		directives = directives,
-		resolver = resolver
+		resolver = resolver,
+		extensions = extensions
 	)
 
 
@@ -1173,10 +1262,12 @@ class GFieldSelection(
 	override val arguments: List<GArgument> = emptyList(),
 	alias: GName? = null,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GSelection(
 		directives = directives,
+		extensions = extensions,
 		origin = origin
 	),
 	GNode.WithArguments {
@@ -1192,13 +1283,15 @@ class GFieldSelection(
 		selectionSet: GSelectionSet? = null,
 		arguments: List<GArgument> = emptyList(),
 		alias: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		selectionSet = selectionSet,
 		arguments = arguments,
 		alias = alias?.let { GName(alias) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1241,8 +1334,12 @@ object GFloatType : GScalarType(
 
 class GFloatValue(
 	val value: Double,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.FLOAT
 
@@ -1277,9 +1374,13 @@ class GFragmentDefinition(
 	val selectionSet: GSelectionSet,
 	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GExecutableDefinition(origin = origin),
+	GExecutableDefinition(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithName,
 	GNode.WithVariableDefinitions {
@@ -1321,10 +1422,12 @@ class GFragmentDefinition(
 class GFragmentSelection(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GSelection(
 		directives = directives,
+		extensions = extensions,
 		origin = origin
 	) {
 
@@ -1334,10 +1437,12 @@ class GFragmentSelection(
 
 	constructor(
 		name: String,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1383,9 +1488,11 @@ class GInlineFragmentSelection(
 	val selectionSet: GSelectionSet,
 	val typeCondition: GNamedTypeRef?,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GSelection(
 	directives = directives,
+	extensions = extensions,
 	origin = origin
 ) {
 
@@ -1409,14 +1516,16 @@ class GInputObjectArgumentDefinition(
 	defaultValue: GValue? = null,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GArgumentDefinition(
 	name = name,
 	type = type,
 	defaultValue = defaultValue,
 	description = description,
 	directives = directives,
-	origin = origin
+	origin = origin,
+	extensions = extensions
 ) {
 
 	constructor(
@@ -1424,13 +1533,15 @@ class GInputObjectArgumentDefinition(
 		type: GTypeRef,
 		defaultValue: GValue? = null,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		type = type,
 		defaultValue = defaultValue,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 	companion object
@@ -1445,11 +1556,13 @@ class GInputObjectType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	val parseValue: (GNodeInputCoercionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GCompositeType(
 		description = description,
 		directives = directives,
+		extensions = extensions,
 		kind = Kind.INPUT_OBJECT,
 		name = name,
 		origin = origin
@@ -1461,13 +1574,15 @@ class GInputObjectType(
 		argumentDefinitions: List<GInputObjectArgumentDefinition>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		parseValue: (GCoercionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity
+		parseValue: (GCoercionContext<*>.(arguments: Map<String, Any?>) -> Any?) = Any?::identity,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		argumentDefinitions = argumentDefinitions,
 		description = description?.let { GStringValue(it) },
 		directives = directives,
-		parseValue = parseValue
+		parseValue = parseValue,
+		extensions = extensions
 	)
 
 
@@ -1499,10 +1614,12 @@ class GInputObjectTypeExtension(
 	name: GName,
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GTypeExtension(
 		directives = directives,
+		extensions = extensions,
 		name = name,
 		origin = origin
 	),
@@ -1511,11 +1628,13 @@ class GInputObjectTypeExtension(
 	constructor(
 		name: String,
 		argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		argumentDefinitions = argumentDefinitions,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1550,8 +1669,12 @@ object GIntType : GScalarType(
 
 class GIntValue(
 	val value: Int,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.INT
 
@@ -1588,11 +1711,13 @@ class GInterfaceType(
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GAbstractType(
 		description = description,
 		directives = directives,
+		extensions = extensions,
 		kind = Kind.INTERFACE,
 		name = name,
 		origin = origin
@@ -1605,13 +1730,15 @@ class GInterfaceType(
 		fields: List<GFieldDefinition>,
 		interfaces: List<GNamedTypeRef> = emptyList(),
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		fieldDefinitions = fields,
 		interfaces = interfaces,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1642,29 +1769,31 @@ class GInterfaceTypeExtension(
 	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GTypeExtension(
 		directives = directives,
+		extensions = extensions,
 		name = name,
 		origin = origin
 	),
 	GNode.WithFieldDefinitions,
 	GNode.WithInterfaces {
 
-	val fieldsByName = fieldDefinitions.associateBy { it.name }
-
 
 	constructor(
 		name: String,
 		fields: List<GFieldDefinition> = emptyList(),
 		interfaces: List<GNamedTypeRef> = emptyList(),
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		fieldDefinitions = fields,
 		interfaces = interfaces,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -1687,6 +1816,7 @@ sealed class GLeafType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
+	extensions: Map<ExtensionKey<*>, *>,
 	kind: Kind,
 	origin: GOrigin?,
 	val parseValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
@@ -1696,6 +1826,7 @@ sealed class GLeafType(
 	name = name,
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	kind = kind,
 	origin = origin
 ) {
@@ -1707,8 +1838,10 @@ sealed class GLeafType(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
 class GListType(
-	elementType: GType
+	elementType: GType,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GWrappingType(
+	extensions = extensions,
 	kind = Kind.LIST,
 	wrappedType = elementType
 ) {
@@ -1741,8 +1874,12 @@ class GListType(
 
 class GListTypeRef(
 	val elementType: GTypeRef,
-	origin: GOrigin? = null
-) : GTypeRef(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GTypeRef(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val underlyingName get() = elementType.underlyingName
 
@@ -1759,14 +1896,21 @@ class GListTypeRef(
 }
 
 
-fun GListTypeRef(name: String) =
-	GListTypeRef(GNamedTypeRef(name))
+fun GListTypeRef(
+	name: String,
+	extensions: Map<GNode.ExtensionKey<*>, *> = emptyMap<GNode.ExtensionKey<*>, Any>()
+) =
+	GListTypeRef(GNamedTypeRef(name, extensions = extensions), extensions = extensions)
 
 
 class GListValue(
 	val elements: List<GValue>,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.FLOAT
 
@@ -1797,8 +1941,12 @@ class GListValue(
 
 class GName(
 	val value: String,
-	origin: GOrigin? = null
-) : GNode(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override fun equals(other: Any?) =
 		this === other || (other is GName && value == other.value)
@@ -1823,11 +1971,13 @@ class GName(
 sealed class GNamedType(
 	description: GStringValue?,
 	override val directives: List<GDirective>,
+	extensions: Map<ExtensionKey<*>, *>,
 	kind: Kind,
 	name: GName,
 	origin: GOrigin?
 ) :
 	GType(
+		extensions = extensions,
 		kind = kind,
 		origin = origin
 	),
@@ -1850,8 +2000,12 @@ sealed class GNamedType(
 
 class GNamedTypeRef(
 	name: GName,
-	origin: GOrigin? = null
-) : GTypeRef(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GTypeRef(
+	extensions = extensions,
+	origin = origin
+) {
 
 	val name get() = nameNode.value
 	val nameNode = name
@@ -1860,9 +2014,11 @@ class GNamedTypeRef(
 
 
 	constructor(
-		name: String
+		name: String,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
-		name = GName(name)
+		name = GName(name),
+		extensions = extensions
 	)
 
 
@@ -1881,8 +2037,10 @@ class GNamedTypeRef(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Non-Null
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
 class GNonNullType(
-	nullableType: GType
+	nullableType: GType,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GWrappingType(
+	extensions = extensions,
 	kind = Kind.NON_NULL,
 	wrappedType = nullableType
 ) {
@@ -1915,8 +2073,12 @@ class GNonNullType(
 
 class GNonNullTypeRef(
 	override val nullableRef: GTypeRef,
-	origin: GOrigin? = null
-) : GTypeRef(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GTypeRef(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val nonNullableRef get() = this
 	override val underlyingName get() = nullableRef.underlyingName
@@ -1934,13 +2096,20 @@ class GNonNullTypeRef(
 }
 
 
-fun GNonNullTypeRef(name: String) =
-	GNonNullTypeRef(GNamedTypeRef(name))
+fun GNonNullTypeRef(
+	name: String,
+	extensions: Map<GNode.ExtensionKey<*>, *> = emptyMap<GNode.ExtensionKey<*>, Any>()
+) =
+	GNonNullTypeRef(GNamedTypeRef(name, extensions = extensions), extensions = extensions)
 
 
 class GNullValue(
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.NULL
 
@@ -1960,7 +2129,7 @@ class GNullValue(
 		0
 
 
-	override fun unwrap() =
+	override fun unwrap(): Nothing? =
 		null
 
 
@@ -1980,11 +2149,13 @@ class GObjectType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	val kotlinType: KClass<*>? = null,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GCompositeType(
 		description = description,
 		directives = directives,
+		extensions = extensions,
 		kind = Kind.OBJECT,
 		name = name,
 		origin = origin
@@ -1998,14 +2169,16 @@ class GObjectType(
 		interfaces: List<GNamedTypeRef> = emptyList(),
 		description: String? = null,
 		kotlinType: KClass<*>? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		fieldDefinitions = fields,
 		interfaces = interfaces,
 		description = description?.let { GStringValue(it) },
 		directives = directives,
-		kotlinType = kotlinType
+		kotlinType = kotlinType,
+		extensions = extensions
 	)
 
 
@@ -2035,10 +2208,12 @@ class GObjectTypeExtension(
 	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
 	GTypeExtension(
 		directives = directives,
+		extensions = extensions,
 		name = name,
 		origin = origin
 	),
@@ -2049,12 +2224,14 @@ class GObjectTypeExtension(
 		name: String,
 		fields: List<GFieldDefinition> = emptyList(),
 		interfaces: List<GNamedTypeRef> = emptyList(),
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		fieldDefinitions = fields,
 		interfaces = interfaces,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -2075,8 +2252,12 @@ class GObjectTypeExtension(
 
 class GObjectValue(
 	val fields: List<GObjectValueField>,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	private val fieldsByName = fields.associateBy { it.name }
 
@@ -2114,9 +2295,13 @@ class GObjectValue(
 class GObjectValueField(
 	name: GName,
 	val value: GValue,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithName {
 
 	override val nameNode = name
@@ -2150,9 +2335,13 @@ class GOperationDefinition(
 	val selectionSet: GSelectionSet,
 	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GExecutableDefinition(origin = origin),
+	GExecutableDefinition(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithOptionalName,
 	GNode.WithVariableDefinitions {
@@ -2165,13 +2354,15 @@ class GOperationDefinition(
 		name: String? = null,
 		selectionSet: GSelectionSet,
 		variableDefinitions: List<GVariableDefinition> = emptyList(),
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		type = type,
 		name = name?.let { GName(it) },
 		selectionSet = selectionSet,
 		variableDefinitions = variableDefinitions,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -2194,8 +2385,12 @@ class GOperationDefinition(
 class GOperationTypeDefinition(
 	val operationType: GOperationType,
 	val type: GNamedTypeRef,
-	origin: GOrigin? = null
-) : GNode(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
@@ -2219,10 +2414,12 @@ sealed class GScalarType(
 	parseValue: (GCoercionContext<*>.(value: Any) -> Any?)?, // FIXME create types?
 	parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)?,
 	serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GLeafType(
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	kind = Kind.SCALAR,
 	name = name,
 	origin = origin,
@@ -2237,14 +2434,16 @@ sealed class GScalarType(
 		directives: List<GDirective> = emptyList(),
 		parseValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
 		parseValueNode: (GCoercionContext<*>.(value: GValue) -> Any?)?,
-		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)?
+		serializeValue: (GCoercionContext<*>.(value: Any) -> Any?)?,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		description = description?.let { GStringValue(it) },
 		directives = directives,
 		parseValue = parseValue,
 		parseValueNode = parseValueNode,
-		serializeValue = serializeValue
+		serializeValue = serializeValue,
+		extensions = extensions
 	)
 
 
@@ -2270,19 +2469,23 @@ sealed class GScalarType(
 class GScalarTypeExtension(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GTypeExtension(
 	directives = directives,
+	extensions = extensions,
 	name = name,
 	origin = origin
 ) {
 
 	constructor(
 		name: String,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -2302,9 +2505,13 @@ class GScalarTypeExtension(
 class GSchemaDefinition(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition>,
 	override val directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GTypeSystemDefinition(origin = origin),
+	GTypeSystemDefinition(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithOperationTypeDefinitions {
 
@@ -2324,9 +2531,13 @@ class GSchemaDefinition(
 class GSchemaExtension(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GTypeSystemExtension(origin = origin),
+	GTypeSystemExtension(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithOperationTypeDefinitions {
 
@@ -2345,9 +2556,13 @@ class GSchemaExtension(
 
 sealed class GSelection(
 	override val directives: List<GDirective>,
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives {
 
 	companion object
@@ -2356,8 +2571,12 @@ sealed class GSelection(
 
 class GSelectionSet(
 	val selections: List<GSelection>,
-	origin: GOrigin? = null
-) : GNode(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
 		this === other || (
@@ -2389,8 +2608,12 @@ object GStringType : GScalarType(
 class GStringValue(
 	val value: String,
 	val isBlock: Boolean = false,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	override val kind get() = Kind.STRING
 
@@ -2424,9 +2647,13 @@ class GStringValue(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__Type-Type
 sealed class GType(
+	extensions: Map<ExtensionKey<*>, *>,
 	val kind: Kind,
 	origin: GOrigin?
-) : GTypeSystemDefinition(origin = origin) {
+) : GTypeSystemDefinition(
+	extensions = extensions,
+	origin = origin
+) {
 
 	abstract val name: String
 	abstract val underlyingNamedType: GNamedType
@@ -2509,10 +2736,14 @@ sealed class GType(
 
 sealed class GTypeExtension(
 	override val directives: List<GDirective>,
+	extensions: Map<ExtensionKey<*>, *>,
 	name: GName,
 	origin: GOrigin?
 ) :
-	GTypeSystemExtension(origin = origin),
+	GTypeSystemExtension(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithName {
 
@@ -2524,8 +2755,12 @@ sealed class GTypeExtension(
 
 
 sealed class GTypeRef(
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
-) : GNode(origin = origin) {
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	abstract val underlyingName: String
 
@@ -2545,8 +2780,11 @@ sealed class GTypeRef(
 }
 
 
-fun GTypeRef(name: String) =
-	GNamedTypeRef(name)
+fun GTypeRef(
+	name: String,
+	extensions: Map<GNode.ExtensionKey<*>, *> = emptyMap<GNode.ExtensionKey<*>, Any>()
+) =
+	GNamedTypeRef(name, extensions = extensions)
 
 
 val GBooleanTypeRef = GTypeRef("Boolean")
@@ -2557,16 +2795,24 @@ val GStringTypeRef = GTypeRef("String")
 
 
 sealed class GTypeSystemDefinition(
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
-) : GDefinition(origin = origin) {
+) : GDefinition(
+	extensions = extensions,
+	origin = origin
+) {
 
 	companion object
 }
 
 
 sealed class GTypeSystemExtension(
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
-) : GDefinition(origin = origin) {
+) : GDefinition(
+	extensions = extensions,
+	origin = origin
+) {
 
 	companion object
 }
@@ -2579,10 +2825,12 @@ class GUnionType(
 	val possibleTypes: List<GNamedTypeRef>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GAbstractType(
 	description = description,
 	directives = directives,
+	extensions = extensions,
 	kind = Kind.UNION,
 	name = name,
 	origin = origin
@@ -2592,12 +2840,14 @@ class GUnionType(
 		name: String,
 		possibleTypes: List<GNamedTypeRef>,
 		description: String? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		possibleTypes = possibleTypes,
 		description = description?.let { GStringValue(it) },
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -2626,9 +2876,11 @@ class GUnionTypeExtension(
 	name: GName,
 	val possibleTypes: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GTypeExtension(
 	directives = directives,
+	extensions = extensions,
 	name = name,
 	origin = origin
 ) {
@@ -2636,11 +2888,13 @@ class GUnionTypeExtension(
 	constructor(
 		name: String,
 		possibleTypes: List<GNamedTypeRef> = emptyList(),
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		possibleTypes = possibleTypes,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -2659,8 +2913,12 @@ class GUnionTypeExtension(
 
 
 sealed class GValue(
+	extensions: Map<ExtensionKey<*>, *>,
 	origin: GOrigin?
-) : GNode(origin = origin) {
+) : GNode(
+	extensions = extensions,
+	origin = origin
+) {
 
 	abstract val kind: Kind
 
@@ -2731,9 +2989,13 @@ class GVariableDefinition(
 	val type: GTypeRef,
 	val defaultValue: GValue? = null,
 	override val directives: List<GDirective> = emptyList(),
-	origin: GOrigin? = null
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) :
-	GNode(origin = origin),
+	GNode(
+		extensions = extensions,
+		origin = origin
+	),
 	GNode.WithDirectives,
 	GNode.WithName {
 
@@ -2744,12 +3006,14 @@ class GVariableDefinition(
 		name: String,
 		type: GTypeRef,
 		defaultValue: GValue? = null,
-		directives: List<GDirective> = emptyList()
+		directives: List<GDirective> = emptyList(),
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
 		name = GName(name),
 		type = type,
 		defaultValue = defaultValue,
-		directives = directives
+		directives = directives,
+		extensions = extensions
 	)
 
 
@@ -2770,8 +3034,12 @@ class GVariableDefinition(
 
 class GVariableRef(
 	name: GName,
-	origin: GOrigin? = null
-) : GValue(origin = origin) {
+	origin: GOrigin? = null,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
+) : GValue(
+	extensions = extensions,
+	origin = origin
+) {
 
 	val name get() = nameNode.value
 	val nameNode = name
@@ -2780,9 +3048,11 @@ class GVariableRef(
 
 
 	constructor(
-		name: String
+		name: String,
+		extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 	) : this(
-		name = GName(name)
+		name = GName(name),
+		extensions = extensions
 	)
 
 
@@ -2814,8 +3084,10 @@ class GVariableRef(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 sealed class GWrappingType(
 	kind: Kind,
-	val wrappedType: GType
+	val wrappedType: GType,
+	extensions: Map<ExtensionKey<*>, *> = emptyMap<ExtensionKey<*>, Any>()
 ) : GType(
+	extensions = extensions,
 	kind = kind,
 	origin = null
 ) {

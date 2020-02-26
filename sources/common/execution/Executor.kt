@@ -21,10 +21,17 @@ internal class Executor<Environment : Any> private constructor(
 
 
 	// FIXME error handling
-	private fun coerceArgumentValues(values: Collection<GArgument>, arguments: Collection<GArgumentDefinition>) =
+	private fun coerceArgumentValues(
+		parentType: GCompositeType?,
+		field: GFieldDefinition?,
+		values: Collection<GArgument>,
+		arguments: Collection<GArgumentDefinition>
+	) =
 		if (arguments.isNotEmpty())
 			nodeInputCoercion.coerceValues(
 				values = values.associate { it.name to it.value },
+				parentType = parentType,
+				field = field,
 				arguments = arguments,
 				context = object : GNodeInputCoercionContext<Environment> {
 
@@ -352,6 +359,8 @@ internal class Executor<Environment : Any> private constructor(
 	): GResult<Any?> = GResult {
 		val argumentValues = coerceArgumentValues(
 			values = fieldSelections.first().arguments,
+			parentType = objectType,
+			field = fieldDefinition,
 			arguments = fieldDefinition.argumentDefinitions
 		)
 
@@ -408,6 +417,8 @@ internal class Executor<Environment : Any> private constructor(
 			?.let { directive ->
 				coerceArgumentValues(
 					values = directive.arguments,
+					parentType = null,
+					field = null,
 					arguments = definition.argumentDefinitions
 				)
 			}
@@ -440,7 +451,8 @@ internal class Executor<Environment : Any> private constructor(
 			rootResolver: GRootResolver<Environment>,
 			operationName: String? = null,
 			variableValues: Map<String, Any?> = emptyMap(),
-			defaultResolver: GFieldResolver<Environment, Any>? = null
+			defaultResolver: GFieldResolver<Environment, Any>? = null,
+			nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default()
 		): GResult<Executor<Environment>> = GResult {
 			// FIXME check type
 			val operation = getOperation(
@@ -454,7 +466,7 @@ internal class Executor<Environment : Any> private constructor(
 				defaultResolver = defaultResolver,
 				document = document,
 				environment = environment,
-				nodeInputCoercion = GNodeInputCoercion.default(), // FIXME make configurable
+				nodeInputCoercion = nodeInputCoercion,
 				operation = operation,
 				pathBuilder = pathBuilder,
 				rootResolver = rootResolver,
