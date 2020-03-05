@@ -155,33 +155,54 @@ internal object GIntrospection {
 			field("deprecationReason" of String) {
 				resolve<String?> { it.deprecationReason }
 			}
-
 		}
 
-		Object(InputValue) {
+		Object<GArgumentDefinition>(InputValue) {
 			description(
 				"Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their " +
 					"type and optionally a default value."
 			)
 
-			field("name" of !String)
-			field("description" of String)
-			field("type" of !Type)
-			field("defaultValue" of !String) {
+			field("name" of !String) {
+				resolve<String> { it.name }
+			}
+
+			field("description" of String) {
+				resolve<String?> { it.description }
+			}
+
+			field("type" of !Type) {
+				resolve<GType> { schema.resolveType(it.type)!! }
+			}
+
+			field("defaultValue" of String) {
 				description("A GraphQL-formatted string representing the default value for this input value.")
+
+				resolve<String?> { it.defaultValue?.toString() }
 			}
 		}
 
-		Object(EnumValue) {
+		Object<GEnumValueDefinition>(EnumValue) {
 			description(
 				"One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. " +
 					"However an Enum value is returned in a JSON response as a string."
 			)
 
-			field("name" of !String)
-			field("description" of String)
-			field("isDeprecated" of !Boolean)
-			field("deprecationReason" of String)
+			field("name" of !String) {
+				resolve<String> { it.name }
+			}
+
+			field("description" of String) {
+				resolve<String?> { it.description }
+			}
+
+			field("isDeprecated" of !Boolean) {
+				resolve<Boolean> { it.deprecation !== null }
+			}
+
+			field("deprecationReason" of String) {
+				resolve<String?> { it.deprecationReason }
+			}
 		}
 
 		Enum(TypeKind) {
@@ -211,17 +232,30 @@ internal object GIntrospection {
 			}
 		}
 
-		Object(Directive) {
+		Object<GDirectiveDefinition>(Directive) {
 			description(
 				"A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\n" +
 					"In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, " +
 					"such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor."
 			)
 
-			field("name" of !String)
-			field("description" of String)
-			field("locations" of !List(!DirectiveLocation))
-			field("args" of !List(!InputValue))
+			field("name" of !String) {
+				resolve<String> { it.name }
+			}
+
+			field("description" of String) {
+				resolve<String?> { it.description }
+			}
+
+			field("locations" of !List(!DirectiveLocation)) {
+				resolve<List<String>> { definition ->
+					definition.locations.map { it.name }.sorted()
+				}
+			}
+
+			field("args" of !List(!InputValue)) {
+				resolve<List<GDirectiveArgumentDefinition>> { it.argumentDefinitions }
+			}
 		}
 
 		Enum(DirectiveLocation) {
