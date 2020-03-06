@@ -1,7 +1,7 @@
 import io.fluidsonic.gradle.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.0.7"
+	id("io.fluidsonic.gradle") version "1.0.10"
 }
 
 fluidLibrary(name = "graphql", version = "0.9.0")
@@ -17,10 +17,6 @@ fluidLibraryVariant {
 
 	jvm(JvmTarget.jdk8) {
 		dependencies {
-			// FIXME
-			// Only used for KClass.isInstance. Remove once Kotlin 1.3.70 is released.
-			// See https://youtrack.jetbrains.com/issue/KT-14720
-			implementation(kotlin("reflect"))
 			implementation(kotlinx("coroutines-core", "1.3.3"))
 		}
 
