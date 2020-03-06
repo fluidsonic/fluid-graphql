@@ -13,7 +13,8 @@ internal class Executor<Environment : Any> private constructor(
 	private val variableValues: Map<String, Any?>
 ) {
 
-	private val outputCoercionContext = object : GCoercionContext<Environment> {
+	// https://youtrack.jetbrains.com/issue/KT-20996#focus=streamItem-27-3981541.0-0
+	private val outputCoercionContext: GCoercionContext<Environment> = object : GCoercionContext<Environment> {
 
 		override val environment = this@Executor.environment
 		override val schema = this@Executor.schema
