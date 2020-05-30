@@ -138,7 +138,7 @@ internal class Executor<Environment : Any> private constructor(
 		if (value == null) {
 			if (fieldType is GNonNullType)
 				collectError(GError(
-					message = "Non-null field '$fieldName' with type '${fieldType.name}' has resulted in a null value.",
+					message = "Non-null field '$fieldName' of type '${fieldType.name}' has resulted in a null value.",
 					nodes = fieldSelections,
 					path = pathBuilder.snapshot()
 				))
@@ -167,7 +167,8 @@ internal class Executor<Environment : Any> private constructor(
 						?: error("Field cannot result in GraphQL input type '${fieldType.name}'.")
 
 					with(outputCoercionContext) {
-						serializeValue(value) ?: error("Cannot serialize value of unrelated type ${value::class} to GraphQL type '${fieldType.name}'")
+						serializeValue(value)
+							?: error("Cannot serialize value of unrelated type ${value::class} to GraphQL type '${fieldType.name}'")
 					}
 				}
 

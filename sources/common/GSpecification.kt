@@ -1,5 +1,7 @@
 package io.fluidsonic.graphql
 
+import kotlin.reflect.*
+
 
 // FIXME remove
 // https://graphql.github.io/graphql-spec/June2018/
@@ -69,6 +71,28 @@ object GSpecification {
 			GDirectiveLocation.INLINE_FRAGMENT
 		)
 	)
+
+
+	fun isRepresentable(clazz: KClass<*>): Boolean =
+		when (clazz) {
+			Any::class, Nothing::class -> false
+			else -> clazz.typeParameters.isEmpty()
+		}
+
+
+	fun isRepresentable(type: KType): Boolean =
+		when (val classifier = type.classifier) {
+			Collection::class, List::class, Set::class -> isRepresentable(type.arguments.first())
+			is KClass<*> -> isRepresentable(classifier)
+			else -> false
+		}
+
+
+	fun isRepresentable(typeProjection: KTypeProjection): Boolean =
+		when (val type = typeProjection.type) {
+			null -> false
+			else -> isRepresentable(type)
+		}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Enum-Value

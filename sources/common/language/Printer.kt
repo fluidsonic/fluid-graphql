@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+// FIXME add newline after descriptions
 internal object Printer {
 
 	fun print(node: GNode, indent: String = "\t") =

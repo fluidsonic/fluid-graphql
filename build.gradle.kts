@@ -1,7 +1,7 @@
 import io.fluidsonic.gradle.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.0.10"
+	id("io.fluidsonic.gradle") version "1.0.11"
 }
 
 fluidLibrary(name = "graphql", version = "0.9.0")

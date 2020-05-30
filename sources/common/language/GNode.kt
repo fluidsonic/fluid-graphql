@@ -855,15 +855,15 @@ class GDocument(
 		nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default()
 	) =
 		Executor.create(
-				schema = schema,
-				document = this,
-				environment = environment,
-				rootResolver = rootResolver,
-				operationName = operationName,
-				variableValues = variableValues,
-				defaultResolver = defaultResolver,
-				nodeInputCoercion = nodeInputCoercion
-			)
+			schema = schema,
+			document = this,
+			environment = environment,
+			rootResolver = rootResolver,
+			operationName = operationName,
+			variableValues = variableValues,
+			defaultResolver = defaultResolver,
+			nodeInputCoercion = nodeInputCoercion
+		)
 			.consumeErrors { throw it.errors.first() } // FIXME ??
 			.execute()
 
@@ -2079,6 +2079,11 @@ class GNonNullTypeRef(
 	extensions = extensions,
 	origin = origin
 ) {
+
+	init {
+		require(nullableRef !is GNonNullTypeRef) { "Cannot create non-null type ref to non-null type: $nullableRef" }
+	}
+
 
 	override val nonNullableRef get() = this
 	override val underlyingName get() = nullableRef.underlyingName
