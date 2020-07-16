@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+// FIXME add proper toString()
 internal inline class SourceCharacter(private val value: Int) {
 
 	constructor(value: Char) :

@@ -446,7 +446,7 @@ internal object Printer {
 	}
 
 
-	// FIXME escaping, line wrapping, indentation
+	// FIXME proper escaping logic, line wrapping, indentation
 	private fun GWriter.writeNode(value: GStringValue) {
 		val string = value.value
 
@@ -457,7 +457,7 @@ internal object Printer {
 			writeRaw("\"\"\"")
 			if (isMultiline)
 				writeLinebreak()
-			writeRaw(string)
+			writeRaw(string.replace("\"\"\"", "\\\"\"\""))
 			if (isMultiline)
 				writeLinebreak()
 			writeRaw("\"\"\"")
@@ -465,7 +465,12 @@ internal object Printer {
 		}
 		else {
 			writeRaw("\"")
-			writeRaw(string)
+			writeRaw(string
+				.replace("\\", "\\\\")
+				.replace("\"", "\\\"")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r")
+			)
 			writeRaw("\"")
 		}
 	}
