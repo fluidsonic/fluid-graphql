@@ -76,7 +76,7 @@ object GSpecification {
 	fun isRepresentable(clazz: KClass<*>): Boolean =
 		when (clazz) {
 			Any::class, Nothing::class -> false
-			else -> clazz.typeParameters.isEmpty()
+			else -> clazz.typeParameters.isEmpty() // FIXME avoid kotlin-reflect
 		}
 
 
