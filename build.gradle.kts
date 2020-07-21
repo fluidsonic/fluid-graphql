@@ -1,7 +1,7 @@
 import io.fluidsonic.gradle.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.0.11"
+	id("io.fluidsonic.gradle") version "1.0.13"
 }
 
 fluidLibrary(name = "graphql", version = "0.9.0")
@@ -11,17 +11,17 @@ fluidLibraryVariant {
 
 	common {
 		dependencies {
-			api(kotlinx("coroutines-core-common", "1.3.3"))
+			api(kotlinx("coroutines-core-common", "1.3.8"))
 		}
 	}
 
 	jvm(JvmTarget.jdk8) {
 		dependencies {
-			implementation(kotlinx("coroutines-core", "1.3.3"))
+			implementation(kotlinx("coroutines-core", "1.3.8"))
 		}
 
 		testDependencies {
-			implementation(kotlinx("coroutines-test", "1.3.3"))
+			implementation(kotlinx("coroutines-test", "1.3.8"))
 		}
 	}
 }
