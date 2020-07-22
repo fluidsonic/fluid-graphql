@@ -454,7 +454,8 @@ internal class Executor<Environment : Any> private constructor(
 			operationName: String? = null,
 			variableValues: Map<String, Any?> = emptyMap(),
 			defaultResolver: GFieldResolver<Environment, Any>? = null,
-			nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default()
+			nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default(),
+			variableInputCoercion: GVariableInputCoercion<Environment> = GVariableInputCoercion.default()
 		): GResult<Executor<Environment>> = GResult {
 			// FIXME check type
 			val operation = getOperation(
@@ -473,19 +474,17 @@ internal class Executor<Environment : Any> private constructor(
 				pathBuilder = pathBuilder,
 				rootResolver = rootResolver,
 				schema = schema,
-				variableValues = GVariableInputCoercion.default<Environment>().let { coercion ->
-					coercion.coerceValues( // FIXME error handling
-						values = variableValues,
-						variables = document.definitions.filterIsInstance<GVariableDefinition>(),
-						context = object : GVariableInputCoercionContext<Environment> {
+				variableValues = variableInputCoercion.coerceValues( // FIXME error handling
+					values = variableValues,
+					variables = operation.variableDefinitions,
+					context = object : GVariableInputCoercionContext<Environment> {
 
-							override val coercion = coercion
-							override val environment = environment
-							override val path = pathBuilder
-							override val schema = schema
-						}
-					)
-				}
+						override val coercion = variableInputCoercion
+						override val environment = environment
+						override val path = pathBuilder
+						override val schema = schema
+					}
+				)
 			)
 		}
 

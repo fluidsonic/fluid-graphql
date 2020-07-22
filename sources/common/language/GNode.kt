@@ -852,7 +852,8 @@ class GDocument(
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
 		defaultResolver: GFieldResolver<Environment, Any>? = null,
-		nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default()
+		nodeInputCoercion: GNodeInputCoercion<Environment> = GNodeInputCoercion.default(),
+		variableInputCoercion: GVariableInputCoercion<Environment> = GVariableInputCoercion.default()
 	) =
 		Executor.create(
 			schema = schema,
@@ -862,7 +863,8 @@ class GDocument(
 			operationName = operationName,
 			variableValues = variableValues,
 			defaultResolver = defaultResolver,
-			nodeInputCoercion = nodeInputCoercion
+			nodeInputCoercion = nodeInputCoercion,
+			variableInputCoercion = variableInputCoercion
 		)
 			.consumeErrors { throw it.errors.first() } // FIXME ??
 			.execute()
@@ -876,7 +878,8 @@ class GDocument(
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
 		defaultResolver: GFieldResolver<Unit, Any>? = null,
-		nodeInputCoercion: GNodeInputCoercion<Unit> = GNodeInputCoercion.default()
+		nodeInputCoercion: GNodeInputCoercion<Unit> = GNodeInputCoercion.default(),
+		variableInputCoercion: GVariableInputCoercion<Unit> = GVariableInputCoercion.default()
 	) =
 		execute(
 			schema = schema,
@@ -885,7 +888,8 @@ class GDocument(
 			operationName = operationName,
 			variableValues = variableValues,
 			defaultResolver = defaultResolver,
-			nodeInputCoercion = nodeInputCoercion
+			nodeInputCoercion = nodeInputCoercion,
+			variableInputCoercion = variableInputCoercion
 		)
 
 
