@@ -4,7 +4,7 @@ import kotlin.contracts.*
 
 
 @OptIn(ExperimentalContracts::class)
-inline fun <T : Any> T?.ifNull(onNull: () -> T): T {
+internal inline fun <T : Any> T?.ifNull(onNull: () -> T): T {
 	contract {
 		callsInPlace(onNull, InvocationKind.AT_MOST_ONCE)
 	}
