@@ -12,6 +12,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/modules/client" />
+            <option value="$PROJECT_DIR$/modules/dsl" />
+            <option value="$PROJECT_DIR$/modules/execution" />
+            <option value="$PROJECT_DIR$/modules/language" />
+            <option value="$PROJECT_DIR$/modules/language-testing" />
           </set>
         </option>
       </GradleProjectSettings>
