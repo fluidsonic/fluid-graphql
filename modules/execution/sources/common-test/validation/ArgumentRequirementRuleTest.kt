@@ -7,7 +7,7 @@ import kotlin.test.*
 class ArgumentRequirementRuleTest {
 
 	@Test
-	fun `accepts absence of optional arguments`() {
+	fun testAcceptsAbsenceOfOptionalArguments() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
 			errors = emptyList(),
@@ -22,7 +22,7 @@ class ArgumentRequirementRuleTest {
 
 
 	@Test
-	fun `rejects absence of required arguments`() {
+	fun testRejectsAbsenceOfRequiredArguments() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
 			errors = listOf(
@@ -67,7 +67,7 @@ class ArgumentRequirementRuleTest {
 
 
 	@Test
-	fun `rejects absence of multiple required arguments`() {
+	fun tesetRejectsAbsenceOfMultipleRequiredArguments() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
 			errors = listOf(

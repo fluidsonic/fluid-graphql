@@ -294,6 +294,7 @@ internal class Parser private constructor(
 	}
 
 
+	@Suppress("UNUSED_EXPRESSION") // https://youtrack.jetbrains.com/issue/KT-21282
 	private inline fun <Result> parseEntireInput(parse: Parser.() -> Result): Result {
 		expectToken(TokenKind.START_OF_INPUT)
 		val result = parse()

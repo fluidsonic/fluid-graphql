@@ -6,17 +6,20 @@ fluidLibraryVariant {
 	common {
 		dependencies {
 			api(project(":fluid-graphql-language"))
-			api(kotlinx("coroutines-core-common", "1.3.8"))
 		}
 	}
+	js {
+		browser()
+		nodejs()
+	}
+	jvm(JvmTarget.jdk8)
+	objc(ObjcTarget.iosArm64)
+	objc(ObjcTarget.iosX64)
+	objc(ObjcTarget.macosX64)
+}
 
-	jvm(JvmTarget.jdk8) {
-		dependencies {
-			implementation(kotlinx("coroutines-core", "1.3.8"))
-		}
-
-		testDependencies {
-			implementation(kotlinx("coroutines-test", "1.3.8"))
-		}
+kotlin {
+	sourceSets.all {
+		languageSettings.useExperimentalAnnotation("io.fluidsonic.graphql.InternalGraphqlApi")
 	}
 }

@@ -7,7 +7,7 @@ import kotlin.test.*
 class FragmentSelectionPossibilityRuleTest {
 
 	@Test
-	fun `accepts fragment selections on possible types`() {
+	fun testAcceptsFragmentSelectionsOnPossibleTypes() {
 		assertValidationRule(
 			rule = FragmentSelectionPossibilityRule,
 			errors = emptyList(),
@@ -84,7 +84,7 @@ class FragmentSelectionPossibilityRuleTest {
 
 
 	@Test
-	fun `rejects selections of nonexistent fragments`() {
+	fun testRejectsSelectionsOfNonexistentFragments() {
 		assertValidationRule(
 			rule = FragmentSelectionPossibilityRule,
 			errors = listOf(

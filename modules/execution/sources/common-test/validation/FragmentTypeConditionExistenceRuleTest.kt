@@ -7,7 +7,7 @@ import kotlin.test.*
 class FragmentTypeConditionExistenceRuleTest {
 
 	@Test
-	fun `accepts inline fragment on existing type`() {
+	fun testAcceptsInlineFragmentOnExistingType() {
 		assertValidationRule(
 			rule = FragmentTypeConditionExistenceRule,
 			errors = emptyList(),
@@ -33,7 +33,7 @@ class FragmentTypeConditionExistenceRuleTest {
 
 
 	@Test
-	fun `accepts fragments definition on existing type`() {
+	fun testAcceptsFragmentsDefinitionOnExistingType() {
 		assertValidationRule(
 			rule = FragmentTypeConditionExistenceRule,
 			errors = emptyList(),
@@ -51,7 +51,7 @@ class FragmentTypeConditionExistenceRuleTest {
 
 
 	@Test
-	fun `rejects inline fragment on nonexistent type`() {
+	fun testRejectsInlineFragmentOnNonexistentType() {
 		assertValidationRule(
 			rule = FragmentTypeConditionExistenceRule,
 			errors = listOf(
@@ -81,7 +81,7 @@ class FragmentTypeConditionExistenceRuleTest {
 
 
 	@Test
-	fun `rejects fragment definition on nonexistent type`() {
+	fun testRejectsFragmentDefinitionOnNonexistentType() {
 		assertValidationRule(
 			rule = FragmentTypeConditionExistenceRule,
 			errors = listOf(

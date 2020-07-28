@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+@InternalGraphqlApi
 interface Visit {
 
 	val hasVisitedChildren: Boolean

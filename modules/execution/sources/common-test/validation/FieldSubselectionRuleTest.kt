@@ -7,7 +7,7 @@ import kotlin.test.*
 class FieldSubselectionRuleTest {
 
 	@Test
-	fun `accepts leaf fields without subselection`() {
+	fun testAcceptsLeafFieldsWithoutSubselection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
 			errors = emptyList(),
@@ -38,7 +38,7 @@ class FieldSubselectionRuleTest {
 
 
 	@Test
-	fun `accepts composite type fields with subselection`() {
+	fun testAcceptsCompositeTypeFieldsWithSubselection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
 			errors = emptyList(),
@@ -66,7 +66,7 @@ class FieldSubselectionRuleTest {
 
 
 	@Test
-	fun `rejects leaf fields with subselection`() {
+	fun testRejectsLeafFieldsWithSubselection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
 			errors = listOf(
@@ -188,7 +188,7 @@ class FieldSubselectionRuleTest {
 
 
 	@Test
-	fun `rejects composite type fields without subselection`() {
+	fun testRejectsCompositeTypeFieldsWithoutSubselection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
 			errors = listOf(

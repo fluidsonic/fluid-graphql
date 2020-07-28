@@ -7,7 +7,7 @@ import kotlin.test.*
 class FieldSelectionExistenceRuleTest {
 
 	@Test
-	fun `accepts existing field in field selection`() {
+	fun testAcceptsExistingFieldInFieldSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
 			errors = emptyList(),
@@ -20,7 +20,7 @@ class FieldSelectionExistenceRuleTest {
 
 
 	@Test
-	fun `accepts existing field in inline fragment selection`() {
+	fun testAcceptsExistingFieldInInlineFragmentSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
 			errors = emptyList(),
@@ -37,7 +37,7 @@ class FieldSelectionExistenceRuleTest {
 
 
 	@Test
-	fun `accepts existing field in fragment selection`() {
+	fun testAcceptsExistingFieldInFragmentSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
 			errors = emptyList(),
@@ -54,7 +54,7 @@ class FieldSelectionExistenceRuleTest {
 
 
 	@Test
-	fun `rejects nonexistent field in field selection`() {
+	fun testRejectsNonexistentFieldInFieldSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
 			errors = listOf("""
@@ -73,7 +73,7 @@ class FieldSelectionExistenceRuleTest {
 
 
 	@Test
-	fun `rejects nonexistent field in inline fragment selection`() {
+	fun testRejectsNonexistentFieldInInlineFragmentSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
 			errors = listOf("""
@@ -98,7 +98,7 @@ class FieldSelectionExistenceRuleTest {
 
 
 	@Test
-	fun `rejects nonexistent field in fragment selection`() {
+	fun testRejectsNonexistentFieldInFragmentSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
 			errors = listOf("""

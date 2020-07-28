@@ -7,7 +7,7 @@ import kotlin.test.*
 class DocumentExecutabilityRuleTest {
 
 	@Test
-	fun `accepts single operation`() {
+	fun testAcceptsSingleOperation() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
 			errors = emptyList(),
@@ -18,7 +18,7 @@ class DocumentExecutabilityRuleTest {
 
 
 	@Test
-	fun `rejects zero operations`() {
+	fun testRejectsZeroOperations() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
 			errors = listOf("In order to be executable, the document must contain at least one operation definition."),
@@ -31,7 +31,7 @@ class DocumentExecutabilityRuleTest {
 
 
 	@Test
-	fun `rejects type definitions`() {
+	fun testRejectsTypeDefinitions() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
 			errors = listOf(
@@ -54,7 +54,7 @@ class DocumentExecutabilityRuleTest {
 
 
 	@Test
-	fun `rejects type extensions`() {
+	fun testRejectsTypeExtensions() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
 			errors = listOf("""

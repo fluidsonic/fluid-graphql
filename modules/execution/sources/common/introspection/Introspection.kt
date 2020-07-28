@@ -72,7 +72,7 @@ internal object Introspection {
 			}
 
 			field("fields" of List(!Field)) {
-				argument("includeDeprecated" of Boolean default false)
+				argument("includeDeprecated" of Boolean default value(false))
 
 				resolve<List<GFieldDefinition>?> { type ->
 					if (type !is GNode.WithFieldDefinitions)
@@ -105,7 +105,7 @@ internal object Introspection {
 			}
 
 			field("enumValues" of List(!EnumValue)) {
-				argument("includeDeprecated" of Boolean default false)
+				argument("includeDeprecated" of Boolean default value(false))
 
 				resolve<List<GEnumValueDefinition>?> { type ->
 					if (type !is GEnumType)

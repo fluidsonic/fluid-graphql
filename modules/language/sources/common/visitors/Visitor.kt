@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+@InternalGraphqlApi
 abstract class Visitor<out Result, in Data> {
 
 	abstract fun onNode(node: GNode, data: Data, visit: Visit): Result
@@ -606,20 +607,24 @@ abstract class Visitor<out Result, in Data> {
 }
 
 
-internal fun <Result> GNode.accept(visitor: Visitor<Result, Nothing?>) =
+@InternalGraphqlApi
+fun <Result> GNode.accept(visitor: Visitor<Result, Nothing?>) =
 	accept(visitor = visitor, data = null)
 
 
-internal fun <Result> GNode.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>) =
+@InternalGraphqlApi
+fun <Result> GNode.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>) =
 	accept(visitCoordinator = visitCoordinator, data = null)
 
 
-internal fun <Result, Data> GNode.accept(
+@InternalGraphqlApi
+fun <Result, Data> GNode.accept(
 	visitor: Visitor<Result, Data>,
 	data: Data
 ) =
 	accept(visitCoordinator = VisitCoordinator.default(visitor), data = data)
 
 
-internal fun <Result, Data> GNode.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data) =
+@InternalGraphqlApi
+fun <Result, Data> GNode.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data) =
 	visitCoordinator.visit(node = this, data = data)

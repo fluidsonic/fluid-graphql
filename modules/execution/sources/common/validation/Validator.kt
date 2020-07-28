@@ -1,7 +1,6 @@
 package io.fluidsonic.graphql
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal class Validator(
 	private val document: GDocument,
 	rules: List<ValidationRule.Provider>,

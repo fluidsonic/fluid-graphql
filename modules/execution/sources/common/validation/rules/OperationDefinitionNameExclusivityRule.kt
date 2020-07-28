@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Operation-Name-Uniqueness
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object OperationDefinitionNameExclusivityRule : ValidationRule.Singleton() {
 
 	override fun onDocument(document: GDocument, data: ValidationContext, visit: Visit) {

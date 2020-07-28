@@ -1,7 +1,8 @@
 package io.fluidsonic.graphql
 
 
-internal open class VisitorContext(
+@InternalGraphqlApi
+open class VisitorContext(
 	val document: GDocument,
 	val schema: GSchema
 ) {

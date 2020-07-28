@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Single-root-field
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object SubscriptionRootFieldExclusivityRule : ValidationRule.Singleton() {
 
 	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {

@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Object-Spreads-In-Object-Scope
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 
 	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {

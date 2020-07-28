@@ -7,7 +7,7 @@ import kotlin.test.*
 class ObjectFieldRequirementRuleTest {
 
 	@Test
-	fun `accepts absence of optional fields`() {
+	fun testAcceptsAbsenceOfOptionalFields() {
 		assertValidationRule(
 			rule = ObjectFieldRequirementRule,
 			errors = emptyList(),
@@ -27,7 +27,7 @@ class ObjectFieldRequirementRuleTest {
 
 
 	@Test
-	fun `rejects absence of required fields`() {
+	fun testRejectsAbsenceOfRequiredFields() {
 		assertValidationRule(
 			rule = ObjectFieldRequirementRule,
 			errors = listOf(

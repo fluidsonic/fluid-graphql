@@ -4,7 +4,6 @@ import io.fluidsonic.graphql.*
 import kotlin.test.*
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 class ParallelVisitorTest {
 
 	@Test

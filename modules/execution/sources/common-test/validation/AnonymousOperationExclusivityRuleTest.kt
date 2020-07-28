@@ -7,7 +7,7 @@ import kotlin.test.*
 class AnonymousOperationExclusivityRuleTest {
 
 	@Test
-	fun `accepts zero operations`() {
+	fun testAcceptsZeroOperations() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
@@ -18,7 +18,7 @@ class AnonymousOperationExclusivityRuleTest {
 
 
 	@Test
-	fun `accepts one named operations`() {
+	fun testAcceptsOneNamedOperation() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
@@ -32,7 +32,7 @@ class AnonymousOperationExclusivityRuleTest {
 
 
 	@Test
-	fun `accepts one anonymous operations`() {
+	fun testAcceptsOneAnonymousOperation() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
@@ -46,7 +46,7 @@ class AnonymousOperationExclusivityRuleTest {
 
 
 	@Test
-	fun `accepts two named operations`() {
+	fun testAcceptsTwoNamedOperations() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
 			errors = emptyList(),
@@ -61,7 +61,7 @@ class AnonymousOperationExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects two anonymous operations`() {
+	fun testRejectsTwoAnonymousOperations() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
 			errors = listOf("""
@@ -89,7 +89,7 @@ class AnonymousOperationExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects one anonymous and one named operations`() {
+	fun testRejectsOneAnonymousAndOneNamedOperations() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
 			errors = listOf("""

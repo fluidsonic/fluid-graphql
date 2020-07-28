@@ -5,7 +5,7 @@ import kotlin.reflect.*
 
 
 // FIXME Add DSL for setting input & output coercers.
-object GSchemaBuilderExecutionExtensions {
+object GDslForExecution {
 
 	class FieldDefinitionBuilder<ParentKotlinType : Any> internal constructor(
 		delegate: GSchemaBuilder.FieldDefinitionBuilder
@@ -63,10 +63,10 @@ fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
 fun <KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
 	kotlinType: KClass<KotlinType>,
-	configure: GSchemaBuilderExecutionExtensions.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
+	configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
 ) {
 	Object(named = named) {
-		GSchemaBuilderExecutionExtensions.ObjectTypeDefinitionBuilder<KotlinType>(delegate = this).apply(configure)
+		GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>(delegate = this).apply(configure)
 
 		extension(ObjectKotlinTypeNodeExtensionKey, kotlinType)
 	}
@@ -77,10 +77,10 @@ fun <KotlinType : Any> GSchemaBuilder.Object(
 fun <KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
 	kotlinType: KClass<KotlinType>,
-	configure: GSchemaBuilderExecutionExtensions.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
+	configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
 ) {
 	Object(type = type) {
-		GSchemaBuilderExecutionExtensions.ObjectTypeDefinitionBuilder<KotlinType>(delegate = this).apply(configure)
+		GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>(delegate = this).apply(configure)
 
 		extension(ObjectKotlinTypeNodeExtensionKey, kotlinType)
 	}
@@ -90,7 +90,7 @@ fun <KotlinType : Any> GSchemaBuilder.Object(
 @SchemaBuilderType
 inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
-	noinline configure: GSchemaBuilderExecutionExtensions.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
+	noinline configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
 ) {
 	Object(type = type, kotlinType = KotlinType::class, configure = configure)
 }
@@ -99,7 +99,7 @@ inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 @SchemaBuilderType
 inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
-	noinline configure: GSchemaBuilderExecutionExtensions.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
+	noinline configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
 ) {
 	Object(named = named, kotlinType = KotlinType::class, configure = configure)
 }

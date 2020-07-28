@@ -1,7 +1,6 @@
 package io.fluidsonic.graphql
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object DirectiveLocationValidityRule : ValidationRule.Singleton() {
 
 	override fun onDirective(directive: GDirective, data: ValidationContext, visit: Visit) {

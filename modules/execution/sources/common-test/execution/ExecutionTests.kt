@@ -8,7 +8,7 @@ import kotlin.test.*
 class ExecutionTests {
 
 	@Test
-	fun `executes with a complex schema`() = runBlockingTest {
+	fun testExecutesWithAComplexSchema() = runBlockingTest {
 		val document = """
 			|{
 			|  feed {

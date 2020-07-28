@@ -7,7 +7,7 @@ import kotlin.test.*
 class InputNameExclusivityRuleTest {
 
 	@Test
-	fun `accepts unique operation names`() {
+	fun tsetAcceptsUniqueOperationNames() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
 			errors = emptyList(),
@@ -22,7 +22,7 @@ class InputNameExclusivityRuleTest {
 
 
 	@Test
-	fun `ignores anonymous operations`() {
+	fun testIgnoresAnonymousOperations() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
 			errors = emptyList(),
@@ -40,7 +40,7 @@ class InputNameExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects duplicate operation names`() {
+	fun testRejectsDuplicateOperationNames() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
 			errors = listOf(
@@ -75,7 +75,7 @@ class InputNameExclusivityRuleTest {
 
 
 	@Test
-	fun `reports all problematic operations`() {
+	fun testReportsAllProblematicOperations() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
 			errors = listOf(

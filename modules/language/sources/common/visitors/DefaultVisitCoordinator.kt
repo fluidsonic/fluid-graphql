@@ -177,6 +177,7 @@ private class DefaultVisit<Result, Data>(
 }
 
 
+@InternalGraphqlApi
 @Suppress("UNCHECKED_CAST")
-internal fun <Result, Data> VisitCoordinator.Companion.default(visitor: Visitor<Result, Data>): VisitCoordinator<Result, Data> =
+fun <Result, Data> VisitCoordinator.Companion.default(visitor: Visitor<Result, Data>): VisitCoordinator<Result, Data> =
 	DefaultVisitCoordinator(visitor)

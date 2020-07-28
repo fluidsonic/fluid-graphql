@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Directives-Are-Unique-Per-Location
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object DirectiveExclusivityRule : ValidationRule.Singleton() {
 
 	override fun onAny(node: GNode, data: ValidationContext, visit: Visit) {

@@ -596,6 +596,10 @@ class GBooleanValue(
 }
 
 
+fun GBooleanValue(value: Boolean): GBooleanValue =
+	GBooleanValue(value = value, origin = null)
+
+
 sealed class GCompositeType(
 	description: GStringValue?,
 	directives: List<GDirective>,
@@ -985,6 +989,10 @@ class GEnumValue(
 }
 
 
+fun GEnumValue(name: String): GEnumValue =
+	GEnumValue(name = name, origin = null)
+
+
 class GEnumValueDefinition(
 	name: GName,
 	description: GStringValue? = null,
@@ -1206,6 +1214,11 @@ class GFloatValue(
 	origin = origin
 ) {
 
+	init {
+		check(value.isFinite()) { "'$value' is not a valid GraphQL Float value." }
+	}
+
+
 	override val kind get() = Kind.FLOAT
 
 
@@ -1231,6 +1244,18 @@ class GFloatValue(
 
 	companion object
 }
+
+
+fun GFloatValue(value: Double): GFloatValue =
+	GFloatValue(value = value, origin = null)
+
+
+fun GFloatValue(value: Float): GFloatValue =
+	GFloatValue(value.toDouble())
+
+
+fun GFloatValue(value: Int): GFloatValue =
+	GFloatValue(value.toDouble())
 
 
 class GFragmentDefinition(
@@ -1535,6 +1560,10 @@ class GIntValue(
 }
 
 
+fun GIntValue(value: Int): GIntValue =
+	GIntValue(value = value, origin = null)
+
+
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interfaces
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interface
 class GInterfaceType(
@@ -1774,6 +1803,10 @@ class GListValue(
 
 	companion object
 }
+
+
+fun GListValue(elements: List<GValue>): GListValue =
+	GListValue(elements = elements, origin = null)
 
 
 class GName(
@@ -2411,10 +2444,6 @@ class GStringValue(
 	origin = origin
 ) {
 
-	constructor(value: String) : // needed so that ::GStringValue can be applied on Strings
-		this(value = value, isBlock = false)
-
-
 	override val kind get() = Kind.STRING
 
 
@@ -2441,6 +2470,10 @@ class GStringValue(
 
 	companion object
 }
+
+
+fun GStringValue(value: String): GStringValue =
+	GStringValue(value = value, isBlock = false)
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
@@ -2744,22 +2777,22 @@ sealed class GValue(
 	companion object {
 
 		// FIXME improve & not language module
-		fun of(value: Any?): GValue? =
-			when (value) {
-				null -> GNullValue.withoutOrigin
-				is Boolean -> GBooleanValue(value)
-				is Double -> GFloatValue(value)
-				is Int -> GIntValue(value)
-				is Map<*, *> -> GObjectValue(value.map { (fieldName, fieldValue) ->
-					GArgument(
-						name = fieldName as? String ?: return null,
-						value = of(fieldValue) ?: return null
-					)
-				})
-				is Collection<*> -> GListValue(value.map { of(it) ?: return null })
-				is String -> GStringValue(value)
-				else -> null
-			}
+//		fun of(value: Any?): GValue? =
+//			when (value) {
+//				null -> GNullValue.withoutOrigin
+//				is Boolean -> GBooleanValue(value)
+//				is Double -> GFloatValue(value)
+//				is Int -> GIntValue(value)
+//				is Map<*, *> -> GObjectValue(value.map { (fieldName, fieldValue) ->
+//					GArgument(
+//						name = fieldName as? String ?: return null,
+//						value = of(fieldValue) ?: return null
+//					)
+//				})
+//				is Collection<*> -> GListValue(value.map { of(it) ?: return null })
+//				is String -> GStringValue(value)
+//				else -> null
+//			}
 
 
 		fun parse(source: GDocumentSource.Parsable): GResult<GValue> =

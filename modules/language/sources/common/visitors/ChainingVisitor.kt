@@ -12,13 +12,15 @@ private class ChainingVisitor<out Result, IntermediateResult, in Data>(
 }
 
 
-internal fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(
+@InternalGraphqlApi
+fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(
 	next: Visitor<Result, IntermediateResult>
 ): Visitor<Result, Data> =
 	ChainingVisitor(current = this, nextCoordinator = VisitCoordinator.default(next))
 
 
-internal fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(
+@InternalGraphqlApi
+fun <Result, IntermediateResult, Data> Visitor<IntermediateResult, Data>.then(
 	nextCoordinator: VisitCoordinator<Result, IntermediateResult>
 ): Visitor<Result, Data> =
 	ChainingVisitor(current = this, nextCoordinator = nextCoordinator)

@@ -50,7 +50,7 @@ class DslTests {
 			InputObject(ReviewInput) {
 				directive("hello")
 
-				argument("stars" of !Int default 2)
+				argument("stars" of !Int default value(2))
 				argument("commentary" of String)
 			}
 
@@ -92,7 +92,7 @@ class DslTests {
 				field("id" of !ID)
 				field("name" of !String)
 				field("length" of Float) {
-					argument("unit" of LengthUnit default "METERS") {
+					argument("unit" of LengthUnit default value("METERS")) {
 						description("nice")
 						directive("hello")
 					}

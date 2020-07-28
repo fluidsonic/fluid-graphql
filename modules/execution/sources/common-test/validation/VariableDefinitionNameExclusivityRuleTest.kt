@@ -7,7 +7,7 @@ import kotlin.test.*
 class VariableDefinitionNameExclusivityRuleTest {
 
 	@Test
-	fun `accepts unique variable names`() {
+	fun testAcceptsUniqueVariableNames() {
 		assertValidationRule(
 			rule = VariableDefinitionNameExclusivityRule,
 			errors = emptyList(),
@@ -26,7 +26,7 @@ class VariableDefinitionNameExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects duplicate variable names`() {
+	fun testRejectsDuplicateVariableNames() {
 		assertValidationRule(
 			rule = VariableDefinitionNameExclusivityRule,
 			errors = listOf(

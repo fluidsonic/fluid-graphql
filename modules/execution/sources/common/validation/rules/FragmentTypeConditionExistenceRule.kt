@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-Name-Uniqueness
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object FragmentTypeConditionExistenceRule : ValidationRule.Singleton() {
 
 	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {

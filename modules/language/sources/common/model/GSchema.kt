@@ -1,7 +1,6 @@
 package io.fluidsonic.graphql
 
 
-// FIXME toString()
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
 class GSchema internal constructor(
 	val directiveDefinitions: List<GDirectiveDefinition>,
@@ -53,7 +52,7 @@ class GSchema internal constructor(
 
 
 	fun resolveType(name: String): GNamedType? =
-		typesByName[name] //FIXME ?: GIntrospection.schema.typesByName[name]
+		typesByName[name]
 
 
 	inline fun <reified Type : GType> resolveTypeAs(ref: GTypeRef): Type? =

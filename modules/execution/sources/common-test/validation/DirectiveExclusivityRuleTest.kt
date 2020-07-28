@@ -7,7 +7,7 @@ import kotlin.test.*
 class DirectiveExclusivityRuleTest {
 
 	@Test
-	fun `accepts directives that occur only once or that are repeatable`() {
+	fun testAcceptsDirectivesThatOccurOnlyOnceOrThatAreRepeatable() {
 		assertValidationRule(
 			rule = DirectiveExclusivityRule,
 			errors = emptyList(),
@@ -28,7 +28,7 @@ class DirectiveExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects repeating directives that are not defined to be repeatable`() {
+	fun testRejectsRepeatingDirectivesThatAreNotDefinedToBeRepeatable() {
 		assertValidationRule(
 			rule = DirectiveExclusivityRule,
 			errors = listOf(

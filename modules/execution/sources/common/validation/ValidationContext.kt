@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // FIXME error limit & abortion?
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal class ValidationContext(
 	document: GDocument,
 	schema: GSchema

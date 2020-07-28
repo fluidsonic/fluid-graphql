@@ -58,7 +58,7 @@ fun assertErrors(expected: List<String>, actual: List<GError>) {
 }
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NAME_SHADOWING")
+@Suppress("NAME_SHADOWING")
 internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,
@@ -81,7 +81,7 @@ internal fun assertValidationRule(
 }
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NAME_SHADOWING")
+@Suppress("NAME_SHADOWING")
 internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,

@@ -7,7 +7,7 @@ import kotlin.test.*
 class ValueValidityRuleTest {
 
 	@Test
-	fun `accepts values of correct type in document`() {
+	fun testAcceptsValuesOfCorrectTypeInDocument() {
 		assertValidationRule(
 			rule = ValueValidityRule,
 			errors = emptyList(),
@@ -282,7 +282,7 @@ class ValueValidityRuleTest {
 
 
 	@Test
-	fun `accepts values of correct type in schema`() {
+	fun testAcceptsValuesOfCorrectTypeInSchema() {
 		assertValidationRule(
 			rule = ValueValidityRule,
 			errors = emptyList(),
@@ -387,7 +387,7 @@ class ValueValidityRuleTest {
 
 
 	@Test
-	fun `rejects values of incorrect type in document`() {
+	fun testRejectsValuesOfIncorrectTypeInDocument() {
 		assertValidationRule(
 			rule = ValueValidityRule,
 			errors = listOf(
@@ -5627,7 +5627,7 @@ class ValueValidityRuleTest {
 
 
 	@Test
-	fun `rejects values of incorrect type in schema`() {
+	fun testRejectsValuesOfIncorrectTypeInSchema() {
 		assertValidationRule(
 			rule = ValueValidityRule,
 			errors = listOf(

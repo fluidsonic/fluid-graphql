@@ -7,7 +7,7 @@ import kotlin.test.*
 class FragmentCycleDetectionRuleTest {
 
 	@Test
-	fun `accepts non-cyclic fragment references`() {
+	fun testAcceptsNoncyclicFragmentReferences() {
 		assertValidationRule(
 			rule = FragmentCycleDetectionRule,
 			errors = emptyList(),
@@ -36,7 +36,7 @@ class FragmentCycleDetectionRuleTest {
 
 
 	@Test
-	fun `rejects cyclic fragment references`() {
+	fun testRejectsCyclicFragmentReferences() {
 		assertValidationRule(
 			rule = FragmentCycleDetectionRule,
 			errors = listOf(

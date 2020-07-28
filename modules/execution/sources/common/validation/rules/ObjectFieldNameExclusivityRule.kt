@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Input-Object-Field-Uniqueness
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object ObjectFieldNameExclusivityRule : ValidationRule.Singleton() {
 
 	override fun onValue(value: GValue, data: ValidationContext, visit: Visit) {

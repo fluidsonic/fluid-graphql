@@ -7,7 +7,7 @@ import kotlin.test.*
 class FragmentDefinitionNameExclusivityRuleTest {
 
 	@Test
-	fun `accepts unique fragment names`() {
+	fun testAcceptsUniqueFragmentNames() {
 		assertValidationRule(
 			rule = FragmentDefinitionNameExclusivityRule,
 			errors = emptyList(),
@@ -35,7 +35,7 @@ class FragmentDefinitionNameExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects duplicate fragment names`() {
+	fun testRejectsDuplicateFragmentNames() {
 		assertValidationRule(
 			rule = FragmentDefinitionNameExclusivityRule,
 			errors = listOf("""
@@ -76,7 +76,7 @@ class FragmentDefinitionNameExclusivityRuleTest {
 
 
 	@Test
-	fun `reports all problematic fragments`() {
+	fun testReportsAllProblematicFragments() {
 		assertValidationRule(
 			rule = FragmentDefinitionNameExclusivityRule,
 			errors = listOf(

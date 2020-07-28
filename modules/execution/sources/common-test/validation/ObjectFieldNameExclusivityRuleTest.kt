@@ -7,7 +7,7 @@ import kotlin.test.*
 class ObjectFieldNameExclusivityRuleTest {
 
 	@Test
-	fun `accepts unique object field names`() {
+	fun testAcceptsUniqueObjectFieldNames() {
 		assertValidationRule(
 			rule = ObjectFieldNameExclusivityRule,
 			errors = emptyList(),
@@ -22,7 +22,7 @@ class ObjectFieldNameExclusivityRuleTest {
 
 
 	@Test
-	fun `rejects duplicate object field names`() {
+	fun testRejectsDuplicateObjectFieldNames() {
 		assertValidationRule(
 			rule = ObjectFieldNameExclusivityRule,
 			errors = listOf(

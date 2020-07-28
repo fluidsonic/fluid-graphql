@@ -8,5 +8,6 @@ private object NoopVisitor : Visitor<Unit, Any?>() {
 }
 
 
-internal fun <Data> Visitor.Companion.noop(): Visitor<Unit, Data> =
+@InternalGraphqlApi
+fun <Data> Visitor.Companion.noop(): Visitor<Unit, Data> =
 	NoopVisitor

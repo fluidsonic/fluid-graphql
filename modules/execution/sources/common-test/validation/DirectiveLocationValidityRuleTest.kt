@@ -7,7 +7,7 @@ import kotlin.test.*
 class DirectiveLocationValidityRuleTest {
 
 	@Test
-	fun `accepts directive in specified locations`() {
+	fun testAcceptsDirectiveInSpecifiedLocations() {
 		assertValidationRule(
 			rule = DirectiveLocationValidityRule,
 			errors = emptyList(),
@@ -88,7 +88,7 @@ class DirectiveLocationValidityRuleTest {
 
 
 	@Test
-	fun `rejects directive in unspecified location`() {
+	fun testRejectsDirectiveInUnspecifiedLocation() {
 		assertValidationRule(
 			rule = DirectiveLocationValidityRule,
 			errors = listOf(

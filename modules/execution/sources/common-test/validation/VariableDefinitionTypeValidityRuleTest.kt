@@ -7,7 +7,7 @@ import kotlin.test.*
 class VariableDefinitionTypeValidityRuleTest {
 
 	@Test
-	fun `accepts variables with input types`() {
+	fun testAcceptsVariablesWithInputTypes() {
 		assertValidationRule(
 			rule = VariableDefinitionTypeValidityRule,
 			errors = emptyList(),
@@ -29,7 +29,7 @@ class VariableDefinitionTypeValidityRuleTest {
 
 
 	@Test
-	fun `rejects duplicate variable names`() {
+	fun testRejectsDuplicateVariableNames() {
 		assertValidationRule(
 			rule = VariableDefinitionTypeValidityRule,
 			errors = listOf(

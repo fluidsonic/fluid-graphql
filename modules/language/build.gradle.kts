@@ -13,3 +13,9 @@ fluidLibraryVariant {
 	objc(ObjcTarget.iosX64)
 	objc(ObjcTarget.macosX64)
 }
+
+kotlin {
+	sourceSets.all {
+		languageSettings.useExperimentalAnnotation("io.fluidsonic.graphql.InternalGraphqlApi")
+	}
+}

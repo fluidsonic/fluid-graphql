@@ -7,7 +7,7 @@ import kotlin.test.*
 class SelectionUnambiguityRuleTest {
 
 	@Test
-	fun `accepts duplicate but identical name and alias selection`() {
+	fun testAcceptsDuplicateButIdenticalNameAndAliasSelection() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = emptyList(),
@@ -26,7 +26,7 @@ class SelectionUnambiguityRuleTest {
 
 	@Ignore // FIXME needs implementation
 	@Test
-	fun `accepts conflicting field names and arguments for disjoint object types`() {
+	fun testAcceptsConflictingFieldNamesAndArgumentsForDisjointObjectTypes() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = emptyList(),
@@ -64,7 +64,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects conflicting types selection`() {
+	fun testRejectsConflictingTypesSelection() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf("""
@@ -102,7 +102,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects conflicting nullability`() {
+	fun testRejectsConflictingNullability() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf("""
@@ -150,7 +150,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects conflicting list types`() {
+	fun testRejectsConflictingListTypes() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf("""
@@ -198,7 +198,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects conflicting field names`() {
+	fun testRejectsConflictingFieldNames() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf(
@@ -240,7 +240,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects conflicting arguments`() {
+	fun testRejectsConflictingArguments() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf(
@@ -274,7 +274,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects conflicting sub-selections`() {
+	fun testRejectsConflictingSubSelections() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf("""
@@ -319,7 +319,7 @@ class SelectionUnambiguityRuleTest {
 
 
 	@Test
-	fun `rejects different types also for disjoint object types`() {
+	fun testRejectsDifferentTypesAlsoForDisjointObjectTypes() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
 			errors = listOf("""

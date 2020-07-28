@@ -3,4 +3,4 @@ package testing
 import kotlinx.coroutines.*
 
 
-expect fun runBlockingTest(block: suspend CoroutineScope.() -> Unit)
+expect fun runBlockingTest(action: suspend CoroutineScope.() -> Unit)

@@ -3,6 +3,6 @@ package testing
 import kotlinx.coroutines.*
 
 
-actual fun runBlockingTest(block: suspend CoroutineScope.() -> Unit) {
-	kotlinx.coroutines.test.runBlockingTest { block() }
+actual fun runBlockingTest(action: suspend CoroutineScope.() -> Unit) {
+	kotlinx.coroutines.test.runBlockingTest { action() }
 }

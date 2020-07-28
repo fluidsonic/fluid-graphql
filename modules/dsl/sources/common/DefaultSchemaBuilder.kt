@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 import io.fluidsonic.graphql.GSchemaBuilder.*
+import kotlin.jvm.*
 
 
 @SchemaBuilderKeywordB
@@ -155,6 +156,77 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		)
 
 
+	companion object {
+
+		@JvmName("GValueOfNull")
+		private fun GValue(@Suppress("UNUSED_PARAMETER") value: Nothing?): GNullValue =
+			GNullValue.withoutOrigin
+
+
+		@JvmName("GValueOfBoolean")
+		private fun GValue(value: Boolean?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GBooleanValue(value)
+		}
+
+
+		@JvmName("GValueOfFloat")
+		private fun GValue(value: Double?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GFloatValue(value)
+		}
+
+
+		@JvmName("GValueOfInt")
+		private fun GValue(value: Int?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GIntValue(value)
+		}
+
+
+		@JvmName("GValueOfString")
+		private fun GValue(value: String?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GStringValue(value)
+		}
+
+
+		@JvmName("GValueOfNullList")
+		private fun GValue(value: List<Nothing?>?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GListValue(value.map(::GValue))
+		}
+
+
+		@JvmName("GValueOfBooleanList")
+		private fun GValue(value: List<Boolean?>?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GListValue(value.map(::GValue))
+		}
+
+
+		@JvmName("GValueOfFloatList")
+		private fun GValue(value: List<Double?>?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GListValue(value.map(::GValue))
+		}
+
+
+		@JvmName("GValueOfIntList")
+		private fun GValue(value: List<Int?>?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GListValue(value.map(::GValue))
+		}
+
+
+		@JvmName("GValueOfStringList")
+		private fun GValue(value: List<String?>?): GValue = when (value) {
+			null -> GValue(value)
+			else -> GListValue(value.map(::GValue))
+		}
+	}
+
+
 	private class ArgumentBuilderImpl(
 		var name: String,
 		var value: GValue
@@ -211,10 +283,8 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		}
 
 
-		override fun default(default: Any?) = apply {
-			defaultValue =
-				if (default === null) GNullValue.withoutOrigin
-				else GValue.of(default) ?: error("Value is not a valid GraphQL value: $default (${default::class})")
+		override fun default(default: Value) = apply {
+			defaultValue = default.toGValue()
 		}
 	}
 
@@ -233,7 +303,8 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		DescriptionContainer,
 		DirectiveContainer,
 		NodeBuilder,
-		TypeRefContainer {
+		TypeRefContainer,
+		ValueContainer {
 
 		private var extensionSetBuilder: GNodeExtensionSet.Builder<Node>? = null
 
@@ -300,22 +371,20 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 			get() = extensionSetBuilder?.build() ?: GNodeExtensionSet.empty()
 
 
+		override fun value(value: GValue) =
+			ValueImpl(value)
+
+
 		fun String.ofArgumentDefinitionType(type: GTypeRef, definitionType: ArgumentDefinitionType) =
 			ArgumentDefinitionBuilderImpl(name = this, type = type, definitionType = definitionType)
 
 
 		fun String.ofFieldDefinitionType(type: GTypeRef) =
-			FieldDefinitionBuilderImpl(name = this, type = type) // FIXME <Any>
+			FieldDefinitionBuilderImpl(name = this, type = type)
 
 
-		override fun String.with(value: Any?) =
-			ArgumentBuilderImpl(
-				name = this,
-				value = (
-					if (value === null) GNullValue.withoutOrigin
-					else GValue.of(value) ?: error("Value is not a valid GraphQL value: $value (${value::class})")
-					)
-			)
+		override fun String.with(value: Value) =
+			ArgumentBuilderImpl(name = this, value = value.toGValue())
 
 
 		override fun List(type: GTypeRef) =
@@ -612,5 +681,14 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		override fun or(type: GNamedTypeRef) = apply {
 			possibleTypes += type
 		}
+	}
+
+
+	private class ValueImpl(
+		val value: GValue
+	) : Value {
+
+		override fun toGValue() =
+			value
 	}
 }

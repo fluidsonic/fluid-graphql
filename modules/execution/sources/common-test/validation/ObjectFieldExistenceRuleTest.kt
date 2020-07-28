@@ -7,7 +7,7 @@ import kotlin.test.*
 class ObjectFieldExistenceRuleTest {
 
 	@Test
-	fun `accepts field names that exist`() {
+	fun testAcceptsFieldNamesThatExist() {
 		assertValidationRule(
 			rule = ObjectFieldExistenceRule,
 			errors = emptyList(),
@@ -30,7 +30,7 @@ class ObjectFieldExistenceRuleTest {
 
 
 	@Test
-	fun `rejects field names that don't exist`() {
+	fun testRejectsFieldNamesThatDontExist() {
 		assertValidationRule(
 			rule = ObjectFieldExistenceRule,
 			errors = listOf(

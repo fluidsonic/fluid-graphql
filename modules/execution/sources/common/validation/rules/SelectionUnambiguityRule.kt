@@ -5,7 +5,6 @@ package io.fluidsonic.graphql
 // FIXME will give false-negatives if two fragments are in conflict, but are never possible at the same time
 //       Maybe if there is a conflict run a more thorough check that validates all possible object types independently.
 // https://graphql.github.io/graphql-spec/draft/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
 	override fun onSelectionSet(set: GSelectionSet, data: ValidationContext, visit: Visit) {

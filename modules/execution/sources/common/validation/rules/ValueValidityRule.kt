@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Values-of-Correct-Type
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object ValueValidityRule : ValidationRule.Singleton() {
 
 	override fun onArgument(argument: GArgument, data: ValidationContext, visit: Visit) {

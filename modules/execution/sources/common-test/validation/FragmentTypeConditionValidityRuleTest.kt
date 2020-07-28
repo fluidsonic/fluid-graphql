@@ -7,7 +7,7 @@ import kotlin.test.*
 class FragmentTypeConditionValidityRuleTest {
 
 	@Test
-	fun `accepts fragments on composite types`() {
+	fun testAcceptsFragmentsOnCompositeTypes() {
 		assertValidationRule(
 			rule = FragmentTypeConditionValidityRule,
 			errors = emptyList(),
@@ -38,7 +38,7 @@ class FragmentTypeConditionValidityRuleTest {
 
 
 	@Test
-	fun `rejects inline fragment on nonexistent type`() {
+	fun testRejectsInlineFragmentOnNonexistentType() {
 		assertValidationRule(
 			rule = FragmentTypeConditionValidityRule,
 			errors = listOf(

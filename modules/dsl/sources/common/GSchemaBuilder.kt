@@ -1,5 +1,6 @@
 package io.fluidsonic.graphql
 
+import kotlin.jvm.*
 import kotlin.reflect.*
 
 
@@ -122,7 +123,7 @@ interface GSchemaBuilder {
 		fun argument(name: NameAndValue)
 
 		@SchemaBuilderKeywordB
-		infix fun String.with(value: Any?): NameAndValue
+		infix fun String.with(value: Value): NameAndValue
 
 
 		interface NameAndValue
@@ -134,7 +135,7 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface ArgumentDefinitionContainer : TypeRefContainer {
+	interface ArgumentDefinitionContainer : TypeRefContainer, ValueContainer {
 
 		@SchemaBuilderKeywordB
 		fun argument(name: NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit = {})
@@ -149,7 +150,7 @@ interface GSchemaBuilder {
 		interface NameAndType {
 
 			@SchemaBuilderKeywordB
-			infix fun default(default: Any?): NameAndTypeAndDefault
+			infix fun default(default: Value): NameAndTypeAndDefault
 		}
 
 		interface NameAndTypeAndDefault
@@ -399,4 +400,127 @@ interface GSchemaBuilder {
 
 	@SchemaBuilderDsl
 	interface UnionTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
+
+
+	@SchemaBuilderDsl
+	interface Value {
+
+		fun toGValue(): GValue
+	}
+
+
+	@SchemaBuilderDsl
+	interface ValueContainer {
+
+		fun value(value: GValue): Value
+	}
 }
+
+
+// FIXME add DSL for object values
+
+@JvmName("floatValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.enumValue(value: String?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GEnumValue(value))
+	}
+
+
+@JvmName("nullValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR", "UNUSED_PARAMETER")
+fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value =
+	value(GNullValue.withoutOrigin)
+
+
+@JvmName("booleanValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GBooleanValue(value))
+	}
+
+
+@JvmName("floatValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GFloatValue(value))
+	}
+
+
+@JvmName("intValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GIntValue(value))
+	}
+
+
+@JvmName("stringValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GStringValue(value))
+	}
+
+
+@JvmName("nullListValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GListValue(value.map { GNullValue.withoutOrigin }))
+	}
+
+
+@JvmName("booleanListValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GListValue(value.map(::GBooleanValue)))
+	}
+
+
+@JvmName("floatListValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GListValue(value.map(::GFloatValue)))
+	}
+
+
+@JvmName("intListValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GListValue(value.map(::GIntValue)))
+	}
+
+
+@JvmName("stringListValue")
+@SchemaBuilderKeywordB
+@Suppress("DEPRECATION_ERROR")
+fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBuilder.Value =
+	when (value) {
+		null -> value(value)
+		else -> value(GListValue(value.map(::GStringValue)))
+	}

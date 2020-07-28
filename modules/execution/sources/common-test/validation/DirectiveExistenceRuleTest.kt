@@ -7,7 +7,7 @@ import kotlin.test.*
 class DirectiveExistenceRuleTest {
 
 	@Test
-	fun `accepts directive that exist`() {
+	fun testAcceptsDirectiveThatExist() {
 		assertValidationRule(
 			rule = DirectiveExistenceRule,
 			errors = emptyList(),
@@ -28,7 +28,7 @@ class DirectiveExistenceRuleTest {
 
 
 	@Test
-	fun `rejects directive that don't exist`() {
+	fun testRejectsDirectiveThatDontExist() {
 		assertValidationRule(
 			rule = DirectiveExistenceRule,
 			errors = listOf(

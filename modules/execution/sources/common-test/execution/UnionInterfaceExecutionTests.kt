@@ -8,7 +8,7 @@ import kotlin.test.*
 class UnionInterfaceExecutionTests {
 
 	@Test
-	fun `can introspect on union and intersection types`() = runBlockingTest {
+	fun testCanIntrospectOnUnionAndIntersectionTypes() = runBlockingTest {
 		val document = """
 			|{
 			|  Named: __type(name: "Named") {
@@ -145,7 +145,7 @@ class UnionInterfaceExecutionTests {
 
 
 	@Test
-	fun `executes using union types with inline fragments`() = runBlockingTest {
+	fun testExecutesUsingUnionTypesWithInlineFragments() = runBlockingTest {
 		val document = """
 			|{
 			|  __typename
@@ -194,7 +194,7 @@ class UnionInterfaceExecutionTests {
 
 
 	@Test
-	fun `executes using interface types with inline fragments`() = runBlockingTest {
+	fun testExecutesUsingInterfaceTypesWithInlineFragments() = runBlockingTest {
 		val document = """
 			|{
 			|  __typename
@@ -260,7 +260,7 @@ class UnionInterfaceExecutionTests {
 
 
 	@Test
-	fun `accepts fragment conditions of abstract types`() = runBlockingTest {
+	fun testAcceptsFragmentConditionsOfAbstractTypes() = runBlockingTest {
 		val document = """
 			|{
 			|  __typename

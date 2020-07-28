@@ -7,7 +7,7 @@ import kotlin.test.*
 class ArgumentExistenceRuleTest {
 
 	@Test
-	fun `accepts argument that exist`() {
+	fun testAcceptsArgumentThatExist() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = emptyList(),
@@ -26,7 +26,7 @@ class ArgumentExistenceRuleTest {
 
 
 	@Test
-	fun `rejects argument that don't exist`() {
+	fun testRejectsArgumentThatDontExist() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = listOf(

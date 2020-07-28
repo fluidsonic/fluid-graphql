@@ -126,7 +126,7 @@ internal object GenericOutputCoercer {
 
 				if (value != null) {
 					append(":\n")
-					append(value::class.qualifiedName ?: "<anonymous class>")
+					append(value::class.qualifiedOrSimpleName ?: "<anonymous class>")
 					append(": ")
 					append(value)
 				}

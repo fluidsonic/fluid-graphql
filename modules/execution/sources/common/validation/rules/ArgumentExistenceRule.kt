@@ -1,7 +1,6 @@
 package io.fluidsonic.graphql
 
 
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 
 	override fun onArgument(argument: GArgument, data: ValidationContext, visit: Visit) {

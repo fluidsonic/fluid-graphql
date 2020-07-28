@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Executable-Definitions
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object DocumentExecutabilityRule : ValidationRule.Singleton() {
 
 	override fun onDocument(document: GDocument, data: ValidationContext, visit: Visit) {

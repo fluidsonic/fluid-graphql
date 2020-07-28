@@ -2,7 +2,6 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal object FieldSubselectionRule : ValidationRule.Singleton() {
 
 	override fun onFieldSelection(selection: GFieldSelection, data: ValidationContext, visit: Visit) {
