@@ -79,7 +79,7 @@ internal object Introspection {
 						return@resolve null
 
 					var fieldDefinitions = type.fieldDefinitions
-					if (arguments["includeDeprecated"] as Boolean) // FIXME
+					if (arguments["includeDeprecated"] as Boolean)
 						fieldDefinitions = fieldDefinitions.filter { it.deprecation === null }
 
 					return@resolve fieldDefinitions
@@ -112,7 +112,7 @@ internal object Introspection {
 						return@resolve null
 
 					var values = type.values
-					if (arguments["includeDeprecated"] as Boolean) // FIXME
+					if (arguments["includeDeprecated"] as Boolean)
 						values = values.filter { it.deprecation === null }
 
 					return@resolve values

@@ -23,23 +23,6 @@ fun assertError(expected: String, actual: GError, message: String? = null) {
 			expected = expected,//.toKotlinRawString("\t\t\t\t"), // useful for copy&paste into test code
 			actual = actual//.toKotlinRawString("\t\t\t\t")
 		)
-
-	// FIXME remove
-	/*
-	buildString {
-				if (message !== null) {
-					append(message)
-					append(": ")
-				}
-
-				append("Error is different than expected.")
-				append("\n\n--- EXPECTED ---\n")
-				append(expected)
-				append("\n\n--- ACTUAL ---\n")
-				append(actual)
-				append("\n\n")
-			}
-	 */
 }
 
 
@@ -75,7 +58,7 @@ fun assertErrors(expected: List<String>, actual: List<GError>) {
 }
 
 
-@Suppress("NAME_SHADOWING")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NAME_SHADOWING")
 internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,
@@ -98,7 +81,7 @@ internal fun assertValidationRule(
 }
 
 
-@Suppress("INVISIBLE_MEMBER", "NAME_SHADOWING")
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NAME_SHADOWING")
 internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,

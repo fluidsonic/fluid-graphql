@@ -91,7 +91,16 @@ internal object GenericNodeInputCoercer {
 
 	private fun coerceValueForEnum(value: GValue, type: GEnumType, context: Context): GResult<Any?> =
 		when (val coercer = type.nodeInputCoercer) {
-			null -> GResult.success(value) // FIXME What is the right default behavior? also have to convert GValues
+			null ->
+				when (value) {
+					is GEnumValue -> type.values.firstOrNull { it.name == value.name }?.name?.let { GResult.success(it) }
+					else -> null
+				} ?: context.invalidValueResult(
+					value = value,
+					type = type,
+					details = "valid values: ${type.values.sortedBy { it.name }.joinToString(separator = ", ") { it.name }}"
+				)
+
 			else -> coerceValue(value, uncoercedValue = value, coercer = coercer, context = context)
 		}
 
@@ -176,7 +185,7 @@ internal object GenericNodeInputCoercer {
 			}
 
 			else -> when (val coercer = type.nodeInputCoercer) {
-				null -> value // FIXME What is the right default behavior? also have to convert GValues
+				null -> value.unwrap()
 				else -> return coerceValue(value, uncoercedValue = value, coercer = coercer, context = context)
 			}
 		}.let { GResult.success(it) }
