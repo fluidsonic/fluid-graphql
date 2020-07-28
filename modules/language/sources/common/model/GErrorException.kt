@@ -8,6 +8,10 @@ class GErrorException(val errors: List<GError>) : RuntimeException() {
 	}
 
 
+	constructor(error: GError) :
+		this(listOf(error))
+
+
 	override val message: String
 		get() = errors.joinToString(separator = "\n\n---\n\n") { it.describe() }
 }

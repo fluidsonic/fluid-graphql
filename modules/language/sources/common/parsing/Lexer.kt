@@ -8,7 +8,7 @@ internal class Lexer(
 	private val content = source.content
 
 	var currentToken = Token(
-		kind = Token.Kind.SOF,
+		kind = Token.Kind.START_OF_INPUT,
 		startPosition = 0,
 		endPosition = 0,
 		lineNumber = 1,
@@ -371,7 +371,7 @@ internal class Lexer(
 
 
 	private fun syntaxError(description: String, position: Int): Nothing =
-		throw GError.syntax(
+		GError.syntax(
 			details = description,
 			origin = DocumentPosition(
 				column = position - lookaheadLinePosition + 1,
@@ -379,7 +379,7 @@ internal class Lexer(
 				position = position,
 				source = source
 			)
-		)
+		).throwException()
 
 
 	private fun unexpectedCharacterError(character: SourceCharacter, position: Int): Nothing = // FIXME add expected

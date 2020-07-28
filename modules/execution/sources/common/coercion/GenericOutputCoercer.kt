@@ -97,7 +97,7 @@ internal object GenericOutputCoercer {
 
 
 	private fun <Value : Any> coerceValue(value: Value, coercer: GOutputCoercer<Value>, context: Context): GResult<Any> =
-		GResult.catch { coercer(context, value) }
+		GResult.catchErrors { coercer(context, value) }
 
 
 	private class Context(

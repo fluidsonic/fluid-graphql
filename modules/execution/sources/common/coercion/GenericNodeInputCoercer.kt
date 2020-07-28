@@ -80,7 +80,7 @@ internal object GenericNodeInputCoercer {
 
 
 	private fun <Value> coerceValue(value: Value, uncoercedValue: GValue, coercer: GNodeInputCoercer<Value>, context: Context): GResult<Any?> =
-		GResult.catch { coercer(context.External(value = uncoercedValue), value) }
+		GResult.catchErrors { coercer(context.External(value = uncoercedValue), value) }
 
 
 	private fun coerceValueAbsence(defaultValue: GValue?, type: GType, context: Context): GResult<Any?> =
@@ -309,7 +309,7 @@ internal object GenericNodeInputCoercer {
 
 
 			override fun invalidValueError(details: String?) =
-				throw makeValueError(value = value, type = type, details = details)
+				makeValueError(value = value, type = type, details = details).throwException()
 		}
 	}
 }

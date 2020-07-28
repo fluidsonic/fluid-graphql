@@ -282,7 +282,7 @@ internal class Parser private constructor(
 	private fun parseDocument(): GDocument {
 		val startToken = lexer.currentToken
 		val definitions = many(
-			TokenKind.SOF,
+			TokenKind.START_OF_INPUT,
 			this::parseDefinition,
 			TokenKind.END_OF_INPUT
 		)
@@ -291,6 +291,15 @@ internal class Parser private constructor(
 			definitions = definitions,
 			origin = makeOrigin(startToken = startToken)
 		)
+	}
+
+
+	private inline fun <Result> parseEntireInput(parse: Parser.() -> Result): Result {
+		expectToken(TokenKind.START_OF_INPUT)
+		val result = parse()
+		expectToken(TokenKind.END_OF_INPUT)
+
+		return result
 	}
 
 
@@ -962,10 +971,10 @@ internal class Parser private constructor(
 					stringValue.toDouble()
 				}
 				catch (e: NumberFormatException) {
-					throw GError.syntax(
+					GError.syntax(
 						details = "Invalid Float value '$stringValue'",
 						origin = makeOrigin(startToken = startToken, endToken = startToken)
-					)
+					).throwException()
 				}
 
 				lexer.advance()
@@ -982,10 +991,10 @@ internal class Parser private constructor(
 					stringValue.toInt()
 				}
 				catch (e: NumberFormatException) {
-					throw GError.syntax(
+					GError.syntax(
 						details = "Invalid Int value '$stringValue'",
 						origin = makeOrigin(startToken = startToken, endToken = startToken)
-					)
+					).throwException()
 				}
 
 				lexer.advance()
@@ -1083,40 +1092,37 @@ internal class Parser private constructor(
 
 
 	private fun unexpectedTokenError(token: Token = lexer.currentToken, expected: String? = null): Nothing =
-		throw GError.syntax(
+		GError.syntax(
 			details = when (expected) {
 				null -> "Unexpected $token."
 				else -> "Expected $expected, found $token."
 			},
 			origin = makeOrigin(startToken = token, endToken = token)
-		)
+		).throwException()
 
 
 	companion object {
 
 		fun parseDocument(source: GDocumentSource.Parsable): GResult<GDocument> =
-			GResult.catch { Parser(source = source).parseDocument() }
+			GResult.catchErrors {
+				Parser(source = source).parseDocument()
+			}
 
 
-		// FIXME don't throw?
-		fun parseTypeReference(source: GDocumentSource.Parsable): GTypeRef {
-			val parser = Parser(source = source)
-			parser.expectToken(TokenKind.SOF)
-			val reference = parser.parseTypeReference()
-			parser.expectToken(TokenKind.END_OF_INPUT)
-
-			return reference
-		}
+		fun parseTypeReference(source: GDocumentSource.Parsable): GResult<GTypeRef> =
+			GResult.catchErrors {
+				Parser(source = source).parseEntireInput {
+					parseTypeReference()
+				}
+			}
 
 
-		fun parseValue(source: GDocumentSource.Parsable): GValue {
-			val parser = Parser(source = source)
-			parser.expectToken(TokenKind.SOF)
-			val value = parser.parseValue(isConstant = true)
-			parser.expectToken(TokenKind.END_OF_INPUT)
-
-			return value
-		}
+		fun parseValue(source: GDocumentSource.Parsable): GResult<GValue> =
+			GResult.catchErrors {
+				Parser(source = source).parseEntireInput {
+					parseValue(isConstant = true)
+				}
+			}
 	}
 
 

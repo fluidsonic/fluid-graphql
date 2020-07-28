@@ -38,7 +38,7 @@ internal class Token(
 		PAREN_L("\"(\""),
 		PAREN_R("\")\""),
 		PIPE("\"|\""),
-		SOF("<start of input>"),
+		START_OF_INPUT("<start of input>"),
 		SPREAD("\"...\""),
 		STRING("String");
 

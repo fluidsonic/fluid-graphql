@@ -37,7 +37,7 @@ internal object GenericVariableInputCoercer {
 
 
 	private fun <Value : Any> coerceValue(value: Value, coercer: GVariableInputCoercer<Value>, context: Context): GResult<Any?> =
-		GResult.catch { coercer(context.External(value = value), value) }
+		GResult.catchErrors { coercer(context.External(value = value), value) }
 
 
 	private fun coerceValueAbsence(defaultValue: GValue?, type: GType, context: Context): GResult<Any?> =
@@ -323,7 +323,7 @@ internal object GenericVariableInputCoercer {
 
 
 			override fun invalidValueError(details: String?): Nothing =
-				throw makeInvalidValueError(value = value, type = type, details = details)
+				makeInvalidValueError(value = value, type = type, details = details).throwException()
 		}
 	}
 }

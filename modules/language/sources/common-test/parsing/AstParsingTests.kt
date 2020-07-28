@@ -421,14 +421,14 @@ class AstParsingTests {
 	}
 
 
-	private fun parseDocument(content: String, name: String = "<test>") =
+	private fun parseDocument(content: String, name: String = "<test>"): GDocument =
 		GDocument.parse(content.trimMargin(), name = name).valueWithoutErrorsOrThrow()
 
 
-	private fun parseTypeReference(content: String, name: String = "<test>") =
-		GTypeRef.parse(content.trimMargin(), name = name)
+	private fun parseTypeReference(content: String, name: String = "<test>"): GTypeRef =
+		GTypeRef.parse(content.trimMargin(), name = name).valueWithoutErrorsOrThrow()
 
 
-	private fun parseValue(content: String, name: String = "<test>") =
-		GValue.parse(content.trimMargin(), name = name)
+	private fun parseValue(content: String, name: String = "<test>"): GValue =
+		GValue.parse(content.trimMargin(), name = name).valueWithoutErrorsOrThrow()
 }

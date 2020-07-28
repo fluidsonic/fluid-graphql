@@ -39,12 +39,12 @@ sealed class GResult<out Value>(
 		private val nullResult = Success(null)
 
 
-		inline fun <Value> catch(action: () -> Value): GResult<Value> =
+		inline fun <Value> catchErrors(action: () -> Value): GResult<Value> =
 			try {
 				Success(action())
 			}
-			catch (error: GError) {
-				Failure(error)
+			catch (exception: GErrorException) {
+				Failure(exception.errors)
 			}
 
 

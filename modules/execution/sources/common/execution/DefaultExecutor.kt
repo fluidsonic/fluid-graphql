@@ -89,7 +89,7 @@ internal class DefaultExecutor(
 
 
 	private suspend fun resolveRoot(context: DefaultExecutorContext): GResult<Any> =
-		GResult.catch { rootResolver.resolveRoot(context) }
+		GResult.catchErrors { rootResolver.resolveRoot(context) }
 
 
 	@OptIn(ExperimentalStdlibApi::class)

@@ -2574,11 +2574,11 @@ sealed class GTypeRef(
 
 	companion object {
 
-		fun parse(source: GDocumentSource.Parsable) =
+		fun parse(source: GDocumentSource.Parsable): GResult<GTypeRef> =
 			Parser.parseTypeReference(source)
 
 
-		fun parse(content: String, name: String = "<type reference>") =
+		fun parse(content: String, name: String = "<type reference>"): GResult<GTypeRef> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 }
@@ -2738,12 +2738,12 @@ sealed class GValue(
 
 	abstract val kind: Kind
 
-	abstract fun unwrap(): Any? // FIXME not language layer
+	abstract fun unwrap(): Any? // FIXME not language module
 
 
 	companion object {
 
-		// FIXME temporary -- improve
+		// FIXME improve & not language module
 		fun of(value: Any?): GValue? =
 			when (value) {
 				null -> GNullValue.withoutOrigin
@@ -2762,11 +2762,11 @@ sealed class GValue(
 			}
 
 
-		fun parse(source: GDocumentSource.Parsable) =
+		fun parse(source: GDocumentSource.Parsable): GResult<GValue> =
 			Parser.parseValue(source)
 
 
-		fun parse(content: String, name: String = "<value>") =
+		fun parse(content: String, name: String = "<value>"): GResult<GValue> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 

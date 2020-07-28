@@ -236,7 +236,7 @@ internal object DefaultFieldSelectionExecutor {
 				?: context.defaultFieldResolver
 				?: error("No resolver registered for field '${parentType.name}.${fieldDefinition.name}' and no default resolver was specified.")
 
-			GResult.catch {
+			GResult.catchErrors {
 				resolver.resolveField(
 					parent = parent,
 					context = DefaultFieldResolverContext(

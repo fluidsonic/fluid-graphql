@@ -1,36 +1,13 @@
 package io.fluidsonic.graphql
 
 
-// FIXME check all call-sites for whether they can provide more context than they currently do
 class GError(
-	message: String,
-	val path: GPath? = null, // FIXME set path only for RESULT fields & consider field aliases
+	val message: String,
+	val path: GPath? = null,
 	val nodes: List<GNode> = emptyList(),
 	val origins: List<GDocumentPosition> = emptyList(),
-	val extensions: Map<String, Any?> = emptyMap(),
-	cause: Throwable? = null
-) : Exception( // FIXME Don't make exception. Add fn to throw it wrapped.
-	message,
-	cause
+	val extensions: Map<String, Any?> = emptyMap()
 ) {
-
-	fun copy(
-		message: String = this.message.orEmpty(),
-		path: GPath? = this.path,
-		nodes: List<GNode> = this.nodes,
-		origins: List<GDocumentPosition> = this.origins,
-		extensions: Map<String, Any?> = emptyMap(),
-		cause: Throwable? = this.cause
-	): GError =
-		GError(
-			message = message,
-			path = path,
-			nodes = nodes,
-			origins = origins,
-			cause = cause,
-			extensions = extensions
-		)
-
 
 	fun describe(): String = buildString {
 		append(message)
@@ -46,6 +23,11 @@ class GError(
 			append("\n\n")
 			append(origin.describe())
 		}
+	}
+
+
+	fun throwException(): Nothing {
+		throw GErrorException(this)
 	}
 
 
