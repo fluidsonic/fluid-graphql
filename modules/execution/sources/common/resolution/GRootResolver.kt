@@ -12,14 +12,8 @@ interface GRootResolver {
 			Constant(root)
 
 
-		operator fun invoke(
-			resolver: suspend GRootResolverContext.() -> Any
-		) =
-			object : GRootResolver {
-
-				override suspend fun resolveRoot(context: GRootResolverContext) =
-					with(context) { resolver() }
-			}
+		operator fun invoke(resolve: suspend GRootResolverContext.() -> Any): GRootResolver =
+			Function(resolve)
 
 
 		fun unit(): GRootResolver =
@@ -27,9 +21,16 @@ interface GRootResolver {
 	}
 
 
-	private class Constant(val root: Any) : GRootResolver {
+	private class Constant(private val root: Any) : GRootResolver {
 
 		override suspend fun resolveRoot(context: GRootResolverContext) =
 			root
+	}
+
+
+	private class Function(private val resolve: suspend GRootResolverContext.() -> Any) : GRootResolver {
+
+		override suspend fun resolveRoot(context: GRootResolverContext) =
+			resolve(context)
 	}
 }

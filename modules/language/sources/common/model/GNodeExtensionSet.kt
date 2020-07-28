@@ -1,29 +1,29 @@
 package io.fluidsonic.graphql
 
 
-interface GNodeExtensionSet : (GNodeExtensionSet.Builder<GFieldDefinition>) -> Unit {
+interface GNodeExtensionSet<out Node : GNode> {
 
 	operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 
-	override fun invoke(builder: Builder<GFieldDefinition>)
+	fun isEmpty(): Boolean
 
 	override fun toString(): String
 
 
 	companion object {
 
-		inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet =
+		inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet<Node> =
 			Builder.default<Node>().apply(action).build()
 
 
-		fun empty(): GNodeExtensionSet =
+		fun <Node : GNode> empty(): GNodeExtensionSet<Node> =
 			Empty
 	}
 
 
 	interface Builder<out Node : GNode> {
 
-		fun build(): GNodeExtensionSet
+		fun build(): GNodeExtensionSet<Node>
 
 		operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 
@@ -44,11 +44,11 @@ interface GNodeExtensionSet : (GNodeExtensionSet.Builder<GFieldDefinition>) -> U
 			private val values: MutableMap<GNodeExtensionKey<*>, Any> = hashMapOf()
 
 
-			override fun build(): GNodeExtensionSet =
-				if (values.isNotEmpty())
-					Default(values.toMap())
-				else
-					empty()
+			override fun build(): GNodeExtensionSet<Node> =
+				when {
+					values.isNotEmpty() -> Default(values.toMap())
+					else -> empty()
+				}
 
 
 			@Suppress("UNCHECKED_CAST")
@@ -70,18 +70,15 @@ interface GNodeExtensionSet : (GNodeExtensionSet.Builder<GFieldDefinition>) -> U
 	}
 
 
-	private class Default(private val values: Map<GNodeExtensionKey<*>, Any>) : GNodeExtensionSet {
+	private class Default<out Node : GNode>(private val values: Map<GNodeExtensionKey<*>, Any>) : GNodeExtensionSet<Node> {
 
 		@Suppress("UNCHECKED_CAST")
 		override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value? =
 			values[key] as Value?
 
 
-		@Suppress("UNCHECKED_CAST")
-		override fun invoke(builder: Builder<GFieldDefinition>) {
-			for ((key, value) in values)
-				builder[key as GNodeExtensionKey<Any>] = value
-		}
+		override fun isEmpty() =
+			values.isEmpty()
 
 
 		override fun toString() =
@@ -89,14 +86,14 @@ interface GNodeExtensionSet : (GNodeExtensionSet.Builder<GFieldDefinition>) -> U
 	}
 
 
-	private object Empty : GNodeExtensionSet {
+	private object Empty : GNodeExtensionSet<Nothing> {
 
 		override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Nothing? =
 			null
 
 
-		override fun invoke(builder: Builder<GFieldDefinition>) =
-			Unit
+		override fun isEmpty() =
+			true
 
 
 		override fun toString() =
@@ -104,3 +101,6 @@ interface GNodeExtensionSet : (GNodeExtensionSet.Builder<GFieldDefinition>) -> U
 	}
 }
 
+
+fun GNodeExtensionSet<*>.isNotEmpty() =
+	!isEmpty()

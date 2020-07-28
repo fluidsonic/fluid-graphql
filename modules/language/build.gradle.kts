@@ -3,12 +3,7 @@ import io.fluidsonic.gradle.*
 fluidLibraryVariant {
 	description = "FIXME"
 
-	common {
-		testDependencies {
-			api(project(":fluid-graphql-language-testing"))
-		}
-	}
-
+	common()
 	js {
 		browser()
 		nodejs()

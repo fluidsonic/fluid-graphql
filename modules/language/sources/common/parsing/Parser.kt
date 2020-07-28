@@ -963,7 +963,7 @@ internal class Parser private constructor(
 				}
 				catch (e: NumberFormatException) {
 					throw GError.syntax(
-						description = "Invalid Float value '$stringValue'",
+						details = "Invalid Float value '$stringValue'",
 						origin = makeOrigin(startToken = startToken, endToken = startToken)
 					)
 				}
@@ -983,7 +983,7 @@ internal class Parser private constructor(
 				}
 				catch (e: NumberFormatException) {
 					throw GError.syntax(
-						description = "Invalid Int value '$stringValue'",
+						details = "Invalid Int value '$stringValue'",
 						origin = makeOrigin(startToken = startToken, endToken = startToken)
 					)
 				}
@@ -1084,7 +1084,7 @@ internal class Parser private constructor(
 
 	private fun unexpectedTokenError(token: Token = lexer.currentToken, expected: String? = null): Nothing =
 		throw GError.syntax(
-			description = when (expected) {
+			details = when (expected) {
 				null -> "Unexpected $token."
 				else -> "Expected $expected, found $token."
 			},
@@ -1094,10 +1094,11 @@ internal class Parser private constructor(
 
 	companion object {
 
-		fun parseDocument(source: GDocumentSource.Parsable) =
-			Parser(source = source).parseDocument()
+		fun parseDocument(source: GDocumentSource.Parsable): GResult<GDocument> =
+			GResult.catch { Parser(source = source).parseDocument() }
 
 
+		// FIXME don't throw?
 		fun parseTypeReference(source: GDocumentSource.Parsable): GTypeRef {
 			val parser = Parser(source = source)
 			parser.expectToken(TokenKind.SOF)

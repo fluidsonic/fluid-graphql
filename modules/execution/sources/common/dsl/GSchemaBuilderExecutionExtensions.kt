@@ -13,7 +13,7 @@ object GSchemaBuilderExecutionExtensions {
 
 		@SchemaBuilderKeywordB
 		fun <Result> resolve(
-			resolver: suspend GFieldResolverContext<Any>.(context: ParentKotlinType) -> Result // FIXME env
+			resolver: suspend GFieldResolverContext.(context: ParentKotlinType) -> Result
 		) {
 			require(extension(FieldDefinitionResolverExtensionKey) == null) { "Only one resolver can be provided." }
 
@@ -51,7 +51,7 @@ object GSchemaBuilderExecutionExtensions {
 
 @SchemaBuilderKeywordB
 fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
-	resolver: suspend GFieldResolverContext<Any>.(context: Any) -> Result // FIXME env
+	resolver: suspend GFieldResolverContext.(context: Any) -> Result
 ) {
 	require(extension(FieldDefinitionResolverExtensionKey) == null) { "Only one resolver can be provided." }
 

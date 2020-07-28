@@ -4,6 +4,7 @@ import io.fluidsonic.graphql.*
 import kotlin.test.*
 
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 class VisitorTest {
 
 	@Test
@@ -19,7 +20,7 @@ class VisitorTest {
 			|      }
 			|   }
 			|}
-		""".trimMargin())
+		""".trimMargin()).valueWithoutErrorsOrThrow()
 
 		val schema = GSchema.parse("""
 			|${'"'}""description${'"'}""
@@ -71,7 +72,7 @@ class VisitorTest {
 			|}
 			|
 			|directive @foo on ARGUMENT_DEFINITION
-		""".trimMargin())
+		""".trimMargin()).valueWithoutErrorsOrThrow()
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 		schema.document.accept(visitor, data = StackCollectingVisitor.Data())
@@ -123,10 +124,10 @@ class VisitorTest {
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "Name(9)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "ObjectValueField(11)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "ObjectValueField(11)", "Name(12)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "ObjectValueField(11)", "VariableRef(12)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "ObjectValueField(11)", "VariableRef(12)", "Name(13)"),
+			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)"),
+			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)", "Name(12)"),
+			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)", "VariableRef(12)"),
+			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)", "VariableRef(12)", "Name(13)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "BooleanValue(10)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "IntValue(10)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "FloatValue(10)"),
@@ -338,7 +339,7 @@ class VisitorTest {
 			|      }
 			|   }
 			|}
-		""".trimMargin())
+		""".trimMargin()).valueWithoutErrorsOrThrow()
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 
@@ -373,7 +374,7 @@ class VisitorTest {
 			|      }
 			|   }
 			|}
-		""".trimMargin())
+		""".trimMargin()).valueWithoutErrorsOrThrow()
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 

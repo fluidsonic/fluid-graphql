@@ -1,20 +1,21 @@
 package io.fluidsonic.graphql
 
 
-interface GFieldResolver<in Environment : Any, in Parent : Any> {
+interface GFieldResolver<in Parent : Any> {
 
-	suspend fun resolveField(parent: Parent, context: GFieldResolverContext<Environment>): Any?
+	suspend fun resolveField(parent: Parent, context: GFieldResolverContext): Any?
 
 
 	companion object {
 
-		operator fun <Environment : Any, Parent : Any> invoke(
-			resolver: suspend GFieldResolverContext<Environment>.(parent: Parent) -> Any?
-		) =
-			object : GFieldResolver<Environment, Parent> {
+		operator fun <Parent : Any> invoke(resolve: suspend GFieldResolverContext.(parent: Parent) -> Any?): GFieldResolver<Parent> =
+			Function(resolve)
+	}
 
-				override suspend fun resolveField(parent: Parent, context: GFieldResolverContext<Environment>) =
-					with(context) { resolver(parent) }
-			}
+
+	private class Function<Parent : Any>(private val resolve: suspend GFieldResolverContext.(parent: Parent) -> Any?) : GFieldResolver<Parent> {
+
+		override suspend fun resolveField(parent: Parent, context: GFieldResolverContext) =
+			resolve(context, parent)
 	}
 }

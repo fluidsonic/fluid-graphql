@@ -9,7 +9,7 @@ class ExecutionTests {
 
 	@Test
 	fun `executes with a complex schema`() = runBlockingTest {
-		val document = GDocument.parse("""
+		val document = """
 			|{
 			|  feed {
 			|    id,
@@ -39,9 +39,10 @@ class ExecutionTests {
 			|  title,
 			|  body
 			|}
-		""".trimMargin())
+		""".trimMargin()
 
-		val result = document.execute(schema = schema)
+		val executor = GExecutor.default(schema = schema)
+		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf(
 				"data" to mapOf(

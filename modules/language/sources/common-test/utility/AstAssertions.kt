@@ -7,14 +7,14 @@ import kotlin.test.*
 
 // expected to not throw
 fun assertAst(actual: String) =
-	GDocument.parse(makeSource(actual.trimMargin()))
+	GDocument.parse(makeSource(actual.trimMargin())).valueWithoutErrorsOrThrow()
 
 
 // Note that "start .. end" origin notations use an exclusive end rather than an inclusive for sake of readability
 @Suppress("NAME_SHADOWING")
 fun assertAst(actual: String, expected: AstBuilder.() -> GNode) {
 	val expected = ast(expected)
-	val actual = GDocument.parse(makeSource(actual.trimMargin()))
+	val actual = GDocument.parse(makeSource(actual.trimMargin())).valueWithoutErrorsOrThrow()
 
 	assertTrue(
 		actual = actual.equalsNode(expected, includingOrigin = true),
@@ -55,7 +55,11 @@ fun assertSyntaxError(
 	line: Int,
 	column: Int
 ) {
-	val error = assertFailsWith<GError> { GDocument.parse(content.trimMargin()) }
+	val result = GDocument.parse(content.trimMargin())
+	assertNull(result.valueOrNull())
+	assertEquals(expected = 1, actual = result.errors.size)
+
+	val error = result.errors.single()
 	assertEquals(expected = message, actual = error.message)
 	assertEquals(expected = line, actual = error.origins.first().line, message = "incorrect line")
 	assertEquals(expected = column, actual = error.origins.first().column, message = "incorrect column")

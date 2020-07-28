@@ -16,7 +16,6 @@
             <option value="$PROJECT_DIR$/modules/dsl" />
             <option value="$PROJECT_DIR$/modules/execution" />
             <option value="$PROJECT_DIR$/modules/language" />
-            <option value="$PROJECT_DIR$/modules/language-testing" />
           </set>
         </option>
       </GradleProjectSettings>

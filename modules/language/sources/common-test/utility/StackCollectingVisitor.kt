@@ -55,7 +55,6 @@ internal class StackCollectingVisitor(
 	override fun onObjectType(type: GObjectType, data: Data, visit: Visit) = on(type, "ObjectType", data, visit)
 	override fun onObjectTypeExtension(extension: GObjectTypeExtension, data: Data, visit: Visit) = on(extension, "ObjectTypeExtension", data, visit)
 	override fun onObjectValue(value: GObjectValue, data: Data, visit: Visit) = on(value, "ObjectValue", data, visit)
-	override fun onObjectValueField(field: GObjectValueField, data: Data, visit: Visit) = on(field, "ObjectValueField", data, visit)
 	override fun onOperationDefinition(definition: GOperationDefinition, data: Data, visit: Visit) = on(definition, "OperationDefinition", data, visit)
 	override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Data, visit: Visit) = on(definition, "OperationTypeDefinition", data, visit)
 	override fun onScalarType(type: GScalarType, data: Data, visit: Visit) = on(type, "ScalarType", data, visit)

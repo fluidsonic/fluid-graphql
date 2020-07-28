@@ -21,4 +21,14 @@ fluidLibraryVariant {
 			implementation(kotlinx("coroutines-test", "1.3.8"))
 		}
 	}
+
+	// FIXME
+//	js {
+//		browser()
+//		nodejs()
+//	}
+//	jvm(JvmTarget.jdk8)
+//	objc(ObjcTarget.iosArm64)
+//	objc(ObjcTarget.iosX64)
+//	objc(ObjcTarget.macosX64)
 }

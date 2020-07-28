@@ -1,12 +1,11 @@
 package io.fluidsonic.graphql
 
 
-interface GOutputCoercerContext {
+interface GOutputCoercerContext : GExecutorContext {
 
-	val fieldDefinition: GFieldDefinition?
-	val schema: GSchema // FIXME add to a shared execution context
-	val type: GNamedType
-	val variableValues: Map<String, Any?> // FIXME add to a shared execution context
+	val field: GFieldDefinition
+	val parentType: GObjectType
+	val type: GType
 
 	fun invalidValueError(details: String? = null): Nothing
 }

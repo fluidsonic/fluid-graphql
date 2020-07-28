@@ -1,9 +1,18 @@
 package io.fluidsonic.graphql
 
 
+// FIXME refactor
 class GPath(elements: List<Element> = emptyList()) {
 
 	val elements: List<Element> = elements.toList()
+
+
+	fun addIndex(index: Int): GPath =
+		GPath(elements + Element.Index(index))
+
+
+	fun addName(name: String): GPath =
+		GPath(elements + Element.Name(name))
 
 
 	override fun equals(other: Any?): Boolean =
@@ -21,6 +30,10 @@ class GPath(elements: List<Element> = emptyList()) {
 	companion object {
 
 		val root = GPath()
+
+
+		fun ofName(name: String): GPath =
+			GPath(listOf(Element.Name(name)))
 	}
 
 

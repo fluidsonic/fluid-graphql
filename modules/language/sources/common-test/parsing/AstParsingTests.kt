@@ -255,7 +255,7 @@ class AstParsingTests {
 			override val content = "{ id }"
 			override val name = "custom"
 		}
-		val document = GDocument.parse(source)
+		val document = GDocument.parse(source).valueWithoutErrorsOrThrow()
 		assertSame(expected = source, actual = document.origin?.source)
 	}
 
@@ -422,7 +422,7 @@ class AstParsingTests {
 
 
 	private fun parseDocument(content: String, name: String = "<test>") =
-		GDocument.parse(content.trimMargin(), name = name)
+		GDocument.parse(content.trimMargin(), name = name).valueWithoutErrorsOrThrow()
 
 
 	private fun parseTypeReference(content: String, name: String = "<test>") =

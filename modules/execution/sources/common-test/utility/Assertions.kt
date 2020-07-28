@@ -81,20 +81,21 @@ internal fun assertValidationRule(
 	errors: List<String>,
 	document: String,
 	schema: String? = null
-) =
+) {
 	if (schema !== null)
 		assertValidationRule(
 			rule = rule,
 			errors = errors,
-			document = GDocument.parse(document.trimMargin()),
-			schema = GSchema.parse(schema.trimMargin())!!
+			document = GDocument.parse(document.trimMargin()).valueOrThrow(),
+			schema = GSchema.parse(schema.trimMargin()).valueOrThrow()
 		)
 	else
 		assertValidationRule(
 			rule = rule,
 			errors = errors,
-			document = GDocument.parse(document.trimMargin())
+			document = GDocument.parse(document.trimMargin()).valueOrThrow()
 		)
+}
 
 
 @Suppress("INVISIBLE_MEMBER", "NAME_SHADOWING")

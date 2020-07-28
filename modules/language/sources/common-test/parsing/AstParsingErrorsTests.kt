@@ -9,7 +9,8 @@ class AstParsingErrorsTests {
 
 	@Test
 	fun testProvidesUsefulOrigin() {
-		val error = assertFailsWith<GError> { GDocument.parse(content = "{", name = "<test>") }
+		val result = GDocument.parse(content = "{", name = "<test>")
+		val error = result.errors.single()
 		assertEquals(expected = "Syntax Error: Expected Name, found <end of input>.", actual = error.message)
 		assertEquals(expected = 1, actual = error.origins.size)
 
@@ -35,8 +36,7 @@ class AstParsingErrorsTests {
 
 	@Test
 	fun testProvidesUsefulErrorWhenUsingSource() {
-		val error = assertFailsWith<GError> { GDocument.parse(GDocumentSource.of(content = "query", name = "MyQuery.graphql")) }
-
+		val result = GDocument.parse(GDocumentSource.of(content = "query", name = "MyQuery.graphql"))
 		assertEquals(
 			expected = """
 				|Syntax Error: Expected "{", found <end of input>.
@@ -45,7 +45,7 @@ class AstParsingErrorsTests {
                 |1 | query
                 |  |      ^
 			""".trimMargin(),
-			actual = error.describe()
+			actual = result.errors.single().describe()
 		)
 	}
 

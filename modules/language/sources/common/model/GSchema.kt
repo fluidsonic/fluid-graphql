@@ -349,11 +349,11 @@ class GSchema internal constructor(
 
 	companion object {
 
-		fun parse(source: GDocumentSource.Parsable): GSchema =
-			GSchema(GDocument.parse(source))
+		fun parse(source: GDocumentSource.Parsable): GResult<GSchema> =
+			GDocument.parse(source).mapValue(::GSchema)
 
 
-		fun parse(content: String, name: String = "<document>"): GSchema =
+		fun parse(content: String, name: String = "<document>"): GResult<GSchema> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 }

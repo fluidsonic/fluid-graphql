@@ -38,7 +38,7 @@ interface GSchemaBuilder {
 
 	@SchemaBuilderType
 	fun type(name: String): GNamedTypeRef =
-		GNamedTypeRef(name)
+		GTypeRef(name)
 
 	@SchemaBuilderKeywordB
 	fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = {})
@@ -326,7 +326,7 @@ interface GSchemaBuilder {
 
 		@SchemaBuilderType
 		operator fun getValue(thisRef: Any?, property: KProperty<*>): GNamedTypeRef =
-			GNamedTypeRef(property.name)
+			GTypeRef(property.name)
 	}
 
 

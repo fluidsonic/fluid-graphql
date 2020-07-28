@@ -14,6 +14,7 @@ internal object Introspection {
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
+	@Suppress("RemoveExplicitTypeArguments")
 	val schema = graphql.schema {
 		Object<GSchema>(Schema) {
 			description(
@@ -89,14 +90,17 @@ internal object Introspection {
 				resolve<List<GInterfaceType>?> { type ->
 					(type as? GNode.WithInterfaces)
 						?.interfaces
-						?.mapNotNull { schema.resolveTypeAs<GInterfaceType>(it) }
+						?.map { interfaceTypeRef ->
+							introspectedSchema.resolveTypeAs<GInterfaceType>(interfaceTypeRef)
+								?: error("Introspection cannot resolve type '$interfaceTypeRef'. The schema should be validated before execution.")
+						}
 				}
 			}
 
 			field("possibleTypes" of List(!Type)) {
 				resolve<List<GType>?> { type ->
 					(type as? GAbstractType)
-						?.let { schema.getPossibleTypes(it) }
+						?.let { introspectedSchema.getPossibleTypes(it) }
 				}
 			}
 
@@ -143,7 +147,10 @@ internal object Introspection {
 			}
 
 			field("type" of !Type) {
-				resolve<GType> { schema.resolveType(it.type)!! }
+				resolve<GType> { fieldDefinition ->
+					introspectedSchema.resolveType(fieldDefinition.type)
+						?: error("Introspection cannot resolve type '${fieldDefinition.type}'. The schema should be validated before execution.")
+				}
 			}
 
 			field("isDeprecated" of !Boolean) {
@@ -170,7 +177,10 @@ internal object Introspection {
 			}
 
 			field("type" of !Type) {
-				resolve<GType> { schema.resolveType(it.type)!! }
+				resolve<GType> { argumentDefinition ->
+					introspectedSchema.resolveType(argumentDefinition.type)
+						?: error("Introspection cannot resolve type '${argumentDefinition.type}'. The schema should be validated before execution.")
+				}
 			}
 
 			field("defaultValue" of String) {
@@ -318,13 +328,23 @@ internal object Introspection {
 	}
 
 
+	val directiveType: GObjectType = schema.resolveTypeAs(Directive)!!
+	val directiveLocationType: GEnumType = schema.resolveTypeAs(DirectiveLocation)!!
+	val enumValueType: GObjectType = schema.resolveTypeAs(EnumValue)!!
+	val fieldType: GObjectType = schema.resolveTypeAs(Field)!!
+	val inputValueType: GObjectType = schema.resolveTypeAs(InputValue)!!
+	val schemaType: GObjectType = schema.resolveTypeAs(Schema)!!
+	val typeType: GObjectType = schema.resolveTypeAs(Type)!!
+	val typeKindType: GEnumType = schema.resolveTypeAs(TypeKind)!!
+
 	val schemaField = GFieldDefinition(
 		name = "__schema",
 		type = Schema.nonNullableRef,
-		description = "Access the current type schema of this server."
-	) {
-		resolver = GFieldResolver<Any, Any> { Introspection.schema }
-	}
+		description = "Access the current type schema of this server.",
+		extensions = GNodeExtensionSet {
+			resolver = GFieldResolver<GSchema> { it }
+		}
+	)
 
 	val typeField = GFieldDefinition(
 		name = "__type",
@@ -335,17 +355,22 @@ internal object Introspection {
 				name = "name",
 				type = GStringTypeRef.nonNullableRef
 			)
-		)
-	) {
-		// FIXME we need json/gql conversion functions as we cannot distinguish between both at this point - argument coercing has already happened
-		resolver = GFieldResolver<Any, Any> { schema.resolveType(arguments["name"] as String) }
-	}
+		),
+		extensions = GNodeExtensionSet {
+			resolver = GFieldResolver<GSchema> { it.resolveType(arguments["name"] as String) }
+		}
+	)
 
 	val typenameField = GFieldDefinition(
 		name = "__typename",
 		type = GStringTypeRef.nonNullableRef,
-		description = "The name of the current Object type at runtime."
-	) {
-		resolver = GFieldResolver<Any, Any> { parentTypeDefinition.name }
-	}
+		description = "The name of the current Object type at runtime.",
+		extensions = GNodeExtensionSet {
+			resolver = GFieldResolver<GObjectType> { it.name }
+		}
+	)
+
+
+	private val GExecutorContext.introspectedSchema
+		get() = root as GSchema
 }

@@ -372,7 +372,7 @@ internal class Lexer(
 
 	private fun syntaxError(description: String, position: Int): Nothing =
 		throw GError.syntax(
-			description = description,
+			details = description,
 			origin = DocumentPosition(
 				column = position - lookaheadLinePosition + 1,
 				line = lookaheadLineNumber,

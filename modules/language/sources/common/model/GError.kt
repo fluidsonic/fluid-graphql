@@ -7,8 +7,9 @@ class GError(
 	val path: GPath? = null, // FIXME set path only for RESULT fields & consider field aliases
 	val nodes: List<GNode> = emptyList(),
 	val origins: List<GDocumentPosition> = emptyList(),
+	val extensions: Map<String, Any?> = emptyMap(),
 	cause: Throwable? = null
-) : Exception(
+) : Exception( // FIXME Don't make exception. Add fn to throw it wrapped.
 	message,
 	cause
 ) {
@@ -18,6 +19,7 @@ class GError(
 		path: GPath? = this.path,
 		nodes: List<GNode> = this.nodes,
 		origins: List<GDocumentPosition> = this.origins,
+		extensions: Map<String, Any?> = emptyMap(),
 		cause: Throwable? = this.cause
 	): GError =
 		GError(
@@ -25,7 +27,8 @@ class GError(
 			path = path,
 			nodes = nodes,
 			origins = origins,
-			cause = cause
+			cause = cause,
+			extensions = extensions
 		)
 
 
@@ -52,7 +55,7 @@ class GError(
 
 	companion object {
 
-		internal fun syntax(description: String, origin: GDocumentPosition) =
-			GError(message = "Syntax Error: $description", origins = listOf(origin))
+		internal fun syntax(details: String, origin: GDocumentPosition) =
+			GError(message = "Syntax Error: $details", origins = listOf(origin))
 	}
 }

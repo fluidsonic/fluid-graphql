@@ -172,12 +172,13 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		val type: GTypeRef,
 		val definitionType: ArgumentDefinitionType,
 		var defaultValue: GValue? = null
-	) : ContainerImpl(),
+	) : ContainerImpl<GArgumentDefinition>(),
 		ArgumentDefinitionBuilder,
 		ArgumentDefinitionContainer.NameAndType,
 		ArgumentDefinitionContainer.NameAndTypeAndDefault {
 
-		fun build() = when (definitionType) {
+		@Suppress("UNCHECKED_CAST")
+		fun build(): GArgumentDefinition = when (definitionType) {
 			ArgumentDefinitionType.directiveDefinition ->
 				GDirectiveArgumentDefinition(
 					defaultValue = defaultValue,
@@ -185,7 +186,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 					directives = directives,
 					name = name,
 					type = type,
-					extensions = extensions
+					extensions = extensions as GNodeExtensionSet<GDirectiveArgumentDefinition>
 				)
 
 			ArgumentDefinitionType.fieldDefinition ->
@@ -195,7 +196,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 					directives = directives,
 					name = name,
 					type = type,
-					extensions = extensions
+					extensions = extensions as GNodeExtensionSet<GFieldArgumentDefinition>
 				)
 
 			ArgumentDefinitionType.inputField ->
@@ -205,7 +206,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 					directives = directives,
 					name = name,
 					type = type,
-					extensions = extensions
+					extensions = extensions as GNodeExtensionSet<GInputObjectArgumentDefinition>
 				)
 		}
 
@@ -226,7 +227,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 	}
 
 
-	private open class ContainerImpl :
+	private open class ContainerImpl<Node : GNode> :
 		ArgumentContainer,
 		DeprecationContainer,
 		DescriptionContainer,
@@ -234,7 +235,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		NodeBuilder,
 		TypeRefContainer {
 
-		private var extensionSetBuilder: GNodeExtensionSet.Builder<GNode>? = null
+		private var extensionSetBuilder: GNodeExtensionSet.Builder<Node>? = null
 
 		protected val argumentDefinitions = mutableListOf<GArgumentDefinition>()
 		protected val arguments = mutableListOf<GArgument>()
@@ -289,7 +290,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 		override fun <Value : Any> extension(key: GNodeExtensionKey<in Value>, value: Value) {
 			val builder = extensionSetBuilder
-				?: GNodeExtensionSet.Builder.default<GNode>().also { extensionSetBuilder = it }
+				?: GNodeExtensionSet.Builder.default<Node>().also { extensionSetBuilder = it }
 
 			builder[key] = value
 		}
@@ -324,7 +325,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class DirectiveBuilderImpl(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<GDirective>(),
 		DirectiveBuilder {
 
 		fun build() = GDirective(
@@ -337,7 +338,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class DirectiveDefinitionBuilderImpl(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<GDirectiveDefinition>(),
 		DirectiveDefinitionBuilder {
 
 		private var locations = emptySet<GDirectiveLocation>()
@@ -423,7 +424,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class EnumTypeDefinitionBuilderImpl(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<GEnumType>(),
 		EnumTypeDefinitionBuilder {
 
 		private val values = mutableListOf<GEnumValueDefinition>()
@@ -445,7 +446,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 		private class ValueBuilderImpl(
 			val name: String
-		) : ContainerImpl(),
+		) : ContainerImpl<GEnumValueDefinition>(),
 			EnumTypeDefinitionBuilder.ValueBuilder {
 
 			fun build() = GEnumValueDefinition(
@@ -461,7 +462,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 	private class FieldDefinitionBuilderImpl(
 		var name: String,
 		var type: GTypeRef
-	) : ContainerImpl(),
+	) : ContainerImpl<GFieldDefinition>(),
 		FieldDefinitionBuilder,
 		FieldDefinitionContainer.NameAndType {
 
@@ -483,7 +484,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class InputObjectTypeDefinitionBuilderImpl(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<GInputObjectType>(),
 		InputObjectTypeDefinitionBuilder {
 
 		@Suppress("UNCHECKED_CAST")
@@ -504,7 +505,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 	private class InterfaceTypeDefinitionBuilderImpl(
 		val name: String,
 		val interfaces: List<GNamedTypeRef>
-	) : ContainerImpl(),
+	) : ContainerImpl<GInterfaceType>(),
 		InterfaceTypeDefinitionBuilder {
 
 		private val fieldDefinitions = mutableListOf<GFieldDefinition>()
@@ -548,7 +549,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 	private class ObjectTypeDefinitionBuilderImpl(
 		val name: String,
 		val interfaces: List<GNamedTypeRef>
-	) : ContainerImpl(),
+	) : ContainerImpl<GObjectType>(),
 		ObjectTypeDefinitionBuilder {
 
 		private val fieldDefinitions = mutableListOf<GFieldDefinition>()
@@ -577,7 +578,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class ScalarTypeDefinitionBuilderImpl(
 		val name: String
-	) : ContainerImpl(),
+	) : ContainerImpl<GCustomScalarType>(),
 		ScalarTypeDefinitionBuilder {
 
 		fun build() = GCustomScalarType(
@@ -592,7 +593,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 	private class UnionTypeDefinitionBuilderImpl(
 		val name: String,
 		possibleType: GNamedTypeRef
-	) : ContainerImpl(),
+	) : ContainerImpl<GUnionType>(),
 		PossibleTypes,
 		UnionTypeDefinitionBuilder {
 

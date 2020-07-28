@@ -9,7 +9,7 @@ class UnionInterfaceExecutionTests {
 
 	@Test
 	fun `can introspect on union and intersection types`() = runBlockingTest {
-		val document = GDocument.parse("""
+		val document = """
 			|{
 			|  Named: __type(name: "Named") {
 			|    kind
@@ -39,9 +39,10 @@ class UnionInterfaceExecutionTests {
 			|    inputFields { name }
 			|  }
 			|}
-		""".trimMargin())
+		""".trimMargin()
 
-		val result = document.execute(schema = schema)
+		val executor = GExecutor.default(schema = schema)
+		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf(
 				"data" to mapOf(
@@ -145,7 +146,7 @@ class UnionInterfaceExecutionTests {
 
 	@Test
 	fun `executes using union types with inline fragments`() = runBlockingTest {
-		val document = GDocument.parse("""
+		val document = """
 			|{
 			|  __typename
 			|  name
@@ -161,13 +162,13 @@ class UnionInterfaceExecutionTests {
 			|    }
 			|  }
 			|}
-		""".trimMargin())
+		""".trimMargin()
 
-		val result = document.execute(
+		val executor = GExecutor.default(
 			schema = schema,
 			rootResolver = GRootResolver.constant(john)
 		)
-
+		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf(
 				"data" to mapOf(
@@ -194,7 +195,7 @@ class UnionInterfaceExecutionTests {
 
 	@Test
 	fun `executes using interface types with inline fragments`() = runBlockingTest {
-		val document = GDocument.parse("""
+		val document = """
 			|{
 			|  __typename
 			|  name
@@ -222,13 +223,13 @@ class UnionInterfaceExecutionTests {
 			|    }
 			|  }
 			|}
-		""".trimMargin())
+		""".trimMargin()
 
-		val result = document.execute(
+		val executor = GExecutor.default(
 			schema = schema,
 			rootResolver = GRootResolver.constant(john)
 		)
-
+		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf(
 				"data" to mapOf(
@@ -260,7 +261,7 @@ class UnionInterfaceExecutionTests {
 
 	@Test
 	fun `accepts fragment conditions of abstract types`() = runBlockingTest {
-		val document = GDocument.parse("""
+		val document = """
 			|{
 			|  __typename
 			|  name
@@ -303,13 +304,13 @@ class UnionInterfaceExecutionTests {
 			|    __typename
 			|  }
 			|}
-		""".trimMargin())
+		""".trimMargin()
 
-		val result = document.execute(
+		val executor = GExecutor.default(
 			schema = schema,
 			rootResolver = GRootResolver.constant(john)
 		)
-
+		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf(
 				"data" to mapOf(
