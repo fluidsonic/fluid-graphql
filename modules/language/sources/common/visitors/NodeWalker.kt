@@ -3,12 +3,12 @@ package io.fluidsonic.graphql
 
 // Children must be traversed in the order they would occur in a proper GraphQL document.
 @InternalGraphqlApi
-interface NodeWalker {
+public interface NodeWalker {
 
-	val child: GNode?
-	val parent: GNode?
+	public val child: GNode?
+	public val parent: GNode?
 
-	fun ascend(): Boolean
-	fun descend(): Boolean
-	fun nextChild(): GNode?
+	public fun ascend(): Boolean
+	public fun descend(): Boolean
+	public fun nextChild(): GNode?
 }

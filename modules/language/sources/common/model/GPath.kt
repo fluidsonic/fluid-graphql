@@ -2,16 +2,16 @@ package io.fluidsonic.graphql
 
 
 // FIXME refactor
-class GPath(elements: List<Element> = emptyList()) {
+public class GPath(elements: List<Element> = emptyList()) {
 
-	val elements: List<Element> = elements.toList()
+	public val elements: List<Element> = elements.toList()
 
 
-	fun addIndex(index: Int): GPath =
+	public fun addIndex(index: Int): GPath =
 		GPath(elements + Element.Index(index))
 
 
-	fun addName(name: String): GPath =
+	public fun addName(name: String): GPath =
 		GPath(elements + Element.Name(name))
 
 
@@ -27,23 +27,23 @@ class GPath(elements: List<Element> = emptyList()) {
 		elements.joinToString(separator = "")
 
 
-	companion object {
+	public companion object {
 
-		val root = GPath()
+		public val root: GPath = GPath()
 
 
-		fun ofName(name: String): GPath =
+		public fun ofName(name: String): GPath =
 			GPath(listOf(Element.Name(name)))
 	}
 
 
-	class Builder {
+	public class Builder {
 
 		@PublishedApi
 		internal val stack = mutableListOf<Any>()
 
 
-		fun snapshot(): GPath =
+		public fun snapshot(): GPath =
 			GPath(stack.map { element ->
 				when (element) {
 					is Int -> Element.Index(element)
@@ -57,7 +57,7 @@ class GPath(elements: List<Element> = emptyList()) {
 			snapshot().toString()
 
 
-		inline fun <Result> withName(name: String, block: () -> Result): Result {
+		public inline fun <Result> withName(name: String, block: () -> Result): Result {
 			stack += name
 
 			return try {
@@ -69,7 +69,7 @@ class GPath(elements: List<Element> = emptyList()) {
 		}
 
 
-		inline fun <Result> withIndex(index: Int, block: () -> Result): Result {
+		public inline fun <Result> withIndex(index: Int, block: () -> Result): Result {
 			stack += index
 
 			return try {
@@ -82,9 +82,9 @@ class GPath(elements: List<Element> = emptyList()) {
 	}
 
 
-	sealed class Element {
+	public sealed class Element {
 
-		class Name(val value: String) : Element() {
+		public class Name(public val value: String) : Element() {
 
 			override fun equals(other: Any?): Boolean =
 				(this === other || (other is Name && value == other.value))
@@ -99,7 +99,7 @@ class GPath(elements: List<Element> = emptyList()) {
 		}
 
 
-		class Index(val value: Int) : Element() {
+		public class Index(public val value: Int) : Element() {
 
 			override fun equals(other: Any?): Boolean =
 				(this === other || (other is Index && value == other.value))

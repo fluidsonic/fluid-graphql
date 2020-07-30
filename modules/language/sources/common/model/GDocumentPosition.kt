@@ -1,28 +1,28 @@
 package io.fluidsonic.graphql
 
 
-interface GDocumentPosition {
+public interface GDocumentPosition {
 
-	val column: Int
+	public val column: Int
 		get() = -1
 
 
-	val endPosition: Int
+	public val endPosition: Int
 		get() = startPosition
 
 
-	val line: Int
+	public val line: Int
 		get() = -1
 
 
-	val source: GDocumentSource
+	public val source: GDocumentSource
 
 
-	val startPosition: Int
+	public val startPosition: Int
 		get() = -1
 
 
-	fun describe(): String = buildString {
+	public fun describe(): String = buildString {
 		append(source.name)
 
 		val lineNumber = line
@@ -74,7 +74,7 @@ interface GDocumentPosition {
 	}
 
 
-	companion object {
+	public companion object {
 
 		private fun StringBuilder.appendPrefixedLines(vararg lines: Pair<String, String?>) {
 			@Suppress("NAME_SHADOWING", "UNCHECKED_CAST")

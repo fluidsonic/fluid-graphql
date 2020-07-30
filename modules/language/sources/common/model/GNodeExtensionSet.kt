@@ -1,40 +1,40 @@
 package io.fluidsonic.graphql
 
 
-interface GNodeExtensionSet<out Node : GNode> {
+public interface GNodeExtensionSet<out Node : GNode> {
 
-	operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
+	public operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 
-	fun isEmpty(): Boolean
+	public fun isEmpty(): Boolean
 
 	override fun toString(): String
 
 
-	companion object {
+	public companion object {
 
-		inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet<Node> =
+		public inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet<Node> =
 			Builder.default<Node>().apply(action).build()
 
 
-		fun <Node : GNode> empty(): GNodeExtensionSet<Node> =
+		public fun <Node : GNode> empty(): GNodeExtensionSet<Node> =
 			Empty
 	}
 
 
-	interface Builder<out Node : GNode> {
+	public interface Builder<out Node : GNode> {
 
-		fun build(): GNodeExtensionSet<Node>
+		public fun build(): GNodeExtensionSet<Node>
 
-		operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
+		public operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 
-		operator fun <Value : Any> set(key: GNodeExtensionKey<in Value>, value: Value?)
+		public operator fun <Value : Any> set(key: GNodeExtensionKey<in Value>, value: Value?)
 
 		override fun toString(): String
 
 
-		companion object {
+		public companion object {
 
-			fun <Node : GNode> default(): Builder<Node> =
+			public fun <Node : GNode> default(): Builder<Node> =
 				Default()
 		}
 
@@ -102,5 +102,5 @@ interface GNodeExtensionSet<out Node : GNode> {
 }
 
 
-fun GNodeExtensionSet<*>.isNotEmpty() =
+public fun GNodeExtensionSet<*>.isNotEmpty(): Boolean =
 	!isEmpty()

@@ -1,22 +1,22 @@
 package io.fluidsonic.graphql
 
 
-interface GRootResolver {
+public interface GRootResolver {
 
-	suspend fun resolveRoot(context: GRootResolverContext): Any
+	public suspend fun resolveRoot(context: GRootResolverContext): Any
 
 
-	companion object {
+	public companion object {
 
-		fun constant(root: Any): GRootResolver =
+		public fun constant(root: Any): GRootResolver =
 			Constant(root)
 
 
-		operator fun invoke(resolve: suspend GRootResolverContext.() -> Any): GRootResolver =
+		public operator fun invoke(resolve: suspend GRootResolverContext.() -> Any): GRootResolver =
 			Function(resolve)
 
 
-		fun unit(): GRootResolver =
+		public fun unit(): GRootResolver =
 			constant(Unit)
 	}
 

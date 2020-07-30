@@ -1,14 +1,14 @@
 package io.fluidsonic.graphql
 
 
-interface GFieldResolver<in Parent : Any> {
+public interface GFieldResolver<in Parent : Any> {
 
-	suspend fun resolveField(parent: Parent, context: GFieldResolverContext): Any?
+	public suspend fun resolveField(parent: Parent, context: GFieldResolverContext): Any?
 
 
-	companion object {
+	public companion object {
 
-		operator fun <Parent : Any> invoke(resolve: suspend GFieldResolverContext.(parent: Parent) -> Any?): GFieldResolver<Parent> =
+		public operator fun <Parent : Any> invoke(resolve: suspend GFieldResolverContext.(parent: Parent) -> Any?): GFieldResolver<Parent> =
 			Function(resolve)
 	}
 

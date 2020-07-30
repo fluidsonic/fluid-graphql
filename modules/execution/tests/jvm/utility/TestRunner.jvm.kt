@@ -3,6 +3,7 @@ package testing
 import kotlinx.coroutines.*
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 actual fun runBlockingTest(action: suspend CoroutineScope.() -> Unit) {
-	runBlocking { action() }
+	kotlinx.coroutines.test.runBlockingTest { action() }
 }

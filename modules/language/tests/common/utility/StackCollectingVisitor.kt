@@ -8,7 +8,6 @@ internal class StackCollectingVisitor(
 	val target: Target = Target(),
 	val skipsChildrenInNode: (node: GNode) -> Boolean = { false },
 	val abortsInNode: (node: GNode) -> Boolean = { false }
-
 ) : Visitor.Typed<Unit, StackCollectingVisitor.Data>() {
 
 	private fun on(node: GNode, name: String, data: Data, visit: Visit) {

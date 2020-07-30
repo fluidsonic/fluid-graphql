@@ -2,13 +2,13 @@ package io.fluidsonic.graphql
 
 
 @GGraphDsl.Mark
-val graphql = GGraphDsl
+public val graphql: GGraphDsl = GGraphDsl
 
 
-object GGraphDsl {
+public object GGraphDsl {
 
 	@DslMarker
 	@Retention(AnnotationRetention.BINARY)
 	@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-	annotation class Mark
+	public annotation class Mark
 }

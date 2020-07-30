@@ -2,50 +2,50 @@ package io.fluidsonic.graphql
 
 
 @InternalGraphqlApi
-open class VisitorContext(
-	val document: GDocument,
-	val schema: GSchema
+public open class VisitorContext(
+	public val document: GDocument,
+	public val schema: GSchema
 ) {
 
 	private var visitingNode: GNode? = null
 
-	var parentNode: GNode? = null
+	public var parentNode: GNode? = null
 		private set
 
-	var relatedArgumentDefinition: GArgumentDefinition? = null
+	public var relatedArgumentDefinition: GArgumentDefinition? = null
 		private set
 
-	var relatedDirective: GDirective? = null
+	public var relatedDirective: GDirective? = null
 		private set
 
-	var relatedDirectiveDefinition: GDirectiveDefinition? = null
+	public var relatedDirectiveDefinition: GDirectiveDefinition? = null
 		private set
 
-	var relatedFieldDefinition: GFieldDefinition? = null
+	public var relatedFieldDefinition: GFieldDefinition? = null
 		private set
 
-	var relatedFieldSelection: GFieldSelection? = null
+	public var relatedFieldSelection: GFieldSelection? = null
 		private set
 
-	var relatedFragmentDefinition: GFragmentDefinition? = null
+	public var relatedFragmentDefinition: GFragmentDefinition? = null
 		private set
 
-	var relatedOperationDefinition: GOperationDefinition? = null
+	public var relatedOperationDefinition: GOperationDefinition? = null
 		private set
 
-	var relatedParentSelectionSet: GSelectionSet? = null
+	public var relatedParentSelectionSet: GSelectionSet? = null
 		private set
 
-	var relatedParentType: GType? = null
+	public var relatedParentType: GType? = null
 		private set
 
-	var relatedSelection: GSelection? = null
+	public var relatedSelection: GSelection? = null
 		private set
 
-	var relatedSelectionSet: GSelectionSet? = null
+	public var relatedSelectionSet: GSelectionSet? = null
 		private set
 
-	var relatedType: GType? = null
+	public var relatedType: GType? = null
 		private set
 
 

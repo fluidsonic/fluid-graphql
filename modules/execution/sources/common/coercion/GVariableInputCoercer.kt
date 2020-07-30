@@ -2,4 +2,4 @@ package io.fluidsonic.graphql
 
 
 // FIXME Make interface?
-typealias GVariableInputCoercer<Input> = GVariableInputCoercerContext.(input: Input) -> Any?
+public typealias GVariableInputCoercer<Input> = GVariableInputCoercerContext.(input: Input) -> Any?

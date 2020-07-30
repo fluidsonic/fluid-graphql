@@ -1,8 +1,8 @@
 package io.fluidsonic.graphql
 
 
-sealed class GResult<out Value>(
-	val errors: List<GError>
+public sealed class GResult<out Value>(
+	public val errors: List<GError>
 ) {
 
 	abstract override fun equals(other: Any?): Boolean
@@ -10,36 +10,36 @@ sealed class GResult<out Value>(
 	abstract override fun toString(): String
 
 
-	fun valueOrNull(): Value? = when (this) {
+	public fun valueOrNull(): Value? = when (this) {
 		is Success -> value
 		is Failure -> null
 	}
 
 
-	fun valueOrThrow(): Value = when (this) {
+	public fun valueOrThrow(): Value = when (this) {
 		is Success -> value
 		is Failure -> throw GErrorException(errors)
 	}
 
 
-	fun valueWithoutErrorsOrNull(): Value? = when (this) {
+	public fun valueWithoutErrorsOrNull(): Value? = when (this) {
 		is Success -> if (errors.isEmpty()) value else null
 		is Failure -> null
 	}
 
 
-	fun valueWithoutErrorsOrThrow(): Value = when (this) { // FIXME refactor
+	public fun valueWithoutErrorsOrThrow(): Value = when (this) { // FIXME refactor
 		is Success -> if (errors.isEmpty()) value else throw GErrorException(errors)
 		is Failure -> throw GErrorException(errors)
 	}
 
 
-	companion object {
+	public companion object {
 
 		private val nullResult = Success(null)
 
 
-		inline fun <Value> catchErrors(action: () -> Value): GResult<Value> =
+		public inline fun <Value> catchErrors(action: () -> Value): GResult<Value> =
 			try {
 				Success(action())
 			}
@@ -48,20 +48,20 @@ sealed class GResult<out Value>(
 			}
 
 
-		fun failure(errors: List<GError> = emptyList()): GResult<Nothing> =
+		public fun failure(errors: List<GError> = emptyList()): GResult<Nothing> =
 			Failure(errors)
 
 
-		fun failure(error: GError): GResult<Nothing> =
+		public fun failure(error: GError): GResult<Nothing> =
 			Failure(error)
 
 
-		fun success(): GResult<Nothing?> =
+		public fun success(): GResult<Nothing?> =
 			success(value = null)
 
 
 		@Suppress("UNCHECKED_CAST")
-		fun <Value> success(value: Value, errors: List<GError> = emptyList()): GResult<Value> =
+		public fun <Value> success(value: Value, errors: List<GError> = emptyList()): GResult<Value> =
 			when {
 				(value as Any?) == null && errors.isEmpty() -> nullResult as Success<Value>
 				else -> Success(value = value, errors = errors)
@@ -130,21 +130,21 @@ sealed class GResult<out Value>(
 }
 
 
-inline fun <Value> GResult<Value>.ifErrors(action: (result: List<GError>) -> Nothing): Value =
+public inline fun <Value> GResult<Value>.ifErrors(action: (result: List<GError>) -> Nothing): Value =
 	when {
 		errors.isNotEmpty() -> action(errors)
 		else -> (this as GResult.Success).value
 	}
 
 
-inline fun <Value> GResult<Value>.flatMapErrors(action: (errors: List<GError>) -> GResult<Value>): GResult<Value> =
+public inline fun <Value> GResult<Value>.flatMapErrors(action: (errors: List<GError>) -> GResult<Value>): GResult<Value> =
 	when (this) {
 		is GResult.Failure -> action(errors)
 		is GResult.Success -> this
 	}
 
 
-inline fun <Value, TransformedValue> GResult<Value>.flatMapValue(action: (value: Value) -> GResult<TransformedValue>): GResult<TransformedValue> =
+public inline fun <Value, TransformedValue> GResult<Value>.flatMapValue(action: (value: Value) -> GResult<TransformedValue>): GResult<TransformedValue> =
 	when (this) {
 		is GResult.Success -> {
 			val transformed = action(value)
@@ -162,21 +162,21 @@ inline fun <Value, TransformedValue> GResult<Value>.flatMapValue(action: (value:
 	}
 
 
-inline fun <Value> GResult<Value>.mapErrors(action: (errors: List<GError>) -> List<GError>): GResult<Value> =
+public inline fun <Value> GResult<Value>.mapErrors(action: (errors: List<GError>) -> List<GError>): GResult<Value> =
 	when (this) {
 		is GResult.Failure -> GResult.failure(action(errors))
 		is GResult.Success -> GResult.success(value = value, errors = action(errors))
 	}
 
 
-inline fun <Value, TransformedValue> GResult<Value>.mapValue(action: (value: Value) -> TransformedValue): GResult<TransformedValue> =
+public inline fun <Value, TransformedValue> GResult<Value>.mapValue(action: (value: Value) -> TransformedValue): GResult<TransformedValue> =
 	when (this) {
 		is GResult.Success -> GResult.success(value = action(value), errors = errors)
 		is GResult.Failure -> GResult.failure(errors)
 	}
 
 
-fun <Value> Iterable<GResult<Value>>.flatten(): GResult<List<Value>> {
+public fun <Value> Iterable<GResult<Value>>.flatten(): GResult<List<Value>> {
 	val errors = mutableListOf<GError>()
 	val values = mutableListOf<Value>()
 	var isFailure = false
@@ -197,7 +197,7 @@ fun <Value> Iterable<GResult<Value>>.flatten(): GResult<List<Value>> {
 }
 
 
-fun <Key, Value> Map<Key, GResult<Value>>.flatten(): GResult<Map<Key, Value>> {
+public fun <Key, Value> Map<Key, GResult<Value>>.flatten(): GResult<Map<Key, Value>> {
 	val errors = mutableListOf<GError>()
 	val values = mutableMapOf<Key, Value>()
 	var isFailure = false

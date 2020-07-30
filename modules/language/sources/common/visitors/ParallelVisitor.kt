@@ -274,8 +274,8 @@ private class ParallelVisit<in Data>(
 
 
 @InternalGraphqlApi
-fun <Data> Iterable<Visitor<Unit, Data>>.parallelize(): Visitor<Unit, Data> =
+public fun <Data> Iterable<Visitor<Unit, Data>>.parallelize(): Visitor<Unit, Data> =
 	toList()
 		.ifEmpty { null }
 		?.let(::ParallelVisitor)
-		?: Visitor.noop()
+		?: Visitor.noOp()

@@ -10,105 +10,105 @@ import kotlin.reflect.*
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-annotation class SchemaBuilderKeywordB
+public annotation class SchemaBuilderKeywordB
 
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-annotation class SchemaBuilderBuiltinTypeA
+public annotation class SchemaBuilderBuiltinTypeA
 
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-annotation class SchemaBuilderType
+public annotation class SchemaBuilderType
 
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-annotation class SchemaBuilderDsl
+public annotation class SchemaBuilderDsl
 
 
 @GGraphDsl.Mark
 @SchemaBuilderDsl
 @Suppress("PropertyName")
-interface GSchemaBuilder {
+public interface GSchemaBuilder {
 
 	@SchemaBuilderType
-	val type: NamedTypeRefFactory
+	public val type: NamedTypeRefFactory
 		get() = NamedTypeRefFactory
 
 	@SchemaBuilderType
-	fun type(name: String): GNamedTypeRef =
+	public fun type(name: String): GNamedTypeRef =
 		GTypeRef(name)
 
 	@SchemaBuilderKeywordB
-	fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = {})
+	public fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = noOp)
 
 	@SchemaBuilderType
-	fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit)
+	public fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit)
+	public fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
+	public fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
+	public fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Mutation(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	public fun Mutation(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		Mutation(type(GLanguage.defaultMutationTypeName), configure)
 	}
 
 	@SchemaBuilderType
-	fun Mutation(type: GNamedTypeRef)
+	public fun Mutation(type: GNamedTypeRef)
 
 	@SchemaBuilderType
-	fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	public fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(named: Interfaces, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	public fun Object(named: Interfaces, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	public fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Query(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	public fun Query(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		Query(type(GLanguage.defaultQueryTypeName), configure)
 	}
 
 	@SchemaBuilderType
-	fun Query(type: GNamedTypeRef)
+	public fun Query(type: GNamedTypeRef)
 
 	@SchemaBuilderType
-	fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	public fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit = {})
+	public fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit = noOp)
 
 	@SchemaBuilderType
-	fun Subscription(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
+	public fun Subscription(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		Subscription(type(GLanguage.defaultSubscriptionTypeName), configure)
 	}
 
 	@SchemaBuilderType
-	fun Subscription(type: GNamedTypeRef)
+	public fun Subscription(type: GNamedTypeRef)
 
 	@SchemaBuilderType
-	fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
+	public fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	@SchemaBuilderType
-	fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit = {})
+	public fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit = noOp)
 
 	@SchemaBuilderKeywordB
-	infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): Interfaces
+	public infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): Interfaces
 
 	@SchemaBuilderKeywordB
-	infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes
+	public infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes
 
 
-	companion object {
+	public companion object {
 
 		private val defaultDeprecatedReason = GLanguage.defaultDeprecatedDirective.argumentDefinition("reason")!!
 			.defaultValue.let { it as GStringValue }
@@ -117,171 +117,171 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface ArgumentContainer {
+	public interface ArgumentContainer {
 
 		@SchemaBuilderKeywordB
-		fun argument(name: NameAndValue)
+		public fun argument(name: NameAndValue)
 
 		@SchemaBuilderKeywordB
-		infix fun String.with(value: Value): NameAndValue
+		public infix fun String.with(value: Value): NameAndValue
 
 
-		interface NameAndValue
+		public interface NameAndValue
 	}
 
 
 	@SchemaBuilderDsl
-	interface ArgumentDefinitionBuilder : NodeBuilder, DeprecationContainer, DescriptionContainer, DirectiveContainer
+	public interface ArgumentDefinitionBuilder : NodeBuilder, DeprecationContainer, DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
-	interface ArgumentDefinitionContainer : TypeRefContainer, ValueContainer {
+	public interface ArgumentDefinitionContainer : TypeRefContainer, ValueContainer {
 
 		@SchemaBuilderKeywordB
-		fun argument(name: NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit = {})
+		public fun argument(name: NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit = noOp)
 
 		@SchemaBuilderKeywordB
-		fun argument(name: NameAndTypeAndDefault, configure: ArgumentDefinitionBuilder.() -> Unit = {})
+		public fun argument(name: NameAndTypeAndDefault, configure: ArgumentDefinitionBuilder.() -> Unit = noOp)
 
 		@SchemaBuilderKeywordB
-		infix fun String.of(type: GTypeRef): NameAndType
+		public infix fun String.of(type: GTypeRef): NameAndType
 
 
-		interface NameAndType {
+		public interface NameAndType {
 
 			@SchemaBuilderKeywordB
-			infix fun default(default: Value): NameAndTypeAndDefault
+			public infix fun default(default: Value): NameAndTypeAndDefault
 		}
 
-		interface NameAndTypeAndDefault
+		public interface NameAndTypeAndDefault
 	}
 
 
 	@SchemaBuilderDsl
-	interface DeprecationContainer {
+	public interface DeprecationContainer {
 
 		@SchemaBuilderKeywordB
-		fun deprecated(reason: String? = defaultDeprecatedReason)
+		public fun deprecated(reason: String? = defaultDeprecatedReason)
 	}
 
 
 	@SchemaBuilderDsl
-	interface DescriptionContainer {
+	public interface DescriptionContainer {
 
 		@SchemaBuilderKeywordB
-		fun description(text: String)
+		public fun description(text: String)
 	}
 
 
 	@SchemaBuilderDsl
-	interface DirectiveBuilder : NodeBuilder, ArgumentContainer
+	public interface DirectiveBuilder : NodeBuilder, ArgumentContainer
 
 
 	@SchemaBuilderDsl
-	interface DirectiveDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer {
+	public interface DirectiveDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer {
 
 		@SchemaBuilderBuiltinTypeA
-		val ARGUMENT_DEFINITION: DirectiveLocation
+		public val ARGUMENT_DEFINITION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val ENUM: DirectiveLocation
+		public val ENUM: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val ENUM_VALUE: DirectiveLocation
+		public val ENUM_VALUE: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val FIELD: DirectiveLocation
+		public val FIELD: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val FIELD_DEFINITION: DirectiveLocation
+		public val FIELD_DEFINITION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val FRAGMENT_DEFINITION: DirectiveLocation
+		public val FRAGMENT_DEFINITION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val FRAGMENT_SPREAD: DirectiveLocation
+		public val FRAGMENT_SPREAD: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val INLINE_FRAGMENT: DirectiveLocation
+		public val INLINE_FRAGMENT: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val INPUT_FIELD_DEFINITION: DirectiveLocation
+		public val INPUT_FIELD_DEFINITION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val INPUT_OBJECT: DirectiveLocation
+		public val INPUT_OBJECT: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val INTERFACE: DirectiveLocation
+		public val INTERFACE: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val MUTATION: DirectiveLocation
+		public val MUTATION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val OBJECT: DirectiveLocation
+		public val OBJECT: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val QUERY: DirectiveLocation
+		public val QUERY: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val SCALAR: DirectiveLocation
+		public val SCALAR: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val SCHEMA: DirectiveLocation
+		public val SCHEMA: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val SUBSCRIPTION: DirectiveLocation
+		public val SUBSCRIPTION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val UNION: DirectiveLocation
+		public val UNION: DirectiveLocation
 
 		@SchemaBuilderBuiltinTypeA
-		val VARIABLE_DEFINITION: DirectiveLocation
+		public val VARIABLE_DEFINITION: DirectiveLocation
 
 
 		@SchemaBuilderKeywordB
-		fun on(any: DirectiveLocation)
+		public fun on(any: DirectiveLocation)
 
 		@SchemaBuilderKeywordB
-		fun on(any: DirectiveLocationSet)
+		public fun on(any: DirectiveLocationSet)
 
 
-		interface DirectiveLocation {
+		public interface DirectiveLocation {
 
 			@SchemaBuilderKeywordB
-			infix fun or(other: DirectiveLocation): DirectiveLocationSet
+			public infix fun or(other: DirectiveLocation): DirectiveLocationSet
 		}
 
 
-		interface DirectiveLocationSet {
+		public interface DirectiveLocationSet {
 
 			@SchemaBuilderKeywordB
-			infix fun or(other: DirectiveLocation): DirectiveLocationSet
+			public infix fun or(other: DirectiveLocation): DirectiveLocationSet
 		}
 	}
 
 
 	@SchemaBuilderDsl
-	interface DirectiveContainer {
+	public interface DirectiveContainer {
 
 		@SchemaBuilderKeywordB
-		fun directive(name: String, configure: DirectiveBuilder.() -> Unit = {})
+		public fun directive(name: String, configure: DirectiveBuilder.() -> Unit = noOp)
 	}
 
 
 	@SchemaBuilderDsl
-	interface EnumTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer {
+	public interface EnumTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer {
 
 		@SchemaBuilderKeywordB
-		fun value(name: String, configure: ValueBuilder.() -> Unit = {})
+		public fun value(name: String, configure: ValueBuilder.() -> Unit = noOp)
 
 
 		@SchemaBuilderDsl
-		interface ValueBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer
+		public interface ValueBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer
 	}
 
 
 	@SchemaBuilderDsl
-	interface FieldDefinitionBuilder :
+	public interface FieldDefinitionBuilder :
 		NodeBuilder,
 		ArgumentDefinitionContainer,
 		DeprecationContainer,
@@ -290,25 +290,25 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface FieldDefinitionContainer : TypeRefContainer {
+	public interface FieldDefinitionContainer : TypeRefContainer {
 
 		@SchemaBuilderKeywordB
-		fun field(name: NameAndType, configure: FieldDefinitionBuilder.() -> Unit = {})
+		public fun field(name: NameAndType, configure: FieldDefinitionBuilder.() -> Unit = noOp)
 
 		@SchemaBuilderKeywordB
-		infix fun String.of(type: GTypeRef): NameAndType
+		public infix fun String.of(type: GTypeRef): NameAndType
 
 
-		interface NameAndType
+		public interface NameAndType
 	}
 
 
 	@SchemaBuilderDsl
-	interface InputObjectTypeDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer, DirectiveContainer
+	public interface InputObjectTypeDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
-	interface InterfaceTypeDefinitionBuilder :
+	public interface InterfaceTypeDefinitionBuilder :
 		NodeBuilder,
 		DeprecationContainer,
 		DescriptionContainer,
@@ -316,34 +316,34 @@ interface GSchemaBuilder {
 		FieldDefinitionContainer
 
 
-	interface Interfaces {
+	public interface Interfaces {
 
 		@SchemaBuilderKeywordB
-		infix fun and(type: GNamedTypeRef): Interfaces
+		public infix fun and(type: GNamedTypeRef): Interfaces
 	}
 
 
-	object NamedTypeRefFactory {
+	public object NamedTypeRefFactory {
 
 		@SchemaBuilderType
-		operator fun getValue(thisRef: Any?, property: KProperty<*>): GNamedTypeRef =
+		public operator fun getValue(thisRef: Any?, property: KProperty<*>): GNamedTypeRef =
 			GTypeRef(property.name)
 	}
 
 
 	@SchemaBuilderDsl
-	interface NodeBuilder {
+	public interface NodeBuilder {
 
 		@SchemaBuilderKeywordB
-		fun <Value : Any> extension(key: GNodeExtensionKey<out Value>): Value?
+		public fun <Value : Any> extension(key: GNodeExtensionKey<out Value>): Value?
 
 		@SchemaBuilderKeywordB
-		fun <Value : Any> extension(key: GNodeExtensionKey<in Value>, value: Value)
+		public fun <Value : Any> extension(key: GNodeExtensionKey<in Value>, value: Value)
 	}
 
 
 	@SchemaBuilderDsl
-	interface ObjectTypeDefinitionBuilder :
+	public interface ObjectTypeDefinitionBuilder :
 		NodeBuilder,
 		DeprecationContainer,
 		DescriptionContainer,
@@ -351,46 +351,46 @@ interface GSchemaBuilder {
 		FieldDefinitionContainer
 
 
-	interface PossibleTypes {
+	public interface PossibleTypes {
 
 		@SchemaBuilderKeywordB
-		infix fun or(type: GNamedTypeRef): PossibleTypes
+		public infix fun or(type: GNamedTypeRef): PossibleTypes
 	}
 
 
 	@SchemaBuilderDsl
-	interface ScalarTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
+	public interface ScalarTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
 	@Suppress("PropertyName")
-	interface TypeRefContainer {
+	public interface TypeRefContainer {
 
 		@SchemaBuilderBuiltinTypeA
-		val Boolean: GTypeRef
+		public val Boolean: GTypeRef
 			get() = GBooleanTypeRef
 
 		@SchemaBuilderBuiltinTypeA
-		val Float: GTypeRef
+		public val Float: GTypeRef
 			get() = GFloatTypeRef
 
 		@SchemaBuilderBuiltinTypeA
-		val ID: GTypeRef
+		public val ID: GTypeRef
 			get() = GIdTypeRef
 
 		@SchemaBuilderBuiltinTypeA
-		val Int: GTypeRef
+		public val Int: GTypeRef
 			get() = GIntTypeRef
 
 		@SchemaBuilderBuiltinTypeA
-		val String: GTypeRef
+		public val String: GTypeRef
 			get() = GStringTypeRef
 
 		@SchemaBuilderBuiltinTypeA
-		fun List(type: GTypeRef): GTypeRef
+		public fun List(type: GTypeRef): GTypeRef
 
 
-		operator fun GTypeRef.not(): GNonNullTypeRef =
+		public operator fun GTypeRef.not(): GNonNullTypeRef =
 			if (this is GNonNullTypeRef)
 				error("Cannot use '!' on a type that's already non-null")
 			else
@@ -399,20 +399,20 @@ interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	interface UnionTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
+	public interface UnionTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
 
 
 	@SchemaBuilderDsl
-	interface Value {
+	public interface Value {
 
-		fun toGValue(): GValue
+		public fun toGValue(): GValue
 	}
 
 
 	@SchemaBuilderDsl
-	interface ValueContainer {
+	public interface ValueContainer {
 
-		fun value(value: GValue): Value
+		public fun value(value: GValue): Value
 	}
 }
 
@@ -421,8 +421,7 @@ interface GSchemaBuilder {
 
 @JvmName("floatValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.enumValue(value: String?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.enumValue(value: String?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GEnumValue(value))
@@ -432,14 +431,13 @@ fun GSchemaBuilder.ValueContainer.enumValue(value: String?): GSchemaBuilder.Valu
 @JvmName("nullValue")
 @SchemaBuilderKeywordB
 @Suppress("DEPRECATION_ERROR", "UNUSED_PARAMETER")
-fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value =
 	value(GNullValue.withoutOrigin)
 
 
 @JvmName("booleanValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GBooleanValue(value))
@@ -448,8 +446,7 @@ fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value =
 
 @JvmName("floatValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GFloatValue(value))
@@ -458,8 +455,7 @@ fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value =
 
 @JvmName("intValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GIntValue(value))
@@ -468,8 +464,7 @@ fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value =
 
 @JvmName("stringValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GStringValue(value))
@@ -478,8 +473,7 @@ fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value =
 
 @JvmName("nullListValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GListValue(value.map { GNullValue.withoutOrigin }))
@@ -488,8 +482,7 @@ fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.V
 
 @JvmName("booleanListValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GListValue(value.map(::GBooleanValue)))
@@ -498,8 +491,7 @@ fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.V
 
 @JvmName("floatListValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GListValue(value.map(::GFloatValue)))
@@ -508,8 +500,7 @@ fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Va
 
 @JvmName("intListValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GListValue(value.map(::GIntValue)))
@@ -518,9 +509,18 @@ fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value
 
 @JvmName("stringListValue")
 @SchemaBuilderKeywordB
-@Suppress("DEPRECATION_ERROR")
-fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GListValue(value.map(::GStringValue)))
 	}
+
+
+@SchemaBuilderKeywordB
+@Suppress("unused")
+public fun GGraphDsl.schema(configure: GSchemaBuilder.() -> Unit): GSchema =
+	DefaultSchemaBuilder().apply(configure).build()
+
+
+// https://youtrack.jetbrains.com/issue/KT-40083
+private val noOp: Any?.() -> Unit = {}

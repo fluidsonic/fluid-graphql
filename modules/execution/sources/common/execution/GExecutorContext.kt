@@ -1,13 +1,13 @@
 package io.fluidsonic.graphql
 
 
-interface GExecutorContext {
+public interface GExecutorContext {
 
-	val defaultFieldResolver: GFieldResolver<Any>?
-	val document: GDocument
-	val operation: GOperationDefinition
-	val root: Any
-	val rootType: GObjectType
-	val schema: GSchema
-	val variableValues: Map<String, Any?>
+	public val defaultFieldResolver: GFieldResolver<Any>?
+	public val document: GDocument
+	public val operation: GOperationDefinition
+	public val root: Any
+	public val rootType: GObjectType
+	public val schema: GSchema
+	public val variableValues: Map<String, Any?>
 }

@@ -1,9 +1,9 @@
 package io.fluidsonic.graphql
 
 
-interface GFieldResolverContext : GExecutorContext {
+public interface GFieldResolverContext : GExecutorContext {
 
-	val arguments: Map<String, Any?>
-	val field: GFieldDefinition
-	val parentType: GObjectType
+	public val arguments: Map<String, Any?>
+	public val field: GFieldDefinition
+	public val parentType: GObjectType
 }

@@ -415,13 +415,13 @@ internal object Printer {
 
 
 	private fun IndentingWriter.writeNode(definition: GSchemaDefinition) {
-		val queryOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.query }
+		val queryOperation = definition.operationTypeDefinition(GOperationType.query)
 			?.takeIf { it.type.name != GLanguage.defaultQueryTypeName }
 
-		val mutationOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.mutation }
+		val mutationOperation = definition.operationTypeDefinition(GOperationType.mutation)
 			?.takeIf { it.type.name != GLanguage.defaultMutationTypeName }
 
-		val subscriptionOperation = definition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.subscription }
+		val subscriptionOperation = definition.operationTypeDefinition(GOperationType.subscription)
 			?.takeIf { it.type.name != GLanguage.defaultSubscriptionTypeName }
 
 		if (queryOperation == null && mutationOperation == null && subscriptionOperation == null)

@@ -2,18 +2,18 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/June2018/
-object GLanguage {
+public object GLanguage {
 
-	const val defaultQueryTypeName = "Query"
-	const val defaultMutationTypeName = "Mutation"
-	const val defaultSubscriptionTypeName = "Subscription"
+	public const val defaultQueryTypeName: String = "Query"
+	public const val defaultMutationTypeName: String = "Mutation"
+	public const val defaultSubscriptionTypeName: String = "Subscription"
 
 	private const val introspectionNamePrefix = "__"
 	private val nameRegex = Regex("[_A-Za-z][_0-9A-Za-z]*")
 
 
 	// FIXME add default directives to schemas
-	val defaultDeprecatedDirective = GDirectiveDefinition(
+	public val defaultDeprecatedDirective: GDirectiveDefinition = GDirectiveDefinition(
 		name = "deprecated",
 		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
@@ -32,7 +32,7 @@ object GLanguage {
 	)
 
 
-	val defaultIncludeDirective = GDirectiveDefinition(
+	public val defaultIncludeDirective: GDirectiveDefinition = GDirectiveDefinition(
 		name = "include",
 		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
@@ -50,7 +50,7 @@ object GLanguage {
 	)
 
 
-	val defaultSkipDirective = GDirectiveDefinition(
+	public val defaultSkipDirective: GDirectiveDefinition = GDirectiveDefinition(
 		name = "skip",
 		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
@@ -93,7 +93,7 @@ object GLanguage {
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Enum-Value
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
-	fun isValidEnumValue(name: String) =
+	public fun isValidEnumValue(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			name != "true" &&
 			name != "false" &&
@@ -103,34 +103,34 @@ object GLanguage {
 
 	// https://graphql.github.io/graphql-spec/June2018/#FieldDefinition
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
-	fun isValidFieldName(name: String) =
+	public fun isValidFieldName(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#InputValueDefinition
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
-	fun isValidInputValueName(name: String) =
+	public fun isValidInputValueName(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#Name
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
-	fun isValidIntrospectionName(name: String) =
+	public fun isValidIntrospectionName(name: String): Boolean =
 		name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#Name
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
-	fun isValidName(name: String) =
+	public fun isValidName(name: String): Boolean =
 		nameRegex matches name
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#TypeDefinition
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
-	fun isValidTypeName(name: String) =
+	public fun isValidTypeName(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 }

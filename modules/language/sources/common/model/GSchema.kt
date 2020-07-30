@@ -2,22 +2,22 @@ package io.fluidsonic.graphql
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
-class GSchema internal constructor(
-	val directiveDefinitions: List<GDirectiveDefinition>,
-	val document: GDocument,
+public class GSchema internal constructor(
+	public val directiveDefinitions: List<GDirectiveDefinition>,
+	public val document: GDocument,
 	queryType: GNamedTypeRef? = null,
 	mutationType: GNamedTypeRef? = null,
 	subscriptionType: GNamedTypeRef? = null,
 	types: List<GNamedType>
 ) {
 
-	val types: List<GNamedType> = types + GType.defaultTypes
+	public val types: List<GNamedType> = types + GType.defaultTypes
 
 	private val typesByName: Map<String, GNamedType> = this.types.associateByTo(hashMapOf()) { it.name }
 
-	val queryType: GObjectType? = queryType?.let { typesByName[it.name] as? GObjectType }
-	val mutationType: GObjectType? = mutationType?.let { typesByName[it.name] as? GObjectType }
-	val subscriptionType: GObjectType? = subscriptionType?.let { typesByName[it.name] as? GObjectType }
+	public val queryType: GObjectType? = queryType?.let { typesByName[it.name] as? GObjectType }
+	public val mutationType: GObjectType? = mutationType?.let { typesByName[it.name] as? GObjectType }
+	public val subscriptionType: GObjectType? = subscriptionType?.let { typesByName[it.name] as? GObjectType }
 
 	private val possibleTypesByType: Map<String, List<GObjectType>> =
 		types
@@ -30,16 +30,16 @@ class GSchema internal constructor(
 				.associate { union -> union.name to union.possibleTypes.mapNotNull { typesByName[it.name] as? GObjectType } }
 
 
-	fun directiveDefinition(name: String): GDirectiveDefinition? =
+	public fun directiveDefinition(name: String): GDirectiveDefinition? =
 		directiveDefinitions.firstOrNull { it.name == name }
 
 
-	fun getPossibleTypes(type: GCompositeType): List<GObjectType> =
+	public fun getPossibleTypes(type: GCompositeType): List<GObjectType> =
 		if (type is GObjectType) listOf(type)
 		else possibleTypesByType[type.name].orEmpty()
 
 
-	fun resolveType(ref: GTypeRef): GType? =
+	public fun resolveType(ref: GTypeRef): GType? =
 		when (ref) {
 			is GListTypeRef -> resolveType(ref.elementType)?.let { GListType(elementType = it) }
 			is GNamedTypeRef -> resolveType(ref)
@@ -47,27 +47,27 @@ class GSchema internal constructor(
 		}
 
 
-	fun resolveType(ref: GNamedTypeRef): GNamedType? =
+	public fun resolveType(ref: GNamedTypeRef): GNamedType? =
 		resolveType(ref.name)
 
 
-	fun resolveType(name: String): GNamedType? =
+	public fun resolveType(name: String): GNamedType? =
 		typesByName[name]
 
 
-	inline fun <reified Type : GType> resolveTypeAs(ref: GTypeRef): Type? =
+	public inline fun <reified Type : GType> resolveTypeAs(ref: GTypeRef): Type? =
 		resolveType(ref) as? Type
 
 
-	inline fun <reified Type : GNamedType> resolveTypeAs(ref: GNamedTypeRef): Type? =
+	public inline fun <reified Type : GNamedType> resolveTypeAs(ref: GNamedTypeRef): Type? =
 		resolveType(ref) as? Type
 
 
-	inline fun <reified Type : GNamedType> resolveTypeAs(name: String): Type? =
+	public inline fun <reified Type : GNamedType> resolveTypeAs(name: String): Type? =
 		resolveType(name) as? Type
 
 
-	fun rootTypeForOperationType(operationType: GOperationType): GObjectType? =
+	public fun rootTypeForOperationType(operationType: GOperationType): GObjectType? =
 		when (operationType) {
 			GOperationType.mutation -> mutationType
 			GOperationType.query -> queryType
@@ -75,17 +75,17 @@ class GSchema internal constructor(
 		}
 
 
-	override fun toString() =
+	override fun toString(): String =
 		GDocument(
 			definitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
 		).toString()
 
 
-	fun validateValue(value: GValue, type: GType) =
+	public fun validateValue(value: GValue, type: GType): List<GError> =
 		validateValue(value = value, typeRef = null, type = type).orEmpty()
 
 
-	fun validateValue(value: GValue, typeRef: GTypeRef) =
+	public fun validateValue(value: GValue, typeRef: GTypeRef): List<GError> =
 		validateValue(value = value, typeRef = typeRef, type = null).orEmpty()
 
 
@@ -346,19 +346,19 @@ class GSchema internal constructor(
 	}
 
 
-	companion object {
+	public companion object {
 
-		fun parse(source: GDocumentSource.Parsable): GResult<GSchema> =
+		public fun parse(source: GDocumentSource.Parsable): GResult<GSchema> =
 			GDocument.parse(source).mapValue(::GSchema)
 
 
-		fun parse(content: String, name: String = "<document>"): GResult<GSchema> =
+		public fun parse(content: String, name: String = "<document>"): GResult<GSchema> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 }
 
 
-fun GSchema(document: GDocument): GSchema {
+public fun GSchema(document: GDocument): GSchema {
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
@@ -378,9 +378,9 @@ fun GSchema(document: GDocument): GSchema {
 	val subscriptionTypeRef: GNamedTypeRef?
 
 	if (schemaDefinition !== null) {
-		mutationTypeRef = schemaDefinition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.mutation }?.type
-		queryTypeRef = schemaDefinition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.query }?.type
-		subscriptionTypeRef = schemaDefinition.operationTypeDefinitions.firstOrNull { it.operationType == GOperationType.subscription }?.type
+		mutationTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.mutation)?.type
+		queryTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.query)?.type
+		subscriptionTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.subscription)?.type
 	}
 	else {
 		mutationTypeRef = GTypeRef(GLanguage.defaultMutationTypeName)

@@ -1,14 +1,14 @@
 package io.fluidsonic.graphql
 
 
-enum class GOperationType {
+public enum class GOperationType {
 
 	query,
 	mutation,
 	subscription;
 
 
-	val defaultObjectTypeName
+	public val defaultObjectTypeName: String
 		get() = when (this) {
 			query -> GLanguage.defaultQueryTypeName
 			mutation -> GLanguage.defaultMutationTypeName

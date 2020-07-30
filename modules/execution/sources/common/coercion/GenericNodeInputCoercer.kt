@@ -26,7 +26,7 @@ internal object GenericNodeInputCoercer {
 			)
 
 			argumentDefinition.name to coerceValue(
-				value = node.arguments.firstOrNull { it.name == argumentDefinition.name }?.value,
+				value = node.argument(argumentDefinition.name)?.value,
 				type = argumentType,
 				context = Context(
 					argumentDefinition = argumentDefinition,
@@ -93,7 +93,7 @@ internal object GenericNodeInputCoercer {
 		when (val coercer = type.nodeInputCoercer) {
 			null ->
 				when (value) {
-					is GEnumValue -> type.values.firstOrNull { it.name == value.name }?.name?.let { GResult.success(it) }
+					is GEnumValue -> type.value(value.name)?.name?.let { GResult.success(it) }
 					else -> null
 				} ?: context.invalidValueResult(
 					value = value,
@@ -145,7 +145,7 @@ internal object GenericNodeInputCoercer {
 				coerceValue(element, type = type.elementType, context = context)
 			}.flatten()
 
-			else -> coerceValue(value, type = type.elementType, context = context).mapValue(::listOf)
+			else -> coerceValue(value, type = type.elementType, context = context).mapValue { listOf(it) }
 		}
 
 

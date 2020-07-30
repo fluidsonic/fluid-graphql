@@ -1,15 +1,15 @@
 package io.fluidsonic.graphql
 
 
-class GError(
-	val message: String,
-	val path: GPath? = null,
-	val nodes: List<GNode> = emptyList(),
-	val origins: List<GDocumentPosition> = emptyList(),
-	val extensions: Map<String, Any?> = emptyMap()
+public class GError(
+	public val message: String,
+	public val path: GPath? = null,
+	public val nodes: List<GNode> = emptyList(),
+	public val origins: List<GDocumentPosition> = emptyList(),
+	public val extensions: Map<String, Any?> = emptyMap()
 ) {
 
-	fun describe(): String = buildString {
+	public fun describe(): String = buildString {
 		append(message)
 
 		for (node in nodes) {
@@ -26,7 +26,7 @@ class GError(
 	}
 
 
-	fun throwException(): Nothing {
+	public fun throwException(): Nothing {
 		throw GErrorException(this)
 	}
 
@@ -35,7 +35,7 @@ class GError(
 		"GraphQL Error: ${describe()}"
 
 
-	companion object {
+	public companion object {
 
 		internal fun syntax(details: String, origin: GDocumentPosition) =
 			GError(message = "Syntax Error: $details", origins = listOf(origin))

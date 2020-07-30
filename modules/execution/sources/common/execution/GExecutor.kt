@@ -1,14 +1,14 @@
 package io.fluidsonic.graphql
 
 
-interface GExecutor {
+public interface GExecutor {
 
-	val defaultFieldResolver: GFieldResolver<Any>?
-	val schema: GSchema
-	val rootResolver: GRootResolver
+	public val defaultFieldResolver: GFieldResolver<Any>?
+	public val schema: GSchema
+	public val rootResolver: GRootResolver
 
 
-	suspend fun execute(
+	public suspend fun execute(
 		documentSource: String,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap()
@@ -20,7 +20,7 @@ interface GExecutor {
 		)
 
 
-	suspend fun execute(
+	public suspend fun execute(
 		documentSource: GDocumentSource.Parsable,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap()
@@ -34,19 +34,19 @@ interface GExecutor {
 		}
 
 
-	suspend fun execute(
+	public suspend fun execute(
 		document: GDocument,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap()
 	): GResult<Any?>
 
 
-	fun serializeResult(result: GResult<Any?>): Map<String, Any?>
+	public fun serializeResult(result: GResult<Any?>): Map<String, Any?>
 
 
-	companion object {
+	public companion object {
 
-		fun default(
+		public fun default(
 			schema: GSchema,
 			defaultFieldResolver: GFieldResolver<Any>? = null,
 			rootResolver: GRootResolver = GRootResolver.unit()

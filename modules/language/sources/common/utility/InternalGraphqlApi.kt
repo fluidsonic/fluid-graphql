@@ -9,4 +9,4 @@ package io.fluidsonic.graphql
 )
 @Retention(value = AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
-annotation class InternalGraphqlApi
+public annotation class InternalGraphqlApi

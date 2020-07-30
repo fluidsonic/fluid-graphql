@@ -63,5 +63,5 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 
 
 @InternalGraphqlApi
-fun GNode.walk(): NodeWalker =
+public fun GNode.walk(): NodeWalker =
 	DefaultNodeWalker(root = this)

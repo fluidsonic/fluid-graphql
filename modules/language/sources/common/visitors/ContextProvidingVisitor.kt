@@ -18,10 +18,10 @@ private class ContextProvidingVisitor<out Result, in Context : VisitorContext>(
 
 
 @InternalGraphqlApi
-fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(): Visitor<Result, Context> =
+public fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(): Visitor<Result, Context> =
 	ContextProvidingVisitor(next = this)
 
 
 @InternalGraphqlApi
-fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(context: Context): Visitor<Result, Any?> =
+public fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(context: Context): Visitor<Result, Any?> =
 	Visitor.ofResult(context).then(ContextProvidingVisitor(next = this))

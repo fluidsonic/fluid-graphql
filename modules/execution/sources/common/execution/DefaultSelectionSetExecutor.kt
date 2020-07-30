@@ -135,7 +135,7 @@ internal object DefaultSelectionSetExecutor {
 		fieldSelectionPath: GPath,
 		context: DefaultExecutorContext
 	): GResult<Map<String, Any?>?> =
-		directives.firstOrNull { it.name == definition.name }
+		directive(definition.name)
 			?.let { directive ->
 				context.nodeInputCoercer.coerceArguments(
 					node = directive,

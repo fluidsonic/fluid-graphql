@@ -4,12 +4,6 @@ import io.fluidsonic.graphql.GSchemaBuilder.*
 import kotlin.jvm.*
 
 
-@SchemaBuilderKeywordB
-@Suppress("unused")
-fun GGraphDsl.schema(configure: GSchemaBuilder.() -> Unit) =
-	DefaultSchemaBuilder().apply(configure).build()
-
-
 internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private val definitions = mutableListOf<GTypeSystemDefinition>()

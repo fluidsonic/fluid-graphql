@@ -2,17 +2,17 @@ package io.fluidsonic.graphql
 
 
 @InternalGraphqlApi
-interface Visit {
+public interface Visit {
 
-	val hasVisitedChildren: Boolean
-	val isAborting: Boolean
-	val isSkippingChildren: Boolean
+	public val hasVisitedChildren: Boolean
+	public val isAborting: Boolean
+	public val isSkippingChildren: Boolean
 
-	fun abort()
-	fun skipChildren()
-	fun visitChildren()
+	public fun abort()
+	public fun skipChildren()
+	public fun visitChildren()
 
 
 	@Suppress("FunctionName")
-	fun __unsafeVisitChildren(data: Any?) // FIXME How to make this generic with type projection issues in the Visitor?
+	public fun __unsafeVisitChildren(data: Any?) // FIXME How to make this generic with type projection issues in the Visitor?
 }

@@ -1,14 +1,14 @@
 package io.fluidsonic.graphql
 
 
-class GErrorException(val errors: List<GError>) : RuntimeException() {
+public class GErrorException(public val errors: List<GError>) : RuntimeException() {
 
 	init {
 		require(errors.isNotEmpty()) { "'errors' must contain at least one error." }
 	}
 
 
-	constructor(error: GError) :
+	public constructor(error: GError) :
 		this(listOf(error))
 
 

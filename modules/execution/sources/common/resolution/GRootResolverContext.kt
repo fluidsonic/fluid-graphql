@@ -1,4 +1,4 @@
 package io.fluidsonic.graphql
 
 
-interface GRootResolverContext : GExecutorContext
+public interface GRootResolverContext : GExecutorContext

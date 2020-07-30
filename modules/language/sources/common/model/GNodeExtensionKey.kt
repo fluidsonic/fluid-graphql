@@ -1,7 +1,7 @@
 package io.fluidsonic.graphql
 
 
-interface GNodeExtensionKey<Value : Any> {
+public interface GNodeExtensionKey<Value : Any> {
 
-	companion object
+	public companion object
 }

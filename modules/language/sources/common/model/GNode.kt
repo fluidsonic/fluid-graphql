@@ -1,12 +1,12 @@
 package io.fluidsonic.graphql
 
 
-sealed class GNode(
-	val extensions: GNodeExtensionSet<GNode>,
-	val origin: GDocumentPosition?
+public sealed class GNode(
+	public val extensions: GNodeExtensionSet<GNode>,
+	public val origin: GDocumentPosition?
 ) {
 
-	fun childAt(index: Int): GNode? {
+	public fun childAt(index: Int): GNode? {
 		var childIndex = 0
 
 		forEachChild { child ->
@@ -20,7 +20,7 @@ sealed class GNode(
 	}
 
 
-	fun children(): List<GNode> {
+	public fun children(): List<GNode> {
 		var list: MutableList<GNode>? = null
 
 		forEachChild { child ->
@@ -32,7 +32,7 @@ sealed class GNode(
 	}
 
 
-	fun countChildren(): Int {
+	public fun countChildren(): Int {
 		var count = 0
 		forEachChild { count += 1 }
 
@@ -40,7 +40,7 @@ sealed class GNode(
 	}
 
 
-	abstract fun equalsNode(other: GNode, includingOrigin: Boolean = false): Boolean
+	public abstract fun equalsNode(other: GNode, includingOrigin: Boolean = false): Boolean
 
 
 	private inline fun forNode(node: GNode?, block: (node: GNode) -> Unit) {
@@ -286,11 +286,11 @@ sealed class GNode(
 	}
 
 
-	operator fun <Value : Any> get(extensionKey: GNodeExtensionKey<Value>): Value? =
+	public operator fun <Value : Any> get(extensionKey: GNodeExtensionKey<Value>): Value? =
 		extensions[extensionKey]
 
 
-	fun hasChildren(): Boolean {
+	public fun hasChildren(): Boolean {
 		forEachChild { return true }
 
 		return false
@@ -301,71 +301,79 @@ sealed class GNode(
 		print(this)
 
 
-	companion object {
+	public companion object {
 
-		fun print(node: GNode, indent: String = "\t"): String =
+		public fun print(node: GNode, indent: String = "\t"): String =
 			Printer.print(node = node, indent = indent)
 	}
 
 
-	interface WithArguments {
+	public interface WithArguments {
 
-		val arguments: List<GArgument>
+		public val arguments: List<GArgument>
 
-		fun argument(name: String) =
+		public fun argument(name: String): GArgument? =
 			arguments.firstOrNull { it.name == name }
 	}
 
 
-	interface WithArgumentDefinitions {
+	public interface WithArgumentDefinitions {
 
-		val argumentDefinitions: List<GArgumentDefinition>
+		public val argumentDefinitions: List<GArgumentDefinition>
 
 
-		fun argumentDefinition(name: String) =
+		public fun argumentDefinition(name: String): GArgumentDefinition? =
 			argumentDefinitions.firstOrNull { it.name == name }
 	}
 
 
-	interface WithDefaultValue : WithType {
+	public interface WithDefaultValue : WithType {
 
-		val defaultValue: GValue?
+		public val defaultValue: GValue?
+
+
+		public fun isOptional(): Boolean =
+			!isRequired()
+
+
+		public fun isRequired(): Boolean =
+			type is GNonNullTypeRef && defaultValue === null
 	}
 
 
-	interface WithDirectives {
+	public interface WithDirectives {
 
-		val directives: List<GDirective>
+		public val directives: List<GDirective>
 
 
-		fun directive(name: String) =
+		public fun directive(name: String): GDirective? =
 			directives.firstOrNull { it.name == name }
 
 
-		fun directives(name: String) =
+		public fun directives(name: String): List<GDirective> =
 			directives.filter { it.name == name }
 	}
 
 
-	interface WithFieldDefinitions {
+	public interface WithFieldDefinitions {
 
-		val fieldDefinitions: List<GFieldDefinition>
+		public val fieldDefinitions: List<GFieldDefinition>
 
 
-		fun field(name: String) =
+		public fun field(name: String): GFieldDefinition? =
 			fieldDefinitions.firstOrNull { it.name == name }
 	}
 
 
-	interface WithInterfaces {
+	public interface WithInterfaces {
 
-		val interfaces: List<GNamedTypeRef>
+		public val interfaces: List<GNamedTypeRef>
 	}
 
 
-	interface WithName : WithOptionalName {
+	public interface WithName : WithOptionalName {
 
-		override val name
+		override val name: String
 			get() = nameNode.value
 
 
@@ -373,69 +381,69 @@ sealed class GNode(
 	}
 
 
-	interface WithOperationTypeDefinitions {
+	public interface WithOperationTypeDefinitions {
 
-		val operationTypeDefinitions: List<GOperationTypeDefinition>
+		public val operationTypeDefinitions: List<GOperationTypeDefinition>
 
 
-		fun operationTypeDefinition(operationType: GOperationType) =
+		public fun operationTypeDefinition(operationType: GOperationType): GOperationTypeDefinition? =
 			operationTypeDefinitions.firstOrNull { it.operationType == operationType }
 	}
 
 
-	interface WithOptionalDeprecation : WithDirectives, WithName {
+	public interface WithOptionalDeprecation : WithDirectives, WithName {
 
-		val deprecation
+		public val deprecation: GDirective?
 			get() = directive(GLanguage.defaultDeprecatedDirective.name)
 
 
-		val deprecationReason
+		public val deprecationReason: String?
 			get() = (deprecation?.argument("reason")?.value as? GStringValue)?.value
 	}
 
 
-	interface WithOptionalDescription {
+	public interface WithOptionalDescription {
 
-		val description
+		public val description: String?
 			get() = descriptionNode?.value
 
 
-		val descriptionNode: GStringValue?
+		public val descriptionNode: GStringValue?
 	}
 
 
-	interface WithOptionalName {
+	public interface WithOptionalName {
 
-		val name
+		public val name: String?
 			get() = nameNode?.value
 
 
-		val nameNode: GName?
+		public val nameNode: GName?
 	}
 
 
-	interface WithType {
+	public interface WithType {
 
-		val type: GTypeRef
+		public val type: GTypeRef
 	}
 
 
-	interface WithVariableDefinitions {
+	public interface WithVariableDefinitions {
 
-		val variableDefinitions: List<GVariableDefinition>
+		public val variableDefinitions: List<GVariableDefinition>
 
 
-		fun variableDefinition(name: String) =
+		public fun variableDefinition(name: String): GVariableDefinition? =
 			variableDefinitions.firstOrNull { it.name == name }
 	}
 }
 
 
-fun GNode?.equalsNode(other: GNode?, includingOrigin: Boolean = false) =
+public fun GNode?.equalsNode(other: GNode?, includingOrigin: Boolean = false): Boolean =
 	this === other || (this !== null && other !== null && equalsNode(other, includingOrigin = includingOrigin))
 
 
-fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean): Boolean {
+public fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean): Boolean {
 	if (this === other)
 		return true
 
@@ -451,7 +459,7 @@ fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean): Bool
 }
 
 
-sealed class GAbstractType(
+public sealed class GAbstractType(
 	description: GStringValue?,
 	directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GAbstractType>,
@@ -467,13 +475,13 @@ sealed class GAbstractType(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
-class GArgument(
+public class GArgument(
 	name: GName,
-	val value: GValue,
+	public val value: GValue,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GArgument> = GNodeExtensionSet.empty()
 ) :
@@ -483,10 +491,10 @@ class GArgument(
 	),
 	GNode.WithName {
 
-	override val nameNode = name
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		value: GValue,
 		extensions: GNodeExtensionSet<GArgument> = GNodeExtensionSet.empty()
@@ -497,7 +505,7 @@ class GArgument(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GArgument &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
@@ -506,11 +514,11 @@ class GArgument(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GArgumentDefinition(
+public sealed class GArgumentDefinition(
 	override val defaultValue: GValue?,
 	description: GStringValue?,
 	override val directives: List<GDirective>,
@@ -528,11 +536,11 @@ sealed class GArgumentDefinition(
 	GNode.WithName,
 	GNode.WithOptionalDescription {
 
-	override val descriptionNode = description
-	override val nameNode = name
+	override val descriptionNode: GStringValue? = description
+	override val nameNode: GName = name
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GArgumentDefinition &&
 				defaultValue.equalsNode(other.defaultValue, includingOrigin = includingOrigin) &&
@@ -544,24 +552,16 @@ sealed class GArgumentDefinition(
 			)
 
 
-	fun isOptional() =
-		!isRequired()
-
-
-	fun isRequired() =
-		type is GNonNullTypeRef && defaultValue === null
-
-
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
-object GBooleanType : GScalarType(name = "Boolean")
+public object GBooleanType : GScalarType(name = "Boolean")
 
 
-class GBooleanValue(
-	val value: Boolean,
+public class GBooleanValue(
+	public val value: Boolean,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GBooleanValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -569,14 +569,14 @@ class GBooleanValue(
 	origin = origin
 ) {
 
-	override val kind get() = Kind.BOOLEAN
+	override val kind: Kind get() = Kind.BOOLEAN
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GBooleanValue && value == other.value)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GBooleanValue &&
 				value == other.value &&
@@ -584,23 +584,23 @@ class GBooleanValue(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		value.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): Boolean =
 		value
 
 
-	companion object
+	public companion object
 }
 
 
-fun GBooleanValue(value: Boolean): GBooleanValue =
+public fun GBooleanValue(value: Boolean): GBooleanValue =
 	GBooleanValue(value = value, origin = null)
 
 
-sealed class GCompositeType(
+public sealed class GCompositeType(
 	description: GStringValue?,
 	directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GCompositeType>,
@@ -616,12 +616,12 @@ sealed class GCompositeType(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
-class GCustomScalarType(
+public class GCustomScalarType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
@@ -635,7 +635,7 @@ class GCustomScalarType(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
@@ -648,11 +648,11 @@ class GCustomScalarType(
 	)
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GDefinition(
+public sealed class GDefinition(
 	extensions: GNodeExtensionSet<GDefinition>,
 	origin: GDocumentPosition?
 ) : GNode(
@@ -660,11 +660,11 @@ sealed class GDefinition(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
-class GDirective(
+public class GDirective(
 	name: GName,
 	override val arguments: List<GArgument> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -677,10 +677,10 @@ class GDirective(
 	GNode.WithArguments,
 	GNode.WithName {
 
-	override val nameNode = name
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		arguments: List<GArgument> = emptyList(),
 		extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty()
@@ -691,7 +691,7 @@ class GDirective(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GDirective &&
 				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
@@ -700,11 +700,11 @@ class GDirective(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GDirectiveArgumentDefinition(
+public class GDirectiveArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
 	defaultValue: GValue? = null,
@@ -722,7 +722,7 @@ class GDirectiveArgumentDefinition(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		type: GTypeRef,
 		defaultValue: GValue? = null,
@@ -738,14 +738,14 @@ class GDirectiveArgumentDefinition(
 		extensions = extensions
 	)
 
-	companion object
+	public companion object
 }
 
 
-class GDirectiveDefinition(
+public class GDirectiveDefinition(
 	name: GName,
 	locations: List<GName>,
-	val isRepeatable: Boolean = false,
+	public val isRepeatable: Boolean = false,
 	override val argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
 	description: GStringValue? = null,
 	origin: GDocumentPosition? = null,
@@ -759,16 +759,16 @@ class GDirectiveDefinition(
 	GNode.WithName,
 	GNode.WithOptionalDescription {
 
-	val locations: Set<GDirectiveLocation> = locations.mapNotNullTo(mutableSetOf()) { node ->
+	public val locations: Set<GDirectiveLocation> = locations.mapNotNullTo(mutableSetOf()) { node ->
 		GDirectiveLocation.values().firstOrNull { it.name == node.value }
 	}
-	val locationNodes = locations
+	public val locationNodes: List<GName> = locations
 
-	override val descriptionNode = description
-	override val nameNode = name
+	override val descriptionNode: GStringValue? = description
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		locations: Set<GDirectiveLocation>,
 		isRepeatable: Boolean = false,
@@ -785,11 +785,11 @@ class GDirectiveDefinition(
 	)
 
 
-	override fun argumentDefinition(name: String) =
+	override fun argumentDefinition(name: String): GDirectiveArgumentDefinition? =
 		argumentDefinitions.firstOrNull { it.name == name }
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GDirectiveDefinition &&
 				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
@@ -801,12 +801,12 @@ class GDirectiveDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GDocument(
-	val definitions: List<GDefinition>,
+public class GDocument(
+	public val definitions: List<GDefinition>,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GDocument> = GNodeExtensionSet.empty()
 ) : GNode(
@@ -814,7 +814,7 @@ class GDocument(
 	origin = origin
 ) {
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GDocument &&
 				definitions.equalsNode(other.definitions, includingOrigin = includingOrigin) &&
@@ -822,7 +822,7 @@ class GDocument(
 			)
 
 
-	fun fragment(name: String): GFragmentDefinition? {
+	public fun fragment(name: String): GFragmentDefinition? {
 		for (definition in definitions)
 			if (definition is GFragmentDefinition && definition.name == name)
 				return definition
@@ -831,7 +831,7 @@ class GDocument(
 	}
 
 
-	fun operation(name: String?): GOperationDefinition? {
+	public fun operation(name: String?): GOperationDefinition? {
 		for (definition in definitions)
 			if (definition is GOperationDefinition && definition.name == name)
 				return definition
@@ -840,13 +840,13 @@ class GDocument(
 	}
 
 
-	companion object {
+	public companion object {
 
-		fun parse(source: GDocumentSource.Parsable): GResult<GDocument> =
+		public fun parse(source: GDocumentSource.Parsable): GResult<GDocument> =
 			Parser.parseDocument(source)
 
 
-		fun parse(content: String, name: String = "<document>"): GResult<GDocument> =
+		public fun parse(content: String, name: String = "<document>"): GResult<GDocument> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 }
@@ -854,9 +854,9 @@ class GDocument(
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Enums
 // https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
-class GEnumType(
+public class GEnumType(
 	name: GName,
-	val values: List<GEnumValueDefinition>,
+	public val values: List<GEnumValueDefinition>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -870,7 +870,7 @@ class GEnumType(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		values: List<GEnumValueDefinition>,
 		description: String? = null,
@@ -885,7 +885,7 @@ class GEnumType(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GEnumType &&
 				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
@@ -896,22 +896,22 @@ class GEnumType(
 			)
 
 
-	override fun isSupertypeOf(other: GType) =
+	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
 			(other is GNonNullType && other.nullableType === this)
 
 
-	fun value(name: String) =
+	public fun value(name: String): GEnumValueDefinition? =
 		values.firstOrNull { it.name == name }
 
 
-	companion object
+	public companion object
 }
 
 
-class GEnumTypeExtension(
+public class GEnumTypeExtension(
 	name: GName,
-	val values: List<GEnumValueDefinition>,
+	public val values: List<GEnumValueDefinition>,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GEnumTypeExtension> = GNodeExtensionSet.empty()
@@ -922,7 +922,7 @@ class GEnumTypeExtension(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		values: List<GEnumValueDefinition>,
 		directives: List<GDirective> = emptyList(),
@@ -935,7 +935,7 @@ class GEnumTypeExtension(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GEnumTypeExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -945,16 +945,16 @@ class GEnumTypeExtension(
 			)
 
 
-	fun value(name: String) =
+	public fun value(name: String): GEnumValueDefinition? =
 		values.firstOrNull { it.name == name }
 
 
-	companion object
+	public companion object
 }
 
 
-class GEnumValue(
-	val name: String,
+public class GEnumValue(
+	public val name: String,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GEnumValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -962,14 +962,14 @@ class GEnumValue(
 	origin = origin
 ) {
 
-	override val kind get() = Kind.ENUM
+	override val kind: Kind get() = Kind.ENUM
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GEnumValue && name == other.name)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GEnumValue &&
 				name == other.name &&
@@ -977,23 +977,23 @@ class GEnumValue(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		name.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): String =
 		name
 
 
-	companion object
+	public companion object
 }
 
 
-fun GEnumValue(name: String): GEnumValue =
+public fun GEnumValue(name: String): GEnumValue =
 	GEnumValue(name = name, origin = null)
 
 
-class GEnumValueDefinition(
+public class GEnumValueDefinition(
 	name: GName,
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
@@ -1007,11 +1007,11 @@ class GEnumValueDefinition(
 	GNode.WithOptionalDeprecation,
 	GNode.WithOptionalDescription {
 
-	override val descriptionNode = description
-	override val nameNode = name
+	override val descriptionNode: GStringValue? = description
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
@@ -1024,7 +1024,7 @@ class GEnumValueDefinition(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GEnumValueDefinition &&
 				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
@@ -1034,11 +1034,11 @@ class GEnumValueDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GExecutableDefinition(
+public sealed class GExecutableDefinition(
 	extensions: GNodeExtensionSet<GExecutableDefinition>,
 	origin: GDocumentPosition?
 ) : GDefinition(
@@ -1046,11 +1046,11 @@ sealed class GExecutableDefinition(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
-class GFieldArgumentDefinition(
+public class GFieldArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
 	defaultValue: GValue? = null,
@@ -1068,7 +1068,7 @@ class GFieldArgumentDefinition(
 	extensions = extensions
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		type: GTypeRef,
 		defaultValue: GValue? = null,
@@ -1084,13 +1084,13 @@ class GFieldArgumentDefinition(
 		extensions = extensions
 	)
 
-	companion object
+	public companion object
 }
 
 
-class GFieldDefinition(
+public class GFieldDefinition(
 	name: GName,
-	val type: GTypeRef,
+	public val type: GTypeRef,
 	override val argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
@@ -1105,11 +1105,11 @@ class GFieldDefinition(
 	GNode.WithOptionalDescription,
 	GNode.WithOptionalDeprecation {
 
-	override val descriptionNode = description
-	override val nameNode = name
+	override val descriptionNode: GStringValue? = description
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		type: GTypeRef,
 		argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
@@ -1126,11 +1126,11 @@ class GFieldDefinition(
 	)
 
 
-	override fun argumentDefinition(name: String) =
+	override fun argumentDefinition(name: String): GFieldArgumentDefinition? =
 		argumentDefinitions.firstOrNull { it.name == name }
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GFieldDefinition &&
 				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
@@ -1142,13 +1142,13 @@ class GFieldDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GFieldSelection(
+public class GFieldSelection(
 	name: GName,
-	val selectionSet: GSelectionSet? = null,
+	public val selectionSet: GSelectionSet? = null,
 	override val arguments: List<GArgument> = emptyList(),
 	alias: GName? = null,
 	directives: List<GDirective> = emptyList(),
@@ -1162,13 +1162,13 @@ class GFieldSelection(
 	),
 	GNode.WithArguments {
 
-	val alias get() = aliasNode?.value
-	val aliasNode = alias
-	val name get() = nameNode.value
-	val nameNode = name
+	public val alias: String? get() = aliasNode?.value
+	public val aliasNode: GName? = alias
+	public val name: String get() = nameNode.value
+	public val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		selectionSet: GSelectionSet? = null,
 		arguments: List<GArgument> = emptyList(),
@@ -1185,7 +1185,7 @@ class GFieldSelection(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GFieldSelection &&
 				aliasNode.equalsNode(other.aliasNode, includingOrigin = includingOrigin) &&
@@ -1197,16 +1197,16 @@ class GFieldSelection(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
-object GFloatType : GScalarType(name = "Float")
+public object GFloatType : GScalarType(name = "Float")
 
 
-class GFloatValue(
-	val value: Double,
+public class GFloatValue(
+	public val value: Double,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GFloatValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -1219,14 +1219,14 @@ class GFloatValue(
 	}
 
 
-	override val kind get() = Kind.FLOAT
+	override val kind: Kind get() = Kind.FLOAT
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GFloatValue && value == other.value)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GFloatValue &&
 				value == other.value &&
@@ -1234,34 +1234,34 @@ class GFloatValue(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		value.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): Double =
 		value
 
 
-	companion object
+	public companion object
 }
 
 
-fun GFloatValue(value: Double): GFloatValue =
+public fun GFloatValue(value: Double): GFloatValue =
 	GFloatValue(value = value, origin = null)
 
 
-fun GFloatValue(value: Float): GFloatValue =
+public fun GFloatValue(value: Float): GFloatValue =
 	GFloatValue(value.toDouble())
 
 
-fun GFloatValue(value: Int): GFloatValue =
+public fun GFloatValue(value: Int): GFloatValue =
 	GFloatValue(value.toDouble())
 
 
-class GFragmentDefinition(
+public class GFragmentDefinition(
 	name: GName,
-	val typeCondition: GNamedTypeRef,
-	val selectionSet: GSelectionSet,
+	public val typeCondition: GNamedTypeRef,
+	public val selectionSet: GSelectionSet,
 	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -1275,10 +1275,10 @@ class GFragmentDefinition(
 	GNode.WithName,
 	GNode.WithVariableDefinitions {
 
-	override val nameNode = name
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		typeCondition: GNamedTypeRef,
 		selectionSet: GSelectionSet,
@@ -1295,7 +1295,7 @@ class GFragmentDefinition(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GFragmentDefinition &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -1307,11 +1307,11 @@ class GFragmentDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GFragmentSelection(
+public class GFragmentSelection(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -1323,11 +1323,11 @@ class GFragmentSelection(
 		origin = origin
 	) {
 
-	val name get() = nameNode.value
-	val nameNode = name
+	public val name: String get() = nameNode.value
+	public val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		directives: List<GDirective> = emptyList(),
 		extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty()
@@ -1338,7 +1338,7 @@ class GFragmentSelection(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GFragmentSelection &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -1347,17 +1347,17 @@ class GFragmentSelection(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
-object GIdType : GScalarType(name = "ID")
+public object GIdType : GScalarType(name = "ID")
 
 
-class GInlineFragmentSelection(
-	val selectionSet: GSelectionSet,
-	val typeCondition: GNamedTypeRef?,
+public class GInlineFragmentSelection(
+	public val selectionSet: GSelectionSet,
+	public val typeCondition: GNamedTypeRef?,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GInlineFragmentSelection> = GNodeExtensionSet.empty()
@@ -1367,7 +1367,7 @@ class GInlineFragmentSelection(
 	origin = origin
 ) {
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GInlineFragmentSelection &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -1377,11 +1377,11 @@ class GInlineFragmentSelection(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GInputObjectArgumentDefinition(
+public class GInputObjectArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
 	defaultValue: GValue? = null,
@@ -1399,7 +1399,7 @@ class GInputObjectArgumentDefinition(
 	extensions = extensions
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		type: GTypeRef,
 		defaultValue: GValue? = null,
@@ -1415,13 +1415,13 @@ class GInputObjectArgumentDefinition(
 		extensions = extensions
 	)
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
-class GInputObjectType(
+public class GInputObjectType(
 	name: GName,
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition>,
 	description: GStringValue? = null,
@@ -1439,7 +1439,7 @@ class GInputObjectType(
 	),
 	GNode.WithArgumentDefinitions {
 
-	constructor(
+	public constructor(
 		name: String,
 		argumentDefinitions: List<GInputObjectArgumentDefinition>,
 		description: String? = null,
@@ -1454,11 +1454,11 @@ class GInputObjectType(
 	)
 
 
-	override fun argumentDefinition(name: String) =
+	override fun argumentDefinition(name: String): GInputObjectArgumentDefinition? =
 		argumentDefinitions.firstOrNull { it.name == name }
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GInputObjectType &&
 				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
@@ -1469,16 +1469,16 @@ class GInputObjectType(
 			)
 
 
-	override fun isSupertypeOf(other: GType) =
+	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
 			(other is GNonNullType && other.nullableType === this)
 
 
-	companion object
+	public companion object
 }
 
 
-class GInputObjectTypeExtension(
+public class GInputObjectTypeExtension(
 	name: GName,
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
 	directives: List<GDirective> = emptyList(),
@@ -1493,7 +1493,7 @@ class GInputObjectTypeExtension(
 	),
 	GNode.WithArgumentDefinitions {
 
-	constructor(
+	public constructor(
 		name: String,
 		argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
 		directives: List<GDirective> = emptyList(),
@@ -1506,7 +1506,7 @@ class GInputObjectTypeExtension(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GInputObjectTypeExtension &&
 				argumentDefinitions.equalsNode(other.argumentDefinitions, includingOrigin = includingOrigin) &&
@@ -1516,16 +1516,16 @@ class GInputObjectTypeExtension(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
-object GIntType : GScalarType(name = "Int")
+public object GIntType : GScalarType(name = "Int")
 
 
-class GIntValue(
-	val value: Int,
+public class GIntValue(
+	public val value: Int,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GIntValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -1533,14 +1533,14 @@ class GIntValue(
 	origin = origin
 ) {
 
-	override val kind get() = Kind.INT
+	override val kind: Kind get() = Kind.INT
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GIntValue && value == other.value)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GIntValue &&
 				value == other.value &&
@@ -1548,25 +1548,25 @@ class GIntValue(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		value.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): Int =
 		value
 
 
-	companion object
+	public companion object
 }
 
 
-fun GIntValue(value: Int): GIntValue =
+public fun GIntValue(value: Int): GIntValue =
 	GIntValue(value = value, origin = null)
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interfaces
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interface
-class GInterfaceType(
+public class GInterfaceType(
 	name: GName,
 	override val fieldDefinitions: List<GFieldDefinition>,
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
@@ -1586,7 +1586,7 @@ class GInterfaceType(
 	GNode.WithFieldDefinitions,
 	GNode.WithInterfaces {
 
-	constructor(
+	public constructor(
 		name: String,
 		fields: List<GFieldDefinition>,
 		interfaces: List<GNamedTypeRef> = emptyList(),
@@ -1603,7 +1603,7 @@ class GInterfaceType(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GInterfaceType &&
 				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
@@ -1621,11 +1621,11 @@ class GInterfaceType(
 			(other is GNonNullType && isSupertypeOf(other.nullableType))
 
 
-	companion object
+	public companion object
 }
 
 
-class GInterfaceTypeExtension(
+public class GInterfaceTypeExtension(
 	name: GName,
 	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
@@ -1643,7 +1643,7 @@ class GInterfaceTypeExtension(
 	GNode.WithInterfaces {
 
 
-	constructor(
+	public constructor(
 		name: String,
 		fields: List<GFieldDefinition> = emptyList(),
 		interfaces: List<GNamedTypeRef> = emptyList(),
@@ -1658,7 +1658,7 @@ class GInterfaceTypeExtension(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GInterfaceTypeExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -1669,11 +1669,11 @@ class GInterfaceTypeExtension(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GLeafType(
+public sealed class GLeafType(
 	name: GName,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
@@ -1689,13 +1689,13 @@ sealed class GLeafType(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
-class GListType(
+public class GListType(
 	elementType: GType,
 	extensions: GNodeExtensionSet<GListType> = GNodeExtensionSet.empty()
 ) : GWrappingType(
@@ -1704,12 +1704,12 @@ class GListType(
 	wrappedType = elementType
 ) {
 
-	val elementType get() = wrappedType
+	public val elementType: GType get() = wrappedType
 
-	override val name get() = "[${elementType.name}]"
+	override val name: String get() = "[${elementType.name}]"
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GListType &&
 				elementType.equalsNode(other.elementType, includingOrigin = includingOrigin)
@@ -1722,16 +1722,16 @@ class GListType(
 			(other is GNonNullType && isSupertypeOf(other.nullableType))
 
 
-	override fun toRef() =
+	override fun toRef(): GListTypeRef =
 		GListTypeRef(elementType.toRef())
 
 
-	companion object
+	public companion object
 }
 
 
-class GListTypeRef(
-	val elementType: GTypeRef,
+public class GListTypeRef(
+	public val elementType: GTypeRef,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty()
 ) : GTypeRef(
@@ -1739,18 +1739,18 @@ class GListTypeRef(
 	origin = origin
 ) {
 
-	override val underlyingName get() = elementType.underlyingName
+	override val underlyingName: String get() = elementType.underlyingName
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GListTypeRef && elementType == other.elementType)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		elementType.hashCode()
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GListTypeRef &&
 				elementType.equalsNode(other.elementType, includingOrigin = includingOrigin) &&
@@ -1758,19 +1758,19 @@ class GListTypeRef(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-fun GListTypeRef(
+public fun GListTypeRef(
 	name: String,
 	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty()
 ): GListTypeRef =
 	GListTypeRef(GTypeRef(name), extensions = extensions)
 
 
-class GListValue(
-	val elements: List<GValue>,
+public class GListValue(
+	public val elements: List<GValue>,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GListValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -1778,14 +1778,14 @@ class GListValue(
 	origin = origin
 ) {
 
-	override val kind get() = Kind.LIST
+	override val kind: Kind get() = Kind.LIST
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GListValue && elements == other.elements)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GListValue &&
 				elements.equalsNode(other.elements, includingOrigin = includingOrigin) &&
@@ -1793,24 +1793,24 @@ class GListValue(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		elements.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): List<Any?> =
 		elements.map { it.unwrap() }
 
 
-	companion object
+	public companion object
 }
 
 
-fun GListValue(elements: List<GValue>): GListValue =
+public fun GListValue(elements: List<GValue>): GListValue =
 	GListValue(elements = elements, origin = null)
 
 
-class GName(
-	val value: String,
+public class GName(
+	public val value: String,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GName> = GNodeExtensionSet.empty()
 ) : GNode(
@@ -1818,11 +1818,11 @@ class GName(
 	origin = origin
 ) {
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GName && value == other.value)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GName &&
 				value == other.value &&
@@ -1830,19 +1830,19 @@ class GName(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		value.hashCode()
 
 
-	companion object
+	public companion object
 }
 
 
-fun GName(value: String): GName =
+public fun GName(value: String): GName =
 	GName(value = value, origin = null)
 
 
-sealed class GNamedType(
+public sealed class GNamedType(
 	description: GStringValue?,
 	override val directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GNamedType>,
@@ -1859,20 +1859,20 @@ sealed class GNamedType(
 	GNode.WithName,
 	GNode.WithOptionalDescription {
 
-	final override val descriptionNode = description
-	final override val nameNode = name
-	final override val underlyingNamedType get() = this
+	final override val descriptionNode: GStringValue? = description
+	final override val nameNode: GName = name
+	final override val underlyingNamedType: GNamedType get() = this
 
 
-	override fun toRef() =
+	override fun toRef(): GNamedTypeRef =
 		GTypeRef(name)
 
 
-	companion object
+	public companion object
 }
 
 
-class GNamedTypeRef(
+public class GNamedTypeRef(
 	name: GName,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GNamedTypeRef> = GNodeExtensionSet.empty()
@@ -1881,21 +1881,21 @@ class GNamedTypeRef(
 	origin = origin
 ) {
 
-	val name get() = nameNode.value
-	val nameNode = name
+	public val name: String get() = nameNode.value
+	public val nameNode: GName = name
 
-	override val underlyingName get() = name
+	override val underlyingName: String get() = name
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GNamedTypeRef && name == other.name)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		name.hashCode()
 
 
-	constructor(
+	public constructor(
 		name: String,
 		extensions: GNodeExtensionSet<GNamedTypeRef> = GNodeExtensionSet.empty()
 	) : this(
@@ -1904,7 +1904,7 @@ class GNamedTypeRef(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GNamedTypeRef &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
@@ -1912,13 +1912,13 @@ class GNamedTypeRef(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Non-Null
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
-class GNonNullType(
+public class GNonNullType(
 	nullableType: GType,
 	extensions: GNodeExtensionSet<GNonNullType> = GNodeExtensionSet.empty()
 ) : GWrappingType(
@@ -1927,12 +1927,12 @@ class GNonNullType(
 	wrappedType = nullableType
 ) {
 
-	override val name get() = "${nullableType.name}!"
-	override val nonNullable get() = this
-	override val nullableType get() = wrappedType
+	override val name: String get() = "${nullableType.name}!"
+	override val nonNullable: GNonNullType get() = this
+	override val nullableType: GType get() = wrappedType
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GNonNullType &&
 				nullableType.equalsNode(other.nullableType, includingOrigin = includingOrigin) &&
@@ -1940,20 +1940,20 @@ class GNonNullType(
 			)
 
 
-	override fun isSupertypeOf(other: GType) =
+	override fun isSupertypeOf(other: GType): Boolean =
 		other === this ||
 			(other is GNonNullType && nullableType.isSupertypeOf(other.nullableType))
 
 
-	override fun toRef() =
+	override fun toRef(): GNonNullTypeRef =
 		GNonNullTypeRef(nullableType.toRef())
 
 
-	companion object
+	public companion object
 }
 
 
-class GNonNullTypeRef(
+public class GNonNullTypeRef(
 	override val nullableRef: GTypeRef,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty()
@@ -1967,19 +1967,19 @@ class GNonNullTypeRef(
 	}
 
 
-	override val nonNullableRef get() = this
-	override val underlyingName get() = nullableRef.underlyingName
+	override val nonNullableRef: GNonNullTypeRef get() = this
+	override val underlyingName: String get() = nullableRef.underlyingName
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GNonNullTypeRef && nullableRef == other.nullableRef)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		nullableRef.hashCode()
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GNonNullTypeRef &&
 				nullableRef.equalsNode(other.nullableRef, includingOrigin = includingOrigin) &&
@@ -1987,18 +1987,18 @@ class GNonNullTypeRef(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-fun GNonNullTypeRef(
+public fun GNonNullTypeRef(
 	name: String,
 	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty()
 ): GNonNullTypeRef =
 	GNonNullTypeRef(GTypeRef(name), extensions = extensions)
 
 
-class GNullValue(
+public class GNullValue(
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GNullValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -2006,21 +2006,21 @@ class GNullValue(
 	origin = origin
 ) {
 
-	override val kind get() = Kind.NULL
+	override val kind: Kind get() = Kind.NULL
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || other is GNullValue
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GNullValue &&
 				(!includingOrigin || origin == other.origin)
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		0
 
 
@@ -2028,16 +2028,16 @@ class GNullValue(
 		null
 
 
-	companion object {
+	public companion object {
 
-		val withoutOrigin = GNullValue()
+		public val withoutOrigin: GNullValue = GNullValue()
 	}
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Object
-class GObjectType(
+public class GObjectType(
 	name: GName,
 	override val fieldDefinitions: List<GFieldDefinition>,
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
@@ -2057,7 +2057,7 @@ class GObjectType(
 	GNode.WithFieldDefinitions,
 	GNode.WithInterfaces {
 
-	constructor(
+	public constructor(
 		name: String,
 		fields: List<GFieldDefinition>,
 		interfaces: List<GNamedTypeRef> = emptyList(),
@@ -2074,7 +2074,7 @@ class GObjectType(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GObjectType &&
 				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
@@ -2091,11 +2091,11 @@ class GObjectType(
 			(other is GNonNullType && isSupertypeOf(other.nullableType))
 
 
-	companion object
+	public companion object
 }
 
 
-class GObjectTypeExtension(
+public class GObjectTypeExtension(
 	name: GName,
 	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
@@ -2112,7 +2112,7 @@ class GObjectTypeExtension(
 	GNode.WithFieldDefinitions,
 	GNode.WithInterfaces {
 
-	constructor(
+	public constructor(
 		name: String,
 		fields: List<GFieldDefinition> = emptyList(),
 		interfaces: List<GNamedTypeRef> = emptyList(),
@@ -2127,7 +2127,7 @@ class GObjectTypeExtension(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GObjectTypeExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -2138,11 +2138,11 @@ class GObjectTypeExtension(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GObjectValue(
+public class GObjectValue(
 	override val arguments: List<GArgument>,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GObjectValue> = GNodeExtensionSet.empty()
@@ -2176,14 +2176,14 @@ class GObjectValue(
 		arguments.associate { it.name to it.value.unwrap() }
 
 
-	companion object
+	public companion object
 }
 
 
-class GOperationDefinition(
-	val type: GOperationType,
+public class GOperationDefinition(
+	public val type: GOperationType,
 	name: GName? = null,
-	val selectionSet: GSelectionSet,
+	public val selectionSet: GSelectionSet,
 	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -2197,10 +2197,10 @@ class GOperationDefinition(
 	GNode.WithOptionalName,
 	GNode.WithVariableDefinitions {
 
-	override val nameNode = name
+	override val nameNode: GName? = name
 
 
-	constructor(
+	public constructor(
 		type: GOperationType,
 		name: String? = null,
 		selectionSet: GSelectionSet,
@@ -2217,7 +2217,7 @@ class GOperationDefinition(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GOperationDefinition &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -2229,13 +2229,13 @@ class GOperationDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GOperationTypeDefinition(
-	val operationType: GOperationType,
-	val type: GNamedTypeRef,
+public class GOperationTypeDefinition(
+	public val operationType: GOperationType,
+	public val type: GNamedTypeRef,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GOperationTypeDefinition> = GNodeExtensionSet.empty()
 ) : GNode(
@@ -2243,7 +2243,7 @@ class GOperationTypeDefinition(
 	origin = origin
 ) {
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GOperationTypeDefinition &&
 				operationType == other.operationType &&
@@ -2252,13 +2252,13 @@ class GOperationTypeDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalars
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalar
-sealed class GScalarType(
+public sealed class GScalarType(
 	name: GName,
 	description: GStringValue?,
 	directives: List<GDirective>,
@@ -2287,7 +2287,7 @@ sealed class GScalarType(
 	)
 
 
-	final override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	final override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GScalarType &&
 				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
@@ -2302,11 +2302,11 @@ sealed class GScalarType(
 			(other is GNonNullType && isSupertypeOf(other.nullableType))
 
 
-	companion object
+	public companion object
 }
 
 
-class GScalarTypeExtension(
+public class GScalarTypeExtension(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -2318,7 +2318,7 @@ class GScalarTypeExtension(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		directives: List<GDirective> = emptyList(),
 		extensions: GNodeExtensionSet<GScalarTypeExtension> = GNodeExtensionSet.empty()
@@ -2329,7 +2329,7 @@ class GScalarTypeExtension(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GScalarTypeExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -2338,11 +2338,11 @@ class GScalarTypeExtension(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GSchemaDefinition(
+public class GSchemaDefinition(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition>,
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -2355,7 +2355,7 @@ class GSchemaDefinition(
 	GNode.WithDirectives,
 	GNode.WithOperationTypeDefinitions {
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GSchemaDefinition &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -2364,11 +2364,11 @@ class GSchemaDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GSchemaExtension(
+public class GSchemaExtension(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -2381,7 +2381,7 @@ class GSchemaExtension(
 	GNode.WithDirectives,
 	GNode.WithOperationTypeDefinitions {
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GSchemaExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -2390,11 +2390,11 @@ class GSchemaExtension(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GSelection(
+public sealed class GSelection(
 	override val directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GSelection>,
 	origin: GDocumentPosition?
@@ -2405,12 +2405,12 @@ sealed class GSelection(
 	),
 	GNode.WithDirectives {
 
-	companion object
+	public companion object
 }
 
 
-class GSelectionSet(
-	val selections: List<GSelection>,
+public class GSelectionSet(
+	public val selections: List<GSelection>,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GSelectionSet> = GNodeExtensionSet.empty()
 ) : GNode(
@@ -2418,7 +2418,7 @@ class GSelectionSet(
 	origin = origin
 ) {
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GSelectionSet &&
 				selections.equalsNode(other.selections, includingOrigin = includingOrigin) &&
@@ -2426,17 +2426,17 @@ class GSelectionSet(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
-object GStringType : GScalarType(name = "String")
+public object GStringType : GScalarType(name = "String")
 
 
-class GStringValue(
-	val value: String,
-	val isBlock: Boolean = false,
+public class GStringValue(
+	public val value: String,
+	public val isBlock: Boolean = false,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GStringValue> = GNodeExtensionSet.empty()
 ) : GValue(
@@ -2444,14 +2444,14 @@ class GStringValue(
 	origin = origin
 ) {
 
-	override val kind get() = Kind.STRING
+	override val kind: Kind get() = Kind.STRING
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GStringValue && value == other.value)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GStringValue &&
 				value == other.value &&
@@ -2460,46 +2460,46 @@ class GStringValue(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		value.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): String =
 		value
 
 
-	companion object
+	public companion object
 }
 
 
-fun GStringValue(value: String): GStringValue =
+public fun GStringValue(value: String): GStringValue =
 	GStringValue(value = value, isBlock = false)
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__Type-Type
-sealed class GType(
+public sealed class GType(
 	extensions: GNodeExtensionSet<GType>,
-	val kind: Kind,
+	public val kind: Kind,
 	origin: GDocumentPosition?
 ) : GTypeSystemDefinition(
 	extensions = extensions,
 	origin = origin
 ) {
 
-	abstract val name: String
-	abstract val underlyingNamedType: GNamedType
+	public abstract val name: String
+	public abstract val underlyingNamedType: GNamedType
 
-	open val nonNullable get() = GNonNullType(this)
-	open val nullableType get() = this
+	public open val nonNullable: GNonNullType get() = GNonNullType(this)
+	public open val nullableType: GType get() = this
 
 
-	abstract fun toRef(): GTypeRef
+	public abstract fun toRef(): GTypeRef
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#IsInputType()
-	fun isInputType(): Boolean =
+	public fun isInputType(): Boolean =
 		when (this) {
 			is GWrappingType -> wrappedType.isInputType()
 			is GScalarType, is GEnumType, is GInputObjectType -> true
@@ -2508,7 +2508,7 @@ sealed class GType(
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#IsOutputType()
-	fun isOutputType(): Boolean =
+	public fun isOutputType(): Boolean =
 		when (this) {
 			is GWrappingType -> wrappedType.isOutputType()
 			is GScalarType, is GObjectType, is GInterfaceType, is GUnionType, is GEnumType -> true
@@ -2516,16 +2516,16 @@ sealed class GType(
 		}
 
 
-	fun isSubtypeOf(other: GType) =
+	public fun isSubtypeOf(other: GType): Boolean =
 		other.isSupertypeOf(this)
 
 
-	abstract fun isSupertypeOf(other: GType): Boolean
+	public abstract fun isSupertypeOf(other: GType): Boolean
 
 
-	companion object {
+	public companion object {
 
-		val defaultTypes = setOf<GNamedType>(
+		public val defaultTypes: Set<GNamedType> = setOf<GNamedType>(
 			GBooleanType,
 			GFloatType,
 			GIdType,
@@ -2537,7 +2537,7 @@ sealed class GType(
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds
-	enum class Kind {
+	public enum class Kind {
 
 		ENUM,
 		INPUT_OBJECT,
@@ -2549,7 +2549,7 @@ sealed class GType(
 		UNION;
 
 
-		override fun toString() =
+		override fun toString(): String =
 			when (this) {
 				ENUM -> "enum"
 				INPUT_OBJECT -> "input object"
@@ -2562,12 +2562,12 @@ sealed class GType(
 			}
 
 
-		companion object
+		public companion object
 	}
 }
 
 
-sealed class GTypeExtension(
+public sealed class GTypeExtension(
 	override val directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GTypeExtension>,
 	name: GName,
@@ -2580,14 +2580,14 @@ sealed class GTypeExtension(
 	GNode.WithDirectives,
 	GNode.WithName {
 
-	override val nameNode = name
+	override val nameNode: GName = name
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GTypeRef(
+public sealed class GTypeRef(
 	extensions: GNodeExtensionSet<GTypeRef>,
 	origin: GDocumentPosition?
 ) : GNode(
@@ -2595,55 +2595,55 @@ sealed class GTypeRef(
 	origin = origin
 ) {
 
-	abstract val underlyingName: String
+	public abstract val underlyingName: String
 
-	open val nonNullableRef get() = GNonNullTypeRef(this)
-	open val nullableRef get() = this
+	public open val nonNullableRef: GNonNullTypeRef get() = GNonNullTypeRef(this)
+	public open val nullableRef: GTypeRef get() = this
 
 
 	abstract override fun equals(other: Any?): Boolean
 	abstract override fun hashCode(): Int
 
 
-	companion object {
+	public companion object {
 
-		fun parse(source: GDocumentSource.Parsable): GResult<GTypeRef> =
+		public fun parse(source: GDocumentSource.Parsable): GResult<GTypeRef> =
 			Parser.parseTypeReference(source)
 
 
-		fun parse(content: String, name: String = "<type reference>"): GResult<GTypeRef> =
+		public fun parse(content: String, name: String = "<type reference>"): GResult<GTypeRef> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 }
 
 
-fun GTypeRef(name: String): GNamedTypeRef =
+public fun GTypeRef(name: String): GNamedTypeRef =
 	GNamedTypeRef(name)
 
 
-fun GTypeRef(type: GListType): GListTypeRef =
+public fun GTypeRef(type: GListType): GListTypeRef =
 	GListTypeRef(GTypeRef(type.elementType))
 
 
-fun GTypeRef(type: GNonNullType): GNonNullTypeRef =
+public fun GTypeRef(type: GNonNullType): GNonNullTypeRef =
 	GNonNullTypeRef(GTypeRef(type.wrappedType))
 
 
-fun GTypeRef(type: GType): GTypeRef = when (type) {
+public fun GTypeRef(type: GType): GTypeRef = when (type) {
 	is GListType -> GTypeRef(type.elementType)
 	is GNonNullType -> GTypeRef(type.wrappedType)
 	is GNamedType -> GTypeRef(type.name)
 }
 
 
-val GBooleanTypeRef: GNamedTypeRef = GTypeRef("Boolean")
-val GFloatTypeRef: GNamedTypeRef = GTypeRef("Float")
-val GIdTypeRef: GNamedTypeRef = GTypeRef("ID")
-val GIntTypeRef: GNamedTypeRef = GTypeRef("Int")
-val GStringTypeRef: GNamedTypeRef = GTypeRef("String")
+public val GBooleanTypeRef: GNamedTypeRef = GTypeRef("Boolean")
+public val GFloatTypeRef: GNamedTypeRef = GTypeRef("Float")
+public val GIdTypeRef: GNamedTypeRef = GTypeRef("ID")
+public val GIntTypeRef: GNamedTypeRef = GTypeRef("Int")
+public val GStringTypeRef: GNamedTypeRef = GTypeRef("String")
 
 
-sealed class GTypeSystemDefinition(
+public sealed class GTypeSystemDefinition(
 	extensions: GNodeExtensionSet<GTypeSystemDefinition>,
 	origin: GDocumentPosition?
 ) : GDefinition(
@@ -2651,11 +2651,11 @@ sealed class GTypeSystemDefinition(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
-sealed class GTypeSystemExtension(
+public sealed class GTypeSystemExtension(
 	extensions: GNodeExtensionSet<GTypeSystemExtension>,
 	origin: GDocumentPosition?
 ) : GDefinition(
@@ -2663,15 +2663,15 @@ sealed class GTypeSystemExtension(
 	origin = origin
 ) {
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Unions
 // https://graphql.github.io/graphql-spec/June2018/#sec-Union
-class GUnionType(
+public class GUnionType(
 	name: GName,
-	val possibleTypes: List<GNamedTypeRef>,
+	public val possibleTypes: List<GNamedTypeRef>,
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
@@ -2685,7 +2685,7 @@ class GUnionType(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		possibleTypes: List<GNamedTypeRef>,
 		description: String? = null,
@@ -2700,7 +2700,7 @@ class GUnionType(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GUnionType &&
 				descriptionNode.equalsNode(other.descriptionNode, includingOrigin = includingOrigin) &&
@@ -2717,13 +2717,13 @@ class GUnionType(
 			(other is GNonNullType && isSupertypeOf(other.nullableType))
 
 
-	companion object
+	public companion object
 }
 
 
-class GUnionTypeExtension(
+public class GUnionTypeExtension(
 	name: GName,
-	val possibleTypes: List<GNamedTypeRef> = emptyList(),
+	public val possibleTypes: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GUnionTypeExtension> = GNodeExtensionSet.empty()
@@ -2734,7 +2734,7 @@ class GUnionTypeExtension(
 	origin = origin
 ) {
 
-	constructor(
+	public constructor(
 		name: String,
 		possibleTypes: List<GNamedTypeRef> = emptyList(),
 		directives: List<GDirective> = emptyList(),
@@ -2747,7 +2747,7 @@ class GUnionTypeExtension(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GUnionTypeExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -2757,11 +2757,11 @@ class GUnionTypeExtension(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-sealed class GValue(
+public sealed class GValue(
 	extensions: GNodeExtensionSet<GValue>,
 	origin: GDocumentPosition?
 ) : GNode(
@@ -2769,42 +2769,23 @@ sealed class GValue(
 	origin = origin
 ) {
 
-	abstract val kind: Kind
+	public abstract val kind: Kind
 
-	abstract fun unwrap(): Any? // FIXME not language module
-
-
-	companion object {
-
-		// FIXME improve & not language module
-//		fun of(value: Any?): GValue? =
-//			when (value) {
-//				null -> GNullValue.withoutOrigin
-//				is Boolean -> GBooleanValue(value)
-//				is Double -> GFloatValue(value)
-//				is Int -> GIntValue(value)
-//				is Map<*, *> -> GObjectValue(value.map { (fieldName, fieldValue) ->
-//					GArgument(
-//						name = fieldName as? String ?: return null,
-//						value = of(fieldValue) ?: return null
-//					)
-//				})
-//				is Collection<*> -> GListValue(value.map { of(it) ?: return null })
-//				is String -> GStringValue(value)
-//				else -> null
-//			}
+	public abstract fun unwrap(): Any? // FIXME not language module
 
 
-		fun parse(source: GDocumentSource.Parsable): GResult<GValue> =
+	public companion object {
+
+		public fun parse(source: GDocumentSource.Parsable): GResult<GValue> =
 			Parser.parseValue(source)
 
 
-		fun parse(content: String, name: String = "<value>"): GResult<GValue> =
+		public fun parse(content: String, name: String = "<value>"): GResult<GValue> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 
 
-	enum class Kind {
+	public enum class Kind {
 
 		BOOLEAN,
 		ENUM,
@@ -2817,7 +2798,7 @@ sealed class GValue(
 		VARIABLE;
 
 
-		override fun toString() = when (this) {
+		override fun toString(): String = when (this) {
 			BOOLEAN -> "boolean"
 			ENUM -> "enum"
 			FLOAT -> "float"
@@ -2830,12 +2811,12 @@ sealed class GValue(
 		}
 
 
-		companion object
+		public companion object
 	}
 }
 
 
-class GVariableDefinition(
+public class GVariableDefinition(
 	name: GName,
 	override val type: GTypeRef,
 	override val defaultValue: GValue? = null,
@@ -2851,10 +2832,10 @@ class GVariableDefinition(
 	GNode.WithDirectives,
 	GNode.WithName {
 
-	override val nameNode = name
+	override val nameNode: GName = name
 
 
-	constructor(
+	public constructor(
 		name: String,
 		type: GTypeRef,
 		defaultValue: GValue? = null,
@@ -2869,7 +2850,7 @@ class GVariableDefinition(
 	)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GVariableDefinition &&
 				defaultValue.equalsNode(other.defaultValue, includingOrigin = includingOrigin) &&
@@ -2880,11 +2861,11 @@ class GVariableDefinition(
 			)
 
 
-	companion object
+	public companion object
 }
 
 
-class GVariableRef(
+public class GVariableRef(
 	name: GName,
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty()
@@ -2893,13 +2874,13 @@ class GVariableRef(
 	origin = origin
 ) {
 
-	val name get() = nameNode.value
-	val nameNode = name
+	public val name: String get() = nameNode.value
+	public val nameNode: GName = name
 
-	override val kind get() = Kind.VARIABLE
+	override val kind: Kind get() = Kind.VARIABLE
 
 
-	constructor(
+	public constructor(
 		name: String,
 		extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty()
 	) : this(
@@ -2908,11 +2889,11 @@ class GVariableRef(
 	)
 
 
-	override fun equals(other: Any?) =
+	override fun equals(other: Any?): Boolean =
 		this === other || (other is GVariableRef && name == other.name)
 
 
-	override fun equalsNode(other: GNode, includingOrigin: Boolean) =
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
 		this === other || (
 			other is GVariableRef &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
@@ -2920,23 +2901,23 @@ class GVariableRef(
 			)
 
 
-	override fun hashCode() =
+	override fun hashCode(): Int =
 		name.hashCode()
 
 
-	override fun unwrap() =
+	override fun unwrap(): Nothing =
 		error("Cannot unwrap a GraphQL variable: $name")
 
 
-	companion object
+	public companion object
 }
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
-sealed class GWrappingType(
+public sealed class GWrappingType(
 	kind: Kind,
-	val wrappedType: GType,
+	public val wrappedType: GType,
 	extensions: GNodeExtensionSet<GWrappingType>
 ) : GType(
 	extensions = extensions,
@@ -2944,14 +2925,14 @@ sealed class GWrappingType(
 	origin = null
 ) {
 
-	final override val underlyingNamedType get() = wrappedType.underlyingNamedType
+	final override val underlyingNamedType: GNamedType get() = wrappedType.underlyingNamedType
 
 
-	override fun toString() =
+	override fun toString(): String =
 		"${print(wrappedType)} <wrapped as $name>"
 
 
-	companion object
+	public companion object
 }
 
 

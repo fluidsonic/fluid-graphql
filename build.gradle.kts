@@ -1,27 +1,29 @@
 import io.fluidsonic.gradle.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.0.14"
+	id("io.fluidsonic.gradle") version "1.1.2"
 }
 
-fluidLibrary(name = "graphql", version = "0.9.2")
-
-fluidLibraryVariant {
-	description = "FIXME"
-
-	common {
-		dependencies {
-			api(project(":fluid-graphql-client"))
-			api(project(":fluid-graphql-dsl"))
-			api(project(":fluid-graphql-execution"))
+fluidLibrary(name = "graphql", version = "0.9.2") {
+	allModules {
+		language {
+			withExperimentalApi("io.fluidsonic.graphql.InternalGraphqlApi")
 		}
 	}
-	js {
-		browser()
-		nodejs()
+}
+
+fluidLibraryModule(description = "FIXME") {
+	targets {
+		common {
+			dependencies {
+				api(project(":fluid-graphql-client"))
+				api(project(":fluid-graphql-dsl"))
+				api(project(":fluid-graphql-execution"))
+			}
+		}
+
+		js()
+		jvm()
+		nativeDarwin()
 	}
-	jvm(JvmTarget.jdk8)
-	objc(ObjcTarget.iosArm64)
-	objc(ObjcTarget.iosX64)
-	objc(ObjcTarget.macosX64)
 }

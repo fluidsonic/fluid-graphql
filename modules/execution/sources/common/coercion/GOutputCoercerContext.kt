@@ -1,11 +1,11 @@
 package io.fluidsonic.graphql
 
 
-interface GOutputCoercerContext : GExecutorContext {
+public interface GOutputCoercerContext : GExecutorContext {
 
-	val field: GFieldDefinition
-	val parentType: GObjectType
-	val type: GType
+	public val field: GFieldDefinition
+	public val parentType: GObjectType
+	public val type: GType
 
-	fun invalidValueError(details: String? = null): Nothing
+	public fun invalidValueError(details: String? = null): Nothing
 }

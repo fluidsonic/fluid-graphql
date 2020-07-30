@@ -1,11 +1,11 @@
 package io.fluidsonic.graphql
 
 
-interface GVariableInputCoercerContext : GExecutorContext {
+public interface GVariableInputCoercerContext : GExecutorContext {
 
-	val argumentDefinition: GArgumentDefinition?
-	val type: GNamedType
-	val variableDefinition: GVariableDefinition
+	public val argumentDefinition: GArgumentDefinition?
+	public val type: GNamedType
+	public val variableDefinition: GVariableDefinition
 
-	fun invalidValueError(details: String? = null): Nothing
+	public fun invalidValueError(details: String? = null): Nothing
 }

@@ -57,7 +57,7 @@ internal object GenericVariableInputCoercer {
 		when (val coercer = type.variableInputCoercer) {
 			null ->
 				when (value) {
-					is String -> type.values.firstOrNull { it.name == value }?.name?.let { GResult.success(it) }
+					is String -> type.value(value)?.name?.let { GResult.success(it) }
 					else -> null
 				} ?: context.invalidValueResult(
 					value = value,
@@ -109,7 +109,7 @@ internal object GenericVariableInputCoercer {
 				}
 				.flatten()
 
-			else -> coerceValue(value, type = type.elementType, context = context).mapValue(::listOf)
+			else -> coerceValue(value, type = type.elementType, context = context).mapValue { listOf(it) }
 		}
 
 

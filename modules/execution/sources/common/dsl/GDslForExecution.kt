@@ -5,14 +5,14 @@ import kotlin.reflect.*
 
 
 // FIXME Add DSL for setting input & output coercers.
-object GDslForExecution {
+public object GDslForExecution {
 
-	class FieldDefinitionBuilder<ParentKotlinType : Any> internal constructor(
+	public class FieldDefinitionBuilder<ParentKotlinType : Any> internal constructor(
 		delegate: GSchemaBuilder.FieldDefinitionBuilder
 	) : GSchemaBuilder.FieldDefinitionBuilder by delegate {
 
 		@SchemaBuilderKeywordB
-		fun <Result> resolve(
+		public fun <Result> resolve(
 			resolver: suspend GFieldResolverContext.(context: ParentKotlinType) -> Result
 		) {
 			require(extension(FieldDefinitionResolverExtensionKey) == null) { "Only one resolver can be provided." }
@@ -22,7 +22,7 @@ object GDslForExecution {
 	}
 
 
-	class ObjectTypeDefinitionBuilder<KotlinType : Any> internal constructor(
+	public class ObjectTypeDefinitionBuilder<KotlinType : Any> internal constructor(
 		private val delegate: GSchemaBuilder.ObjectTypeDefinitionBuilder
 	) : GSchemaBuilder.ObjectTypeDefinitionBuilder by delegate {
 
@@ -37,7 +37,7 @@ object GDslForExecution {
 
 		@JvmName("fieldWithType")
 		@SchemaBuilderKeywordB
-		fun field(
+		public fun field(
 			name: GSchemaBuilder.FieldDefinitionContainer.NameAndType,
 			configure: FieldDefinitionBuilder<KotlinType>.() -> Unit
 		) {
@@ -50,7 +50,7 @@ object GDslForExecution {
 
 
 @SchemaBuilderKeywordB
-fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
+public fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
 	resolver: suspend GFieldResolverContext.(context: Any) -> Result
 ) {
 	require(extension(FieldDefinitionResolverExtensionKey) == null) { "Only one resolver can be provided." }
@@ -60,7 +60,7 @@ fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
 
 
 @SchemaBuilderType
-fun <KotlinType : Any> GSchemaBuilder.Object(
+public fun <KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
 	kotlinType: KClass<KotlinType>,
 	configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
@@ -74,7 +74,7 @@ fun <KotlinType : Any> GSchemaBuilder.Object(
 
 
 @SchemaBuilderType
-fun <KotlinType : Any> GSchemaBuilder.Object(
+public fun <KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
 	kotlinType: KClass<KotlinType>,
 	configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
@@ -88,7 +88,7 @@ fun <KotlinType : Any> GSchemaBuilder.Object(
 
 
 @SchemaBuilderType
-inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
+public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
 	noinline configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
 ) {
@@ -97,7 +97,7 @@ inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 
 
 @SchemaBuilderType
-inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
+public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
 	noinline configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
 ) {

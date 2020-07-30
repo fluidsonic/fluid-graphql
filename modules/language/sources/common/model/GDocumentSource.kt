@@ -1,25 +1,25 @@
 package io.fluidsonic.graphql
 
 
-interface GDocumentSource {
+public interface GDocumentSource {
 
-	val content: String?
-	val name: String
+	public val content: String?
+	public val name: String
 
 
-	interface Parsable : GDocumentSource {
+	public interface Parsable : GDocumentSource {
 
 		override val content: String
 
 
-		fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int): GDocumentPosition? =
+		public fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int): GDocumentPosition? =
 			null
 	}
 
 
-	companion object {
+	public companion object {
 
-		fun of(content: String, name: String = "<unknown>"): Parsable =
+		public fun of(content: String, name: String = "<unknown>"): Parsable =
 			object : Parsable {
 
 				override val content = content

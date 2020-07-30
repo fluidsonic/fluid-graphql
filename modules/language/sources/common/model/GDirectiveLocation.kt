@@ -1,7 +1,7 @@
 package io.fluidsonic.graphql
 
 
-enum class GDirectiveLocation {
+public enum class GDirectiveLocation {
 
 	ARGUMENT_DEFINITION,
 	ENUM,
@@ -24,9 +24,9 @@ enum class GDirectiveLocation {
 	VARIABLE_DEFINITION;
 
 
-	companion object {
+	public companion object {
 
-		fun forNode(node: GNode): GDirectiveLocation? = when (node) {
+		public fun forNode(node: GNode): GDirectiveLocation? = when (node) {
 			is GInputObjectArgumentDefinition -> INPUT_FIELD_DEFINITION // Must be checked before superclass 'GArgumentDefinition'.
 
 			is GArgumentDefinition -> ARGUMENT_DEFINITION

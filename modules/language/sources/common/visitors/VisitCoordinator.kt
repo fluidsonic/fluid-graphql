@@ -2,10 +2,10 @@ package io.fluidsonic.graphql
 
 
 @InternalGraphqlApi
-interface VisitCoordinator<out Result, in Data> {
+public interface VisitCoordinator<out Result, in Data> {
 
-	fun visit(node: GNode, data: Data): Result
+	public fun visit(node: GNode, data: Data): Result
 
 
-	companion object
+	public companion object
 }
