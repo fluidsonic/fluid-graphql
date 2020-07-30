@@ -48,7 +48,7 @@ public sealed class GResult<out Value>(
 			}
 
 
-		public fun failure(errors: List<GError> = emptyList()): GResult<Nothing> =
+		public fun failure(errors: List<GError>): GResult<Nothing> =
 			Failure(errors)
 
 

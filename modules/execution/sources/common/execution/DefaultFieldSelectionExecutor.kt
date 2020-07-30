@@ -41,22 +41,22 @@ internal object DefaultFieldSelectionExecutor {
 							path = path,
 							context = context
 						).flatMapValue { childValue ->
-							context.outputCoercer.coerceObjectValue(
+							convertOutput(
 								value = childValue,
 								type = childType,
 								parentType = parentType,
-								field = fieldDefinition,
+								fieldDefinition = fieldDefinition,
 								context = context
 							)
 						}
 					}
 
 					is GLeafType ->
-						context.outputCoercer.coerceLeafValue(
+						convertOutput(
 							value = value,
 							type = type,
 							parentType = parentType,
-							field = fieldDefinition,
+							fieldDefinition = fieldDefinition,
 							context = context
 						)
 
@@ -98,6 +98,22 @@ internal object DefaultFieldSelectionExecutor {
 		}
 
 
+	private fun convertOutput(
+		value: Any,
+		type: GType,
+		parentType: GObjectType,
+		fieldDefinition: GFieldDefinition,
+		context: DefaultExecutorContext
+	): GResult<Any> =
+		context.outputConverter.convertOutput(
+			value = value,
+			type = type,
+			fieldDefinition = fieldDefinition,
+			parentType = parentType,
+			context = context
+		)
+
+
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
 	suspend fun execute(
 		selections: List<GFieldSelection>,
@@ -124,7 +140,7 @@ internal object DefaultFieldSelectionExecutor {
 
 		return complete(
 			selections = selections,
-			result = resolve(
+			result = resolveFieldValue(
 				parent = parent,
 				parentType = parentType,
 				fieldDefinition = fieldDefinition,
@@ -194,7 +210,7 @@ internal object DefaultFieldSelectionExecutor {
 
 		return complete(
 			selections = selections,
-			result = resolve(
+			result = resolveFieldValue(
 				parent = parent,
 				parentType = parentType,
 				fieldDefinition = fieldDefinition,
@@ -216,41 +232,6 @@ internal object DefaultFieldSelectionExecutor {
 		GSelectionSet(selections = fieldSelections.flatMap { it.selectionSet?.selections.orEmpty() })
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
-	private suspend fun resolve(
-		parent: Any,
-		parentType: GObjectType,
-		fieldDefinition: GFieldDefinition,
-		selections: List<GFieldSelection>,
-		path: GPath,
-		context: DefaultExecutorContext
-	): GResult<Any?> =
-		context.nodeInputCoercer.coerceArguments(
-			node = selections.first(),
-			definitions = fieldDefinition.argumentDefinitions,
-			fieldSelectionPath = path,
-			context = context
-		).flatMapValue { argumentValues ->
-			// FIXME how to improve type safety? can we use .kotlinType if available?
-			val resolver = fieldDefinition.resolver as GFieldResolver<Any>?
-				?: context.defaultFieldResolver
-				?: error("No resolver registered for field '${parentType.name}.${fieldDefinition.name}' and no default resolver was specified.")
-
-			GResult.catchErrors {
-				resolver.resolveField(
-					parent = parent,
-					context = DefaultFieldResolverContext(
-						arguments = argumentValues,
-						parentType = parentType,
-						field = fieldDefinition,
-						executorContext = context
-					)
-				)
-			}
-			// FIXME add support for custom exception handler and don't handle by default
-		}
-
-
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveAbstractType()
 	private fun resolveAbstractType(
 		abstractType: GAbstractType,
@@ -261,4 +242,39 @@ internal object DefaultFieldSelectionExecutor {
 		context.schema.getPossibleTypes(abstractType)
 			.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false } // FIXME
 			?: error("Cannot resolve abstract type '${abstractType.name}' for Kotlin type '${objectValue::class.qualifiedOrSimpleName}': $objectValue")
+
+
+	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
+	private suspend fun resolveFieldValue(
+		parent: Any,
+		parentType: GObjectType,
+		fieldDefinition: GFieldDefinition,
+		selections: List<GFieldSelection>,
+		path: GPath,
+		context: DefaultExecutorContext
+	): GResult<Any?> =
+		context.nodeInputConverter.convertArguments(
+			node = selections.first(),
+			definitions = fieldDefinition.argumentDefinitions,
+			fieldSelectionPath = path,
+			context = context
+		).flatMapValue { argumentValues ->
+			val resolverContext = DefaultFieldResolverContext(
+				arguments = argumentValues,
+				execution = context,
+				fieldDefinition = fieldDefinition,
+				parent = parent,
+				parentType = parentType
+			)
+
+			GResult.catchErrors {
+				when (val resolver = context.fieldResolver) {
+					null -> resolverContext.next()
+					else -> with(resolver) {
+						resolverContext.resolveField(parent = parent)
+					}
+				}
+			}
+			// FIXME add support for custom exception handler and don't handle by default
+		}
 }

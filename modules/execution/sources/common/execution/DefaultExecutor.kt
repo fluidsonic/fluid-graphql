@@ -1,25 +1,38 @@
 package io.fluidsonic.graphql
 
 
+// FIXME exception handling
 internal class DefaultExecutor(
-	override val defaultFieldResolver: GFieldResolver<Any>?,
-	override val schema: GSchema,
-	override val rootResolver: GRootResolver
+	private val exceptionHandler: GExceptionHandler?,
+	private val fieldResolver: GFieldResolver<Any>?,
+	private val nodeInputCoercer: GNodeInputCoercer<Any?>?,
+	private val outputCoercer: GOutputCoercer<Any>?,
+	private val schema: GSchema,
+	private val rootResolver: GRootResolver,
+	private val variableInputCoercer: GVariableInputCoercer<Any?>?
 ) : GExecutor {
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
 	override suspend fun execute(
 		document: GDocument,
 		operationName: String?,
-		variableValues: Map<String, Any?>
+		variableValues: Map<String, Any?>,
+		extensions: GExecutorContextExtensionSet
 	): GResult<Any?> =
 		getOperation(document = document, name = operationName)
-			.flatMapValue { operation -> makeContext(document = document, operation = operation, variableValues = variableValues) }
+			.flatMapValue { operation ->
+				makeContext(
+					document = document,
+					operation = operation,
+					variableValues = variableValues,
+					extensions = extensions
+				)
+			}
 			.flatMapValue { context ->
 				executeOperation(
-					order = when (context.operation.type) {
-						GOperationType.query -> Order.parallel
-						GOperationType.mutation -> Order.serial
+					strategy = when (context.operation.type) {
+						GOperationType.query -> Strategy.parallel
+						GOperationType.mutation -> Strategy.serial
 						GOperationType.subscription -> error("Subscription operations are not yet supported.")
 					},
 					context = context
@@ -29,7 +42,7 @@ internal class DefaultExecutor(
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	private suspend fun executeOperation(
-		order: Order, // FIXME use & parallelize
+		strategy: Strategy, // FIXME use
 		context: DefaultExecutorContext
 	): GResult<Any?> =
 		context.selectionSetExecutor.execute(
@@ -53,26 +66,32 @@ internal class DefaultExecutor(
 
 	private suspend fun makeContext(
 		document: GDocument,
+		extensions: GExecutorContextExtensionSet,
 		operation: GOperationDefinition,
 		variableValues: Map<String, Any?>
 	): GResult<DefaultExecutorContext> {
 		val context = DefaultExecutorContext(
-			defaultFieldResolver = defaultFieldResolver,
 			document = document,
+			exceptionHandler = exceptionHandler,
+			extensions = extensions,
+			fieldResolver = fieldResolver,
 			fieldSelectionExecutor = DefaultFieldSelectionExecutor,
-			nodeInputCoercer = GenericNodeInputCoercer,
+			nodeInputCoercer = nodeInputCoercer,
+			nodeInputConverter = NodeInputConverter,
 			operation = operation,
-			outputCoercer = GenericOutputCoercer,
+			outputCoercer = outputCoercer,
+			outputConverter = OutputConverter,
 			rootType = schema.rootTypeForOperationType(operation.type)
 				?: error("Schema is not configured for ${operation.type} operations."), // FIXME GError?
 			root = Unit,
 			schema = schema,
 			selectionSetExecutor = DefaultSelectionSetExecutor,
-			variableInputCoercer = GenericVariableInputCoercer,
+			variableInputCoercer = variableInputCoercer,
+			variableInputConverter = VariableInputConverter,
 			variableValues = emptyMap()
 		)
 
-		return context.variableInputCoercer.coerceValues(
+		return context.variableInputConverter.convertValues(
 			values = variableValues,
 			operation = operation,
 			context = context
@@ -89,12 +108,14 @@ internal class DefaultExecutor(
 
 
 	private suspend fun resolveRoot(context: DefaultExecutorContext): GResult<Any> =
-		GResult.catchErrors { rootResolver.resolveRoot(context) }
+		GResult.catchErrors {
+			with(rootResolver) { context.resolveRoot() }
+		}
 
 
 	@OptIn(ExperimentalStdlibApi::class)
 	private fun serializeError(error: GError): Map<String, Any?> =
-		buildMap<String, Any?> {
+		buildMap {
 			put("message", error.message)
 
 			error.origins
@@ -124,7 +145,7 @@ internal class DefaultExecutor(
 
 	@OptIn(ExperimentalStdlibApi::class)
 	override fun serializeResult(result: GResult<Any?>): Map<String, Any?> =
-		buildMap<String, Any?> {
+		buildMap {
 			put("data", result.valueOrNull())
 
 			if (result.errors.isNotEmpty())
@@ -132,7 +153,7 @@ internal class DefaultExecutor(
 		}
 
 
-	private enum class Order {
+	private enum class Strategy {
 
 		parallel,
 		serial

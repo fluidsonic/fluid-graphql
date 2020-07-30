@@ -68,29 +68,6 @@ public object GLanguage {
 	)
 
 
-	// FIXME move to raptor
-//	fun isRepresentable(clazz: KClass<*>): Boolean =
-//		when (clazz) {
-//			Any::class, Nothing::class -> false
-//			else -> clazz.typeParameters.isEmpty() // FIXME avoid kotlin-reflect
-//		}
-//
-//
-//	fun isRepresentable(type: KType): Boolean =
-//		when (val classifier = type.classifier) {
-//			Collection::class, List::class, Set::class -> isRepresentable(type.arguments.first())
-//			is KClass<*> -> isRepresentable(classifier)
-//			else -> false
-//		}
-//
-//
-//	fun isRepresentable(typeProjection: KTypeProjection): Boolean =
-//		when (val type = typeProjection.type) {
-//			null -> false
-//			else -> isRepresentable(type)
-//		}
-
-
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Enum-Value
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
 	public fun isValidEnumValue(name: String): Boolean =

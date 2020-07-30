@@ -23,7 +23,7 @@ public interface GNodeExtensionSet<out Node : GNode> {
 
 	public interface Builder<out Node : GNode> {
 
-		public fun build(): GNodeExtensionSet<Node>
+		public fun build(): GNodeExtensionSet<Node> // FIXME make private
 
 		public operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 

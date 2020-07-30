@@ -371,6 +371,6 @@ internal object Introspection {
 	)
 
 
-	private val GExecutorContext.introspectedSchema
-		get() = root as GSchema
+	private val GFieldResolverContext.introspectedSchema: GSchema
+		get() = execution.root as GSchema
 }

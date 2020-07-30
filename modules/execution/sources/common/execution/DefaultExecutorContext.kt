@@ -2,16 +2,25 @@ package io.fluidsonic.graphql
 
 
 internal data class DefaultExecutorContext(
-	override val defaultFieldResolver: GFieldResolver<Any>?,
 	override val document: GDocument,
+	val exceptionHandler: GExceptionHandler?,
+	override val extensions: GExecutorContextExtensionSet,
+	val fieldResolver: GFieldResolver<Any>?,
 	val fieldSelectionExecutor: DefaultFieldSelectionExecutor,
-	val nodeInputCoercer: GenericNodeInputCoercer,
+	val nodeInputCoercer: GNodeInputCoercer<Any?>?,
+	val nodeInputConverter: NodeInputConverter,
 	override val operation: GOperationDefinition,
-	val outputCoercer: GenericOutputCoercer,
+	val outputCoercer: GOutputCoercer<Any>?,
+	val outputConverter: OutputConverter,
 	override val root: Any,
 	override val rootType: GObjectType,
 	override val schema: GSchema,
 	val selectionSetExecutor: DefaultSelectionSetExecutor,
-	val variableInputCoercer: GenericVariableInputCoercer,
+	val variableInputCoercer: GVariableInputCoercer<Any?>?,
+	val variableInputConverter: VariableInputConverter,
 	override val variableValues: Map<String, Any?>
-) : GRootResolverContext
+) : GExecutorContext, GRootResolverContext {
+
+	override val execution: GExecutorContext
+		get() = this
+}

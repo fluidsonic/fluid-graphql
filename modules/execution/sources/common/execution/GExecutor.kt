@@ -1,17 +1,14 @@
 package io.fluidsonic.graphql
 
 
+// FIXME simplify API?
 public interface GExecutor {
-
-	public val defaultFieldResolver: GFieldResolver<Any>?
-	public val schema: GSchema
-	public val rootResolver: GRootResolver
-
 
 	public suspend fun execute(
 		documentSource: String,
 		operationName: String? = null,
-		variableValues: Map<String, Any?> = emptyMap()
+		variableValues: Map<String, Any?> = emptyMap(),
+		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty()
 	): GResult<Any?> =
 		execute(
 			documentSource = GDocumentSource.of(documentSource),
@@ -23,7 +20,8 @@ public interface GExecutor {
 	public suspend fun execute(
 		documentSource: GDocumentSource.Parsable,
 		operationName: String? = null,
-		variableValues: Map<String, Any?> = emptyMap()
+		variableValues: Map<String, Any?> = emptyMap(),
+		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty()
 	): GResult<Any?> =
 		GDocument.parse(documentSource).flatMapValue { document ->
 			execute(
@@ -37,7 +35,8 @@ public interface GExecutor {
 	public suspend fun execute(
 		document: GDocument,
 		operationName: String? = null,
-		variableValues: Map<String, Any?> = emptyMap()
+		variableValues: Map<String, Any?> = emptyMap(),
+		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty()
 	): GResult<Any?>
 
 
@@ -48,13 +47,21 @@ public interface GExecutor {
 
 		public fun default(
 			schema: GSchema,
-			defaultFieldResolver: GFieldResolver<Any>? = null,
+			exceptionHandler: GExceptionHandler? = null,
+			fieldResolver: GFieldResolver<Any>? = null,
+			nodeInputCoercer: GNodeInputCoercer<Any?>? = null,
+			outputCoercer: GOutputCoercer<Any>? = null,
+			variableInputCoercer: GVariableInputCoercer<Any?>? = null,
 			rootResolver: GRootResolver = GRootResolver.unit()
 		): GExecutor =
 			DefaultExecutor(
-				defaultFieldResolver = defaultFieldResolver,
+				exceptionHandler = exceptionHandler,
+				fieldResolver = fieldResolver,
+				nodeInputCoercer = nodeInputCoercer,
+				outputCoercer = outputCoercer,
 				schema = schema,
-				rootResolver = rootResolver
+				rootResolver = rootResolver,
+				variableInputCoercer = variableInputCoercer
 			)
 	}
 }

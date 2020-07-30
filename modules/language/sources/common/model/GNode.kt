@@ -2621,21 +2621,6 @@ public fun GTypeRef(name: String): GNamedTypeRef =
 	GNamedTypeRef(name)
 
 
-public fun GTypeRef(type: GListType): GListTypeRef =
-	GListTypeRef(GTypeRef(type.elementType))
-
-
-public fun GTypeRef(type: GNonNullType): GNonNullTypeRef =
-	GNonNullTypeRef(GTypeRef(type.wrappedType))
-
-
-public fun GTypeRef(type: GType): GTypeRef = when (type) {
-	is GListType -> GTypeRef(type.elementType)
-	is GNonNullType -> GTypeRef(type.wrappedType)
-	is GNamedType -> GTypeRef(type.name)
-}
-
-
 public val GBooleanTypeRef: GNamedTypeRef = GTypeRef("Boolean")
 public val GFloatTypeRef: GNamedTypeRef = GTypeRef("Float")
 public val GIdTypeRef: GNamedTypeRef = GTypeRef("ID")
