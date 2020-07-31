@@ -12,6 +12,7 @@ public interface GExecutor {
 	): GResult<Any?> =
 		execute(
 			documentSource = GDocumentSource.of(documentSource),
+			extensions = extensions,
 			operationName = operationName,
 			variableValues = variableValues
 		)
@@ -26,6 +27,7 @@ public interface GExecutor {
 		GDocument.parse(documentSource).flatMapValue { document ->
 			execute(
 				document = document,
+				extensions = extensions,
 				operationName = operationName,
 				variableValues = variableValues
 			)

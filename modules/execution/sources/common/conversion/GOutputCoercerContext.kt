@@ -16,7 +16,7 @@ public interface GOutputCoercerContext {
 	public val type: GType
 
 	@SchemaBuilderKeywordB // FIXME ok?
-	public fun invalidValueError(details: String? = null): Nothing
+	public fun invalid(details: String? = null): Nothing // FIXME do we need this on the output side?
 
 	@SchemaBuilderKeywordB // FIXME
 	public fun next(): Any?

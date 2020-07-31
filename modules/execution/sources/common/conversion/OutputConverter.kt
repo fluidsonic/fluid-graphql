@@ -26,7 +26,7 @@ internal object OutputConverter {
 		return when (type) {
 			GBooleanType -> when (value) {
 				is Boolean -> value
-				else -> context.invalidValueError()
+				else -> context.invalid()
 			}
 
 			GFloatType -> when (value) {
@@ -40,7 +40,7 @@ internal object OutputConverter {
 				is UInt -> value.toDouble()
 				is ULong -> value.toDouble()
 				is UShort -> value.toDouble()
-				else -> context.invalidValueError()
+				else -> context.invalid()
 			}
 
 			GIdType -> when (value) {
@@ -53,25 +53,25 @@ internal object OutputConverter {
 				is UInt -> value.toString()
 				is ULong -> value.toString()
 				is UShort -> value.toString()
-				else -> context.invalidValueError()
+				else -> context.invalid()
 			}
 
 			GIntType -> when (value) {
 				is Byte -> value.toInt()
 				is Int -> value
-				is Long -> value.toIntOrNull() ?: context.invalidValueError()
+				is Long -> value.toIntOrNull() ?: context.invalid()
 				is Short -> value.toInt()
 				is String -> value
 				is UByte -> value.toInt()
-				is UInt -> value.toIntOrNull() ?: context.invalidValueError()
-				is ULong -> value.toIntOrNull() ?: context.invalidValueError()
+				is UInt -> value.toIntOrNull() ?: context.invalid()
+				is ULong -> value.toIntOrNull() ?: context.invalid()
 				is UShort -> value.toInt()
-				else -> context.invalidValueError()
+				else -> context.invalid()
 			}
 
 			GStringType -> when (value) {
 				is String -> value
-				else -> context.invalidValueError()
+				else -> context.invalid()
 			}
 
 			else -> when (val coercer = type.outputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
@@ -124,7 +124,7 @@ internal object OutputConverter {
 		val value: Any
 	) : GOutputCoercerContext {
 
-		override fun invalidValueError(details: String?): Nothing =
+		override fun invalid(details: String?): Nothing =
 			error(buildString {
 				append("Output coercion encountered an invalid resolved value for field '")
 				append(fieldDefinition.name)

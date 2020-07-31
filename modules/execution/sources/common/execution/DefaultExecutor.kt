@@ -118,7 +118,7 @@ internal class DefaultExecutor(
 		buildMap {
 			put("message", error.message)
 
-			error.origins
+			(error.nodes.mapNotNull { it.origin } + error.origins)
 				.filter { it.line > 0 && it.column > 0 }
 				.map { mapOf("line" to it.line, "column" to it.column) }
 				.ifEmpty { null }

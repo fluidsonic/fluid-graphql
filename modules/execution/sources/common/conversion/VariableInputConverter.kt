@@ -269,7 +269,7 @@ internal object VariableInputConverter {
 		val value: Any?
 	) : GVariableInputCoercerContext {
 
-		override fun invalidValueError(details: String?) =
+		override fun invalid(details: String?) =
 			makeInvalidValueError(details = details).throwException()
 
 

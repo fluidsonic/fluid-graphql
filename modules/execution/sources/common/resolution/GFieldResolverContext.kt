@@ -17,9 +17,4 @@ public interface GFieldResolverContext {
 
 	@SchemaBuilderKeywordB // FIXME
 	public suspend fun next(): Any?
-
-
-	@SchemaBuilderKeywordB // FIXME
-	public suspend fun <Parent : Any> GFieldResolver<Parent>.resolveField(parent: Parent): Any? =
-		with(this@GFieldResolverContext) { resolveField(parent) }
 }

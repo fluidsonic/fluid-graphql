@@ -13,6 +13,13 @@ internal class DefaultFieldResolverContext(
 	override suspend fun next(): Any? =
 		when (val resolver = fieldDefinition.resolver as GFieldResolver<Any>?) {
 			null -> error("No resolver is set for field '${parentType.name}.${fieldDefinition.name}'.")
-			else -> resolver.resolveField(parent)
+			else -> resolver.resolveField(parent, context = Next())
 		}
+
+
+	inner class Next : GFieldResolverContext by this {
+
+		override suspend fun next(): Any? =
+			error("Resolver of field '${parentType.name}.${fieldDefinition.name}' cannot delegate resolution any further.")
+	}
 }
