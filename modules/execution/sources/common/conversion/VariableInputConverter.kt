@@ -36,9 +36,14 @@ internal object VariableInputConverter {
 	}
 
 
-	private fun coerceValueAbsence(defaultValue: GValue?, type: GType, context: Context): Any? =
-		defaultValue
-			.ifNull { context.invalid() }
+	private fun coerceValueAbsence(defaultValue: GValue?, type: GType, context: Context): Any? {
+		return defaultValue
+			.ifNull {
+				when (type) {
+					is GNonNullType -> context.invalid()
+					else -> return NoValue
+				}
+			}
 			.let { value ->
 				context.execution.nodeInputConverter.convertValue(
 					value = value,
@@ -47,6 +52,7 @@ internal object VariableInputConverter {
 					executorContext = context.execution
 				).valueOrThrow()
 			}
+	}
 
 
 	@Suppress("UNCHECKED_CAST")
@@ -82,6 +88,7 @@ internal object VariableInputConverter {
 					value = argumentValue
 				))
 			}
+			.filterValues { it != NoValue }
 			.let { argumentValues ->
 				when (val coercer = type.variableInputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
 					null -> argumentValues
@@ -211,6 +218,7 @@ internal object VariableInputConverter {
 							value = variableValue
 						))
 					}
+					.filterValues { it != NoValue }
 			}
 		}
 
@@ -225,7 +233,7 @@ internal object VariableInputConverter {
 	private fun validationError(
 		message: String,
 		variableDefinition: GVariableDefinition,
-		argumentDefinition: GArgumentDefinition?
+		argumentDefinition: GArgumentDefinition?,
 	): Nothing =
 		error(buildString {
 			append("There is an error in the document. It should be validated before use:\n")
@@ -259,7 +267,7 @@ internal object VariableInputConverter {
 		val path: GPath,
 		override val variableDefinition: GVariableDefinition,
 		override val type: GType,
-		val value: Any?
+		val value: Any?,
 	) : GVariableInputCoercerContext {
 
 		override fun invalid(details: String?) =
