@@ -79,7 +79,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	override fun Object(
 		type: GNamedTypeRef,
-		configure: ObjectTypeDefinitionBuilder.() -> Unit
+		configure: ObjectTypeDefinitionBuilder.() -> Unit,
 	) {
 		definitions += ObjectTypeDefinitionBuilderImpl(
 			interfaces = emptyList(),
@@ -90,7 +90,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	override fun Object(
 		named: Interfaces,
-		configure: ObjectTypeDefinitionBuilder.() -> Unit
+		configure: ObjectTypeDefinitionBuilder.() -> Unit,
 	) {
 		named as InterfacesImpl
 
@@ -223,7 +223,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class ArgumentBuilderImpl(
 		var name: String,
-		var value: GValue
+		var value: GValue,
 	) : ArgumentContainer.NameAndValue {
 
 		fun build() = GArgument(
@@ -237,7 +237,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		val name: String,
 		val type: GTypeRef,
 		val definitionType: ArgumentDefinitionType,
-		var defaultValue: GValue? = null
+		var defaultValue: GValue? = null,
 	) : ContainerImpl<GArgumentDefinition>(),
 		ArgumentDefinitionBuilder,
 		ArgumentDefinitionContainer.NameAndType,
@@ -387,7 +387,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	private class DirectiveBuilderImpl(
-		val name: String
+		val name: String,
 	) : ContainerImpl<GDirective>(),
 		DirectiveBuilder {
 
@@ -400,7 +400,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	private class DirectiveDefinitionBuilderImpl(
-		val name: String
+		val name: String,
 	) : ContainerImpl<GDirectiveDefinition>(),
 		DirectiveDefinitionBuilder {
 
@@ -486,7 +486,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	private class EnumTypeDefinitionBuilderImpl(
-		val name: String
+		val name: String,
 	) : ContainerImpl<GEnumType>(),
 		EnumTypeDefinitionBuilder {
 
@@ -508,7 +508,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 		private class ValueBuilderImpl(
-			val name: String
+			val name: String,
 		) : ContainerImpl<GEnumValueDefinition>(),
 			EnumTypeDefinitionBuilder.ValueBuilder {
 
@@ -524,7 +524,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class FieldDefinitionBuilderImpl(
 		var name: String,
-		var type: GTypeRef
+		var type: GTypeRef,
 	) : ContainerImpl<GFieldDefinition>(),
 		FieldDefinitionBuilder,
 		FieldDefinitionContainer.NameAndType {
@@ -546,7 +546,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	private class InputObjectTypeDefinitionBuilderImpl(
-		val name: String
+		val name: String,
 	) : ContainerImpl<GInputObjectType>(),
 		InputObjectTypeDefinitionBuilder {
 
@@ -567,7 +567,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class InterfaceTypeDefinitionBuilderImpl(
 		val name: String,
-		val interfaces: List<GNamedTypeRef>
+		val interfaces: List<GNamedTypeRef>,
 	) : ContainerImpl<GInterfaceType>(),
 		InterfaceTypeDefinitionBuilder {
 
@@ -577,7 +577,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		fun build() = GInterfaceType(
 			description = description,
 			directives = directives,
-			fields = fieldDefinitions,
+			fieldDefinitions = fieldDefinitions,
 			interfaces = interfaces,
 			name = name,
 			extensions = extensions
@@ -597,7 +597,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class InterfacesImpl(
 		val name: String,
-		interfaceType: GNamedTypeRef?
+		interfaceType: GNamedTypeRef?,
 	) : Interfaces {
 
 		val interfaces = interfaceType?.let { mutableListOf(it) } ?: mutableListOf()
@@ -611,7 +611,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class ObjectTypeDefinitionBuilderImpl(
 		val name: String,
-		val interfaces: List<GNamedTypeRef>
+		val interfaces: List<GNamedTypeRef>,
 	) : ContainerImpl<GObjectType>(),
 		ObjectTypeDefinitionBuilder {
 
@@ -621,7 +621,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		fun build() = GObjectType(
 			description = description,
 			directives = directives,
-			fields = fieldDefinitions,
+			fieldDefinitions = fieldDefinitions,
 			interfaces = interfaces,
 			name = name,
 			extensions = extensions
@@ -640,7 +640,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	private class ScalarTypeDefinitionBuilderImpl(
-		val name: String
+		val name: String,
 	) : ContainerImpl<GCustomScalarType>(),
 		ScalarTypeDefinitionBuilder {
 
@@ -655,7 +655,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 	private class UnionTypeDefinitionBuilderImpl(
 		val name: String,
-		possibleType: GNamedTypeRef
+		possibleType: GNamedTypeRef,
 	) : ContainerImpl<GUnionType>(),
 		PossibleTypes,
 		UnionTypeDefinitionBuilder {
@@ -679,7 +679,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	private class ValueImpl(
-		val value: GValue
+		val value: GValue,
 	) : Value {
 
 		override fun toGValue() =

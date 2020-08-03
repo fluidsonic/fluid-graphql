@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 public sealed class GNode(
 	public val extensions: GNodeExtensionSet<GNode>,
-	public val origin: GDocumentPosition?
+	public val origin: GDocumentPosition?,
 ) {
 
 	public fun childAt(index: Int): GNode? {
@@ -465,7 +465,7 @@ public sealed class GAbstractType(
 	extensions: GNodeExtensionSet<GAbstractType>,
 	kind: Kind,
 	name: GName,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GCompositeType(
 	description = description,
 	directives = directives,
@@ -483,7 +483,7 @@ public class GArgument(
 	name: GName,
 	public val value: GValue,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GArgument> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GArgument> = GNodeExtensionSet.empty(),
 ) :
 	GNode(
 		extensions = extensions,
@@ -497,7 +497,7 @@ public class GArgument(
 	public constructor(
 		name: String,
 		value: GValue,
-		extensions: GNodeExtensionSet<GArgument> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GArgument> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		value = value,
@@ -525,7 +525,7 @@ public sealed class GArgumentDefinition(
 	extensions: GNodeExtensionSet<GArgumentDefinition>,
 	name: GName,
 	origin: GDocumentPosition?,
-	override val type: GTypeRef
+	override val type: GTypeRef,
 ) :
 	GNode(
 		extensions = extensions,
@@ -563,7 +563,7 @@ public object GBooleanType : GScalarType(name = "Boolean")
 public class GBooleanValue(
 	public val value: Boolean,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GBooleanValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GBooleanValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -606,7 +606,7 @@ public sealed class GCompositeType(
 	extensions: GNodeExtensionSet<GCompositeType>,
 	kind: Kind,
 	name: GName,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GNamedType(
 	description = description,
 	directives = directives,
@@ -626,7 +626,7 @@ public class GCustomScalarType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GCustomScalarType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GCustomScalarType> = GNodeExtensionSet.empty(),
 ) : GScalarType(
 	description = description,
 	directives = directives,
@@ -639,7 +639,7 @@ public class GCustomScalarType(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GCustomScalarType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GCustomScalarType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		description = description?.let(::GStringValue),
@@ -654,7 +654,7 @@ public class GCustomScalarType(
 
 public sealed class GDefinition(
 	extensions: GNodeExtensionSet<GDefinition>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -668,7 +668,7 @@ public class GDirective(
 	name: GName,
 	override val arguments: List<GArgument> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty(),
 ) :
 	GNode(
 		extensions = extensions,
@@ -683,7 +683,7 @@ public class GDirective(
 	public constructor(
 		name: String,
 		arguments: List<GArgument> = emptyList(),
-		extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		arguments = arguments,
@@ -711,7 +711,7 @@ public class GDirectiveArgumentDefinition(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GDirectiveArgumentDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GDirectiveArgumentDefinition> = GNodeExtensionSet.empty(),
 ) : GArgumentDefinition(
 	defaultValue = defaultValue,
 	description = description,
@@ -728,7 +728,7 @@ public class GDirectiveArgumentDefinition(
 		defaultValue: GValue? = null,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GDirectiveArgumentDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GDirectiveArgumentDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		type = type,
@@ -749,7 +749,7 @@ public class GDirectiveDefinition(
 	override val argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
 	description: GStringValue? = null,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GDirectiveDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GDirectiveDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GTypeSystemDefinition(
 		extensions = extensions,
@@ -774,7 +774,7 @@ public class GDirectiveDefinition(
 		isRepeatable: Boolean = false,
 		argumentDefinitions: List<GDirectiveArgumentDefinition> = emptyList(),
 		description: String? = null,
-		extensions: GNodeExtensionSet<GDirectiveDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GDirectiveDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		locations = locations.map { GName(it.name) },
@@ -808,7 +808,7 @@ public class GDirectiveDefinition(
 public class GDocument(
 	public val definitions: List<GDefinition>,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GDocument> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GDocument> = GNodeExtensionSet.empty(),
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -860,7 +860,7 @@ public class GEnumType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GEnumType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GEnumType> = GNodeExtensionSet.empty(),
 ) : GLeafType(
 	description = description,
 	directives = directives,
@@ -875,7 +875,7 @@ public class GEnumType(
 		values: List<GEnumValueDefinition>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GEnumType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GEnumType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		values = values,
@@ -914,7 +914,7 @@ public class GEnumTypeExtension(
 	public val values: List<GEnumValueDefinition>,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GEnumTypeExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GEnumTypeExtension> = GNodeExtensionSet.empty(),
 ) : GTypeExtension(
 	directives = directives,
 	extensions = extensions,
@@ -926,7 +926,7 @@ public class GEnumTypeExtension(
 		name: String,
 		values: List<GEnumValueDefinition>,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GEnumTypeExtension> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GEnumTypeExtension> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		values = values,
@@ -956,7 +956,7 @@ public class GEnumTypeExtension(
 public class GEnumValue(
 	public val name: String,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GEnumValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GEnumValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -998,7 +998,7 @@ public class GEnumValueDefinition(
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GEnumValueDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GEnumValueDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GNode(
 		extensions = extensions,
@@ -1015,7 +1015,7 @@ public class GEnumValueDefinition(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GEnumValueDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GEnumValueDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		description = description?.let(::GStringValue),
@@ -1040,7 +1040,7 @@ public class GEnumValueDefinition(
 
 public sealed class GExecutableDefinition(
 	extensions: GNodeExtensionSet<GExecutableDefinition>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GDefinition(
 	extensions = extensions,
 	origin = origin
@@ -1057,7 +1057,7 @@ public class GFieldArgumentDefinition(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFieldArgumentDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GFieldArgumentDefinition> = GNodeExtensionSet.empty(),
 ) : GArgumentDefinition(
 	name = name,
 	type = type,
@@ -1074,7 +1074,7 @@ public class GFieldArgumentDefinition(
 		defaultValue: GValue? = null,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFieldArgumentDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GFieldArgumentDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		type = type,
@@ -1095,7 +1095,7 @@ public class GFieldDefinition(
 	description: GStringValue? = null,
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFieldDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GFieldDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GNode(
 		extensions = extensions,
@@ -1115,7 +1115,7 @@ public class GFieldDefinition(
 		argumentDefinitions: List<GFieldArgumentDefinition> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFieldDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GFieldDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		type = type,
@@ -1153,7 +1153,7 @@ public class GFieldSelection(
 	alias: GName? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty(),
 ) :
 	GSelection(
 		directives = directives,
@@ -1174,7 +1174,7 @@ public class GFieldSelection(
 		arguments: List<GArgument> = emptyList(),
 		alias: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		selectionSet = selectionSet,
@@ -1208,7 +1208,7 @@ public object GFloatType : GScalarType(name = "Float")
 public class GFloatValue(
 	public val value: Double,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFloatValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GFloatValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -1265,7 +1265,7 @@ public class GFragmentDefinition(
 	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GExecutableDefinition(
 		extensions = extensions,
@@ -1284,7 +1284,7 @@ public class GFragmentDefinition(
 		selectionSet: GSelectionSet,
 		variableDefinitions: List<GVariableDefinition> = emptyList(),
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		typeCondition = typeCondition,
@@ -1315,7 +1315,7 @@ public class GFragmentSelection(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty(),
 ) :
 	GSelection(
 		directives = directives,
@@ -1330,7 +1330,7 @@ public class GFragmentSelection(
 	public constructor(
 		name: String,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		directives = directives,
@@ -1360,7 +1360,7 @@ public class GInlineFragmentSelection(
 	public val typeCondition: GNamedTypeRef?,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GInlineFragmentSelection> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GInlineFragmentSelection> = GNodeExtensionSet.empty(),
 ) : GSelection(
 	directives = directives,
 	extensions = extensions,
@@ -1388,7 +1388,7 @@ public class GInputObjectArgumentDefinition(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GInputObjectArgumentDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GInputObjectArgumentDefinition> = GNodeExtensionSet.empty(),
 ) : GArgumentDefinition(
 	name = name,
 	type = type,
@@ -1405,7 +1405,7 @@ public class GInputObjectArgumentDefinition(
 		defaultValue: GValue? = null,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GInputObjectArgumentDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GInputObjectArgumentDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		type = type,
@@ -1427,7 +1427,7 @@ public class GInputObjectType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GInputObjectType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GInputObjectType> = GNodeExtensionSet.empty(),
 ) :
 	GCompositeType(
 		description = description,
@@ -1444,7 +1444,7 @@ public class GInputObjectType(
 		argumentDefinitions: List<GInputObjectArgumentDefinition>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GInputObjectType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GInputObjectType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		argumentDefinitions = argumentDefinitions,
@@ -1483,7 +1483,7 @@ public class GInputObjectTypeExtension(
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GInputObjectTypeExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GInputObjectTypeExtension> = GNodeExtensionSet.empty(),
 ) :
 	GTypeExtension(
 		directives = directives,
@@ -1497,7 +1497,7 @@ public class GInputObjectTypeExtension(
 		name: String,
 		argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GInputObjectTypeExtension> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GInputObjectTypeExtension> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		argumentDefinitions = argumentDefinitions,
@@ -1527,7 +1527,7 @@ public object GIntType : GScalarType(name = "Int")
 public class GIntValue(
 	public val value: Int,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GIntValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GIntValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -1573,7 +1573,7 @@ public class GInterfaceType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GInterfaceType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GInterfaceType> = GNodeExtensionSet.empty(),
 ) :
 	GAbstractType(
 		description = description,
@@ -1588,14 +1588,14 @@ public class GInterfaceType(
 
 	public constructor(
 		name: String,
-		fields: List<GFieldDefinition>,
+		fieldDefinitions: List<GFieldDefinition>,
 		interfaces: List<GNamedTypeRef> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GInterfaceType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GInterfaceType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
-		fieldDefinitions = fields,
+		fieldDefinitions = fieldDefinitions,
 		interfaces = interfaces,
 		description = description?.let(::GStringValue),
 		directives = directives,
@@ -1631,7 +1631,7 @@ public class GInterfaceTypeExtension(
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GInterfaceTypeExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GInterfaceTypeExtension> = GNodeExtensionSet.empty(),
 ) :
 	GTypeExtension(
 		directives = directives,
@@ -1648,7 +1648,7 @@ public class GInterfaceTypeExtension(
 		fields: List<GFieldDefinition> = emptyList(),
 		interfaces: List<GNamedTypeRef> = emptyList(),
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GInterfaceTypeExtension> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GInterfaceTypeExtension> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		fieldDefinitions = fields,
@@ -1679,7 +1679,7 @@ public sealed class GLeafType(
 	directives: List<GDirective> = emptyList(),
 	extensions: GNodeExtensionSet<GLeafType>,
 	kind: Kind,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GNamedType(
 	name = name,
 	description = description,
@@ -1697,7 +1697,7 @@ public sealed class GLeafType(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
 public class GListType(
 	elementType: GType,
-	extensions: GNodeExtensionSet<GListType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GListType> = GNodeExtensionSet.empty(),
 ) : GWrappingType(
 	extensions = extensions,
 	kind = Kind.LIST,
@@ -1733,7 +1733,7 @@ public class GListType(
 public class GListTypeRef(
 	public val elementType: GTypeRef,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty(),
 ) : GTypeRef(
 	extensions = extensions,
 	origin = origin
@@ -1764,7 +1764,7 @@ public class GListTypeRef(
 
 public fun GListTypeRef(
 	name: String,
-	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty(),
 ): GListTypeRef =
 	GListTypeRef(GTypeRef(name), extensions = extensions)
 
@@ -1772,7 +1772,7 @@ public fun GListTypeRef(
 public class GListValue(
 	public val elements: List<GValue>,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GListValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GListValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -1812,7 +1812,7 @@ public fun GListValue(elements: List<GValue>): GListValue =
 public class GName(
 	public val value: String,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GName> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GName> = GNodeExtensionSet.empty(),
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -1848,7 +1848,7 @@ public sealed class GNamedType(
 	extensions: GNodeExtensionSet<GNamedType>,
 	kind: Kind,
 	name: GName,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) :
 	GType(
 		extensions = extensions,
@@ -1875,7 +1875,7 @@ public sealed class GNamedType(
 public class GNamedTypeRef(
 	name: GName,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GNamedTypeRef> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GNamedTypeRef> = GNodeExtensionSet.empty(),
 ) : GTypeRef(
 	extensions = extensions,
 	origin = origin
@@ -1897,7 +1897,7 @@ public class GNamedTypeRef(
 
 	public constructor(
 		name: String,
-		extensions: GNodeExtensionSet<GNamedTypeRef> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GNamedTypeRef> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		extensions = extensions
@@ -1920,7 +1920,7 @@ public class GNamedTypeRef(
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
 public class GNonNullType(
 	nullableType: GType,
-	extensions: GNodeExtensionSet<GNonNullType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GNonNullType> = GNodeExtensionSet.empty(),
 ) : GWrappingType(
 	extensions = extensions,
 	kind = Kind.NON_NULL,
@@ -1956,7 +1956,7 @@ public class GNonNullType(
 public class GNonNullTypeRef(
 	override val nullableRef: GTypeRef,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty(),
 ) : GTypeRef(
 	extensions = extensions,
 	origin = origin
@@ -1993,14 +1993,14 @@ public class GNonNullTypeRef(
 
 public fun GNonNullTypeRef(
 	name: String,
-	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty(),
 ): GNonNullTypeRef =
 	GNonNullTypeRef(GTypeRef(name), extensions = extensions)
 
 
 public class GNullValue(
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GNullValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GNullValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -2044,7 +2044,7 @@ public class GObjectType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GObjectType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GObjectType> = GNodeExtensionSet.empty(),
 ) :
 	GCompositeType(
 		description = description,
@@ -2059,14 +2059,14 @@ public class GObjectType(
 
 	public constructor(
 		name: String,
-		fields: List<GFieldDefinition>,
+		fieldDefinitions: List<GFieldDefinition>,
 		interfaces: List<GNamedTypeRef> = emptyList(),
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GObjectType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GObjectType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
-		fieldDefinitions = fields,
+		fieldDefinitions = fieldDefinitions,
 		interfaces = interfaces,
 		description = description?.let(::GStringValue),
 		directives = directives,
@@ -2101,7 +2101,7 @@ public class GObjectTypeExtension(
 	override val interfaces: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GObjectTypeExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GObjectTypeExtension> = GNodeExtensionSet.empty(),
 ) :
 	GTypeExtension(
 		directives = directives,
@@ -2117,7 +2117,7 @@ public class GObjectTypeExtension(
 		fields: List<GFieldDefinition> = emptyList(),
 		interfaces: List<GNamedTypeRef> = emptyList(),
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GObjectTypeExtension> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GObjectTypeExtension> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		fieldDefinitions = fields,
@@ -2145,7 +2145,7 @@ public class GObjectTypeExtension(
 public class GObjectValue(
 	override val arguments: List<GArgument>,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GObjectValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GObjectValue> = GNodeExtensionSet.empty(),
 ) :
 	GValue(
 		extensions = extensions,
@@ -2187,7 +2187,7 @@ public class GOperationDefinition(
 	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GExecutableDefinition(
 		extensions = extensions,
@@ -2206,7 +2206,7 @@ public class GOperationDefinition(
 		selectionSet: GSelectionSet,
 		variableDefinitions: List<GVariableDefinition> = emptyList(),
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		type = type,
 		name = name?.let(::GName),
@@ -2237,7 +2237,7 @@ public class GOperationTypeDefinition(
 	public val operationType: GOperationType,
 	public val type: GNamedTypeRef,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GOperationTypeDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GOperationTypeDefinition> = GNodeExtensionSet.empty(),
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -2263,7 +2263,7 @@ public sealed class GScalarType(
 	description: GStringValue?,
 	directives: List<GDirective>,
 	origin: GDocumentPosition?,
-	extensions: GNodeExtensionSet<GScalarType>
+	extensions: GNodeExtensionSet<GScalarType>,
 ) : GLeafType(
 	description = description,
 	directives = directives,
@@ -2277,7 +2277,7 @@ public sealed class GScalarType(
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GScalarType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GScalarType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		description = description?.let(::GStringValue),
@@ -2310,7 +2310,7 @@ public class GScalarTypeExtension(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GScalarTypeExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GScalarTypeExtension> = GNodeExtensionSet.empty(),
 ) : GTypeExtension(
 	directives = directives,
 	extensions = extensions,
@@ -2321,7 +2321,7 @@ public class GScalarTypeExtension(
 	public constructor(
 		name: String,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GScalarTypeExtension> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GScalarTypeExtension> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		directives = directives,
@@ -2346,7 +2346,7 @@ public class GSchemaDefinition(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition>,
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GSchemaDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GSchemaDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GTypeSystemDefinition(
 		extensions = extensions,
@@ -2372,7 +2372,7 @@ public class GSchemaExtension(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GSchemaExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GSchemaExtension> = GNodeExtensionSet.empty(),
 ) :
 	GTypeSystemExtension(
 		extensions = extensions,
@@ -2397,7 +2397,7 @@ public class GSchemaExtension(
 public sealed class GSelection(
 	override val directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GSelection>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) :
 	GNode(
 		extensions = extensions,
@@ -2412,7 +2412,7 @@ public sealed class GSelection(
 public class GSelectionSet(
 	public val selections: List<GSelection>,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GSelectionSet> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GSelectionSet> = GNodeExtensionSet.empty(),
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -2438,7 +2438,7 @@ public class GStringValue(
 	public val value: String,
 	public val isBlock: Boolean = false,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GStringValue> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GStringValue> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -2482,7 +2482,7 @@ public fun GStringValue(value: String): GStringValue =
 public sealed class GType(
 	extensions: GNodeExtensionSet<GType>,
 	public val kind: Kind,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GTypeSystemDefinition(
 	extensions = extensions,
 	origin = origin
@@ -2571,7 +2571,7 @@ public sealed class GTypeExtension(
 	override val directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GTypeExtension>,
 	name: GName,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) :
 	GTypeSystemExtension(
 		extensions = extensions,
@@ -2589,7 +2589,7 @@ public sealed class GTypeExtension(
 
 public sealed class GTypeRef(
 	extensions: GNodeExtensionSet<GTypeRef>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -2630,7 +2630,7 @@ public val GStringTypeRef: GNamedTypeRef = GTypeRef("String")
 
 public sealed class GTypeSystemDefinition(
 	extensions: GNodeExtensionSet<GTypeSystemDefinition>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GDefinition(
 	extensions = extensions,
 	origin = origin
@@ -2642,7 +2642,7 @@ public sealed class GTypeSystemDefinition(
 
 public sealed class GTypeSystemExtension(
 	extensions: GNodeExtensionSet<GTypeSystemExtension>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GDefinition(
 	extensions = extensions,
 	origin = origin
@@ -2660,7 +2660,7 @@ public class GUnionType(
 	description: GStringValue? = null,
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GUnionType> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GUnionType> = GNodeExtensionSet.empty(),
 ) : GAbstractType(
 	description = description,
 	directives = directives,
@@ -2675,7 +2675,7 @@ public class GUnionType(
 		possibleTypes: List<GNamedTypeRef>,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GUnionType> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GUnionType> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		possibleTypes = possibleTypes,
@@ -2711,7 +2711,7 @@ public class GUnionTypeExtension(
 	public val possibleTypes: List<GNamedTypeRef> = emptyList(),
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GUnionTypeExtension> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GUnionTypeExtension> = GNodeExtensionSet.empty(),
 ) : GTypeExtension(
 	directives = directives,
 	extensions = extensions,
@@ -2723,7 +2723,7 @@ public class GUnionTypeExtension(
 		name: String,
 		possibleTypes: List<GNamedTypeRef> = emptyList(),
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GUnionTypeExtension> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GUnionTypeExtension> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		possibleTypes = possibleTypes,
@@ -2748,7 +2748,7 @@ public class GUnionTypeExtension(
 
 public sealed class GValue(
 	extensions: GNodeExtensionSet<GValue>,
-	origin: GDocumentPosition?
+	origin: GDocumentPosition?,
 ) : GNode(
 	extensions = extensions,
 	origin = origin
@@ -2807,7 +2807,7 @@ public class GVariableDefinition(
 	override val defaultValue: GValue? = null,
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty(),
 ) :
 	GNode(
 		extensions = extensions,
@@ -2825,7 +2825,7 @@ public class GVariableDefinition(
 		type: GTypeRef,
 		defaultValue: GValue? = null,
 		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		type = type,
@@ -2853,7 +2853,7 @@ public class GVariableDefinition(
 public class GVariableRef(
 	name: GName,
 	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty()
+	extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty(),
 ) : GValue(
 	extensions = extensions,
 	origin = origin
@@ -2867,7 +2867,7 @@ public class GVariableRef(
 
 	public constructor(
 		name: String,
-		extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty()
+		extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty(),
 	) : this(
 		name = GName(name),
 		extensions = extensions
@@ -2903,7 +2903,7 @@ public class GVariableRef(
 public sealed class GWrappingType(
 	kind: Kind,
 	public val wrappedType: GType,
-	extensions: GNodeExtensionSet<GWrappingType>
+	extensions: GNodeExtensionSet<GWrappingType>,
 ) : GType(
 	extensions = extensions,
 	kind = kind,
