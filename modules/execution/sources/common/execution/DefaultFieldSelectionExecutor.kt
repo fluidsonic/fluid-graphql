@@ -270,11 +270,13 @@ internal object DefaultFieldSelectionExecutor {
 			GResult.catchErrors {
 				when (val resolver = context.fieldResolver) {
 					null -> resolverContext.next()
-					else -> with(resolver) {
-						resolverContext.resolveField(parent = parent)
-					}
+					else ->
+						context.withExceptionHandler(origin = { GExceptionOrigin.FieldResolver(resolver = resolver, context = resolverContext) }) {
+							with(resolver) {
+								resolverContext.resolveField(parent = parent)
+							}
+						}
 				}
 			}
-			// FIXME add support for custom exception handler and don't handle by default
 		}
 }

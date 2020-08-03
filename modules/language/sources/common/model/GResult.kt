@@ -41,10 +41,10 @@ public sealed class GResult<out Value>(
 
 		public inline fun <Value> catchErrors(action: () -> Value): GResult<Value> =
 			try {
-				Success(action())
+				success(action())
 			}
 			catch (exception: GErrorException) {
-				Failure(exception.errors)
+				failure(exception.errors)
 			}
 
 

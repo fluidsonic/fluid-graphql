@@ -49,7 +49,7 @@ internal object VariableInputConverter {
 					value = value,
 					type = type,
 					parentNode = context.argumentDefinition ?: context.variableDefinition,
-					executorContext = context.execution
+					context = context.execution
 				).valueOrThrow()
 			}
 	}
@@ -187,7 +187,9 @@ internal object VariableInputConverter {
 
 
 	private fun coerceValueWithCoercer(coercer: GVariableInputCoercer<Any?>, context: Context): Any? =
-		with(coercer) { context.coerceVariableInput(context.value) }
+		context.execution.withExceptionHandler(origin = { GExceptionOrigin.VariableInputCoercer(coercer = coercer, context = context) }) {
+			with(coercer) { context.coerceVariableInput(context.value) }
+		}
 
 
 	fun convertValues(values: Map<String, Any?>, operation: GOperationDefinition, context: DefaultExecutorContext): GResult<Map<String, Any?>> =

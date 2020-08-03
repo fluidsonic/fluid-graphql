@@ -103,3 +103,33 @@ public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 ) {
 	Object(named = named, kotlinType = KotlinType::class, configure = configure)
 }
+
+
+@SchemaBuilderKeywordB
+public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceNodeInput(
+	coercer: GNodeInputCoercerContext.(input: GValue) -> Result
+) {
+	require(extension(LeafTypeNodeInputCoercerExtensionKey) == null) { "Only one node input coercer can be provided." }
+
+	extension(LeafTypeNodeInputCoercerExtensionKey, GNodeInputCoercer(coercer))
+}
+
+
+@SchemaBuilderKeywordB
+public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutput(
+	coercer: GOutputCoercerContext.(input: Any) -> Result
+) {
+	require(extension(LeafTypeOutputCoercerExtensionKey) == null) { "Only one output coercer can be provided." }
+
+	extension(LeafTypeOutputCoercerExtensionKey, GOutputCoercer(coercer))
+}
+
+
+@SchemaBuilderKeywordB
+public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceVariableInput(
+	coercer: GVariableInputCoercerContext.(input: Any) -> Result
+) {
+	require(extension(LeafTypeVariableInputCoercerExtensionKey) == null) { "Only one variable input coercer can be provided." }
+
+	extension(LeafTypeVariableInputCoercerExtensionKey, GVariableInputCoercer(coercer))
+}

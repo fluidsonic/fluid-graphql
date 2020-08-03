@@ -14,4 +14,8 @@ public class GErrorException(public val errors: List<GError>) : RuntimeException
 
 	override val message: String
 		get() = errors.joinToString(separator = "\n\n---\n\n") { it.describe() }
+
+
+	public fun toFailure(): GResult<Nothing> =
+		GResult.failure(errors)
 }

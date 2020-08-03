@@ -154,7 +154,9 @@ internal object NodeInputConverter {
 
 
 	private fun coerceValueWithCoercer(coercer: GNodeInputCoercer<Any?>, context: Context): Any? =
-		with(coercer) { context.coerceNodeInput(context.value) }
+		context.execution.withExceptionHandler(origin = { GExceptionOrigin.NodeInputCoercer(coercer = coercer, context = context) }) {
+			with(coercer) { context.coerceNodeInput(context.value) }
+		}
 
 
 	fun convertArguments(
@@ -204,11 +206,11 @@ internal object NodeInputConverter {
 		}
 
 
-	fun convertValue(value: GValue, type: GType, parentNode: GNode, executorContext: DefaultExecutorContext): GResult<Any?> =
+	fun convertValue(value: GValue, type: GType, parentNode: GNode, context: DefaultExecutorContext): GResult<Any?> =
 		GResult.catchErrors {
 			convertValue(context = Context(
 				argumentDefinition = parentNode as? GArgumentDefinition,
-				execution = executorContext,
+				execution = context,
 				fieldSelectionPath = null,
 				fullType = type,
 				fullValue = value,

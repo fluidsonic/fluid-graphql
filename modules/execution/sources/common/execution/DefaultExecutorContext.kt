@@ -23,4 +23,19 @@ internal data class DefaultExecutorContext(
 
 	override val execution: GExecutorContext
 		get() = this
+
+
+	inline fun <Result> withExceptionHandler(origin: () -> GExceptionOrigin, action: () -> Result): Result {
+		try {
+			return action()
+		}
+		catch (exception: GErrorException) {
+			throw exception
+		}
+		catch (exception: Throwable) {
+			with(exceptionHandler ?: throw exception) {
+				DefaultExceptionHandlerContext(origin = origin()).handleException(exception).throwException()
+			}
+		}
+	}
 }

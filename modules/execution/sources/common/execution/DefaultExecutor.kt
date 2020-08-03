@@ -95,21 +95,22 @@ internal class DefaultExecutor(
 			values = variableValues,
 			operation = operation,
 			context = context
-		)
-			.flatMapValue { coercedVariableValues ->
-				resolveRoot(context = context).mapValue { root ->
-					context.copy(
-						root = root,
-						variableValues = coercedVariableValues
-					)
-				}
+		).flatMapValue { coercedVariableValues ->
+			resolveRoot(context = context).mapValue { root ->
+				context.copy(
+					root = root,
+					variableValues = coercedVariableValues
+				)
 			}
+		}
 	}
 
 
 	private suspend fun resolveRoot(context: DefaultExecutorContext): GResult<Any> =
 		GResult.catchErrors {
-			with(rootResolver) { context.resolveRoot() }
+			context.withExceptionHandler(origin = { GExceptionOrigin.RootResolver(resolver = rootResolver, context = context) }) {
+				with(rootResolver) { context.resolveRoot() }
+			}
 		}
 
 

@@ -4,9 +4,14 @@ package io.fluidsonic.graphql
 // FIXME Also dispatch to execution.outputConverter for non-null & list.
 internal object OutputConverter {
 
-	fun convertOutput(value: Any, type: GType, parentType: GObjectType, fieldDefinition: GFieldDefinition, context: DefaultExecutorContext): GResult<Any> {
-		@Suppress("NAME_SHADOWING")
-		val context = Context(
+	fun convertOutput(
+		value: Any,
+		type: GType,
+		parentType: GObjectType,
+		fieldDefinition: GFieldDefinition,
+		context: DefaultExecutorContext
+	): GResult<Any> {
+		val coercerContext = Context(
 			execution = context,
 			fieldDefinition = fieldDefinition,
 			isUsingCoercerProvidedByType = false,
@@ -15,15 +20,17 @@ internal object OutputConverter {
 			value = value
 		)
 
-		return when (val coercer = context.execution.outputCoercer) {
-			null -> coerceValue(context = context)
-			else -> coerceValueWithCoercer(coercer = coercer, context = context)
+		return GResult.catchErrors {
+			when (val coercer = context.outputCoercer) {
+				null -> coerceValue(context = coercerContext)
+				else -> coerceValueWithCoercer(coercer = coercer, context = coercerContext)
+			}
 		}
 	}
 
 
-	private fun coerceLeafValue(value: Any, type: GLeafType, context: Context): GResult<Any> {
-		return when (type) {
+	private fun coerceLeafValue(value: Any, type: GLeafType, context: Context): Any =
+		when (type) {
 			GBooleanType -> when (value) {
 				is Boolean -> value
 				else -> context.invalid()
@@ -76,19 +83,18 @@ internal object OutputConverter {
 
 			else -> when (val coercer = type.outputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
 				null -> value
-				else -> return coerceValueWithCoercer(
+				else -> coerceValueWithCoercer(
 					coercer = coercer,
 					context = context.copy(isUsingCoercerProvidedByType = true)
 				)
 			}
-		}.let { GResult.success(it) }
-	}
+		}
 
 
 	@Suppress("UNCHECKED_CAST")
-	private fun coerceObjectValue(value: Map<String, Any?>, type: GObjectType, context: Context): GResult<Any> =
+	private fun coerceObjectValue(value: Map<String, Any?>, type: GObjectType, context: Context): Any =
 		when (val coercer = type.outputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
-			null -> GResult.success(value)
+			null -> value
 			else -> coerceValueWithCoercer(
 				coercer = coercer as GOutputCoercer<Any>,
 				context = context.copy(isUsingCoercerProvidedByType = true)
@@ -97,7 +103,7 @@ internal object OutputConverter {
 
 
 	@Suppress("UNCHECKED_CAST")
-	private fun coerceValue(context: Context): GResult<Any> =
+	private fun coerceValue(context: Context): Any =
 		when (val type = context.type) {
 			is GLeafType -> coerceLeafValue(value = context.value, type = type, context = context)
 			is GObjectType -> coerceObjectValue(
@@ -109,8 +115,8 @@ internal object OutputConverter {
 		}
 
 
-	private fun coerceValueWithCoercer(coercer: GOutputCoercer<Any>, context: Context): GResult<Any> =
-		GResult.catchErrors {
+	private fun coerceValueWithCoercer(coercer: GOutputCoercer<Any>, context: Context): Any =
+		context.execution.withExceptionHandler(origin = { GExceptionOrigin.OutputCoercer(coercer = coercer, context = context) }) {
 			with(coercer) { context.coerceOutput(context.value) }
 		}
 
