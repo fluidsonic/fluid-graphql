@@ -8,264 +8,371 @@ class ExceptionHandlerTests {
 
 	@Test
 	fun testHandledExceptionInFieldResolver() = runBlockingTest {
-		val testError = GError(message = "test error")
+		val testError1 = GError(message = "test 1")
+		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
-
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer)
-			Query { field("echo" of String) { resolve { throw testException } } }
-		}
 
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = schema,
+				schema = graphql.schema {
+					Query {
+						field("foo" of String) { resolve { throw testException } }
+						field("bar" of String) { resolve { testError2.throwException() } }
+						field("baz" of String) { resolve { "success" } }
+					}
+				},
 				exceptionHandler = { exception ->
 					exceptions += exception
-					testError
+					testError1
 				}
 			)
-			.execute("{ echo }")
+			.execute("{ foo bar baz }")
 
 		assertEquals(expected = listOf(testException), actual = exceptions)
-		assertEquals(expected = GResult.success(mapOf("echo" to null), listOf(testError)), actual = result)
+		assertEquals(
+			expected = GResult.success(
+				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
+				errors = listOf(testError1, testError2)
+			),
+			actual = result
+		)
 	}
 
 
 	@Test
 	fun testRethrownExceptionInFieldResolver() = runBlockingTest {
-		val testException1 = TestException(1)
-		val testException2 = TestException(2)
+		val testError = GError(message = "test")
+		val testException = TestException(1)
 
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer)
-			Query { field("echo" of String) { resolve { throw testException1 } } }
-		}
-
-		val thrownException = runCatching {
+		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = schema,
-					exceptionHandler = { throw testException2 }
+					schema = graphql.schema {
+						Query {
+							field("foo" of String) { resolve { throw testException } }
+							field("bar" of String) { resolve { testError.throwException() } }
+							field("baz" of String) { resolve { "success" } }
+						}
+					},
+					exceptionHandler = { throw it }
 				)
-				.execute("{ echo }")
+				.execute("{ foo bar baz }")
 		}.exceptionOrNull()
 
-		assertEquals(expected = testException2, actual = thrownException)
+		assertEquals(expected = testException, actual = thrownException)
 	}
 
 
 	@Test
 	fun testHandledExceptionInNodeInputCoercer() = runBlockingTest {
-		val testError = GError(message = "test error")
+		val testError1 = GError(message = "test 1")
+		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
-
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer) { coerceNodeInput { throw testException } }
-			Query { field("echo" of String) { argument("input" of !Answer) } }
-		}
 
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = schema,
+				schema = graphql.schema {
+					val Foo by type
+					val Bar by type
+					Scalar(Foo) { coerceNodeInput { throw testException } }
+					Scalar(Bar) { coerceNodeInput { testError2.throwException() } }
+					Query {
+						field("foo" of String) { argument("arg" of Foo) }
+						field("bar" of String) { argument("arg" of Bar) }
+						field("baz" of String) { resolve { "success" } }
+					}
+				},
 				exceptionHandler = { exception ->
 					exceptions += exception
-					testError
+					testError1
 				}
 			)
-			.execute("{ echo(input: 42) }")
+			.execute("{ foo(arg:42) bar(arg:42) baz }")
 
 		assertEquals(expected = listOf(testException), actual = exceptions)
-		assertEquals(expected = GResult.success(mapOf("echo" to null), listOf(testError)), actual = result)
+		assertEquals(
+			expected = GResult.success(
+				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
+				errors = listOf(testError1, testError2)
+			),
+			actual = result
+		)
 	}
 
 
 	@Test
 	fun testRethrownExceptionInNodeInputCoercer() = runBlockingTest {
-		val testException1 = TestException(1)
-		val testException2 = TestException(2)
+		val testError = GError(message = "test")
+		val testException = TestException(1)
 
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer) { coerceNodeInput { throw testException1 } }
-			Query { field("echo" of String) { argument("input" of !Answer) } }
-		}
-
-		val thrownException = runCatching {
+		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = schema,
-					exceptionHandler = { throw testException2 }
+					schema = graphql.schema {
+						val Foo by type
+						val Bar by type
+						Scalar(Foo) { coerceNodeInput { throw testException } }
+						Scalar(Bar) { coerceNodeInput { testError.throwException() } }
+						Query {
+							field("foo" of String) { argument("arg" of Foo) }
+							field("bar" of String) { argument("arg" of Bar) }
+							field("baz" of String) { resolve { "success" } }
+						}
+					},
+					exceptionHandler = { throw it }
 				)
-				.execute("{ echo(input: 42) }")
+				.execute("{ foo(arg:42) bar(arg:42) baz }")
 		}.exceptionOrNull()
 
-		assertEquals(expected = testException2, actual = thrownException)
+		assertEquals(expected = testException, actual = thrownException)
 	}
 
 
 	@Test
 	fun testHandledExceptionInOutputCoercer() = runBlockingTest {
-		val testError = GError(message = "test error")
+		val testError1 = GError(message = "test 1")
+		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
-
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer) { coerceOutput { throw testException } }
-			Query { field("echo" of Answer) { resolve { 42 } } }
-		}
 
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = schema,
+				schema = graphql.schema {
+					val Foo by type
+					val Bar by type
+					Scalar(Foo) { coerceOutput { throw testException } }
+					Scalar(Bar) { coerceOutput { testError2.throwException() } }
+					Query {
+						field("foo" of Foo) { resolve { "foo" } }
+						field("bar" of Bar) { resolve { "bar" } }
+						field("baz" of String) { resolve { "success" } }
+					}
+				},
 				exceptionHandler = { exception ->
 					exceptions += exception
-					testError
+					testError1
 				}
 			)
-			.execute("{ echo(input: 42) }")
+			.execute("{ foo(arg:42) bar(arg:42) baz }")
 
 		assertEquals(expected = listOf(testException), actual = exceptions)
-		assertEquals(expected = GResult.success(mapOf("echo" to null), listOf(testError)), actual = result)
+		assertEquals(
+			expected = GResult.success(
+				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
+				errors = listOf(testError1, testError2)
+			),
+			actual = result
+		)
 	}
 
 
 	@Test
 	fun testRethrownExceptionInOutputCoercer() = runBlockingTest {
-		val testException1 = TestException(1)
-		val testException2 = TestException(2)
+		val testError = GError(message = "test")
+		val testException = TestException(1)
 
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer) { coerceOutput { throw testException1 } }
-			Query { field("echo" of Answer) { resolve { 42 } } }
-		}
-
-		val thrownException = runCatching {
+		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = schema,
-					exceptionHandler = { throw testException2 }
+					schema = graphql.schema {
+						val Foo by type
+						val Bar by type
+						Scalar(Foo) { coerceOutput { throw testException } }
+						Scalar(Bar) { coerceOutput { testError.throwException() } }
+						Query {
+							field("foo" of Foo) { resolve { "foo" } }
+							field("bar" of Bar) { resolve { "bar" } }
+							field("baz" of String) { resolve { "success" } }
+						}
+					},
+					exceptionHandler = { throw it }
 				)
-				.execute("{ echo(input: 42) }")
+				.execute("{ foo bar baz }")
 		}.exceptionOrNull()
 
-		assertEquals(expected = testException2, actual = thrownException)
+		assertEquals(expected = testException, actual = thrownException)
 	}
 
 
 	@Test
 	fun testHandledExceptionInRootResolver() = runBlockingTest {
-		val testError = GError(message = "test error")
+		val testError = GError(message = "test")
 		val testException = TestException(1)
-
-		val schema = graphql.schema {
-			Query { field("echo" of String) }
-		}
 
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = schema,
+				schema = graphql.schema {
+					Query { field("foo" of String) }
+				},
 				exceptionHandler = { exception ->
 					exceptions += exception
 					testError
 				},
-				rootResolver = object : GRootResolver { // FIXME
+				rootResolver = object : GRootResolver { // TODO https://youtrack.jetbrains.com/issue/KT-40165
 
 					override suspend fun GRootResolverContext.resolveRoot(): Any {
 						throw testException
 					}
 				}
 			)
-			.execute("{ echo }")
+			.execute("{ foo }")
 
 		assertEquals(expected = listOf(testException), actual = exceptions)
-		assertEquals(expected = GResult.failure(testError), actual = result)
+		assertEquals(
+			expected = GResult.failure(
+				errors = listOf(testError)
+			),
+			actual = result
+		)
+	}
+
+
+	@Test
+	fun testIgnoresErrorExceptionInRootResolver() = runBlockingTest {
+		val testError = GError(message = "test")
+
+		val result = GExecutor
+			.default(
+				schema = graphql.schema {
+					Query { field("foo" of String) }
+				},
+				exceptionHandler = { error("Shouldn't be called.") },
+				rootResolver = object : GRootResolver { // FIXME
+
+					override suspend fun GRootResolverContext.resolveRoot(): Any {
+						testError.throwException()
+					}
+				}
+			)
+			.execute("{ foo }")
+
+		assertEquals(
+			expected = GResult.failure(
+				errors = listOf(testError)
+			),
+			actual = result
+		)
 	}
 
 
 	@Test
 	fun testRethrownExceptionInRootResolver() = runBlockingTest {
-		val testException1 = TestException(1)
-		val testException2 = TestException(2)
+		val testException = TestException(1)
 
-		val schema = graphql.schema {
-			Query { field("echo" of String) }
-		}
-
-		val thrownException = runCatching {
+		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = schema,
-					exceptionHandler = { throw testException2 },
-					rootResolver = object : GRootResolver { // FIXME
+					schema = graphql.schema {
+						Query { field("foo" of String) }
+					},
+					exceptionHandler = { throw it },
+					rootResolver = object : GRootResolver { // TODO https://youtrack.jetbrains.com/issue/KT-40165
 
 						override suspend fun GRootResolverContext.resolveRoot(): Any {
-							throw testException1
+							throw testException
 						}
 					}
 				)
-				.execute("{ echo }")
+				.execute("{ foo }")
 		}.exceptionOrNull()
 
-		assertEquals(expected = testException2, actual = thrownException)
+		assertEquals(expected = testException, actual = thrownException)
 	}
 
 
 	@Test
 	fun testHandledExceptionInVariableInputCoercer() = runBlockingTest {
-		val testError = GError(message = "test error")
+		val testError = GError(message = "test")
 		val testException = TestException(1)
-
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer) { coerceVariableInput { throw testException } }
-			Query { field("echo" of String) { argument("input" of !Answer) } }
-		}
 
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = schema,
+				schema = graphql.schema {
+					val Foo by type
+					Scalar(Foo) { coerceVariableInput { throw testException } }
+					Query {
+						field("foo" of String) { argument("arg" of Foo) }
+						field("bar" of String) { resolve { "success" } }
+					}
+				},
 				exceptionHandler = { exception ->
 					exceptions += exception
 					testError
 				}
 			)
-			.execute("query(\$var: Answer!) { echo(input: \$var) }", variableValues = mapOf("var" to 42))
+			.execute(
+				documentSource = "query(\$foo: Foo!) { foo(arg:\$foo) bar }",
+				variableValues = mapOf("foo" to "foo")
+			)
 
 		assertEquals(expected = listOf(testException), actual = exceptions)
-		assertEquals(expected = GResult.failure(testError), actual = result)
+		assertEquals(
+			expected = GResult.failure(
+				errors = listOf(testError)
+			),
+			actual = result
+		)
+	}
+
+
+	@Test
+	fun testIgnoresErrorExceptionsInVariableInputCoercer() = runBlockingTest {
+		val testError = GError(message = "test")
+
+		val result = GExecutor
+			.default(
+				schema = graphql.schema {
+					val Foo by type
+					Scalar(Foo) { coerceVariableInput { testError.throwException() } }
+					Query {
+						field("foo" of String) { argument("arg" of Foo) }
+						field("bar" of String) { resolve { "success" } }
+					}
+				},
+				exceptionHandler = { error("Shouldn't be called.") }
+			)
+			.execute(
+				documentSource = "query(\$foo: Foo!) { foo(arg:\$foo) bar }",
+				variableValues = mapOf("foo" to "foo")
+			)
+
+		assertEquals(
+			expected = GResult.failure(
+				errors = listOf(testError)
+			),
+			actual = result
+		)
 	}
 
 
 	@Test
 	fun testRethrownExceptionInVariableInputCoercer() = runBlockingTest {
-		val testException1 = TestException(1)
-		val testException2 = TestException(2)
+		val testException = TestException(1)
 
-		val schema = graphql.schema {
-			val Answer by type
-			Scalar(Answer) { coerceVariableInput { throw testException1 } }
-			Query { field("echo" of String) { argument("input" of !Answer) } }
-		}
-
-		val thrownException = runCatching {
+		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = schema,
-					exceptionHandler = { throw testException2 }
+					schema = graphql.schema {
+						val Foo by type
+						Scalar(Foo) { coerceVariableInput { throw testException } }
+						Query {
+							field("foo" of String) { argument("arg" of Foo) }
+							field("bar" of String) { resolve { "success" } }
+						}
+					},
+					exceptionHandler = { throw it }
 				)
-				.execute("query(\$var: Answer!) { echo(input: \$var) }", variableValues = mapOf("var" to 42))
+				.execute(
+					documentSource = "query(\$foo: Foo!) { foo(arg:\$foo) bar }",
+					variableValues = mapOf("foo" to "foo")
+				)
 		}.exceptionOrNull()
 
-		assertEquals(expected = testException2, actual = thrownException)
+		assertEquals(expected = testException, actual = thrownException)
 	}
 
 
