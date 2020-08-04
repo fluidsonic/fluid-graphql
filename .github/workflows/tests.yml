@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: ./gradlew jsTest
   iOS:
-    name: macOS
+    name: iOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
