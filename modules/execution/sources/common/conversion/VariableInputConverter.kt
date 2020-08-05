@@ -201,7 +201,7 @@ internal object VariableInputConverter {
 				operation.variableDefinitions
 					.associate { variableDefinition ->
 						val variableType = context.schema.resolveType(variableDefinition.type) ?: validationError(
-							message = "Type '$variableDefinition.type' cannot be resolved.",
+							message = "Type '${variableDefinition.type}' cannot be resolved.",
 							variableDefinition = variableDefinition,
 							argumentDefinition = null
 						)
