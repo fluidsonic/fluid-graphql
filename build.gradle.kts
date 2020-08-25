@@ -1,7 +1,8 @@
 import io.fluidsonic.gradle.*
+import org.jetbrains.kotlin.gradle.plugin.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.1.4"
+	id("io.fluidsonic.gradle") version "1.1.8"
 }
 
 fluidLibrary(name = "graphql", version = "0.9.4") {
@@ -21,8 +22,8 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-		js()
+		darwin()
+		js(compiler = KotlinJsCompilerType.LEGACY) // FIXME https://youtrack.jetbrains.com/issue/KT-39088
 		jvm()
-		nativeDarwin()
 	}
 }

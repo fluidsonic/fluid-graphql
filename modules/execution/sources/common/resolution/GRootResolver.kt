@@ -1,7 +1,8 @@
 package io.fluidsonic.graphql
 
 
-public fun interface GRootResolver {
+// Make fun interface when fixed: https://youtrack.jetbrains.com/issue/KT-40165
+public /*fun*/ interface GRootResolver {
 
 	public suspend fun GRootResolverContext.resolveRoot(): Any
 
@@ -23,3 +24,13 @@ public fun interface GRootResolver {
 			root
 	}
 }
+
+
+// Remove when fixed: https://youtrack.jetbrains.com/issue/KT-40165
+@Suppress("ObjectLiteralToLambda")
+public fun <Parent : Any> GRootResolver(resolveRoot: suspend GRootResolverContext.() -> Any): GRootResolver =
+	object : GRootResolver {
+
+		override suspend fun GRootResolverContext.resolveRoot(): Any =
+			resolveRoot()
+	}
