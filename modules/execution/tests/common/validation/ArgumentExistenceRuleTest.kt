@@ -26,12 +26,32 @@ class ArgumentExistenceRuleTest {
 
 
 	@Test
+	fun testAcceptsNestedArgumentThatExist() {
+		assertValidationRule(
+			rule = ArgumentExistenceRule,
+			errors = emptyList(),
+			document = """
+				|{
+				|   id(input: { argument: "value" }) @include(if: true)
+				|}
+			""",
+			schema = """
+				|input Input { argument: String } 
+				|type Query {
+				|   id(input: Input): ID
+				|}
+			"""
+		)
+	}
+
+
+	@Test
 	fun testRejectsArgumentThatDontExist() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = listOf(
 				"""
-					Unknown argument 'noSuchArgument' for field 'id'.
+					Unknown argument 'noSuchArgument' for field 'Query.id'.
 
 					<document>:2:7
 					1 | {

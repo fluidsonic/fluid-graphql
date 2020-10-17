@@ -14,7 +14,23 @@ class FieldSelectionExistenceRuleTest {
 			document = """
 				|{ id }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID! }"
+		)
+	}
+
+
+	@Test
+	fun testAcceptsExistingFieldInNestedFieldSelection() {
+		assertValidationRule(
+			rule = FieldSelectionExistenceRule,
+			errors = emptyList(),
+			document = """
+				|{ object { id } }
+			""",
+			schema = """
+				|type Object { id: ID! }
+				|type Query { object: Object! }
+			"""
 		)
 	}
 
@@ -31,7 +47,7 @@ class FieldSelectionExistenceRuleTest {
 				|   }
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID! }"
 		)
 	}
 
@@ -48,7 +64,7 @@ class FieldSelectionExistenceRuleTest {
 				|
 				|fragment f on Query { id }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID! }"
 		)
 	}
 
@@ -67,7 +83,7 @@ class FieldSelectionExistenceRuleTest {
 			document = """
 				|{ foo }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID! }"
 		)
 	}
 
@@ -92,7 +108,7 @@ class FieldSelectionExistenceRuleTest {
 				|   }
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID! }"
 		)
 	}
 
@@ -116,7 +132,7 @@ class FieldSelectionExistenceRuleTest {
 				|
 				|fragment f on Query { foo }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID! }"
 		)
 	}
 }

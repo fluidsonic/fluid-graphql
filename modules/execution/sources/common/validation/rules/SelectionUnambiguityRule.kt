@@ -153,7 +153,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 			is GFieldSelection -> {
 				// Cannot validate a selection of a nonexistent field.
 				// FIXME Will this work for introspection queries?
-				val fieldDefinition = (parentType as? GNode.WithFieldDefinitions)?.field(name)
+				val fieldDefinition = (parentType as? GNode.WithFieldDefinitions)?.fieldDefinition(name)
 					?: return
 
 				// Cannot validate a selection of a field of an unknown type.

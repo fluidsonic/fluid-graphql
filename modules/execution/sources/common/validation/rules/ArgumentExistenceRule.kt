@@ -10,9 +10,7 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 
 		val directive = data.relatedDirective
 		if (directive !== null) {
-			// Cannot validate an argument name of a nonexistent directive.
-			val directiveDefinition = data.relatedDirectiveDefinition
-				?: return
+			val directiveDefinition = data.relatedDirectiveDefinition ?: return
 
 			data.reportError(
 				message = "Unknown argument '${argument.name}' for directive '${directive.name}'.",
@@ -22,22 +20,18 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 			return
 		}
 
-		val fieldSelection = data.relatedSelection as? GFieldSelection
-		if (fieldSelection !== null) {
-			// Cannot validate an argument name of a nonexistent field.
-			val fieldDefinition = data.relatedFieldDefinition
-				?: return
+		when (val parentType = data.relatedParentType ?: return) {
+			is GInputObjectType ->
+				return
 
-			// Cannot validate a selection for an unknown type.
-			val parentType = data.relatedParentType // FIXME add to err msg?
-				?: return
+			else -> {
+				val fieldDefinition = data.relatedFieldDefinition ?: return
 
-			data.reportError(
-				message = "Unknown argument '${argument.name}' for field '${fieldSelection.name}'.",
-				nodes = listOf(argument.nameNode, fieldDefinition.nameNode)
-			)
-
-			return
+				data.reportError(
+					message = "Unknown argument '${argument.name}' for field '${parentType.name}.${fieldDefinition.name}'.",
+					nodes = listOf(argument.nameNode, fieldDefinition.nameNode)
+				)
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ class AstSchemaParsingErrorsTests {
 	fun testRejectsDirectiveWithIncorrectLocation() {
 		assertSyntaxError(
 			content = "directive @foo on FIELD | INCORRECT_LOCATION",
-			message = """Syntax Error: Unexpected Name "INCORRECT_LOCATION".""",
+			message = """Syntax Error: 'INCORRECT_LOCATION' is not a valid directive location. Valid values are: ARGUMENT_DEFINITION, ENUM, ENUM_VALUE, FIELD, FIELD_DEFINITION, FRAGMENT_DEFINITION, FRAGMENT_SPREAD, INLINE_FRAGMENT, INPUT_FIELD_DEFINITION, INPUT_OBJECT, INTERFACE, MUTATION, OBJECT, QUERY, SCALAR, SCHEMA, SUBSCRIPTION, UNION, VARIABLE_DEFINITION""",
 			line = 1, column = 27
 		)
 	}

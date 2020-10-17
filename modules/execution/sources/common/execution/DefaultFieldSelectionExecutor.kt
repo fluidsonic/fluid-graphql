@@ -135,7 +135,7 @@ internal object DefaultFieldSelectionExecutor {
 			)
 
 		// An error can occur only if the document wasn't validated or if this function was called directly with an invalid selection.
-		val fieldDefinition = parentType.field(firstSelection.name)
+		val fieldDefinition = parentType.fieldDefinition(firstSelection.name)
 			?: return GResult.failure(GError(
 				message = "There is no field named '${firstSelection.name}' on type '${parentType.name}'.",
 				path = path,

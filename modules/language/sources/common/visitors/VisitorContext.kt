@@ -70,13 +70,20 @@ public open class VisitorContext(
 
 		when (node) {
 			is GArgument -> {
+				val underlyingRelatedType = relatedType?.underlyingNamedType
+
 				relatedArgumentDefinition = when {
 					relatedDirective !== null -> relatedDirectiveDefinition?.argumentDefinition(node.name)
-					relatedType is GInputObjectType -> (relatedType as GInputObjectType).argumentDefinition(node.name)
+					underlyingRelatedType is GInputObjectType -> underlyingRelatedType.argumentDefinition(node.name)
 					relatedSelection is GFieldSelection -> relatedFieldDefinition?.argumentDefinition(node.name)
 					else -> null
 				}
-				relatedParentType = relatedType
+				relatedParentType = when {
+					relatedDirective != null -> null
+					underlyingRelatedType is GInputObjectType -> underlyingRelatedType
+					relatedSelection is GFieldSelection -> relatedParentType
+					else -> null
+				}
 				relatedType = relatedArgumentDefinition?.let { schema.resolveType(it.type) }
 			}
 
@@ -89,6 +96,7 @@ public open class VisitorContext(
 			is GDirective -> {
 				relatedDirective = node
 				relatedDirectiveDefinition = schema.directiveDefinition(node.name)
+				relatedType = null
 			}
 
 			is GDirectiveDefinition ->
@@ -100,7 +108,7 @@ public open class VisitorContext(
 			}
 
 			is GFieldSelection -> {
-				relatedFieldDefinition = _relatedType?.let { (relatedType as? GNode.WithFieldDefinitions)?.field(node.name) }
+				relatedFieldDefinition = (_relatedParentType as? GNode.WithFieldDefinitions)?.fieldDefinition(node.name)
 				relatedFieldSelection = node
 				relatedSelection = node
 				relatedType = relatedFieldDefinition
@@ -116,7 +124,6 @@ public open class VisitorContext(
 
 			is GFragmentSelection -> {
 				relatedFragmentDefinition = document.fragment(node.name)
-				relatedParentType = relatedType
 				relatedSelection = node
 				relatedType = relatedFragmentDefinition?.let { schema.resolveType(it.typeCondition) }
 			}
@@ -124,11 +131,9 @@ public open class VisitorContext(
 			is GInlineFragmentSelection -> {
 				relatedFragmentDefinition = null
 				relatedSelection = node
-
-				val typeCondition = node.typeCondition
-				if (typeCondition !== null) {
-					relatedParentType = relatedType
-					relatedType = schema.resolveType(typeCondition)
+				relatedType = when (val typeCondition = node.typeCondition) {
+					null -> relatedParentType
+					else -> schema.resolveType(typeCondition)
 				}
 			}
 
@@ -140,12 +145,13 @@ public open class VisitorContext(
 			is GOperationDefinition -> {
 				relatedOperationDefinition = node
 				relatedType = schema.rootTypeForOperationType(node.type)
-				relatedParentType = relatedType
 			}
 
 			is GSelectionSet -> {
+				relatedParentType = _relatedType?.underlyingNamedType
 				relatedParentSelectionSet = relatedSelectionSet
 				relatedSelectionSet = node
+				relatedType = null
 			}
 
 			is GVariableDefinition ->

@@ -251,7 +251,10 @@ internal class Parser private constructor(
 		val name = parseName()
 
 		if (GDirectiveLocation.values().none { it.name == name.value })
-			unexpectedTokenError(token = token)
+			GError.syntax(
+				details = "'${name.value}' is not a valid directive location. Valid values are: ${GDirectiveLocation.values().sortedBy { it.name }.joinToString()}",
+				origin = makeOrigin(startToken = token, endToken = token)
+			).throwException()
 
 		return name
 	}

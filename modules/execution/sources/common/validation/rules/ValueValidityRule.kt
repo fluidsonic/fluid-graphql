@@ -11,6 +11,8 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		data.schema.validateValue(argument.value, typeRef = argumentDefinition.type).forEach { error ->
 			data.reportError(error)
 		}
+
+		visit.skipChildren()
 	}
 
 
@@ -24,6 +26,8 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		data.schema.validateValue(defaultValue, type = type).forEach { error ->
 			data.reportError(error)
 		}
+
+		visit.skipChildren()
 	}
 
 
@@ -37,5 +41,7 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		data.schema.validateValue(defaultValue, type = type).forEach { error ->
 			data.reportError(error)
 		}
+
+		visit.skipChildren()
 	}
 }

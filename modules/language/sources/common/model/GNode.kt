@@ -360,7 +360,7 @@ public sealed class GNode(
 		public val fieldDefinitions: List<GFieldDefinition>
 
 
-		public fun field(name: String): GFieldDefinition? =
+		public fun fieldDefinition(name: String): GFieldDefinition? =
 			fieldDefinitions.firstOrNull { it.name == name }
 	}
 

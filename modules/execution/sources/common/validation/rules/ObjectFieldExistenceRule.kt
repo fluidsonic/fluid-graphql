@@ -12,7 +12,7 @@ internal object ObjectFieldExistenceRule : ValidationRule.Singleton() {
 			return // Field exists.
 
 		data.reportError(
-			message = "Unknown field '${argument.name}' for Input type '${parentType.name}'.",
+			message = "Unknown field '${argument.name}' for ${parentType.kind} type '${parentType.name}'.",
 			nodes = listOf(argument.nameNode, parentType.nameNode)
 		)
 	}

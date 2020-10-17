@@ -35,7 +35,7 @@ class ObjectFieldExistenceRuleTest {
 			rule = ObjectFieldExistenceRule,
 			errors = listOf(
 				"""
-					Unknown field 'doesNotExist' for Input type 'Input'.
+					Unknown field 'doesNotExist' for input object type 'Input'.
 
 					<document>:4:10
 					3 |       input: {
@@ -50,7 +50,7 @@ class ObjectFieldExistenceRuleTest {
 					6 |    exists: Boolean
 				""",
 				"""
-					Unknown field 'doesNotExist' for Input type 'OtherInput'.
+					Unknown field 'doesNotExist' for input object type 'OtherInput'.
 
 					<document>:5:20
 					4 |          doesNotExist: true
