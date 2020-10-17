@@ -1,5 +1,4 @@
 import io.fluidsonic.gradle.*
-import org.jetbrains.kotlin.gradle.plugin.*
 
 fluidLibraryModule(description = "FIXME") {
 	targets {
@@ -9,8 +8,8 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-		darwin()
-		js(compiler = KotlinJsCompilerType.LEGACY) // FIXME https://youtrack.jetbrains.com/issue/KT-39088
+//		darwin() // FIXME
+		js()
 		jvm()
 	}
 }

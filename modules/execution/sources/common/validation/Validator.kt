@@ -2,23 +2,50 @@ package io.fluidsonic.graphql
 
 
 internal class Validator(
-	private val document: GDocument,
-	rules: List<ValidationRule.Provider>,
-	schema: GSchema
+	private val rules: List<ValidationRule.Provider>,
 ) {
 
-	private val context = ValidationContext(
-		document = document,
-		schema = schema
-	)
+	fun validate(document: GDocument, schema: GSchema): List<GError> {
+		val context = ValidationContext(document, schema)
 
-	private val visitor = rules
-		.map(ValidationRule.Provider::provide)
-		.parallelize()
-		.contextualize(context)
+		// FIXME Why can't we just contextualize the entire visitor?
+		document.accept(rules
+			.map { it.provide().contextualize(context) }
+			.parallelize())
+
+		return context.errors
+	}
 
 
-	fun validate() {
-		document.accept(visitor)
+	companion object {
+
+		val default = Validator(rules = listOf(
+			AnonymousOperationExclusivityRule,
+			ArgumentExistenceRule,
+			ArgumentRequirementRule,
+			DirectiveExclusivityRule,
+			DirectiveExistenceRule,
+			DirectiveLocationValidityRule,
+			DocumentExecutabilityRule,
+			FieldSelectionExistenceRule,
+			FieldSubselectionRule,
+			FragmentCycleDetectionRule,
+			FragmentDefinitionNameExclusivityRule,
+			FragmentDefinitionUsageRule,
+			FragmentSelectionExistenceRule,
+			FragmentSelectionPossibilityRule,
+			FragmentTypeConditionExistenceRule,
+			FragmentTypeConditionValidityRule,
+			ObjectFieldExistenceRule,
+			ObjectFieldNameExclusivityRule,
+			ObjectFieldRequirementRule,
+			OperationDefinitionNameExclusivityRule,
+			ScalarLeavesRule,
+			SelectionUnambiguityRule,
+			SubscriptionRootFieldExclusivityRule,
+			ValueValidityRule,
+			VariableDefinitionNameExclusivityRule,
+			VariableDefinitionTypeValidityRule,
+		))
 	}
 }

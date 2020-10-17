@@ -1,11 +1,10 @@
 import io.fluidsonic.gradle.*
-import org.jetbrains.kotlin.gradle.plugin.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.1.8"
+	id("io.fluidsonic.gradle") version "1.1.11"
 }
 
-fluidLibrary(name = "graphql", version = "0.9.5") {
+fluidLibrary(name = "graphql", version = "0.9.5-SNAPSHOT") {
 	allModules {
 		language {
 			withExperimentalApi("io.fluidsonic.graphql.InternalGraphqlApi")
@@ -22,8 +21,8 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-		darwin()
-		js(compiler = KotlinJsCompilerType.LEGACY) // FIXME https://youtrack.jetbrains.com/issue/KT-39088
+//		darwin()
+//		js() // FIXME
 		jvm()
 	}
 }

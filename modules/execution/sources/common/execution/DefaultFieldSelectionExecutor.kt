@@ -122,6 +122,7 @@ internal object DefaultFieldSelectionExecutor {
 		path: GPath,
 		context: DefaultExecutorContext
 	): GResult<Any?> {
+		// An error can occur only if this function was called directly with an empty selection list.
 		require(selections.isNotEmpty()) { "'selections' must contain at least one selection." }
 
 		val firstSelection = selections.first()
@@ -133,8 +134,15 @@ internal object DefaultFieldSelectionExecutor {
 				context = context
 			)
 
+		// An error can occur only if the document wasn't validated or if this function was called directly with an invalid selection.
 		val fieldDefinition = parentType.field(firstSelection.name)
-			?: error("There is no field named '${firstSelection.name}' on type '${parentType.name}'.")
+			?: return GResult.failure(GError(
+				message = "There is no field named '${firstSelection.name}' on type '${parentType.name}'.",
+				path = path,
+				nodes = listOf(firstSelection.nameNode),
+			))
+
+		// An error can occur only if the schema wasn't validated.
 		val fieldType = context.schema.resolveType(fieldDefinition.type)
 			?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${parentType.name}'.")
 
