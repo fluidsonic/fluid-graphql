@@ -4,7 +4,9 @@ package io.fluidsonic.graphql
 @InternalGraphqlApi
 public open class VisitorContext(
 	public val document: GDocument,
-	public val schema: GSchema
+	public val schema: GSchema,
+	private val fieldDefinition: (name: String, parentType: GNamedType) -> GFieldDefinition? =
+		{ name, parentType -> (parentType as? GNode.WithFieldDefinitions)?.fieldDefinition(name) },
 ) {
 
 	private var visitingNode: GNode? = null
@@ -108,7 +110,7 @@ public open class VisitorContext(
 			}
 
 			is GFieldSelection -> {
-				relatedFieldDefinition = (_relatedParentType as? GNode.WithFieldDefinitions)?.fieldDefinition(node.name)
+				relatedFieldDefinition = (_relatedParentType as? GNamedType)?.let { fieldDefinition(node.name, it) }
 				relatedFieldSelection = node
 				relatedSelection = node
 				relatedType = relatedFieldDefinition
