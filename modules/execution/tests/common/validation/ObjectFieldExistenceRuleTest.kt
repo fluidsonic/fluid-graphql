@@ -30,6 +30,31 @@ class ObjectFieldExistenceRuleTest {
 
 
 	@Test
+	fun testIgnoresFieldOnNonInputTypeNestedInInputType() {
+		assertValidationRule(
+			rule = ObjectFieldExistenceRule,
+			errors = emptyList(),
+			document = """
+				|{
+				|   id(input: { scalar: { irrelevant: true } })
+				|}
+			""",
+			schema = """
+				|type Query {
+				|   id(input: Input): ID
+				|}
+				|
+				|input Input {
+				|   scalar: Scalar
+				|}
+				|
+				|scalar Scalar
+			"""
+		)
+	}
+
+
+	@Test
 	fun testRejectsFieldNamesThatDontExist() {
 		assertValidationRule(
 			rule = ObjectFieldExistenceRule,

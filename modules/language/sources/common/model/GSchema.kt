@@ -8,7 +8,7 @@ public class GSchema internal constructor(
 	queryType: GNamedTypeRef? = null,
 	mutationType: GNamedTypeRef? = null,
 	subscriptionType: GNamedTypeRef? = null,
-	types: List<GNamedType>
+	types: List<GNamedType>,
 ) {
 
 	public val types: List<GNamedType> = types + GType.defaultTypes
@@ -96,7 +96,7 @@ public class GSchema internal constructor(
 		typeRef: GTypeRef?,
 		type: GType?,
 		fullyWrappedTypeRef: GTypeRef? = typeRef,
-		errors: MutableList<GError>? = null
+		errors: MutableList<GError>? = null,
 	): List<GError>? {
 		val type = type
 			?: typeRef?.let { resolveType(it) } // FIXME resolve in execution context
@@ -138,8 +138,8 @@ public class GSchema internal constructor(
 			is GBooleanType ->
 				when (value) {
 					is GBooleanValue,
-					is GNullValue ->
-						true
+					is GNullValue,
+					-> true
 
 					is GEnumValue,
 					is GFloatValue,
@@ -147,25 +147,25 @@ public class GSchema internal constructor(
 					is GListValue,
 					is GObjectValue,
 					is GStringValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GCustomScalarType ->
 				// FIXME support conversion function
 				when (value) {
 					is GBooleanValue,
+					is GEnumValue,
 					is GFloatValue,
 					is GIntValue,
-					is GNullValue,
-					is GStringValue ->
-						true
-
-					is GEnumValue,
 					is GListValue,
+					is GNullValue,
 					is GObjectValue,
-					is GVariableRef ->
-						false
+					is GStringValue,
+					-> true
+
+					is GVariableRef,
+					-> false
 				}
 
 			is GEnumType ->
@@ -182,40 +182,40 @@ public class GSchema internal constructor(
 					is GListValue,
 					is GObjectValue,
 					is GStringValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GFloatType ->
 				when (value) {
 					is GFloatValue,
 					is GIntValue,
-					is GNullValue ->
-						true
+					is GNullValue,
+					-> true
 
 					is GBooleanValue,
 					is GEnumValue,
 					is GListValue,
 					is GObjectValue,
 					is GStringValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GIdType ->
 				when (value) {
 					is GIntValue,
 					is GNullValue,
-					is GStringValue ->
-						true
+					is GStringValue,
+					-> true
 
 					is GBooleanValue,
 					is GEnumValue,
 					is GFloatValue,
 					is GListValue,
 					is GObjectValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GInputObjectType ->
@@ -255,15 +255,15 @@ public class GSchema internal constructor(
 					is GIntValue,
 					is GListValue,
 					is GStringValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GIntType ->
 				when (value) {
 					is GIntValue,
-					is GNullValue ->
-						true
+					is GNullValue,
+					-> true
 
 					is GBooleanValue,
 					is GEnumValue,
@@ -271,8 +271,8 @@ public class GSchema internal constructor(
 					is GListValue,
 					is GObjectValue,
 					is GStringValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GListType ->
@@ -295,7 +295,8 @@ public class GSchema internal constructor(
 					is GFloatValue,
 					is GIntValue,
 					is GObjectValue,
-					is GStringValue -> {
+					is GStringValue,
+					-> {
 						validateValue(
 							value = value,
 							typeRef = (typeRef?.nullableRef as GListTypeRef?)?.elementType,
@@ -320,8 +321,8 @@ public class GSchema internal constructor(
 			is GStringType ->
 				when (value) {
 					is GNullValue,
-					is GStringValue ->
-						true
+					is GStringValue,
+					-> true
 
 					is GBooleanValue,
 					is GEnumValue,
@@ -329,13 +330,14 @@ public class GSchema internal constructor(
 					is GIntValue,
 					is GListValue,
 					is GObjectValue,
-					is GVariableRef ->
-						false
+					is GVariableRef,
+					-> false
 				}
 
 			is GInterfaceType,
 			is GObjectType,
-			is GUnionType ->
+			is GUnionType,
+			->
 				true // We don't check types - only values.
 		}
 

@@ -11,7 +11,9 @@ class VisitorContextTest {
 	fun testProvidesCorrectInformation() {
 		val stringValue = GStringValue("value")
 		val stringArgument = GArgument(name = "string", value = stringValue)
-		val objectValue = GObjectValue(listOf(stringArgument))
+		val scalarObjectValue = GObjectValue(listOf(stringArgument))
+		val scalarArgument = GArgument(name = "scalar", value = scalarObjectValue)
+		val objectValue = GObjectValue(listOf(stringArgument, scalarArgument))
 		val inputArgument = GArgument(name = "input", value = objectValue)
 		val directive = GDirective(name = "directive", arguments = listOf(stringArgument))
 		val fieldSelection = GFieldSelection(name = "field", arguments = listOf(stringArgument, inputArgument))
@@ -19,9 +21,16 @@ class VisitorContextTest {
 		val operationDefinition = GOperationDefinition(type = GOperationType.query, selectionSet = selectionSet, directives = listOf(directive))
 		val document = GDocument(definitions = listOf(operationDefinition))
 
+		/*
+		 * query @directive(string: "value") {
+		 *    field(string: "value", input: { string: "value", scalar: { string: "value" } })
+		 * }
+		 */
+
 		val schema = GSchema.parse("""
 			|directive @directive(string: String!) on QUERY
-			|input Input { string: String! }
+			|scalar Scalar
+			|input Input { string: String!, scalar: Scalar }
 			|type Query { field(string: String!, input: Input!): String! }
 		""".trimMargin()).valueWithoutErrorsOrThrow()
 
@@ -29,9 +38,11 @@ class VisitorContextTest {
 		val directiveStringArgumentDefinition = directiveDefinition.argumentDefinition("string")!!
 		val queryType = schema.rootTypeForOperationType(GOperationType.query)!!
 		val inputType = schema.resolveType("Input") as GInputObjectType
+		val scalarType = schema.resolveType("Scalar") as GCustomScalarType
 		val fieldDefinition = queryType.fieldDefinition("field")!!
 		val fieldStringArgumentDefinition = fieldDefinition.argumentDefinition("string")!!
 		val fieldInputArgumentDefinition = fieldDefinition.argumentDefinition("input")!!
+		val inputScalarArgumentDefinition = inputType.argumentDefinition("scalar")!!
 		val inputStringArgumentDefinition = inputType.argumentDefinition("string")!!
 		val nonNullInputType = GNonNullType(inputType)
 		val nonNullStringType = GNonNullType(GStringType)
@@ -228,12 +239,82 @@ class VisitorContextTest {
 				relatedSelectionSet = selectionSet,
 				relatedType = nonNullStringType
 			),
+			CapturedElement(
+				node = scalarArgument,
+				parentNode = objectValue,
+				relatedArgumentDefinition = inputScalarArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = scalarType
+			),
+			CapturedElement(
+				node = scalarArgument.nameNode,
+				parentNode = scalarArgument,
+				relatedArgumentDefinition = inputScalarArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = scalarType
+			),
+			CapturedElement(
+				node = scalarObjectValue,
+				parentNode = scalarArgument,
+				relatedArgumentDefinition = inputScalarArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = scalarType
+			),
+			CapturedElement(
+				node = stringArgument,
+				parentNode = scalarObjectValue,
+				relatedArgumentDefinition = null,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = scalarType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+			),
+			CapturedElement(
+				node = stringArgument.nameNode,
+				parentNode = stringArgument,
+				relatedArgumentDefinition = null,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = scalarType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+			),
+			CapturedElement(
+				node = stringValue,
+				parentNode = stringArgument,
+				relatedArgumentDefinition = null,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = scalarType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+			),
 		)
 
 		assertEquals(expected = expectedElements, actual = actualElements)
 	}
 
 
+	@Suppress("EqualsOrHashCode")
 	private data class CapturedElement(
 		val node: GNode,
 		val parentNode: GNode? = null,

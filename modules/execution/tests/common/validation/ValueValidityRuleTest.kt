@@ -7,6 +7,95 @@ import kotlin.test.*
 class ValueValidityRuleTest {
 
 	@Test
+	fun testAcceptsAnyResolvedValueForCustomerScalar() {
+		assertValidationRule(
+			rule = ValueValidityRule,
+			errors = emptyList(),
+			document = """
+				|query someQuery(
+				|   ${'$'}variable1: Scalar = true
+				|   ${'$'}variable2: Scalar = null
+				|   ${'$'}variable3: Scalar = 1.0
+				|   ${'$'}variable4: Scalar = "string"
+				|   ${'$'}variable5: Scalar = enum
+				|   ${'$'}variable6: Scalar = {}
+				|   ${'$'}variable7: Scalar = [true]
+				|   ${'$'}variable8: Scalar = [null]
+				|   ${'$'}variable9: Scalar = [1.0]
+				|   ${'$'}variable10: Scalar = ["string"]
+				|   ${'$'}variable11: Scalar = [enum]
+				|   ${'$'}variable12: Scalar = [{}]
+				|) {
+				|   fun(
+				|      argument1: true
+				|      argument2: null
+				|      argument3: 1.0
+				|      argument4: "string"
+				|      argument5: enum
+				|      argument6: {}
+				|      argument7: [true]
+				|      argument8: [null]
+				|      argument9: [1.0]
+				|      argument10: ["string"]
+				|      argument11: [enum]
+				|      argument12: [{}]
+				|      argument13: {
+				|         field1: true
+				|         field2: null
+				|         field3: 1.0
+				|         field4: "string"
+				|         field5: enum
+				|         field6: {}
+				|         field7: [true]
+				|         field8: [null]
+				|         field9: [1.0]
+				|         field10: ["string"]
+				|         field11: [enum]
+				|         field12: [{}]
+				|      }
+				|   )
+				|}
+			""",
+			schema = """
+				|type Query {
+				|   fun(
+				|      argument1: Scalar = true
+				|      argument2: Scalar = null
+				|      argument3: Scalar = 1.0
+				|      argument4: Scalar = "string"
+				|      argument5: Scalar = enum
+				|      argument6: Scalar = {}
+				|      argument7: Scalar = [true]
+				|      argument8: Scalar = [null]
+				|      argument9: Scalar = [1.0]
+				|      argument10: Scalar = ["string"]
+				|      argument11: Scalar = [enum]
+				|      argument12: Scalar = [{}]
+				|      argument13: Input
+				|   ): String
+				|}
+				|
+				|input Input {
+				|   field1: Scalar = true
+				|   field2: Scalar = null
+				|   field3: Scalar = 1.0
+				|   field4: Scalar = "string"
+				|   field5: Scalar = enum
+				|   field6: Scalar = {}
+				|   field7: Scalar = [true]
+				|   field8: Scalar = [null]
+				|   field9: Scalar = [1.0]
+				|   field10: Scalar = ["string"]
+				|   field11: Scalar = [enum]
+				|   field12: Scalar = [{}]
+				|}
+				|
+				|scalar Scalar
+			"""
+		)
+	}
+
+	@Test
 	fun testAcceptsValuesOfCorrectTypeInDocument() {
 		assertValidationRule(
 			rule = ValueValidityRule,
@@ -1274,33 +1363,6 @@ class ValueValidityRuleTest {
 					100 |    ${'$'}variable99: Scalar = VALUE
 				""",
 				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:100:26
-					 99 |    ${'$'}variable98: [Int!]! = ""
-					100 |    ${'$'}variable99: Scalar = VALUE
-					    |                          ^
-					101 |    ${'$'}variable100: Scalar = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:101:27
-					100 |    ${'$'}variable99: Scalar = VALUE
-					101 |    ${'$'}variable100: Scalar = {}
-					    |                           ^
-					102 |    ${'$'}variable101: Scalar = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:102:27
-					101 |    ${'$'}variable100: Scalar = {}
-					102 |    ${'$'}variable101: Scalar = []
-					    |                           ^
-					103 |    ${'$'}variable102: Scalar! = null
-				""",
-				"""
 					Type 'Scalar!' does not allow value 'null'.
 
 					<document>:103:28
@@ -1308,33 +1370,6 @@ class ValueValidityRuleTest {
 					103 |    ${'$'}variable102: Scalar! = null
 					    |                            ^
 					104 |    ${'$'}variable103: Scalar! = VALUE
-				""",
-				"""
-					Type 'Scalar!' does not allow value 'VALUE'.
-
-					<document>:104:28
-					103 |    ${'$'}variable102: Scalar! = null
-					104 |    ${'$'}variable103: Scalar! = VALUE
-					    |                            ^
-					105 |    ${'$'}variable104: Scalar! = {}
-				""",
-				"""
-					Type 'Scalar!' does not allow an input object value.
-
-					<document>:105:28
-					104 |    ${'$'}variable103: Scalar! = VALUE
-					105 |    ${'$'}variable104: Scalar! = {}
-					    |                            ^
-					106 |    ${'$'}variable105: Scalar! = []
-				""",
-				"""
-					Type 'Scalar!' does not allow a list value.
-
-					<document>:106:28
-					105 |    ${'$'}variable104: Scalar! = {}
-					106 |    ${'$'}variable105: Scalar! = []
-					    |                            ^
-					107 |    ${'$'}variable106: String = true
 				""",
 				"""
 					Type 'String' does not allow value 'true'.
@@ -2924,51 +2959,6 @@ class ValueValidityRuleTest {
 					101 |       argument99: Scalar = VALUE
 				""",
 				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:220:19
-					219 |       argument98: ""
-					220 |       argument99: VALUE
-					    |                   ^
-					221 |       argument100: {}
-
-					<document>:101:19
-					100 |       argument98: [Int!]! = ""
-					101 |       argument99: Scalar = VALUE
-					    |                   ^
-					102 |       argument100: Scalar = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:221:20
-					220 |       argument99: VALUE
-					221 |       argument100: {}
-					    |                    ^
-					222 |       argument101: []
-
-					<document>:102:20
-					101 |       argument99: Scalar = VALUE
-					102 |       argument100: Scalar = {}
-					    |                    ^
-					103 |       argument101: Scalar = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:222:20
-					221 |       argument100: {}
-					222 |       argument101: []
-					    |                    ^
-					223 |       argument102: null
-
-					<document>:103:20
-					102 |       argument100: Scalar = {}
-					103 |       argument101: Scalar = []
-					    |                    ^
-					104 |       argument102: Scalar! = null
-				""",
-				"""
 					Type 'Scalar' does not allow value 'null'.
 
 					<document>:223:20
@@ -2982,51 +2972,6 @@ class ValueValidityRuleTest {
 					104 |       argument102: Scalar! = null
 					    |                    ^
 					105 |       argument103: Scalar! = VALUE
-				""",
-				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:224:20
-					223 |       argument102: null
-					224 |       argument103: VALUE
-					    |                    ^
-					225 |       argument104: {}
-
-					<document>:105:20
-					104 |       argument102: Scalar! = null
-					105 |       argument103: Scalar! = VALUE
-					    |                    ^
-					106 |       argument104: Scalar! = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:225:20
-					224 |       argument103: VALUE
-					225 |       argument104: {}
-					    |                    ^
-					226 |       argument105: []
-
-					<document>:106:20
-					105 |       argument103: Scalar! = VALUE
-					106 |       argument104: Scalar! = {}
-					    |                    ^
-					107 |       argument105: Scalar! = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:226:20
-					225 |       argument104: {}
-					226 |       argument105: []
-					    |                    ^
-					227 |       argument106: true
-
-					<document>:107:20
-					106 |       argument104: Scalar! = {}
-					107 |       argument105: Scalar! = []
-					    |                    ^
-					108 |       argument106: String = true
 				""",
 				"""
 					Type 'String' does not allow value 'true'.
@@ -4709,51 +4654,6 @@ class ValueValidityRuleTest {
 					224 |    field99: Scalar = VALUE
 				""",
 				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:339:19
-					338 |          field98: ""
-					339 |          field99: VALUE
-					    |                   ^
-					340 |          field100: {}
-
-					<document>:224:13
-					223 |    field98: [Int!]! = ""
-					224 |    field99: Scalar = VALUE
-					    |             ^
-					225 |    field100: Scalar = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:340:20
-					339 |          field99: VALUE
-					340 |          field100: {}
-					    |                    ^
-					341 |          field101: []
-
-					<document>:225:14
-					224 |    field99: Scalar = VALUE
-					225 |    field100: Scalar = {}
-					    |              ^
-					226 |    field101: Scalar = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:341:20
-					340 |          field100: {}
-					341 |          field101: []
-					    |                    ^
-					342 |          field102: null
-
-					<document>:226:14
-					225 |    field100: Scalar = {}
-					226 |    field101: Scalar = []
-					    |              ^
-					227 |    field102: Scalar! = null
-				""",
-				"""
 					Type 'Scalar' does not allow value 'null'.
 
 					<document>:342:20
@@ -4767,51 +4667,6 @@ class ValueValidityRuleTest {
 					227 |    field102: Scalar! = null
 					    |              ^
 					228 |    field103: Scalar! = VALUE
-				""",
-				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:343:20
-					342 |          field102: null
-					343 |          field103: VALUE
-					    |                    ^
-					344 |          field104: {}
-
-					<document>:228:14
-					227 |    field102: Scalar! = null
-					228 |    field103: Scalar! = VALUE
-					    |              ^
-					229 |    field104: Scalar! = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:344:20
-					343 |          field103: VALUE
-					344 |          field104: {}
-					    |                    ^
-					345 |          field105: []
-
-					<document>:229:14
-					228 |    field103: Scalar! = VALUE
-					229 |    field104: Scalar! = {}
-					    |              ^
-					230 |    field105: Scalar! = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:345:20
-					344 |          field104: {}
-					345 |          field105: []
-					    |                    ^
-					346 |          field106: true
-
-					<document>:230:14
-					229 |    field104: Scalar! = {}
-					230 |    field105: Scalar! = []
-					    |              ^
-					231 |    field106: String = true
 				""",
 				"""
 					Type 'String' does not allow value 'true'.
@@ -6514,33 +6369,6 @@ class ValueValidityRuleTest {
 					101 |       argument99: Scalar = VALUE
 				""",
 				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:101:28
-					100 |       argument98: [Int!]! = ""
-					101 |       argument99: Scalar = VALUE
-					    |                            ^
-					102 |       argument100: Scalar = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:102:29
-					101 |       argument99: Scalar = VALUE
-					102 |       argument100: Scalar = {}
-					    |                             ^
-					103 |       argument101: Scalar = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:103:29
-					102 |       argument100: Scalar = {}
-					103 |       argument101: Scalar = []
-					    |                             ^
-					104 |       argument102: Scalar! = null
-				""",
-				"""
 					Type 'Scalar!' does not allow value 'null'.
 
 					<document>:104:30
@@ -6548,33 +6376,6 @@ class ValueValidityRuleTest {
 					104 |       argument102: Scalar! = null
 					    |                              ^
 					105 |       argument103: Scalar! = VALUE
-				""",
-				"""
-					Type 'Scalar!' does not allow value 'VALUE'.
-
-					<document>:105:30
-					104 |       argument102: Scalar! = null
-					105 |       argument103: Scalar! = VALUE
-					    |                              ^
-					106 |       argument104: Scalar! = {}
-				""",
-				"""
-					Type 'Scalar!' does not allow an input object value.
-
-					<document>:106:30
-					105 |       argument103: Scalar! = VALUE
-					106 |       argument104: Scalar! = {}
-					    |                              ^
-					107 |       argument105: Scalar! = []
-				""",
-				"""
-					Type 'Scalar!' does not allow a list value.
-
-					<document>:107:30
-					106 |       argument104: Scalar! = {}
-					107 |       argument105: Scalar! = []
-					    |                              ^
-					108 |       argument106: String = true
 				""",
 				"""
 					Type 'String' does not allow value 'true'.
@@ -7576,33 +7377,6 @@ class ValueValidityRuleTest {
 					224 |    field99: Scalar = VALUE
 				""",
 				"""
-					Type 'Scalar' does not allow value 'VALUE'.
-
-					<document>:224:22
-					223 |    field98: [Int!]! = ""
-					224 |    field99: Scalar = VALUE
-					    |                      ^
-					225 |    field100: Scalar = {}
-				""",
-				"""
-					Type 'Scalar' does not allow an input object value.
-
-					<document>:225:23
-					224 |    field99: Scalar = VALUE
-					225 |    field100: Scalar = {}
-					    |                       ^
-					226 |    field101: Scalar = []
-				""",
-				"""
-					Type 'Scalar' does not allow a list value.
-
-					<document>:226:23
-					225 |    field100: Scalar = {}
-					226 |    field101: Scalar = []
-					    |                       ^
-					227 |    field102: Scalar! = null
-				""",
-				"""
 					Type 'Scalar!' does not allow value 'null'.
 
 					<document>:227:24
@@ -7610,33 +7384,6 @@ class ValueValidityRuleTest {
 					227 |    field102: Scalar! = null
 					    |                        ^
 					228 |    field103: Scalar! = VALUE
-				""",
-				"""
-					Type 'Scalar!' does not allow value 'VALUE'.
-
-					<document>:228:24
-					227 |    field102: Scalar! = null
-					228 |    field103: Scalar! = VALUE
-					    |                        ^
-					229 |    field104: Scalar! = {}
-				""",
-				"""
-					Type 'Scalar!' does not allow an input object value.
-
-					<document>:229:24
-					228 |    field103: Scalar! = VALUE
-					229 |    field104: Scalar! = {}
-					    |                        ^
-					230 |    field105: Scalar! = []
-				""",
-				"""
-					Type 'Scalar!' does not allow a list value.
-
-					<document>:230:24
-					229 |    field104: Scalar! = {}
-					230 |    field105: Scalar! = []
-					    |                        ^
-					231 |    field106: String = true
 				""",
 				"""
 					Type 'String' does not allow value 'true'.
