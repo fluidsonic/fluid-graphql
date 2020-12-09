@@ -46,6 +46,27 @@ class ArgumentExistenceRuleTest {
 
 
 	@Test
+	fun testIgnoresNestedObjectValuesWithoutInputType() {
+		assertValidationRule(
+			rule = ArgumentExistenceRule,
+			errors = emptyList(),
+			document = """
+				|{
+				|   id(input: { scalar: { doesNotExist: true } })
+				|}
+			""",
+			schema = """
+				|input Input { scalar: Scalar }
+				|scalar Scalar
+				|type Query {
+				|   id(input: Input): ID
+				|}
+			"""
+		)
+	}
+
+
+	@Test
 	fun testRejectsArgumentThatDontExist() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
@@ -57,12 +78,6 @@ class ArgumentExistenceRuleTest {
 					1 | {
 					2 |    id(noSuchArgument: "value") @include(unless: false) @foo(bar: 2)
 					  |       ^
-					3 | }
-
-					<document>:2:4
-					1 | type Query {
-					2 |    id(argument: String): ID
-					  |    ^
 					3 | }
 				""",
 				"""
@@ -82,11 +97,6 @@ class ArgumentExistenceRuleTest {
 					2 |    id(noSuchArgument: "value") @include(unless: false) @foo(bar: 2)
 					  |                                                             ^
 					3 | }
-
-					<document>:5:12
-					4 | 
-					5 | directive @foo(value: Int) on FIELD
-					  |            ^
 				"""
 			),
 			document = """

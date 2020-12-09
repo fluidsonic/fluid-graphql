@@ -80,6 +80,7 @@ public open class VisitorContext(
 					parentNode is GFieldSelection -> relatedFieldDefinition?.argumentDefinition(node.name)
 					else -> null
 				}
+				relatedFieldDefinition
 				relatedParentType = when {
 					relatedDirective != null -> null
 					underlyingRelatedType is GInputObjectType -> underlyingRelatedType
