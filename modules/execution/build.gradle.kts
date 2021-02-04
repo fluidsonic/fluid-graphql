@@ -10,16 +10,17 @@ fluidLibraryModule(description = "FIXME") {
 			}
 
 			testDependencies {
-				implementation(kotlinx("coroutines-core", "1.3.9"))
+				implementation(kotlinx("coroutines-core", "1.4.2"))
 			}
 		}
 
-//		darwin() // FIXME
+		darwin {
+			withoutWatchosX64() // https://github.com/Kotlin/kotlinx.coroutines/issues/2524
+		}
 		js()
-
 		jvm {
 			testDependencies {
-				implementation(kotlinx("coroutines-test", "1.3.9"))
+				implementation(kotlinx("coroutines-test", "1.4.2"))
 			}
 		}
 	}

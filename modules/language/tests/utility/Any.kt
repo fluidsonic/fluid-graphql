@@ -30,4 +30,4 @@ fun identityOf(value: Any?): String {
 }
 
 
-expect fun uniqueIdOf(value: Any): Int
+expect fun uniqueIdOf(value: Any): String

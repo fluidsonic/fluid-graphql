@@ -2,7 +2,7 @@ import io.fluidsonic.gradle.*
 
 fluidLibraryModule(description = "FIXME") {
 	targets {
-//		darwin() // FIXME
+		darwin()
 		js()
 		jvm()
 	}

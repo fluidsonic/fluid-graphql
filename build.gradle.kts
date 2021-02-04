@@ -1,10 +1,10 @@
 import io.fluidsonic.gradle.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.1.11"
+	id("io.fluidsonic.gradle") version "1.1.18"
 }
 
-fluidLibrary(name = "graphql", version = "0.9.5-SNAPSHOT") {
+fluidLibrary(name = "graphql", version = "0.9.7-kotlin-1.5") {
 	allModules {
 		language {
 			withExperimentalApi("io.fluidsonic.graphql.InternalGraphqlApi")
@@ -21,8 +21,10 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-//		darwin()
-//		js() // FIXME
+		darwin {
+			withoutWatchosX64() // https://github.com/Kotlin/kotlinx.coroutines/issues/2524
+		}
+		js()
 		jvm()
 	}
 }

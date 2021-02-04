@@ -39,6 +39,9 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 					nodes = listOf(argument.nameNode)
 				)
 			}
+
+			else ->
+				Unit
 		}
 	}
 }
