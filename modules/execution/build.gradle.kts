@@ -10,7 +10,7 @@ fluidLibraryModule(description = "FIXME") {
 			}
 
 			testDependencies {
-				implementation(kotlinx("coroutines-core", "1.4.3"))
+				implementation(kotlinx("coroutines-core", "1.5.0"))
 			}
 		}
 
@@ -20,7 +20,7 @@ fluidLibraryModule(description = "FIXME") {
 		js()
 		jvm {
 			testDependencies {
-				implementation(kotlinx("coroutines-test", "1.4.3"))
+				implementation(kotlinx("coroutines-test", "1.5.0"))
 			}
 		}
 	}

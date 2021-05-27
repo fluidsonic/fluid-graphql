@@ -2273,7 +2273,8 @@ public sealed class GScalarType(
 	origin = origin
 ) {
 
-	constructor(
+	protected constructor(
+		// https://youtrack.jetbrains.com/issue/KT-46999
 		name: String,
 		description: String? = null,
 		directives: List<GDirective> = emptyList(),

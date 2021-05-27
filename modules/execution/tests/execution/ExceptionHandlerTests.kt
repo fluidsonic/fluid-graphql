@@ -29,7 +29,7 @@ class ExceptionHandlerTests {
 			)
 			.execute("{ foo bar baz }")
 
-		assertEquals(expected = listOf(testException), actual = exceptions)
+		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.success(
 				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
@@ -91,7 +91,7 @@ class ExceptionHandlerTests {
 			)
 			.execute("{ foo(arg:42) bar(arg:42) baz }")
 
-		assertEquals(expected = listOf(testException), actual = exceptions)
+		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.success(
 				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
@@ -157,7 +157,7 @@ class ExceptionHandlerTests {
 			)
 			.execute("{ foo(arg:42) bar(arg:42) baz }")
 
-		assertEquals(expected = listOf(testException), actual = exceptions)
+		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.success(
 				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
@@ -220,7 +220,7 @@ class ExceptionHandlerTests {
 			)
 			.execute("{ foo }")
 
-		assertEquals(expected = listOf(testException), actual = exceptions)
+		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.failure(
 				errors = listOf(testError)
@@ -309,7 +309,7 @@ class ExceptionHandlerTests {
 				variableValues = mapOf("foo" to "foo")
 			)
 
-		assertEquals(expected = listOf(testException), actual = exceptions)
+		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.failure(
 				errors = listOf(testError)
