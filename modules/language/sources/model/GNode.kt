@@ -327,7 +327,7 @@ public sealed class GNode(
 	}
 
 
-	public interface WithDefaultValue : WithType {
+	public interface WithDefaultValue : WithDirectives, WithType {
 
 		public val defaultValue: GValue?
 
@@ -337,7 +337,7 @@ public sealed class GNode(
 
 
 		public fun isRequired(): Boolean =
-			type is GNonNullTypeRef && defaultValue === null
+			type is GNonNullTypeRef && defaultValue === null && directive(GLanguage.defaultOptionalDirective.name) == null
 	}
 
 

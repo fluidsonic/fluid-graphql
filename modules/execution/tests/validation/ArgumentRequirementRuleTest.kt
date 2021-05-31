@@ -7,7 +7,7 @@ import kotlin.test.*
 class ArgumentRequirementRuleTest {
 
 	@Test
-	fun testAcceptsAbsenceOfOptionalArguments() {
+	fun testAcceptsAbsenceOfArgumentsWithDefaultValue() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
 			errors = emptyList(),
@@ -16,6 +16,28 @@ class ArgumentRequirementRuleTest {
 				|type Query {
 				|   id(arg1: String, arg2: String! = "default"): ID
 				|}
+			"""
+		)
+	}
+
+
+	@Test
+	fun testAcceptsAbsenceOfOptionalArguments() {
+		assertValidationRule(
+			rule = ArgumentRequirementRule,
+			errors = emptyList(),
+			document = """
+				|{
+				|   id @foo
+				|   withInput: id(input: {}) @foo(input: {})
+				|}
+			""",
+			schema = """
+				|input Input { string: String! @optional, input: Input! @optional }
+				|type Query {
+				|   id(string: String! @optional, input: Input! @optional): ID
+				|}
+				|directive @foo(string: String! @optional, input: Input! @optional) on FIELD
 			"""
 		)
 	}

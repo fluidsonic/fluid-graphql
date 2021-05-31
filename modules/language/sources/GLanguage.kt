@@ -50,6 +50,17 @@ public object GLanguage {
 	)
 
 
+	// Non-standard, see https://github.com/graphql/graphql-spec/issues/872
+	public val defaultOptionalDirective: GDirectiveDefinition = GDirectiveDefinition(
+		name = "optional",
+		description = "Accepts the complete absence of a value even if the argument is of a non-null type.",
+		locations = setOf(
+			GDirectiveLocation.ARGUMENT_DEFINITION,
+			GDirectiveLocation.INPUT_FIELD_DEFINITION,
+		)
+	)
+
+
 	public val defaultSkipDirective: GDirectiveDefinition = GDirectiveDefinition(
 		name = "skip",
 		argumentDefinitions = listOf(

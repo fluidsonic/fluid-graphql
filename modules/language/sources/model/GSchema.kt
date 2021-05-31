@@ -360,7 +360,10 @@ public class GSchema internal constructor(
 }
 
 
-public fun GSchema(document: GDocument): GSchema {
+public fun GSchema(
+	document: GDocument,
+	supportOptional: Boolean = false,
+): GSchema {
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
@@ -370,6 +373,9 @@ public fun GSchema(document: GDocument): GSchema {
 		directiveDefinitions += GLanguage.defaultIncludeDirective
 	if (directiveDefinitions.none { it.name == "skip" })
 		directiveDefinitions += GLanguage.defaultSkipDirective
+
+	if (supportOptional && directiveDefinitions.none { it.name == "optional" })
+		directiveDefinitions += GLanguage.defaultOptionalDirective
 
 	val schemaDefinition = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()
 		.singleOrNull() // FIXME
