@@ -75,14 +75,13 @@ public open class VisitorContext(
 				val underlyingRelatedType = relatedType?.underlyingNamedType
 
 				relatedArgumentDefinition = when {
-					relatedDirective != null -> relatedDirectiveDefinition?.argumentDefinition(node.name)
+					parentNode is GDirective -> relatedDirectiveDefinition?.argumentDefinition(node.name)
 					underlyingRelatedType is GInputObjectType -> underlyingRelatedType.argumentDefinition(node.name)
 					parentNode is GFieldSelection -> relatedFieldDefinition?.argumentDefinition(node.name)
 					else -> null
 				}
-				relatedFieldDefinition
 				relatedParentType = when {
-					relatedDirective != null -> null
+					parentNode is GDirective -> null
 					underlyingRelatedType is GInputObjectType -> underlyingRelatedType
 					parentNode is GFieldSelection -> relatedParentType
 					else -> relatedType

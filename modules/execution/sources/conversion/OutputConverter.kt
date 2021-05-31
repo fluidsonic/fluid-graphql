@@ -9,7 +9,7 @@ internal object OutputConverter {
 		type: GType,
 		parentType: GObjectType,
 		fieldDefinition: GFieldDefinition,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any> {
 		val coercerContext = Context(
 			execution = context,
@@ -127,7 +127,7 @@ internal object OutputConverter {
 		val isUsingCoercerProvidedByType: Boolean,
 		override val parentType: GObjectType,
 		override val type: GType,
-		val value: Any
+		val value: Any,
 	) : GOutputCoercerContext {
 
 		override fun invalid(details: String?): Nothing =
@@ -153,7 +153,7 @@ internal object OutputConverter {
 			})
 
 
-		override fun next(): Any? =
+		override fun next(): Any =
 			coerceValue(context = this)
 	}
 }

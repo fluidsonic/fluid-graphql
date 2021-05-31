@@ -26,7 +26,7 @@ internal object VariableInputConverter {
 					is GInputObjectType -> coerceValueForInputObject(value, type = type, context = context)
 					is GScalarType -> coerceValueForScalar(value, type = type, context = context)
 					is GCompositeType -> validationError(
-						message = "${type.kind.toString().capitalize()} '${type.name}' is not an input type.",
+						message = "${type.kind.toString().replaceFirstChar { it.uppercase() }} '${type.name}' is not an input type.",
 						variableDefinition = context.variableDefinition,
 						argumentDefinition = context.argumentDefinition
 					)
@@ -103,7 +103,7 @@ internal object VariableInputConverter {
 	}
 
 
-	private fun coerceValueForList(value: Any, type: GListType, context: Context): Any? =
+	private fun coerceValueForList(value: Any, type: GListType, context: Context): List<Any?> =
 		when (value) {
 			is Collection<*> -> value
 				.mapIndexed { index, element ->

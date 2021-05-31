@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 private class ParallelVisitor<Data>(
-	private val children: List<Visitor<Unit, Data>>
+	private val children: List<Visitor<Unit, Data>>,
 ) : Visitor<Unit, Data>() {
 
 	// FIXME We must use Visit to orchestrate node traversal rather than doing so by ourself in ParallelVisit.
@@ -15,7 +15,7 @@ private class ParallelVisitor<Data>(
 private class ParallelVisit<in Data>(
 	node: GNode,
 	data: Data,
-	children: List<Visitor<Unit, Data>>
+	children: List<Visitor<Unit, Data>>,
 ) {
 
 	init {
@@ -126,7 +126,7 @@ private class ParallelVisit<in Data>(
 		private val visitor: Visitor<Unit, Data>,
 		private val index: Int,
 		private var data: Data,
-		state: State = State.initial
+		state: State = State.initial,
 	) : Visit {
 
 		var state = state
@@ -140,14 +140,16 @@ private class ParallelVisit<in Data>(
 
 				State.afterVisitingChildren,
 				State.beforeVisitingChildren,
-				State.skippingChildren -> {
+				State.skippingChildren,
+				-> {
 					state = State.aborted
 
 					parent.onChildAbort()
 				}
 
 				State.completed,
-				State.initial ->
+				State.initial,
+				->
 					error(".abort() cannot be called here.")
 			}
 		}
@@ -189,7 +191,8 @@ private class ParallelVisit<in Data>(
 		override fun skipChildren() {
 			when (state) {
 				State.aborted,
-				State.skippingChildren ->
+				State.skippingChildren,
+				->
 					return
 
 				State.afterVisitingChildren ->
@@ -202,7 +205,8 @@ private class ParallelVisit<in Data>(
 				}
 
 				State.completed,
-				State.initial ->
+				State.initial,
+				->
 					error(".skipChildren() cannot be called here.")
 			}
 		}
@@ -215,7 +219,8 @@ private class ParallelVisit<in Data>(
 		private fun visitChildren(data: Data) {
 			when (state) {
 				State.aborted,
-				State.skippingChildren ->
+				State.skippingChildren,
+				->
 					Unit
 
 				State.afterVisitingChildren ->
@@ -240,7 +245,8 @@ private class ParallelVisit<in Data>(
 				}
 
 				State.completed,
-				State.initial ->
+				State.initial,
+				->
 					error(".visitChildren() cannot be called here.")
 			}
 		}

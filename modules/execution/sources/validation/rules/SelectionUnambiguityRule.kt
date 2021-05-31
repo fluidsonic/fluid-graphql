@@ -44,7 +44,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 	private fun findConflictsForResponseName(
 		responseName: String,
 		fields: List<ResolvedField>,
-		data: ValidationContext
+		data: ValidationContext,
 	) {
 		val firstField = fields.first()
 
@@ -130,7 +130,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
 	private fun findConflictsInSet(
 		set: List<SelectionInfo>,
-		data: ValidationContext
+		data: ValidationContext,
 	) {
 		val fieldsByResponseName = set.groupByResponseName(context = data)
 
@@ -147,7 +147,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 		parentType: GNamedType,
 		result: MutableMap<String, MutableList<ResolvedField>>,
 		visitedFragments: MutableSet<String>,
-		data: ValidationContext
+		data: ValidationContext,
 	) {
 		when (this) {
 			is GFieldSelection -> {
@@ -225,7 +225,8 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 			is GInputObjectType,
 			is GObjectType,
 			is GScalarType,
-			is GUnionType ->
+			is GUnionType,
+			->
 				false
 		}
 	}
@@ -236,7 +237,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
 
 	private fun List<SelectionInfo>.groupByResponseName(
-		context: ValidationContext
+		context: ValidationContext,
 	): Map<String, List<ResolvedField>> {
 		val result = mutableMapOf<String, MutableList<ResolvedField>>()
 
@@ -253,7 +254,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 	private fun List<SelectionInfo>.groupByResponseName(
 		context: ValidationContext,
 		result: MutableMap<String, MutableList<ResolvedField>>,
-		visitedFragments: MutableSet<String>
+		visitedFragments: MutableSet<String>,
 	) {
 		for ((parentType, selection) in this)
 			selection.groupByResponseName(
@@ -269,12 +270,12 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 		val definition: GFieldDefinition,
 		val parentType: GNamedType,
 		val selection: GFieldSelection,
-		val type: GType
+		val type: GType,
 	)
 
 
 	private data class SelectionInfo(
 		val parentType: GNamedType,
-		val selection: GSelection
+		val selection: GSelection,
 	)
 }

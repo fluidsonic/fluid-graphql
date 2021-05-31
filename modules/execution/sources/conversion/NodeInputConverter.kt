@@ -26,7 +26,7 @@ internal object NodeInputConverter {
 				is GInputObjectType -> coerceValueForInputObject(value, type = type, context = context)
 				is GScalarType -> coerceValueForScalar(value, type = type, context = context)
 				is GCompositeType -> validationError(
-					message = "${type.kind.toString().capitalize()} '${type.name}' is not an input type.",
+					message = "${type.kind.toString().replaceFirstChar { it.uppercase() }} '${type.name}' is not an input type.",
 					argumentDefinition = context.argumentDefinition
 				)
 			}
@@ -94,7 +94,7 @@ internal object NodeInputConverter {
 
 
 	// http://spec.graphql.org/draft/#sec-Type-System.List.Input-Coercion
-	private fun coerceValueForList(value: GValue, type: GListType, context: Context): Any? =
+	private fun coerceValueForList(value: GValue, type: GListType, context: Context): List<Any?> =
 		when (value) {
 			is GListValue -> value.elements.map { element ->
 				convertValue(context = context.copy(
@@ -163,7 +163,7 @@ internal object NodeInputConverter {
 		node: GNode.WithArguments,
 		definitions: Collection<GArgumentDefinition>,
 		fieldSelectionPath: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Map<String, Any?>> {
 		if (definitions.isEmpty())
 			return GResult.success(emptyMap())
@@ -256,7 +256,7 @@ internal object NodeInputConverter {
 		val isUsingCoercerProvidedByType: Boolean,
 		val parentNode: GNode,
 		override val type: GType,
-		val value: Any?
+		val value: Any?,
 	) : GNodeInputCoercerContext {
 
 		override fun invalid(details: String?) =
@@ -296,7 +296,7 @@ internal object NodeInputConverter {
 						append(fullValue.kind)
 					}
 					else
-						append(fullValue.kind.toString().capitalize())
+						append(fullValue.kind.toString().replaceFirstChar { it.uppercase() })
 
 					append(" value is not valid for ")
 

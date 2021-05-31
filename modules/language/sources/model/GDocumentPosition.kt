@@ -46,7 +46,7 @@ public interface GDocumentPosition {
 			if (relevantLine != null) {
 				if (relevantLine.length > 120) {
 					val sublineIndex = ((columnNumber - 1) / 80)
-					val sublineColumnNumber = columnNumber % 80;
+					val sublineColumnNumber = columnNumber % 80
 					val sublines = relevantLine.windowed(80)
 
 					val relevantSubline = sublines.getOrNull(sublineIndex)

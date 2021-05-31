@@ -31,11 +31,10 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 			}
 
 			is GObjectValue -> {
-				val fieldDefinition = data.relatedFieldDefinition ?: return
 				val parentType = data.relatedParentType as? GInputObjectType ?: return
 
 				data.reportError(
-					message = "Unknown argument '${argument.name}' for field '${parentType.name}.${fieldDefinition.name}'.",
+					message = "Field '${argument.name}' is not defined by type '${parentType.name}'.",
 					nodes = listOf(argument.nameNode)
 				)
 			}

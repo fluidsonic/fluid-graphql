@@ -66,7 +66,8 @@ public enum class GDirectiveLocation {
 			is GSelectionSet,
 			is GTypeRef,
 			is GValue,
-			is GWrappingType ->
+			is GWrappingType,
+			->
 				null
 		}
 	}

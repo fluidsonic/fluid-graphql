@@ -7,7 +7,7 @@ import kotlin.test.*
 class ArgumentExistenceRuleTest {
 
 	@Test
-	fun testAcceptsArgumentThatExist() {
+	fun testAcceptsKnownArgument() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = emptyList(),
@@ -26,7 +26,7 @@ class ArgumentExistenceRuleTest {
 
 
 	@Test
-	fun testAcceptsNestedArgumentThatExist() {
+	fun testAcceptsKnownInputField() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = emptyList(),
@@ -46,7 +46,7 @@ class ArgumentExistenceRuleTest {
 
 
 	@Test
-	fun testIgnoresNestedObjectValuesWithoutInputType() {
+	fun testIgnoresObjectValueFieldsOfScalar() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = emptyList(),
@@ -67,7 +67,7 @@ class ArgumentExistenceRuleTest {
 
 
 	@Test
-	fun testRejectsArgumentThatDontExist() {
+	fun testRejectsUnknownArgument() {
 		assertValidationRule(
 			rule = ArgumentExistenceRule,
 			errors = listOf(
@@ -110,6 +110,47 @@ class ArgumentExistenceRuleTest {
 				|}
 				|
 				|directive @foo(value: Int) on FIELD
+			"""
+		)
+	}
+
+
+	@Test
+	fun testRejectsUnknownInputField() {
+		assertValidationRule(
+			rule = ArgumentExistenceRule,
+			errors = listOf(
+				"""
+					Field 'noSuchArgument' is not defined by type 'Input'.
+
+					<document>:2:16
+					1 | {
+					2 |    id(input: { noSuchArgument: "value" }) @foo(input: { bar: 2 })
+					  |                ^
+					3 | }
+				""",
+				"""
+					Field 'bar' is not defined by type 'Input'.
+
+					<document>:2:57
+					1 | {
+					2 |    id(input: { noSuchArgument: "value" }) @foo(input: { bar: 2 })
+					  |                                                         ^
+					3 | }
+				"""
+			),
+			document = """
+				|{
+				|   id(input: { noSuchArgument: "value" }) @foo(input: { bar: 2 })
+				|}
+			""",
+			schema = """
+				|input Input { scalar: Scalar }
+				|type Query {
+				|   id(input: Input): ID
+				|}
+				|
+				|directive @foo(input: Input) on FIELD
 			"""
 		)
 	}

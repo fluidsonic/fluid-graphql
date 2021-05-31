@@ -259,10 +259,7 @@ object AstBuilder {
 
 
 	@AstBuilderDsl
-	class FragmentDefinitionBuilder {
-
-
-	}
+	class FragmentDefinitionBuilder
 
 
 	@AstBuilderDsl
@@ -477,17 +474,14 @@ object AstBuilder {
 
 
 	@AstBuilderDsl
-	class OperationDefinitionBuilder {
-
-
-	}
+	class OperationDefinitionBuilder
 
 
 	data class DocumentPosition(
 		override val startPosition: Int,
 		override val endPosition: Int,
 		override val line: Int = -1,
-		override val column: Int = -1
+		override val column: Int = -1,
 	) : GDocumentPosition {
 
 		constructor(range: IntRange) :
@@ -502,6 +496,14 @@ object AstBuilder {
 					(column < 0 || other.column < 0 || column == other.column) &&
 					(line < 0 || other.line < 0 || line == other.line)
 				)
+
+
+		override fun hashCode(): Int {
+			var result = startPosition
+			result = 31 * result + endPosition
+
+			return result
+		}
 
 
 		override val source: GDocumentSource
@@ -524,9 +526,7 @@ object AstBuilder {
 
 
 	@AstBuilderDsl
-	class SchemaBuilder {
-
-	}
+	class SchemaBuilder
 
 
 	@AstBuilderDsl

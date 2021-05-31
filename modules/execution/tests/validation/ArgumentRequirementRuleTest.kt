@@ -67,7 +67,7 @@ class ArgumentRequirementRuleTest {
 
 
 	@Test
-	fun tesetRejectsAbsenceOfMultipleRequiredArguments() {
+	fun testRejectsAbsenceOfMultipleRequiredArguments() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
 			errors = listOf(

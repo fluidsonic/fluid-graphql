@@ -40,7 +40,7 @@ public class GPath(elements: List<Element> = emptyList()) {
 	public class Builder {
 
 		@PublishedApi
-		internal val stack: MutableList<Any> = mutableListOf<Any>()
+		internal val stack: MutableList<Any> = mutableListOf()
 
 
 		public fun snapshot(): GPath =

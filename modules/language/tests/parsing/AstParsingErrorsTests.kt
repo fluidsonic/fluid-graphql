@@ -95,6 +95,7 @@ class AstParsingErrorsTests {
 	}
 
 
+	@Suppress("SpellCheckingInspection")
 	@Test
 	fun testRejectsNonexistentOperationName() {
 		assertSyntaxError(

@@ -9,6 +9,7 @@ internal object DirectiveExclusivityRule : ValidationRule.Singleton() {
 			return // No directives to check.
 
 		node.directives
+			.asSequence()
 			.mapNotNull { directive ->
 				// Unknown.
 				data.schema.directiveDefinition(directive.name)?.let { directive to it }

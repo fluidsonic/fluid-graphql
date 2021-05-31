@@ -4,7 +4,7 @@ import io.fluidsonic.graphql.Token.Kind as TokenKind
 
 
 internal class Parser private constructor(
-	source: GDocumentSource.Parsable
+	source: GDocumentSource.Parsable,
 ) {
 
 	private val lexer = Lexer(source = source)
@@ -13,7 +13,7 @@ internal class Parser private constructor(
 	private inline fun <T> any(
 		openKind: TokenKind,
 		parse: () -> T,
-		closeKind: TokenKind
+		closeKind: TokenKind,
 	): List<T> {
 		expectToken(openKind)
 
@@ -70,7 +70,7 @@ internal class Parser private constructor(
 	private inline fun <T> many(
 		openKind: TokenKind,
 		parse: () -> T,
-		closeKind: TokenKind
+		closeKind: TokenKind,
 	): List<T> {
 		val elements = mutableListOf<T>()
 
@@ -86,7 +86,7 @@ internal class Parser private constructor(
 	private inline fun <T> optionalMany(
 		openKind: TokenKind,
 		parse: () -> T,
-		closeKind: TokenKind
+		closeKind: TokenKind,
 	) =
 		if (expectOptionalToken(openKind) != null) {
 			val elements = mutableListOf<T>()
@@ -1010,7 +1010,8 @@ internal class Parser private constructor(
 			}
 
 			TokenKind.STRING,
-			TokenKind.BLOCK_STRING ->
+			TokenKind.BLOCK_STRING,
+			->
 				parseStringValue()
 
 			TokenKind.NAME -> {
@@ -1141,7 +1142,7 @@ internal class Parser private constructor(
 	private data class DocumentPosition(
 		override val source: GDocumentSource,
 		val startToken: Token,
-		val endToken: Token
+		val endToken: Token,
 	) : GDocumentPosition {
 
 		override val column: Int

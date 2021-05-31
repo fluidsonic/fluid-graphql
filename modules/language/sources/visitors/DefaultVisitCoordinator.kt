@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 private class DefaultVisitCoordinator<Result, in Data>(
-	private val visitor: Visitor<Result, Data>
+	private val visitor: Visitor<Result, Data>,
 ) : VisitCoordinator<Result, Data> {
 
 	override fun visit(node: GNode, data: Data) =
@@ -13,7 +13,7 @@ private class DefaultVisitCoordinator<Result, in Data>(
 private class DefaultVisit<Result, Data>(
 	node: GNode,
 	private val data: Data,
-	private val visitor: Visitor<Result, Data>
+	private val visitor: Visitor<Result, Data>,
 ) : Visit {
 
 	private var result: Result? = null
@@ -28,11 +28,13 @@ private class DefaultVisit<Result, Data>(
 
 			State.afterVisitingChildren,
 			State.beforeVisitingChildren,
-			State.skippingChildren ->
+			State.skippingChildren,
+			->
 				state = State.aborted
 
 			State.completed,
-			State.initial ->
+			State.initial,
+			->
 				error(".abort() cannot be called here.")
 		}
 	}
@@ -96,7 +98,8 @@ private class DefaultVisit<Result, Data>(
 	override fun skipChildren() {
 		when (state) {
 			State.aborted,
-			State.skippingChildren ->
+			State.skippingChildren,
+			->
 				return
 
 			State.afterVisitingChildren ->
@@ -106,7 +109,8 @@ private class DefaultVisit<Result, Data>(
 				state = State.skippingChildren
 
 			State.completed,
-			State.initial ->
+			State.initial,
+			->
 				error(".skipChildren() cannot be called here.")
 		}
 	}
@@ -138,7 +142,8 @@ private class DefaultVisit<Result, Data>(
 	private fun visitChildren(data: Data) =
 		when (state) {
 			State.aborted,
-			State.skippingChildren ->
+			State.skippingChildren,
+			->
 				Unit
 
 			State.afterVisitingChildren ->
@@ -155,7 +160,8 @@ private class DefaultVisit<Result, Data>(
 			}
 
 			State.completed,
-			State.initial ->
+			State.initial,
+			->
 				error(".visitChildren() cannot be called here.")
 		}
 

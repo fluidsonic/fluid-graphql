@@ -1,15 +1,18 @@
 package io.fluidsonic.graphql
 
+import kotlin.jvm.*
 
+
+@JvmInline
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-internal inline class SourceCharacter private constructor(val value: Int) {
+internal value class SourceCharacter private constructor(val value: Int) {
 
 	constructor(value: Char) :
-		this(value.toInt())
+		this(value.code)
 
 
 	infix fun eq(other: Char) =
-		value == other.toInt()
+		value == other.code
 
 
 	inline fun ifInvalid(block: () -> Nothing) =
@@ -44,7 +47,7 @@ internal inline class SourceCharacter private constructor(val value: Int) {
 			'\'' -> "\"'\""
 
 			in 0x21.toChar() .. 0x26.toChar(),
-			in 0x28.toChar() .. 0x7E.toChar()
+			in 0x28.toChar() .. 0x7E.toChar(),
 			-> "'$char'"
 
 			else -> "\\u${value.toString(16).padStart(length = 4, padChar = '0')}"
@@ -62,4 +65,4 @@ internal inline class SourceCharacter private constructor(val value: Int) {
 
 
 internal operator fun CharRange.contains(sourceCharacter: SourceCharacter) =
-	sourceCharacter.value >= first.toInt() && sourceCharacter.value <= last.toInt()
+	sourceCharacter.value >= first.code && sourceCharacter.value <= last.code

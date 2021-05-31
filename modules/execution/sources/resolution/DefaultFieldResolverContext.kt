@@ -6,7 +6,7 @@ internal class DefaultFieldResolverContext(
 	override val execution: DefaultExecutorContext,
 	override val fieldDefinition: GFieldDefinition,
 	private val parent: Any,
-	override val parentType: GObjectType
+	override val parentType: GObjectType,
 ) : GFieldResolverContext {
 
 	@Suppress("UNCHECKED_CAST")
@@ -19,9 +19,9 @@ internal class DefaultFieldResolverContext(
 		}
 
 
-	inner class Next : GFieldResolverContext by this {
+	private inner class Next : GFieldResolverContext by this {
 
-		override suspend fun next(): Any? =
+		override suspend fun next() =
 			error("Resolver of field '${parentType.name}.${fieldDefinition.name}' cannot delegate resolution any further.")
 	}
 }

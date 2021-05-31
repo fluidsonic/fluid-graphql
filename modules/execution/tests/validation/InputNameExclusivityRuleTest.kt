@@ -7,7 +7,7 @@ import kotlin.test.*
 class InputNameExclusivityRuleTest {
 
 	@Test
-	fun tsetAcceptsUniqueOperationNames() {
+	fun testAcceptsUniqueOperationNames() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
 			errors = emptyList(),

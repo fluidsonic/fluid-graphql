@@ -19,7 +19,7 @@ public interface GOutputCoercerContext {
 	public fun invalid(details: String? = null): Nothing // FIXME do we need this on the output side?
 
 	@SchemaBuilderKeywordB // FIXME
-	public fun next(): Any?
+	public fun next(): Any // TODO Should this be nullable?
 
 
 	@SchemaBuilderKeywordB // FIXME

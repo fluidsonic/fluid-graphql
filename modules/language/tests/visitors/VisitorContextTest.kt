@@ -15,20 +15,20 @@ class VisitorContextTest {
 		val scalarArgument = GArgument(name = "scalar", value = scalarObjectValue)
 		val objectValue = GObjectValue(listOf(stringArgument, scalarArgument))
 		val inputArgument = GArgument(name = "input", value = objectValue)
-		val directive = GDirective(name = "directive", arguments = listOf(stringArgument))
+		val directive = GDirective(name = "directive", arguments = listOf(stringArgument, inputArgument))
 		val fieldSelection = GFieldSelection(name = "field", arguments = listOf(stringArgument, inputArgument))
 		val selectionSet = GSelectionSet(selections = listOf(fieldSelection))
 		val operationDefinition = GOperationDefinition(type = GOperationType.query, selectionSet = selectionSet, directives = listOf(directive))
 		val document = GDocument(definitions = listOf(operationDefinition))
 
 		/*
-		 * query @directive(string: "value") {
+		 * query @directive(string: "value", input: { string: "value", scalar: { string: "value" } }) {
 		 *    field(string: "value", input: { string: "value", scalar: { string: "value" } })
 		 * }
 		 */
 
 		val schema = GSchema.parse("""
-			|directive @directive(string: String!) on QUERY
+			|directive @directive(string: String!, input: Input!) on QUERY
 			|scalar Scalar
 			|input Input { string: String!, scalar: Scalar }
 			|type Query { field(string: String!, input: Input!): String! }
@@ -36,6 +36,7 @@ class VisitorContextTest {
 
 		val directiveDefinition = schema.directiveDefinition("directive")!!
 		val directiveStringArgumentDefinition = directiveDefinition.argumentDefinition("string")!!
+		val directiveInputArgumentDefinition = directiveDefinition.argumentDefinition("input")!!
 		val queryType = schema.rootTypeForOperationType(GOperationType.query)!!
 		val inputType = schema.resolveType("Input") as GInputObjectType
 		val scalarType = schema.resolveType("Scalar") as GCustomScalarType
@@ -101,6 +102,120 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedType = nonNullStringType,
+			),
+			CapturedElement(
+				node = inputArgument,
+				parentNode = directive,
+				relatedArgumentDefinition = directiveInputArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = nonNullInputType
+			),
+			CapturedElement(
+				node = inputArgument.nameNode,
+				parentNode = inputArgument,
+				relatedArgumentDefinition = directiveInputArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = nonNullInputType
+			),
+			CapturedElement(
+				node = objectValue,
+				parentNode = inputArgument,
+				relatedArgumentDefinition = directiveInputArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = nonNullInputType
+			),
+			CapturedElement(
+				node = stringArgument,
+				parentNode = objectValue,
+				relatedArgumentDefinition = inputStringArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = stringArgument.nameNode,
+				parentNode = stringArgument,
+				relatedArgumentDefinition = inputStringArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = stringValue,
+				parentNode = stringArgument,
+				relatedArgumentDefinition = inputStringArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = scalarArgument,
+				parentNode = objectValue,
+				relatedArgumentDefinition = inputScalarArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedType = scalarType
+			),
+			CapturedElement(
+				node = scalarArgument.nameNode,
+				parentNode = scalarArgument,
+				relatedArgumentDefinition = inputScalarArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedType = scalarType
+			),
+			CapturedElement(
+				node = scalarObjectValue,
+				parentNode = scalarArgument,
+				relatedArgumentDefinition = inputScalarArgumentDefinition,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = inputType,
+				relatedType = scalarType
+			),
+			CapturedElement(
+				node = stringArgument,
+				parentNode = scalarObjectValue,
+				relatedArgumentDefinition = null,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = scalarType,
+			),
+			CapturedElement(
+				node = stringArgument.nameNode,
+				parentNode = stringArgument,
+				relatedArgumentDefinition = null,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = scalarType,
+			),
+			CapturedElement(
+				node = stringValue,
+				parentNode = stringArgument,
+				relatedArgumentDefinition = null,
+				relatedDirective = directive,
+				relatedDirectiveDefinition = directiveDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = scalarType,
 			),
 			CapturedElement(
 				node = selectionSet,
