@@ -21,9 +21,7 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-		darwin {
-			withoutWatchosX64() // https://github.com/Kotlin/kotlinx.coroutines/issues/2524
-		}
+		darwin()
 		js()
 		jvm()
 	}
