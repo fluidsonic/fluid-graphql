@@ -40,7 +40,10 @@ internal object VariableInputConverter {
 		return defaultValue
 			.ifNull {
 				when (type) {
-					is GNonNullType -> context.invalid()
+					is GNonNullType -> when (context.argumentDefinition?.isRequired()) {
+						false -> return NoValue
+						true, null -> context.invalid()
+					}
 					else -> return NoValue
 				}
 			}
