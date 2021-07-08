@@ -3,7 +3,7 @@ package io.fluidsonic.graphql
 
 internal object Printer {
 
-	fun print(node: GNode, indent: String = "\t") =
+	fun print(node: GNode, indent: String = "  ") =
 		IndentingWriter(indent = indent).run {
 			writeNode(node)
 			toString()
