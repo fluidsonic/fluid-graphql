@@ -162,7 +162,7 @@ class AstSchemaParsingTests {
 
 
 	@Test
-	fun testeAcceptsFieldWithTwoArguments() {
+	fun testAcceptsFieldWithTwoArguments() {
 		assertAst("""
 			|type Hello {
 			|  world(argOne: Boolean, argTwo: Int): String

@@ -4,7 +4,7 @@ import io.fluidsonic.graphql.*
 import kotlin.test.*
 
 
-// We print errors as Kotlin raw strings so they can easily be copied to test code if needed.
+// We print errors as Kotlin raw strings, so they can easily be copied to test code if needed.
 @Suppress("NAME_SHADOWING")
 fun assertError(expected: String, actual: GError, message: String? = null) {
 	val expected = expected.trimIndent()
@@ -26,7 +26,7 @@ fun assertError(expected: String, actual: GError, message: String? = null) {
 }
 
 
-// We print errors as Kotlin raw strings so they can easily be copied to test code if needed.
+// We print errors as Kotlin raw strings, so they can easily be copied to test code if needed.
 fun assertErrors(expected: List<String>, actual: List<GError>) {
 	if (expected.size == actual.size)
 		expected.forEachIndexed { index, error ->
@@ -63,7 +63,7 @@ internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,
 	document: String,
-	schema: String? = null
+	schema: String? = null,
 ) {
 	if (schema !== null)
 		assertValidationRule(
@@ -86,7 +86,7 @@ internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,
 	document: GDocument,
-	schema: GSchema = GSchema(document)
+	schema: GSchema = GSchema(document),
 ) {
 	val context = ValidationContext(
 		document = document,

@@ -5,7 +5,7 @@ import kotlin.reflect.*
 
 
 // The DSL color in IntelliJ IDEA depends on the hash code of the FQN of marker class.
-// Therefore we add a random letter to get the desired "DSL style number" (for now).
+// Therefore, we add a random letter to get the desired "DSL style number" (for now).
 
 @DslMarker
 @Retention(AnnotationRetention.BINARY)

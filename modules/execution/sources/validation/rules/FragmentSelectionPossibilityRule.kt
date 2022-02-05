@@ -14,7 +14,7 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 		val type = data.relatedType as? GCompositeType
 			?: return // Cannot validate nonexistent or invalid type.
 
-		val possibleParentTypes = data.schema.getPossibleTypes(parentType)
+		val possibleParentTypes = data.schema.getPossibleTypes(parentType).toHashSet()
 		val possibleTypes = data.schema.getPossibleTypes(type)
 		val intersectionTypes = possibleTypes.intersect(possibleParentTypes)
 		if (intersectionTypes.isNotEmpty())
@@ -37,7 +37,7 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 		val type = data.relatedType as? GCompositeType
 			?: return // Cannot validate nonexistent or invalid type.
 
-		val possibleParentTypes = data.schema.getPossibleTypes(parentType)
+		val possibleParentTypes = data.schema.getPossibleTypes(parentType).toHashSet()
 		val possibleTypes = data.schema.getPossibleTypes(type)
 		val intersectionTypes = possibleTypes.intersect(possibleParentTypes)
 		if (intersectionTypes.isNotEmpty())
