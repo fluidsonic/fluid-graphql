@@ -5,7 +5,7 @@ internal object Introspection {
 
 	private val Directive = GTypeRef("__Directive")
 	private val DirectiveLocation = GTypeRef("__DirectiveLocation")
-	private val EnumValue = GTypeRef("___EnumValue")
+	private val EnumValue = GTypeRef("__EnumValue")
 	private val Field = GTypeRef("__Field")
 	private val InputValue = GTypeRef("__InputValue")
 	private val Schema = GTypeRef("__Schema")
@@ -91,7 +91,7 @@ internal object Introspection {
 					(type as? GNode.WithInterfaces)
 						?.interfaces
 						?.map { interfaceTypeRef ->
-							introspectedSchema.resolveTypeAs<GInterfaceType>(interfaceTypeRef)
+							TypeResolver.resolveTypeAs<GInterfaceType>(introspectedSchema, interfaceTypeRef, includeIntrospection = false)
 								?: error("Introspection cannot resolve type '$interfaceTypeRef'. The schema should be validated before execution.")
 						}
 				}
@@ -148,7 +148,7 @@ internal object Introspection {
 
 			field("type" of !Type) {
 				resolve<GType> { fieldDefinition ->
-					introspectedSchema.resolveType(fieldDefinition.type)
+					TypeResolver.resolveType(introspectedSchema, fieldDefinition.type, includeIntrospection = false)
 						?: error("Introspection cannot resolve type '${fieldDefinition.type}'. The schema should be validated before execution.")
 				}
 			}
@@ -178,7 +178,7 @@ internal object Introspection {
 
 			field("type" of !Type) {
 				resolve<GType> { argumentDefinition ->
-					introspectedSchema.resolveType(argumentDefinition.type)
+					TypeResolver.resolveType(introspectedSchema, argumentDefinition.type, includeIntrospection = false)
 						?: error("Introspection cannot resolve type '${argumentDefinition.type}'. The schema should be validated before execution.")
 				}
 			}
@@ -328,14 +328,14 @@ internal object Introspection {
 	}
 
 
-	val directiveType: GObjectType = schema.resolveTypeAs(Directive)!!
-	val directiveLocationType: GEnumType = schema.resolveTypeAs(DirectiveLocation)!!
-	val enumValueType: GObjectType = schema.resolveTypeAs(EnumValue)!!
-	val fieldType: GObjectType = schema.resolveTypeAs(Field)!!
-	val inputValueType: GObjectType = schema.resolveTypeAs(InputValue)!!
-	val schemaType: GObjectType = schema.resolveTypeAs(Schema)!!
-	val typeType: GObjectType = schema.resolveTypeAs(Type)!!
-	val typeKindType: GEnumType = schema.resolveTypeAs(TypeKind)!!
+	val directiveType: GObjectType = TypeResolver.resolveTypeAs(schema, Directive)!!
+	val directiveLocationType: GEnumType = TypeResolver.resolveTypeAs(schema, DirectiveLocation)!!
+	val enumValueType: GObjectType = TypeResolver.resolveTypeAs(schema, EnumValue)!!
+	val fieldType: GObjectType = TypeResolver.resolveTypeAs(schema, Field)!!
+	val inputValueType: GObjectType = TypeResolver.resolveTypeAs(schema, InputValue)!!
+	val schemaType: GObjectType = TypeResolver.resolveTypeAs(schema, Schema)!!
+	val typeType: GObjectType = TypeResolver.resolveTypeAs(schema, Type)!!
+	val typeKindType: GEnumType = TypeResolver.resolveTypeAs(schema, TypeKind)!!
 
 	val schemaField = GFieldDefinition(
 		name = "__schema",
@@ -357,7 +357,7 @@ internal object Introspection {
 			)
 		),
 		extensions = GNodeExtensionSet {
-			resolver = GFieldResolver<GSchema> { it.resolveType(arguments["name"] as String) }
+			resolver = GFieldResolver<GSchema> { TypeResolver.resolveType(it, arguments["name"] as String) }
 		}
 	)
 

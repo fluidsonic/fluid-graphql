@@ -87,6 +87,33 @@ class ExecutionTests {
 	}
 
 
+	@Test
+	fun testExecutesWithoutOperationName() = runBlockingTest {
+		val document = """
+			|query Test {
+			|  foo
+			|}
+		""".trimMargin()
+
+		val executor = GExecutor.default(schema = graphql.schema {
+			Query {
+				field("foo" of !Boolean) {
+					resolve { true }
+				}
+			}
+		})
+		val result = executor.serializeResult(executor.execute(document))
+		assertEquals(
+			expected = mapOf(
+				"data" to mapOf(
+					"foo" to true,
+				)
+			),
+			actual = result
+		)
+	}
+
+
 	companion object {
 
 		private val schema = graphql.schema {
@@ -191,14 +218,14 @@ class ExecutionTests {
 		val title: String,
 		val body: String,
 		val hidden: String,
-		val keywords: List<Any?>
+		val keywords: List<Any?>,
 	)
 
 
 	private data class Author(
 		val id: String,
 		val name: String,
-		private val recentArticleProvider: () -> Article
+		private val recentArticleProvider: () -> Article,
 	) {
 
 		val recentArticle
@@ -217,6 +244,6 @@ class ExecutionTests {
 	private data class Image(
 		val url: String,
 		val width: Int,
-		val height: Int
+		val height: Int,
 	)
 }

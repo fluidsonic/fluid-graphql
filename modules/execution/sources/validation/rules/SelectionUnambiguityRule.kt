@@ -158,7 +158,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
 				// Cannot validate a selection of a field of an unknown type.
 				// FIXME Will this work for introspection queries?
-				val fieldType = data.schema.resolveType(fieldDefinition.type)
+				val fieldType = TypeResolver.resolveType(data.schema, fieldDefinition.type)
 					?: return
 
 				result.getOrPut(alias ?: name) { mutableListOf() } += ResolvedField(
@@ -174,7 +174,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 				val fragment = data.document.fragment(name) ?: return
 
 				// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
-				val fragmentType = data.schema.resolveType(fragment.typeCondition)
+				val fragmentType = TypeResolver.resolveType(data.schema, fragment.typeCondition)
 					?.takeIf { it.isOutputType() }
 					?: return
 
@@ -190,7 +190,7 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 			is GInlineFragmentSelection -> {
 				val fragmentType = typeCondition?.let { typeCondition ->
 					// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
-					data.schema.resolveType(typeCondition)
+					TypeResolver.resolveType(data.schema, typeCondition)
 						?.takeIf { it.isOutputType() }
 						?: return
 				} ?: parentType

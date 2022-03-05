@@ -13,7 +13,7 @@ internal fun <Receiver, Value> Receiver.identity(value: Value) =
 
 // FIXME use refactored fluid-stdlib
 @OptIn(ExperimentalContracts::class)
-internal inline fun <T : Any> T?.ifNull(onNull: () -> T): T {
+internal inline fun <T> T?.ifNull(onNull: () -> T): T {
 	contract {
 		callsInPlace(onNull, InvocationKind.AT_MOST_ONCE)
 	}

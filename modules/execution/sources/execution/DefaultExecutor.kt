@@ -9,7 +9,7 @@ internal class DefaultExecutor(
 	private val outputCoercer: GOutputCoercer<Any>?,
 	private val schema: GSchema,
 	private val rootResolver: GRootResolver,
-	private val variableInputCoercer: GVariableInputCoercer<Any?>?
+	private val variableInputCoercer: GVariableInputCoercer<Any?>?,
 ) : GExecutor {
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
@@ -17,7 +17,7 @@ internal class DefaultExecutor(
 		document: GDocument,
 		operationName: String?,
 		variableValues: Map<String, Any?>,
-		extensions: GExecutorContextExtensionSet
+		extensions: GExecutorContextExtensionSet,
 	): GResult<Any?> =
 		getOperation(document = document, name = operationName)
 			.flatMapValue { operation ->
@@ -43,7 +43,7 @@ internal class DefaultExecutor(
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	private suspend fun executeOperation(
 		strategy: Strategy, // FIXME use
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any?> =
 		context.selectionSetExecutor.execute(
 			selectionSet = context.operation.selectionSet,
@@ -57,10 +57,11 @@ internal class DefaultExecutor(
 	// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
 	private fun getOperation(document: GDocument, name: String?) =
 		document.operation(name)
+			.ifNull { document.definitions.filterIsInstance<GOperationDefinition>().singleOrNull() }
 			?.let { GResult.success(it) }
 			?: GResult.failure(GError(
 				if (name != null) "There is no operation named '$name' in the document."
-				else "There are no anonymous operation in the document."
+				else "There is no anonymous operations in the document."
 			))
 
 
@@ -68,7 +69,7 @@ internal class DefaultExecutor(
 		document: GDocument,
 		extensions: GExecutorContextExtensionSet,
 		operation: GOperationDefinition,
-		variableValues: Map<String, Any?>
+		variableValues: Map<String, Any?>,
 	): GResult<DefaultExecutorContext> {
 		val context = DefaultExecutorContext(
 			document = document,

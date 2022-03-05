@@ -55,18 +55,6 @@ public class GSchema internal constructor(
 		typesByName[name]
 
 
-	public inline fun <reified Type : GType> resolveTypeAs(ref: GTypeRef): Type? =
-		resolveType(ref) as? Type
-
-
-	public inline fun <reified Type : GNamedType> resolveTypeAs(ref: GNamedTypeRef): Type? =
-		resolveType(ref) as? Type
-
-
-	public inline fun <reified Type : GNamedType> resolveTypeAs(name: String): Type? =
-		resolveType(name) as? Type
-
-
 	public fun rootTypeForOperationType(operationType: GOperationType): GObjectType? =
 		when (operationType) {
 			GOperationType.mutation -> mutationType

@@ -5,7 +5,7 @@ package io.fluidsonic.graphql
 internal object FragmentTypeConditionExistenceRule : ValidationRule.Singleton() {
 
 	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {
-		if (data.schema.resolveType(definition.typeCondition) !== null)
+		if (TypeResolver.resolveType(data.schema, definition.typeCondition) !== null)
 			return // Type exists.
 
 		data.reportError(
@@ -19,7 +19,7 @@ internal object FragmentTypeConditionExistenceRule : ValidationRule.Singleton() 
 		val typeCondition = selection.typeCondition
 			?: return // Type condition is optional.
 
-		if (data.schema.resolveType(typeCondition) !== null)
+		if (TypeResolver.resolveType(data.schema, typeCondition) !== null)
 			return // Type exists.
 
 		data.reportError(

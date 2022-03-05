@@ -74,7 +74,7 @@ internal object VariableInputConverter {
 	private fun coerceValueForInputObject(value: Any, type: GInputObjectType, context: Context): Any? = when (value) {
 		is Map<*, *> -> type.argumentDefinitions
 			.associate { argumentDefinition ->
-				val argumentType = context.execution.schema.resolveType(argumentDefinition.type) ?: validationError(
+				val argumentType = TypeResolver.resolveType(context.execution.schema, argumentDefinition.type) ?: validationError(
 					message = "Type '${argumentDefinition.type}' cannot be resolved.",
 					variableDefinition = context.variableDefinition,
 					argumentDefinition = argumentDefinition
@@ -203,7 +203,7 @@ internal object VariableInputConverter {
 			else -> GResult.catchErrors {
 				operation.variableDefinitions
 					.associate { variableDefinition ->
-						val variableType = context.schema.resolveType(variableDefinition.type) ?: validationError(
+						val variableType = TypeResolver.resolveType(context.schema, variableDefinition.type) ?: validationError(
 							message = "Type '${variableDefinition.type}' cannot be resolved.",
 							variableDefinition = variableDefinition,
 							argumentDefinition = null

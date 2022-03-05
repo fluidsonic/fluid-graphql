@@ -10,7 +10,7 @@ internal object DefaultSelectionSetExecutor {
 		context: DefaultExecutorContext,
 		path: GPath,
 		fieldSelectionsByResponseKey: MutableMap<String, MutableList<GFieldSelection>>,
-		visitedFragments: MutableSet<String>
+		visitedFragments: MutableSet<String>,
 	): GResult<Map<String, List<GFieldSelection>>> {
 		selectionSet.selections
 			.filter { selection ->
@@ -39,7 +39,7 @@ internal object DefaultSelectionSetExecutor {
 		context: DefaultExecutorContext,
 		path: GPath,
 		fieldSelectionsByResponseKey: MutableMap<String, MutableList<GFieldSelection>>,
-		visitedFragmentNames: MutableSet<String>
+		visitedFragmentNames: MutableSet<String>,
 	): GResult<Nothing?> {
 		when (selection) {
 			is GFieldSelection -> {
@@ -56,7 +56,7 @@ internal object DefaultSelectionSetExecutor {
 				val fragment = context.document.fragment(fragmentName)
 					?: error("A fragment with name '$fragmentName' is referenced but not defined.")
 
-				val fragmentType = context.schema.resolveType(fragment.typeCondition)
+				val fragmentType = TypeResolver.resolveType(context.schema, fragment.typeCondition)
 					?: error("Cannot resolve type '${fragment.typeCondition}' in condition of fragment '$fragmentName'.")
 
 				if (!doesFragmentTypeApply(fragmentType, to = parentType))
@@ -75,7 +75,7 @@ internal object DefaultSelectionSetExecutor {
 			is GInlineFragmentSelection -> {
 				val fragmentTypeCondition = selection.typeCondition
 				if (fragmentTypeCondition !== null) {
-					val fragmentType = context.schema.resolveType(fragmentTypeCondition)
+					val fragmentType = TypeResolver.resolveType(context.schema, fragmentTypeCondition)
 						?: error("Cannot resolve type '${fragmentTypeCondition}' in condition of inline fragment.")
 
 					if (!doesFragmentTypeApply(fragmentType, to = parentType))
@@ -106,7 +106,7 @@ internal object DefaultSelectionSetExecutor {
 		parent: Any,
 		parentType: GObjectType,
 		path: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Map<String, Any?>> =
 		collectFieldSelections(
 			selectionSet = selectionSet,
@@ -133,7 +133,7 @@ internal object DefaultSelectionSetExecutor {
 	private fun GNode.WithDirectives.getDirectiveValues(
 		definition: GDirectiveDefinition,
 		fieldSelectionPath: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Map<String, Any?>?> =
 		directive(definition.name)
 			?.let { directive ->

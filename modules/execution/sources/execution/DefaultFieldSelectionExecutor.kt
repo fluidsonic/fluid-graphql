@@ -11,7 +11,7 @@ internal object DefaultFieldSelectionExecutor {
 		parentType: GObjectType,
 		fieldDefinition: GFieldDefinition,
 		path: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any?> = result
 		.flatMapValue { value ->
 			when (value) {
@@ -103,7 +103,7 @@ internal object DefaultFieldSelectionExecutor {
 		type: GType,
 		parentType: GObjectType,
 		fieldDefinition: GFieldDefinition,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any> =
 		context.outputConverter.convertOutput(
 			value = value,
@@ -120,7 +120,7 @@ internal object DefaultFieldSelectionExecutor {
 		parent: Any,
 		parentType: GObjectType,
 		path: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any?> {
 		// An error can occur only if this function was called directly with an empty selection list.
 		require(selections.isNotEmpty()) { "'selections' must contain at least one selection." }
@@ -143,7 +143,7 @@ internal object DefaultFieldSelectionExecutor {
 			))
 
 		// An error can occur only if the schema wasn't validated.
-		val fieldType = context.schema.resolveType(fieldDefinition.type)
+		val fieldType = TypeResolver.resolveType(context.schema, fieldDefinition.type)
 			?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${parentType.name}'.")
 
 		return complete(
@@ -169,7 +169,7 @@ internal object DefaultFieldSelectionExecutor {
 		selections: List<GFieldSelection>,
 		originalParentType: GObjectType,
 		path: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any?> {
 		require(selections.isNotEmpty()) { "'selections' must contain at least one selection." }
 
@@ -213,7 +213,7 @@ internal object DefaultFieldSelectionExecutor {
 			root = context.schema,
 			rootType = Introspection.schemaType
 		)
-		val fieldType = fieldContext.schema.resolveType(fieldDefinition.type)
+		val fieldType = TypeResolver.resolveType(fieldContext.schema, fieldDefinition.type)
 			?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${originalParentType.name}'.")
 
 		return complete(
@@ -244,7 +244,7 @@ internal object DefaultFieldSelectionExecutor {
 	private fun resolveAbstractType(
 		abstractType: GAbstractType,
 		objectValue: Any,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	) =
 		// FIXME support default resolver
 		context.schema.getPossibleTypes(abstractType)
@@ -259,7 +259,7 @@ internal object DefaultFieldSelectionExecutor {
 		fieldDefinition: GFieldDefinition,
 		selections: List<GFieldSelection>,
 		path: GPath,
-		context: DefaultExecutorContext
+		context: DefaultExecutorContext,
 	): GResult<Any?> =
 		context.nodeInputConverter.convertArguments(
 			node = selections.first(),

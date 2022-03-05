@@ -64,7 +64,7 @@ internal object NodeInputConverter {
 	private fun coerceValueForInputObject(value: GValue, type: GInputObjectType, context: Context): Any? = when (value) {
 		is GObjectValue -> type.argumentDefinitions
 			.associate { argumentDefinition ->
-				val argumentType = context.execution.schema.resolveType(argumentDefinition.type) ?: validationError(
+				val argumentType = TypeResolver.resolveType(context.execution.schema, argumentDefinition.type) ?: validationError(
 					message = "Type '${argumentDefinition.type}' cannot be resolved.",
 					argumentDefinition = argumentDefinition
 				)
@@ -176,7 +176,7 @@ internal object NodeInputConverter {
 
 		return GResult.catchErrors {
 			definitions.associate { argumentDefinition ->
-				val argumentType = context.schema.resolveType(argumentDefinition.type) ?: validationError(
+				val argumentType = TypeResolver.resolveType(context.schema, argumentDefinition.type) ?: validationError(
 					message = "Type '${argumentDefinition.type}' cannot be resolved.",
 					argumentDefinition = argumentDefinition
 				)
