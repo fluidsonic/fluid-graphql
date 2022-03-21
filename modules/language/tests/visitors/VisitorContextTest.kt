@@ -6,7 +6,7 @@ import kotlin.test.*
 
 class VisitorContextTest {
 
-	// FIXME We only test GArgument for now. Add more cases.
+	// FIXME Add more cases.
 	@Test
 	fun testProvidesCorrectInformation() {
 		val stringValue = GStringValue("value")
@@ -17,22 +17,50 @@ class VisitorContextTest {
 		val inputArgument = GArgument(name = "input", value = objectValue)
 		val directive = GDirective(name = "directive", arguments = listOf(stringArgument, inputArgument))
 		val fieldSelection = GFieldSelection(name = "field", arguments = listOf(stringArgument, inputArgument))
-		val selectionSet = GSelectionSet(selections = listOf(fieldSelection))
-		val operationDefinition = GOperationDefinition(type = GOperationType.query, selectionSet = selectionSet, directives = listOf(directive))
-		val document = GDocument(definitions = listOf(operationDefinition))
+		val defaultValue = GStringValue("defaultValue")
+		val variableDefinition = GVariableDefinition(name = "variable", type = GStringTypeRef, defaultValue = defaultValue)
+		val fragmentFieldSelection = GFieldSelection(name = "fragmentStringField")
+		val fragmentSelection = GFragmentSelection("stringFieldFragment")
+		val selectionSet = GSelectionSet(selections = listOf(fieldSelection, fragmentSelection))
+		val operationDefinition = GOperationDefinition(
+			type = GOperationType.query,
+			selectionSet = selectionSet,
+			directives = listOf(directive),
+			variableDefinitions = listOf(variableDefinition)
+		)
+		val fragmentSelectionSet = GSelectionSet(listOf(fragmentFieldSelection))
+		val fragmentDefinition = GFragmentDefinition(name = "stringFieldFragment", typeCondition = GNamedTypeRef("Result"), fragmentSelectionSet)
+		val document = GDocument(definitions = listOf(operationDefinition, fragmentDefinition))
 
 		/*
-		 * query @directive(string: "value", input: { string: "value", scalar: { string: "value" } }) {
-		 *    field(string: "value", input: { string: "value", scalar: { string: "value" } })
+		 * query ($variable: String = "defaultValue") @directive(string: "value", input: {
+		 * 	string: "value",
+		 * 	scalar: {
+		 * 		string: "value"
+		 * 	}
+		 * }) {
+		 * 	field(string: "value", input: {
+		 * 		string: "value",
+		 * 		scalar: {
+		 * 			string: "value"
+		 * 		}
+		 * 	})
+		 * 	...stringFieldFragment
+		 * }
+		 * fragment stringFieldFragment on Result {
+		 * 	fragmentStringField
 		 * }
 		 */
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|directive @directive(string: String!, input: Input!) on QUERY
 			|scalar Scalar
 			|input Input { string: String!, scalar: Scalar }
-			|type Query { field(string: String!, input: Input!): String! }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			|type Query { field(string: String!, input: Input!): String!, fragmentField: String! }
+			|type Result {string: String!, input: Input!, fragmentStringField: String!}
+		""".trimMargin()
+		).valueWithoutErrorsOrThrow()
 
 		val directiveDefinition = schema.directiveDefinition("directive")!!
 		val directiveStringArgumentDefinition = directiveDefinition.argumentDefinition("string")!!
@@ -40,11 +68,13 @@ class VisitorContextTest {
 		val queryType = schema.rootTypeForOperationType(GOperationType.query)!!
 		val inputType = schema.resolveType("Input") as GInputObjectType
 		val scalarType = schema.resolveType("Scalar") as GCustomScalarType
+		val resultType = schema.resolveType("Result") as GObjectType
 		val fieldDefinition = queryType.fieldDefinition("field")!!
 		val fieldStringArgumentDefinition = fieldDefinition.argumentDefinition("string")!!
 		val fieldInputArgumentDefinition = fieldDefinition.argumentDefinition("input")!!
 		val inputScalarArgumentDefinition = inputType.argumentDefinition("scalar")!!
 		val inputStringArgumentDefinition = inputType.argumentDefinition("string")!!
+		val fragmentFieldDefinition = resultType.fieldDefinition("fragmentStringField")
 		val nonNullInputType = GNonNullType(inputType)
 		val nonNullStringType = GNonNullType(GStringType)
 
@@ -61,6 +91,36 @@ class VisitorContextTest {
 				parentNode = document,
 				relatedOperationDefinition = operationDefinition,
 				relatedType = queryType
+			),
+			CapturedElement(
+				node = variableDefinition,
+				parentNode = operationDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = GStringType
+			),
+			CapturedElement(
+				node = variableDefinition.nameNode,
+				parentNode = variableDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = GStringType
+			),
+			CapturedElement(
+				node = variableDefinition.type,
+				parentNode = variableDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = GStringType,
+			),
+			CapturedElement(
+				node = GStringTypeRef.nameNode,
+				parentNode = variableDefinition.type,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = GStringType
+			),
+			CapturedElement(
+				node = defaultValue,
+				parentNode = variableDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedType = GStringType
 			),
 			CapturedElement(
 				node = directive,
@@ -423,6 +483,90 @@ class VisitorContextTest {
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
 			),
+			CapturedElement(
+				node = fragmentSelection,
+				parentNode = selectionSet,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = fragmentSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = resultType
+			),
+			CapturedElement(
+				node = fragmentSelection.nameNode,
+				parentNode = fragmentSelection,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = fragmentSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = resultType
+			),
+			CapturedElement(
+				node = fragmentDefinition,
+				parentNode = document,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentType = resultType,
+				relatedSelectionSet = selectionSet,
+				relatedType = resultType
+			),
+			CapturedElement(
+				node = fragmentDefinition.nameNode,
+				parentNode = fragmentDefinition,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentType = resultType,
+				relatedSelectionSet = selectionSet,
+				relatedType = resultType
+			),
+			CapturedElement(
+				node = fragmentDefinition.typeCondition,
+				parentNode = fragmentDefinition,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentType = resultType,
+				relatedSelectionSet = selectionSet,
+				relatedType = resultType
+			),
+			CapturedElement(
+				node = fragmentDefinition.typeCondition.nameNode,
+				parentNode = fragmentDefinition.typeCondition,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentType = resultType,
+				relatedSelectionSet = selectionSet,
+				relatedType = resultType
+			),
+			CapturedElement(
+				node = fragmentSelectionSet,
+				parentNode = fragmentDefinition,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentSelectionSet = selectionSet,
+				relatedParentType = resultType,
+				relatedSelectionSet = fragmentSelectionSet
+			),
+			CapturedElement(
+				node = fragmentFieldSelection,
+				parentNode = fragmentSelectionSet,
+				relatedFieldDefinition = fragmentFieldDefinition,
+				relatedFieldSelection = fragmentFieldSelection,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentSelectionSet = selectionSet,
+				relatedParentType = resultType,
+				relatedSelection = fragmentFieldSelection,
+				relatedSelectionSet = fragmentSelectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = fragmentFieldSelection.nameNode,
+				parentNode = fragmentFieldSelection,
+				relatedFieldDefinition = fragmentFieldDefinition,
+				relatedFieldSelection = fragmentFieldSelection,
+				relatedFragmentDefinition = fragmentDefinition,
+				relatedParentSelectionSet = selectionSet,
+				relatedParentType = resultType,
+				relatedSelection = fragmentFieldSelection,
+				relatedSelectionSet = fragmentSelectionSet,
+				relatedType = nonNullStringType
+			)
 		)
 
 		assertEquals(expected = expectedElements, actual = actualElements)
