@@ -4,7 +4,7 @@ package io.fluidsonic.graphql
 // FIXME do we need to consider @skip and @include? if so, can we merge the code with Executor.collectFieldSelections?
 // FIXME will give false-negatives if two fragments are in conflict, but are never possible at the same time
 //       Maybe if there is a conflict run a more thorough check that validates all possible object types independently.
-// https://graphql.github.io/graphql-spec/draft/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types
+// https://spec.graphql.org/draft/#sec-Field-Selection-Merging
 internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
 	override fun onSelectionSet(set: GSelectionSet, data: ValidationContext, visit: Visit) {

@@ -2343,32 +2343,6 @@ public class GScalarTypeExtension(
 }
 
 
-public class GSchemaDefinition(
-	override val operationTypeDefinitions: List<GOperationTypeDefinition>,
-	override val directives: List<GDirective> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GSchemaDefinition> = GNodeExtensionSet.empty(),
-) :
-	GTypeSystemDefinition(
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithDirectives,
-	GNode.WithOperationTypeDefinitions {
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GSchemaDefinition &&
-				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
-				operationTypeDefinitions.equalsNode(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
 public class GSchemaExtension(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),

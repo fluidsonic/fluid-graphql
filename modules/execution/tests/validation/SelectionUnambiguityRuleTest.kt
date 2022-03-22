@@ -4,6 +4,7 @@ import io.fluidsonic.graphql.*
 import kotlin.test.*
 
 
+// https://github.com/graphql/graphql-js/blob/main/src/validation/__tests__/OverlappingFieldsCanBeMergedRule-test.ts
 class SelectionUnambiguityRuleTest {
 
 	@Test

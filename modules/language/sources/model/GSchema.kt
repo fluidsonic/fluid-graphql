@@ -355,14 +355,16 @@ public fun GSchema(
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
-	if (directiveDefinitions.none { it.name == "deprecated" })
+	if (directiveDefinitions.none { it.name == GLanguage.defaultDeprecatedDirective.description })
 		directiveDefinitions += GLanguage.defaultDeprecatedDirective
-	if (directiveDefinitions.none { it.name == "include" })
+	if (directiveDefinitions.none { it.name == GLanguage.defaultIncludeDirective.name })
 		directiveDefinitions += GLanguage.defaultIncludeDirective
-	if (directiveDefinitions.none { it.name == "skip" })
+	if (directiveDefinitions.none { it.name == GLanguage.defaultSkipDirective.name })
 		directiveDefinitions += GLanguage.defaultSkipDirective
+	if (directiveDefinitions.none { it.name == GLanguage.defaultSpecifiedByDirective.name })
+		directiveDefinitions += GLanguage.defaultSpecifiedByDirective
 
-	if (supportOptional && directiveDefinitions.none { it.name == "optional" })
+	if (supportOptional && directiveDefinitions.none { it.name == GLanguage.defaultOptionalDirective.name })
 		directiveDefinitions += GLanguage.defaultOptionalDirective
 
 	val schemaDefinition = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()

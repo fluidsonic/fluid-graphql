@@ -167,6 +167,11 @@ object AstBuilder {
 		}
 
 
+		fun schemaDefinition(origin: IntRange, configure: SchemaDefinitionBuilder.() -> Unit) {
+			definitions += SchemaDefinitionBuilder(origin).apply(configure).build()
+		}
+
+
 		fun unionTypeDefinition(origin: IntRange, configure: UnionTypeDefinitionBuilder.() -> Unit) {
 			definitions += UnionTypeDefinitionBuilder(origin).apply(configure).build()
 		}
@@ -590,6 +595,58 @@ object AstBuilder {
 				origin = DocumentPosition(origin),
 				value = configure()
 			)
+		}
+	}
+
+
+	@AstBuilderDsl
+	class SchemaDefinitionBuilder(private val origin: IntRange) {
+
+		private var description: GStringValue? = null
+		private val operationTypeDefinitions = mutableListOf<GOperationTypeDefinition>()
+
+
+		fun build() = GSchemaDefinition(
+			descriptionNode = description,
+			directives = emptyList(),
+			operationTypeDefinitions = operationTypeDefinitions,
+			origin = DocumentPosition(origin)
+		)
+
+
+		fun description(origin: IntRange, isBlock: Boolean = false, configure: () -> String) {
+			description = GStringValue(
+				origin = DocumentPosition(origin),
+				value = configure(),
+				isBlock = isBlock
+			)
+		}
+
+
+		fun query(origin: IntRange, configure: QueryBuilder.() -> Unit) {
+			operationTypeDefinitions += GOperationTypeDefinition(
+				operationType = GOperationType.query,
+				origin = DocumentPosition(origin),
+				type = QueryBuilder().apply(configure).build(),
+			)
+		}
+
+
+		class QueryBuilder {
+
+			private var name: GName? = null
+
+
+			fun build(): GNamedTypeRef {
+				val name = checkNotNull(name)
+
+				return GNamedTypeRef(name = name, origin = name.origin)
+			}
+
+
+			fun typeRef(origin: IntRange, configure: () -> String) {
+				name = GName(value = configure(), origin = DocumentPosition(origin))
+			}
 		}
 	}
 

@@ -3,7 +3,7 @@ package testing
 import kotlin.test.*
 
 
-// https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/schema-parser-test.js
+// https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/schema-parser-test.ts
 class AstSchemaParsingTests {
 
 	@Test
@@ -239,6 +239,26 @@ class AstSchemaParsingTests {
 						type {
 							name(76 .. 82) { "String" }
 						}
+					}
+				}
+			}
+		}
+	}
+
+
+	@Test
+	fun testAcceptsSchemaWithDescription() {
+		assertAst("""
+			|"Description"
+            |schema {
+            |  query: Foo
+            |}
+		""") {
+			document(0 .. 37) {
+				schemaDefinition(0 .. 37) {
+					description(0 .. 13) { "Description" }
+					query(25 .. 35) {
+						typeRef(32 .. 35) { "Foo" }
 					}
 				}
 			}

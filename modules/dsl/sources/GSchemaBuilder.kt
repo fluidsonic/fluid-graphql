@@ -174,7 +174,7 @@ public interface GSchemaBuilder {
 
 
 	@SchemaBuilderDsl
-	public interface DirectiveBuilder : NodeBuilder, ArgumentContainer
+	public interface DirectiveBuilder : NodeBuilder, ArgumentContainer, ValueContainer
 
 
 	@SchemaBuilderDsl

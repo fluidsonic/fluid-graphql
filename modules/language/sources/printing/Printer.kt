@@ -416,32 +416,45 @@ internal object Printer {
 
 	private fun IndentingWriter.writeNode(definition: GSchemaDefinition) {
 		val queryOperation = definition.operationTypeDefinition(GOperationType.query)
+		val queryOperationWithNonStandardName = queryOperation
 			?.takeIf { it.type.name != GLanguage.defaultQueryTypeName }
 
 		val mutationOperation = definition.operationTypeDefinition(GOperationType.mutation)
+		val mutationOperationWithNonStandardName = mutationOperation
 			?.takeIf { it.type.name != GLanguage.defaultMutationTypeName }
 
 		val subscriptionOperation = definition.operationTypeDefinition(GOperationType.subscription)
+		val subscriptionOperationWithNonStandardName = subscriptionOperation
 			?.takeIf { it.type.name != GLanguage.defaultSubscriptionTypeName }
 
-		if (queryOperation == null && mutationOperation == null && subscriptionOperation == null)
-			return
+		if (queryOperationWithNonStandardName == null
+			&& mutationOperationWithNonStandardName == null
+			&& subscriptionOperationWithNonStandardName == null
+			&& definition.descriptionNode == null
+			&& definition.directives.isEmpty()
+		) return
+
+		definition.descriptionNode?.let { descriptionNode ->
+			writeNode(descriptionNode)
+			writeRaw("\n")
+		}
 
 		writeRaw("schema ")
+		writeDirectives(definition.directives)
 		writeBlock {
 			queryOperation?.let {
-				writeLinebreak()
 				writeNode(it)
+				writeLinebreak()
 			}
 
 			mutationOperation?.let {
-				writeLinebreak()
 				writeNode(it)
+				writeLinebreak()
 			}
 
 			subscriptionOperation?.let {
-				writeLinebreak()
 				writeNode(it)
+				writeLinebreak()
 			}
 		}
 	}

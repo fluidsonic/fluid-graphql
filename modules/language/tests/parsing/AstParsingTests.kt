@@ -4,7 +4,7 @@ import io.fluidsonic.graphql.*
 import kotlin.test.*
 
 
-// https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/parser-test.js
+// https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/parser-test.ts
 class AstParsingTests {
 
 	@Test

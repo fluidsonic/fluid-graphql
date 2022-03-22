@@ -71,6 +71,17 @@ internal object Introspection {
 				resolve<String?> { (it as? GNamedType)?.description }
 			}
 
+			field("specifiedByURL" of String) {
+				resolve { type ->
+					(type as? GScalarType)
+						?.directive(GLanguage.defaultSpecifiedByDirective.name)
+						?.argument("url")
+						?.value
+						?.let { it as? GStringValue }
+						?.value
+				}
+			}
+
 			field("fields" of List(!Field)) {
 				argument("includeDeprecated" of Boolean default value(false))
 

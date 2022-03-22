@@ -53,7 +53,7 @@ fun assertSyntaxError(
 	content: String,
 	message: String,
 	line: Int,
-	column: Int
+	column: Int,
 ) {
 	val result = GDocument.parse(content.trimMargin())
 	assertNull(result.valueOrNull())

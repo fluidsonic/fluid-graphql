@@ -79,6 +79,22 @@ public object GLanguage {
 	)
 
 
+	public val defaultSpecifiedByDirective: GDirectiveDefinition = GDirectiveDefinition(
+		name = "specifiedBy",
+		argumentDefinitions = listOf(
+			GDirectiveArgumentDefinition(
+				name = "url",
+				type = GStringTypeRef.nonNullableRef,
+				description = "The URL that specifies the behavior of this scalar."
+			)
+		),
+		description = "Exposes a URL that specifies the behavior of this scalar.",
+		locations = setOf(
+			GDirectiveLocation.SCALAR,
+		)
+	)
+
+
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Enum-Value
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
 	public fun isValidEnumValue(name: String): Boolean =

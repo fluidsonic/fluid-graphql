@@ -793,6 +793,7 @@ internal class Parser private constructor(
 
 	private fun parseSchemaDefinition(): GSchemaDefinition {
 		val startToken = lexer.currentToken
+		val descriptionNode = parseDescription()
 		expectKeyword("schema")
 		val directives = parseDirectives(isConstant = true)
 		val operationTypes = many(
@@ -802,6 +803,7 @@ internal class Parser private constructor(
 		)
 
 		return GSchemaDefinition(
+			descriptionNode = descriptionNode,
 			directives = directives,
 			operationTypeDefinitions = operationTypes,
 			origin = makeOrigin(startToken = startToken)

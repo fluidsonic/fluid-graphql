@@ -58,6 +58,7 @@ class IntrospectionTests {
 						mapOf("name" to "deprecated"),
 						mapOf("name" to "include"),
 						mapOf("name" to "skip"),
+						mapOf("name" to "specifiedBy"),
 					),
 					"types" to listOf(
 						mapOf(
