@@ -6,50 +6,69 @@ import kotlin.test.*
 
 class VisitorContextTest {
 
-	// FIXME Add more cases.
 	@Test
 	fun testProvidesCorrectInformation() {
 		val stringValue = GStringValue("value")
 		val stringArgument = GArgument(name = "string", value = stringValue)
+
 		val scalarObjectValue = GObjectValue(listOf(stringArgument))
 		val scalarArgument = GArgument(name = "scalar", value = scalarObjectValue)
+
 		val objectValue = GObjectValue(listOf(stringArgument, scalarArgument))
 		val inputArgument = GArgument(name = "input", value = objectValue)
-		val directive = GDirective(name = "directive", arguments = listOf(stringArgument, inputArgument))
-		val fieldSelection = GFieldSelection(name = "field", arguments = listOf(stringArgument, inputArgument))
+
 		val defaultValue = GStringValue("defaultValue")
 		val variableDefinition = GVariableDefinition(name = "variable", type = GStringTypeRef, defaultValue = defaultValue)
-		val fragmentFieldSelection = GFieldSelection(name = "fragmentStringField")
+		val variableRef = GVariableRef(name = "variable")
+		val variableArgument = GArgument(name = "variable", value = variableRef)
+
+		val directive = GDirective(name = "directive", arguments = listOf(stringArgument, inputArgument))
+		val fieldSelection = GFieldSelection(name = "field", arguments = listOf(stringArgument, variableArgument, inputArgument))
+
+		val fragmentFieldSelection = GFieldSelection(name = "fragmentString")
 		val fragmentSelection = GFragmentSelection("stringFieldFragment")
-		val selectionSet = GSelectionSet(selections = listOf(fieldSelection, fragmentSelection))
+
+		val inlineFragmentFieldSelection = GFieldSelection(name = "inlineFragmentString")
+		val inlineFragmentSelectionSet = GSelectionSet(listOf(inlineFragmentFieldSelection))
+		val typeCondition = GNamedTypeRef("Query")
+		val inlineFragmentSelection = GInlineFragmentSelection(selectionSet = inlineFragmentSelectionSet, typeCondition = typeCondition)
+
+		val selectionSet = GSelectionSet(selections = listOf(fieldSelection, inlineFragmentSelection, fragmentSelection))
 		val operationDefinition = GOperationDefinition(
 			type = GOperationType.query,
 			selectionSet = selectionSet,
 			directives = listOf(directive),
 			variableDefinitions = listOf(variableDefinition)
 		)
+
 		val fragmentSelectionSet = GSelectionSet(listOf(fragmentFieldSelection))
-		val fragmentDefinition = GFragmentDefinition(name = "stringFieldFragment", typeCondition = GNamedTypeRef("Result"), fragmentSelectionSet)
+		val fragmentDefinition = GFragmentDefinition(name = "stringFieldFragment", typeCondition = typeCondition, fragmentSelectionSet)
+
 		val document = GDocument(definitions = listOf(operationDefinition, fragmentDefinition))
 
 		/*
-		 * query ($variable: String = "defaultValue") @directive(string: "value", input: {
-		 * 	string: "value",
-		 * 	scalar: {
-		 * 		string: "value"
-		 * 	}
-		 * }) {
-		 * 	field(string: "value", input: {
-		 * 		string: "value",
-		 * 		scalar: {
-		 * 			string: "value"
-		 * 		}
-		 * 	})
-		 * 	...stringFieldFragment
-		 * }
-		 * fragment stringFieldFragment on Result {
-		 * 	fragmentStringField
-		 * }
+		 *	query ($variable: String = "defaultValue") @directive(string: "value", input: {
+		 *       string: "value",
+		 *       scalar: {
+		 *           string: "value"
+		 *       }
+		 *   }) {
+		 *       field(string: "value", variable: $variable, input: {
+		 *           string: "value",
+		 *           scalar: {
+		 *               string: "value"
+		 *           }
+		 *       })
+		 *       ... on Query {
+		 *           inlineFragmentString
+		 *       }
+		 *       ...stringFieldFragment
+		 *   }
+		 *
+		 *
+		 *   fragment stringFieldFragment on Query {
+		 *       fragmentString
+		 *   }
 		 */
 
 		val schema = GSchema.parse(
@@ -57,8 +76,7 @@ class VisitorContextTest {
 			|directive @directive(string: String!, input: Input!) on QUERY
 			|scalar Scalar
 			|input Input { string: String!, scalar: Scalar }
-			|type Query { field(string: String!, input: Input!): String!, fragmentField: String! }
-			|type Result {string: String!, input: Input!, fragmentStringField: String!}
+			|type Query { field(string: String!, variable: String!, input: Input!): String!, fragmentString: String!, inlineFragmentString: String! }
 		""".trimMargin()
 		).valueWithoutErrorsOrThrow()
 
@@ -68,13 +86,14 @@ class VisitorContextTest {
 		val queryType = schema.rootTypeForOperationType(GOperationType.query)!!
 		val inputType = schema.resolveType("Input") as GInputObjectType
 		val scalarType = schema.resolveType("Scalar") as GCustomScalarType
-		val resultType = schema.resolveType("Result") as GObjectType
 		val fieldDefinition = queryType.fieldDefinition("field")!!
 		val fieldStringArgumentDefinition = fieldDefinition.argumentDefinition("string")!!
+		val variableArgumentDefinition = fieldDefinition.argumentDefinition("variable")!!
 		val fieldInputArgumentDefinition = fieldDefinition.argumentDefinition("input")!!
 		val inputScalarArgumentDefinition = inputType.argumentDefinition("scalar")!!
 		val inputStringArgumentDefinition = inputType.argumentDefinition("string")!!
-		val fragmentFieldDefinition = resultType.fieldDefinition("fragmentStringField")
+		val fragmentFieldDefinition = queryType.fieldDefinition("fragmentString")
+		val inlineFragmentFieldDefinition = queryType.fieldDefinition("inlineFragmentString")!!
 		val nonNullInputType = GNonNullType(inputType)
 		val nonNullStringType = GNonNullType(GStringType)
 
@@ -343,6 +362,54 @@ class VisitorContextTest {
 				relatedType = nonNullStringType
 			),
 			CapturedElement(
+				node = variableArgument,
+				parentNode = fieldSelection,
+				relatedArgumentDefinition = variableArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = variableArgument.nameNode,
+				parentNode = variableArgument,
+				relatedArgumentDefinition = variableArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = variableRef,
+				parentNode = variableArgument,
+				relatedArgumentDefinition = variableArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = variableRef.nameNode,
+				parentNode = variableRef,
+				relatedArgumentDefinition = variableArgumentDefinition,
+				relatedFieldDefinition = fieldDefinition,
+				relatedFieldSelection = fieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = fieldSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
 				node = inputArgument,
 				parentNode = fieldSelection,
 				relatedArgumentDefinition = fieldInputArgumentDefinition,
@@ -484,6 +551,66 @@ class VisitorContextTest {
 				relatedSelectionSet = selectionSet,
 			),
 			CapturedElement(
+				node = inlineFragmentSelection,
+				parentNode = selectionSet,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = inlineFragmentSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = queryType
+			),
+			CapturedElement(
+				node = typeCondition,
+				parentNode = inlineFragmentSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = inlineFragmentSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = queryType
+			),
+			CapturedElement(
+				node = typeCondition.nameNode,
+				parentNode = typeCondition,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentType = queryType,
+				relatedSelection = inlineFragmentSelection,
+				relatedSelectionSet = selectionSet,
+				relatedType = queryType
+			),
+			CapturedElement(
+				node = inlineFragmentSelectionSet,
+				parentNode = inlineFragmentSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentSelectionSet = selectionSet,
+				relatedParentType = queryType,
+				relatedSelection = inlineFragmentSelection,
+				relatedSelectionSet = inlineFragmentSelectionSet,
+			),
+			CapturedElement(
+				node = inlineFragmentFieldSelection,
+				parentNode = inlineFragmentSelectionSet,
+				relatedFieldDefinition = inlineFragmentFieldDefinition,
+				relatedFieldSelection = inlineFragmentFieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentSelectionSet = selectionSet,
+				relatedParentType = queryType,
+				relatedSelection = inlineFragmentFieldSelection,
+				relatedSelectionSet = inlineFragmentSelectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
+				node = inlineFragmentFieldSelection.nameNode,
+				parentNode = inlineFragmentFieldSelection,
+				relatedFieldDefinition = inlineFragmentFieldDefinition,
+				relatedFieldSelection = inlineFragmentFieldSelection,
+				relatedOperationDefinition = operationDefinition,
+				relatedParentSelectionSet = selectionSet,
+				relatedParentType = queryType,
+				relatedSelection = inlineFragmentFieldSelection,
+				relatedSelectionSet = inlineFragmentSelectionSet,
+				relatedType = nonNullStringType
+			),
+			CapturedElement(
 				node = fragmentSelection,
 				parentNode = selectionSet,
 				relatedFragmentDefinition = fragmentDefinition,
@@ -491,7 +618,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fragmentSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = resultType
+				relatedType = queryType
 			),
 			CapturedElement(
 				node = fragmentSelection.nameNode,
@@ -501,46 +628,41 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fragmentSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = resultType
+				relatedType = queryType
 			),
 			CapturedElement(
 				node = fragmentDefinition,
 				parentNode = document,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentType = resultType,
-				relatedSelectionSet = selectionSet,
-				relatedType = resultType
+				relatedParentType = queryType,
+				relatedType = queryType
 			),
 			CapturedElement(
 				node = fragmentDefinition.nameNode,
 				parentNode = fragmentDefinition,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentType = resultType,
-				relatedSelectionSet = selectionSet,
-				relatedType = resultType
+				relatedParentType = queryType,
+				relatedType = queryType
 			),
 			CapturedElement(
 				node = fragmentDefinition.typeCondition,
 				parentNode = fragmentDefinition,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentType = resultType,
-				relatedSelectionSet = selectionSet,
-				relatedType = resultType
+				relatedParentType = queryType,
+				relatedType = queryType
 			),
 			CapturedElement(
 				node = fragmentDefinition.typeCondition.nameNode,
 				parentNode = fragmentDefinition.typeCondition,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentType = resultType,
-				relatedSelectionSet = selectionSet,
-				relatedType = resultType
+				relatedParentType = queryType,
+				relatedType = queryType
 			),
 			CapturedElement(
 				node = fragmentSelectionSet,
 				parentNode = fragmentDefinition,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentSelectionSet = selectionSet,
-				relatedParentType = resultType,
+				relatedParentType = queryType,
 				relatedSelectionSet = fragmentSelectionSet
 			),
 			CapturedElement(
@@ -549,8 +671,7 @@ class VisitorContextTest {
 				relatedFieldDefinition = fragmentFieldDefinition,
 				relatedFieldSelection = fragmentFieldSelection,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentSelectionSet = selectionSet,
-				relatedParentType = resultType,
+				relatedParentType = queryType,
 				relatedSelection = fragmentFieldSelection,
 				relatedSelectionSet = fragmentSelectionSet,
 				relatedType = nonNullStringType
@@ -561,8 +682,7 @@ class VisitorContextTest {
 				relatedFieldDefinition = fragmentFieldDefinition,
 				relatedFieldSelection = fragmentFieldSelection,
 				relatedFragmentDefinition = fragmentDefinition,
-				relatedParentSelectionSet = selectionSet,
-				relatedParentType = resultType,
+				relatedParentType = queryType,
 				relatedSelection = fragmentFieldSelection,
 				relatedSelectionSet = fragmentSelectionSet,
 				relatedType = nonNullStringType
