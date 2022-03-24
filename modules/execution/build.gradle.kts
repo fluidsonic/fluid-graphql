@@ -14,8 +14,8 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-		darwin()
-		js()
+//		darwin()
+//		js()
 		jvm {
 			testDependencies {
 				implementation(kotlinx("coroutines-test", "1.6.0"))

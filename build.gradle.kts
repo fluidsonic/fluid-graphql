@@ -21,8 +21,8 @@ fluidLibraryModule(description = "FIXME") {
 			}
 		}
 
-		darwin()
-		js()
+//		darwin()
+//		js()
 		jvm()
 	}
 }
