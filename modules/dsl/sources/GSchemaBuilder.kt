@@ -3,6 +3,7 @@ package io.fluidsonic.graphql
 import kotlin.jvm.*
 import kotlin.reflect.*
 
+// TODO Rework this into GraphQL* types.
 
 // The DSL color in IntelliJ IDEA depends on the hash code of the FQN of marker class.
 // Therefore, we add a random letter to get the desired "DSL style number" (for now).
@@ -28,7 +29,7 @@ public annotation class SchemaBuilderType
 public annotation class SchemaBuilderDsl
 
 
-@GGraphDsl.Mark
+@GraphQLMarker
 @SchemaBuilderDsl
 @Suppress("PropertyName")
 public interface GSchemaBuilder {
@@ -421,7 +422,7 @@ public interface GSchemaBuilder {
 
 @JvmName("floatValue")
 @SchemaBuilderKeywordB
-public fun GSchemaBuilder.ValueContainer.enumValue(value: String?): GSchemaBuilder.Value =
+public fun GSchemaBuilder.ValueContainer.enum(value: String?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
 		else -> value(GEnumValue(value))
@@ -432,7 +433,7 @@ public fun GSchemaBuilder.ValueContainer.enumValue(value: String?): GSchemaBuild
 @SchemaBuilderKeywordB
 @Suppress("DEPRECATION_ERROR", "UNUSED_PARAMETER")
 public fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value =
-	value(GNullValue.withoutOrigin)
+	value(GNullValue())
 
 
 @JvmName("booleanValue")
@@ -476,7 +477,7 @@ public fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.V
 public fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
-		else -> value(GListValue(value.map { GNullValue.withoutOrigin }))
+		else -> value(GListValue(value.map { GNullValue() }))
 	}
 
 
@@ -518,7 +519,7 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBui
 
 @SchemaBuilderKeywordB
 @Suppress("unused")
-public fun GGraphDsl.schema(configure: GSchemaBuilder.() -> Unit): GSchema =
+public fun GraphQL.schema(configure: GSchemaBuilder.() -> Unit): GSchema =
 	DefaultSchemaBuilder().apply(configure).build()
 
 

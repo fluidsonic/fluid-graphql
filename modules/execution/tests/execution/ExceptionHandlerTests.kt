@@ -15,7 +15,7 @@ class ExceptionHandlerTests {
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					Query {
 						field("foo" of String) { resolve { throw testException } }
 						field("bar" of String) { resolve { testError2.throwException() } }
@@ -48,7 +48,7 @@ class ExceptionHandlerTests {
 		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = graphql.schema {
+					schema = GraphQL.schema {
 						Query {
 							field("foo" of String) { resolve { throw testException } }
 							field("bar" of String) { resolve { testError.throwException() } }
@@ -73,7 +73,7 @@ class ExceptionHandlerTests {
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					val Foo by type
 					val Bar by type
 					Scalar(Foo) { coerceNodeInput { throw testException } }
@@ -110,7 +110,7 @@ class ExceptionHandlerTests {
 		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = graphql.schema {
+					schema = GraphQL.schema {
 						val Foo by type
 						val Bar by type
 						Scalar(Foo) { coerceNodeInput { throw testException } }
@@ -139,7 +139,7 @@ class ExceptionHandlerTests {
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					val Foo by type
 					val Bar by type
 					Scalar(Foo) { coerceOutput { throw testException } }
@@ -176,7 +176,7 @@ class ExceptionHandlerTests {
 		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = graphql.schema {
+					schema = GraphQL.schema {
 						val Foo by type
 						val Bar by type
 						Scalar(Foo) { coerceOutput { throw testException } }
@@ -204,7 +204,7 @@ class ExceptionHandlerTests {
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					Query { field("foo" of String) }
 				},
 				exceptionHandler = { exception ->
@@ -236,7 +236,7 @@ class ExceptionHandlerTests {
 
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					Query { field("foo" of String) }
 				},
 				exceptionHandler = { error("Shouldn't be called.") },
@@ -265,7 +265,7 @@ class ExceptionHandlerTests {
 		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = graphql.schema {
+					schema = GraphQL.schema {
 						Query { field("foo" of String) }
 					},
 					exceptionHandler = { throw it },
@@ -291,7 +291,7 @@ class ExceptionHandlerTests {
 		val exceptions = mutableListOf<Throwable>()
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					val Foo by type
 					Scalar(Foo) { coerceVariableInput { throw testException } }
 					Query {
@@ -325,7 +325,7 @@ class ExceptionHandlerTests {
 
 		val result = GExecutor
 			.default(
-				schema = graphql.schema {
+				schema = GraphQL.schema {
 					val Foo by type
 					Scalar(Foo) { coerceVariableInput { testError.throwException() } }
 					Query {
@@ -356,7 +356,7 @@ class ExceptionHandlerTests {
 		val thrownException = kotlin.runCatching {
 			GExecutor
 				.default(
-					schema = graphql.schema {
+					schema = GraphQL.schema {
 						val Foo by type
 						Scalar(Foo) { coerceVariableInput { throw testException } }
 						Query {

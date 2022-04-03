@@ -95,7 +95,7 @@ class ExecutionTests {
 			|}
 		""".trimMargin()
 
-		val executor = GExecutor.default(schema = graphql.schema {
+		val executor = GExecutor.default(schema = GraphQL.schema {
 			Query {
 				field("foo" of !Boolean) {
 					resolve { true }
@@ -116,7 +116,7 @@ class ExecutionTests {
 
 	companion object {
 
-		private val schema = graphql.schema {
+		private val schema = GraphQL.schema {
 			val Article by type
 			val Author by type
 			val Keyword by type

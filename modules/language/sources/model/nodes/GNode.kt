@@ -664,46 +664,6 @@ public sealed class GDefinition(
 }
 
 
-public class GDirective(
-	name: GName,
-	override val arguments: List<GArgument> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty(),
-) :
-	GNode(
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithArguments,
-	GNode.WithName {
-
-	override val nameNode: GName = name
-
-
-	public constructor(
-		name: String,
-		arguments: List<GArgument> = emptyList(),
-		extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty(),
-	) : this(
-		name = GName(name),
-		arguments = arguments,
-		extensions = extensions
-	)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GDirective &&
-				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
 public class GDirectiveArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
@@ -802,53 +762,6 @@ public class GDirectiveDefinition(
 
 
 	public companion object
-}
-
-
-public class GDocument(
-	public val definitions: List<GDefinition>,
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GDocument> = GNodeExtensionSet.empty(),
-) : GNode(
-	extensions = extensions,
-	origin = origin
-) {
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GDocument &&
-				definitions.equalsNode(other.definitions, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public fun fragment(name: String): GFragmentDefinition? {
-		for (definition in definitions)
-			if (definition is GFragmentDefinition && definition.name == name)
-				return definition
-
-		return null
-	}
-
-
-	public fun operation(name: String?): GOperationDefinition? {
-		for (definition in definitions)
-			if (definition is GOperationDefinition && definition.name == name)
-				return definition
-
-		return null
-	}
-
-
-	public companion object {
-
-		public fun parse(source: GDocumentSource.Parsable): GResult<GDocument> =
-			Parser.parseDocument(source)
-
-
-		public fun parse(content: String, name: String = "<document>"): GResult<GDocument> =
-			parse(GDocumentSource.of(content = content, name = name))
-	}
 }
 
 
@@ -1146,61 +1059,6 @@ public class GFieldDefinition(
 }
 
 
-public class GFieldSelection(
-	name: GName,
-	public val selectionSet: GSelectionSet? = null,
-	override val arguments: List<GArgument> = emptyList(),
-	alias: GName? = null,
-	directives: List<GDirective> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty(),
-) :
-	GSelection(
-		directives = directives,
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithArguments {
-
-	public val alias: String? get() = aliasNode?.value
-	public val aliasNode: GName? = alias
-	public val name: String get() = nameNode.value
-	public val nameNode: GName = name
-
-
-	public constructor(
-		name: String,
-		selectionSet: GSelectionSet? = null,
-		arguments: List<GArgument> = emptyList(),
-		alias: String? = null,
-		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty(),
-	) : this(
-		name = GName(name),
-		selectionSet = selectionSet,
-		arguments = arguments,
-		alias = alias?.let(::GName),
-		directives = directives,
-		extensions = extensions
-	)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GFieldSelection &&
-				aliasNode.equalsNode(other.aliasNode, includingOrigin = includingOrigin) &&
-				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
-				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
 public object GFloatType : GScalarType(name = "Float")
 
@@ -1256,99 +1114,6 @@ public fun GFloatValue(value: Float): GFloatValue =
 
 public fun GFloatValue(value: Int): GFloatValue =
 	GFloatValue(value.toDouble())
-
-
-public class GFragmentDefinition(
-	name: GName,
-	public val typeCondition: GNamedTypeRef,
-	public val selectionSet: GSelectionSet,
-	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
-	override val directives: List<GDirective> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty(),
-) :
-	GExecutableDefinition(
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithDirectives,
-	GNode.WithName,
-	GNode.WithVariableDefinitions {
-
-	override val nameNode: GName = name
-
-
-	public constructor(
-		name: String,
-		typeCondition: GNamedTypeRef,
-		selectionSet: GSelectionSet,
-		variableDefinitions: List<GVariableDefinition> = emptyList(),
-		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty(),
-	) : this(
-		name = GName(name),
-		typeCondition = typeCondition,
-		selectionSet = selectionSet,
-		variableDefinitions = variableDefinitions,
-		directives = directives,
-		extensions = extensions
-	)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GFragmentDefinition &&
-				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
-				typeCondition.equalsNode(other.typeCondition, includingOrigin = includingOrigin) &&
-				variableDefinitions.equalsNode(other.variableDefinitions, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
-public class GFragmentSelection(
-	name: GName,
-	directives: List<GDirective> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty(),
-) :
-	GSelection(
-		directives = directives,
-		extensions = extensions,
-		origin = origin
-	) {
-
-	public val name: String get() = nameNode.value
-	public val nameNode: GName = name
-
-
-	public constructor(
-		name: String,
-		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty(),
-	) : this(
-		name = GName(name),
-		directives = directives,
-		extensions = extensions
-	)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GFragmentSelection &&
-				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
 
 
 // https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
@@ -1522,46 +1287,6 @@ public class GInputObjectTypeExtension(
 
 // https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
 public object GIntType : GScalarType(name = "Int")
-
-
-public class GIntValue(
-	public val value: Int,
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GIntValue> = GNodeExtensionSet.empty(),
-) : GValue(
-	extensions = extensions,
-	origin = origin
-) {
-
-	override val kind: Kind get() = Kind.INT
-
-
-	override fun equals(other: Any?): Boolean =
-		this === other || (other is GIntValue && value == other.value)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GIntValue &&
-				value == other.value &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	override fun hashCode(): Int =
-		value.hashCode()
-
-
-	override fun unwrap(): Int =
-		value
-
-
-	public companion object
-}
-
-
-public fun GIntValue(value: Int): GIntValue =
-	GIntValue(value = value, origin = null)
 
 
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interfaces
@@ -1998,43 +1723,6 @@ public fun GNonNullTypeRef(
 	GNonNullTypeRef(GTypeRef(name), extensions = extensions)
 
 
-public class GNullValue(
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GNullValue> = GNodeExtensionSet.empty(),
-) : GValue(
-	extensions = extensions,
-	origin = origin
-) {
-
-	override val kind: Kind get() = Kind.NULL
-
-
-	override fun equals(other: Any?): Boolean =
-		this === other || other is GNullValue
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GNullValue &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	override fun hashCode(): Int =
-		0
-
-
-	override fun unwrap(): Nothing? =
-		null
-
-
-	public companion object {
-
-		public val withoutOrigin: GNullValue = GNullValue()
-	}
-}
-
-
 // https://graphql.github.io/graphql-spec/June2018/#sec-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Object
 public class GObjectType(
@@ -2180,59 +1868,6 @@ public class GObjectValue(
 }
 
 
-public class GOperationDefinition(
-	public val type: GOperationType,
-	name: GName? = null,
-	public val selectionSet: GSelectionSet,
-	override val variableDefinitions: List<GVariableDefinition> = emptyList(),
-	override val directives: List<GDirective> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty(),
-) :
-	GExecutableDefinition(
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithDirectives,
-	GNode.WithOptionalName,
-	GNode.WithVariableDefinitions {
-
-	override val nameNode: GName? = name
-
-
-	public constructor(
-		type: GOperationType,
-		name: String? = null,
-		selectionSet: GSelectionSet,
-		variableDefinitions: List<GVariableDefinition> = emptyList(),
-		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty(),
-	) : this(
-		type = type,
-		name = name?.let(::GName),
-		selectionSet = selectionSet,
-		variableDefinitions = variableDefinitions,
-		directives = directives,
-		extensions = extensions
-	)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GOperationDefinition &&
-				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
-				type == other.type &&
-				variableDefinitions.equalsNode(other.variableDefinitions, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
 public class GOperationTypeDefinition(
 	public val operationType: GOperationType,
 	public val type: GNamedTypeRef,
@@ -2361,42 +1996,6 @@ public class GSchemaExtension(
 			other is GSchemaExtension &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
 				operationTypeDefinitions.equalsNode(other.operationTypeDefinitions, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
-public sealed class GSelection(
-	override val directives: List<GDirective>,
-	extensions: GNodeExtensionSet<GSelection>,
-	origin: GDocumentPosition?,
-) :
-	GNode(
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithDirectives {
-
-	public companion object
-}
-
-
-public class GSelectionSet(
-	public val selections: List<GSelection>,
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GSelectionSet> = GNodeExtensionSet.empty(),
-) : GNode(
-	extensions = extensions,
-	origin = origin
-) {
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GSelectionSet &&
-				selections.equalsNode(other.selections, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
 
@@ -2715,158 +2314,6 @@ public class GUnionTypeExtension(
 				possibleTypes.equalsNode(other.possibleTypes, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
-
-	public companion object
-}
-
-
-public sealed class GValue(
-	extensions: GNodeExtensionSet<GValue>,
-	origin: GDocumentPosition?,
-) : GNode(
-	extensions = extensions,
-	origin = origin
-) {
-
-	public abstract val kind: Kind
-
-	public abstract fun unwrap(): Any? // FIXME not language module
-
-
-	public companion object {
-
-		public fun parse(source: GDocumentSource.Parsable): GResult<GValue> =
-			Parser.parseValue(source)
-
-
-		public fun parse(content: String, name: String = "<value>"): GResult<GValue> =
-			parse(GDocumentSource.of(content = content, name = name))
-	}
-
-
-	public enum class Kind {
-
-		BOOLEAN,
-		ENUM,
-		FLOAT,
-		INT,
-		LIST,
-		NULL,
-		OBJECT,
-		STRING,
-		VARIABLE;
-
-
-		override fun toString(): String = when (this) {
-			BOOLEAN -> "boolean"
-			ENUM -> "enum"
-			FLOAT -> "float"
-			INT -> "int"
-			LIST -> "list"
-			NULL -> "null"
-			OBJECT -> "input object"
-			STRING -> "string"
-			VARIABLE -> "variable"
-		}
-
-
-		public companion object
-	}
-}
-
-
-public class GVariableDefinition(
-	name: GName,
-	override val type: GTypeRef,
-	override val defaultValue: GValue? = null,
-	override val directives: List<GDirective> = emptyList(),
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty(),
-) :
-	GNode(
-		extensions = extensions,
-		origin = origin
-	),
-	GNode.WithDefaultValue,
-	GNode.WithDirectives,
-	GNode.WithName {
-
-	override val nameNode: GName = name
-
-
-	public constructor(
-		name: String,
-		type: GTypeRef,
-		defaultValue: GValue? = null,
-		directives: List<GDirective> = emptyList(),
-		extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty(),
-	) : this(
-		name = GName(name),
-		type = type,
-		defaultValue = defaultValue,
-		directives = directives,
-		extensions = extensions
-	)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GVariableDefinition &&
-				defaultValue.equalsNode(other.defaultValue, includingOrigin = includingOrigin) &&
-				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				type.equalsNode(other.type, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	public companion object
-}
-
-
-public class GVariableRef(
-	name: GName,
-	origin: GDocumentPosition? = null,
-	extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty(),
-) : GValue(
-	extensions = extensions,
-	origin = origin
-) {
-
-	public val name: String get() = nameNode.value
-	public val nameNode: GName = name
-
-	override val kind: Kind get() = Kind.VARIABLE
-
-
-	public constructor(
-		name: String,
-		extensions: GNodeExtensionSet<GVariableRef> = GNodeExtensionSet.empty(),
-	) : this(
-		name = GName(name),
-		extensions = extensions
-	)
-
-
-	override fun equals(other: Any?): Boolean =
-		this === other || (other is GVariableRef && name == other.name)
-
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
-			other is GVariableRef &&
-				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
-				(!includingOrigin || origin == other.origin)
-			)
-
-
-	override fun hashCode(): Int =
-		name.hashCode()
-
-
-	override fun unwrap(): Nothing =
-		error("Cannot unwrap a GraphQL variable: $name")
 
 
 	public companion object

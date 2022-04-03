@@ -384,7 +384,7 @@ class UnionInterfaceExecutionTests {
 		)
 
 
-		private val schema = graphql.schema {
+		private val schema = GraphQL.schema {
 
 			val Cat by type
 			val Dog by type
@@ -477,7 +477,7 @@ class UnionInterfaceExecutionTests {
 		var meows: Boolean,
 		var mother: Cat? = null,
 		var father: Cat? = null,
-		var progeny: List<Cat> = emptyList()
+		var progeny: List<Cat> = emptyList(),
 	) {
 
 		init {
@@ -496,7 +496,7 @@ class UnionInterfaceExecutionTests {
 		var barks: Boolean,
 		var mother: Dog? = null,
 		var father: Dog? = null,
-		var progeny: List<Dog> = emptyList()
+		var progeny: List<Dog> = emptyList(),
 	) {
 
 		init {
@@ -516,7 +516,7 @@ class UnionInterfaceExecutionTests {
 		var friends: List<Any> = emptyList(),
 		var mother: Person? = null,
 		var father: Person? = null,
-		var progeny: List<Person> = emptyList()
+		var progeny: List<Person> = emptyList(),
 	) {
 
 		init {

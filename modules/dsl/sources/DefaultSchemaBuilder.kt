@@ -3,6 +3,7 @@ package io.fluidsonic.graphql
 import io.fluidsonic.graphql.GSchemaBuilder.*
 import kotlin.jvm.*
 
+// TODO Rework this into GraphQL* types.
 
 internal class DefaultSchemaBuilder : GSchemaBuilder {
 
@@ -154,7 +155,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 		@JvmName("GValueOfNull")
 		private fun GValue(@Suppress("UNUSED_PARAMETER") value: Nothing?): GNullValue =
-			GNullValue.withoutOrigin
+			GNullValue()
 
 
 		@JvmName("GValueOfBoolean")
@@ -333,7 +334,7 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 			directives += GDirective(
 				name = GLanguage.defaultDeprecatedDirective.name,
 				arguments = listOf(
-					GArgument(name = "reason", value = reason?.let(::GStringValue) ?: GNullValue.withoutOrigin)
+					GArgument(name = "reason", value = reason?.let(::GStringValue) ?: GNullValue())
 				)
 			)
 		}

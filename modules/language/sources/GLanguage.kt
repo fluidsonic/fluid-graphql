@@ -1,7 +1,7 @@
 package io.fluidsonic.graphql
 
 
-// https://graphql.github.io/graphql-spec/June2018/
+// https://spec.graphql.org/October2021/
 public object GLanguage {
 
 	public const val defaultQueryTypeName: String = "Query"
@@ -95,8 +95,8 @@ public object GLanguage {
 	)
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Enum-Value
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
+	// https://spec.graphql.org/October2021/#sec-Enum-Value
+	// https://spec.graphql.org/October2021/#sec-Names.Reserved-Names
 	public fun isValidEnumValue(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			name != "true" &&
@@ -105,35 +105,42 @@ public object GLanguage {
 			isValidName(name)
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#FieldDefinition
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
+	// https://spec.graphql.org/October2021/#sec-Objects
+	// https://spec.graphql.org/October2021/#sec-Names.Reserved-Names
 	public fun isValidFieldName(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#InputValueDefinition
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
+	// https://spec.graphql.org/October2021/#sec-Language.Fragments
+	// https://spec.graphql.org/October2021/#sec-Names.Reserved-Names
+	public fun isValidFragmentName(name: String): Boolean =
+		!name.startsWith(introspectionNamePrefix) &&
+			name != "on" &&
+			isValidName(name)
+
+
+	// https://spec.graphql.org/October2021/#InputValueDefinition
+	// https://spec.graphql.org/October2021/#sec-Names.Reserved-Names
 	public fun isValidInputValueName(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#Name
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
+	// https://spec.graphql.org/October2021/#Name
+	// https://spec.graphql.org/October2021/#sec-Names.Reserved-Names
 	public fun isValidIntrospectionName(name: String): Boolean =
 		name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#Name
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
+	// https://spec.graphql.org/October2021/#Name
 	public fun isValidName(name: String): Boolean =
 		nameRegex matches name
 
 
-	// https://graphql.github.io/graphql-spec/June2018/#TypeDefinition
-	// https://graphql.github.io/graphql-spec/June2018/#sec-Reserved-Names
+	// https://spec.graphql.org/October2021/#TypeDefinition
+	// https://spec.graphql.org/October2021/#sec-Names.Reserved-Names
 	public fun isValidTypeName(name: String): Boolean =
 		!name.startsWith(introspectionNamePrefix) &&
 			isValidName(name)

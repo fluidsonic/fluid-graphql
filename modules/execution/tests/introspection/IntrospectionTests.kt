@@ -107,7 +107,7 @@ class IntrospectionTests {
 
 	companion object {
 
-		private val schema = graphql.schema {
+		private val schema = GraphQL.schema {
 			Query {
 
 			}

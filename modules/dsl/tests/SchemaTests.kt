@@ -4,11 +4,11 @@ import io.fluidsonic.graphql.*
 import kotlin.test.*
 
 
-class DslTests {
+class SchemaTests {
 
 	@Test
-	fun testCompleteDsl() {
-		val actual = graphql.schema {
+	fun test() {
+		val actual = GraphQL.schema {
 			val Character by type
 			val Date by type
 			val Droid by type

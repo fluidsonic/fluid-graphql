@@ -10,7 +10,7 @@ class ErrorTests {
 
 	@Test
 	fun testErrorForInvalidFieldInNonValidatedQuery() = runBlockingTest {
-		val schema = graphql.schema { Query {} }
+		val schema = GraphQL.schema { Query {} }
 		val document = "{ foo }"
 
 		val executor = GExecutor.default(schema = schema)

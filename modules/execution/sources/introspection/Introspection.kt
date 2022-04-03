@@ -15,7 +15,7 @@ internal object Introspection {
 
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
 	@Suppress("RemoveExplicitTypeArguments")
-	val schema = graphql.schema {
+	val schema = GraphQL.schema {
 		Object<GSchema>(Schema) {
 			description(
 				"A GraphQL Schema defines the capabilities of a GraphQL server. " +
