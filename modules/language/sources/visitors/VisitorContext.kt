@@ -68,6 +68,7 @@ public open class VisitorContext(
 		val _relatedParentSelectionSet = relatedParentSelectionSet
 		val _relatedParentType = relatedParentType
 		val _relatedSelection = relatedSelection
+		val _relatedSelectionSet = relatedSelectionSet
 		val _relatedType = relatedType
 
 		when (node) {
@@ -169,7 +170,7 @@ public open class VisitorContext(
 		finally {
 			parentNode = _parentNode
 			visitingNode = _visitingNode
-
+			relatedSelectionSet = _relatedSelectionSet
 			relatedArgumentDefinition = _relatedArgumentDefinition
 			relatedDirective = _relatedDirective
 			relatedDirectiveDefinition = _relatedDirectiveDefinition
