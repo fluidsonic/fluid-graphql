@@ -5,7 +5,7 @@ private class ParallelVisitor<Data>(
 	private val children: List<Visitor<Unit, Data>>,
 ) : Visitor<Unit, Data>() {
 
-	// FIXME We must use Visit to orchestrate node traversal rather than doing so by ourself in ParallelVisit.
+	// FIXME We must use Visit to orchestrate node traversal rather than doing so by ourselves in ParallelVisit.
 	override fun onNode(node: GNode, data: Data, visit: Visit) =
 		ParallelVisit(node = node, data = data, children = children).run()
 			.also { visit.skipChildren() }

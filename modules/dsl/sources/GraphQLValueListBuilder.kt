@@ -5,14 +5,14 @@ import kotlin.js.*
 
 
 @GraphQLMarker
-public sealed interface GraphQLValueListBuilder : GraphQLValueListBuilderScope {
+public /* sealed */ interface GraphQLValueListBuilder : GraphQLValueListBuilderScope {
 
 	public fun build(): GListValue
 }
 
 
 @GraphQLMarker
-public sealed interface GraphQLValueListBuilderScope : GraphQLValueContainerScope {
+public /* sealed */ interface GraphQLValueListBuilderScope : GraphQLValueContainerScope {
 
 	@GraphQLMarker
 	public fun add(value: Boolean) {
@@ -152,12 +152,12 @@ public fun GraphQLValueListBuilder(): GraphQLValueListBuilder =
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueListBuilder.list(configure: GraphQLValueListBuilder.() -> Unit): GListValue =
 	GraphQLValueListBuilder().apply(configure).build()
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueListBuilder.obj(configure: GraphQLArgumentsBuilder.() -> Unit): GObjectValue =
 	GObjectValue(GraphQLArgumentsBuilder().apply(configure).build())

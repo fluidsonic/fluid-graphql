@@ -18,7 +18,7 @@ internal class DefaultExecutor(
 		operationName: String?,
 		variableValues: Map<String, Any?>,
 		extensions: GExecutorContextExtensionSet,
-	): GResult<Any?> =
+	): GResult<Map<String, Any?>> =
 		getOperation(document = document, name = operationName)
 			.flatMapValue { operation ->
 				makeContext(
@@ -44,7 +44,7 @@ internal class DefaultExecutor(
 	private suspend fun executeOperation(
 		strategy: Strategy, // FIXME use
 		context: DefaultExecutorContext,
-	): GResult<Any?> =
+	): GResult<Map<String, Any?>> =
 		context.selectionSetExecutor.execute(
 			selectionSet = context.operation.selectionSet,
 			parent = context.root,
@@ -115,7 +115,6 @@ internal class DefaultExecutor(
 		}
 
 
-	@OptIn(ExperimentalStdlibApi::class)
 	private fun serializeError(error: GError): Map<String, Any?> =
 		buildMap {
 			put("message", error.message)
@@ -145,8 +144,7 @@ internal class DefaultExecutor(
 		}
 
 
-	@OptIn(ExperimentalStdlibApi::class)
-	override fun serializeResult(result: GResult<Any?>): Map<String, Any?> =
+	override fun serializeResult(result: GResult<Map<String, Any?>>): Map<String, Any?> =
 		buildMap {
 			put("data", result.valueOrNull())
 

@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public sealed interface GraphQLInlineFragmentSelectionBuilder :
+public /* sealed */ interface GraphQLInlineFragmentSelectionBuilder :
 	GraphQLInlineFragmentSelectionBuilderScope,
 	GraphQLDirectivesContainer,
 	GraphQLSelectionsContainer {
@@ -12,7 +12,7 @@ public sealed interface GraphQLInlineFragmentSelectionBuilder :
 
 
 @GraphQLMarker
-public sealed interface GraphQLInlineFragmentSelectionBuilderScope :
+public /* sealed */ interface GraphQLInlineFragmentSelectionBuilderScope :
 	GraphQLDirectivesContainerScope,
 	GraphQLSelectionsContainerScope
 

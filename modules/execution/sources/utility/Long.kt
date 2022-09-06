@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun Long.toIntOrNull() =
+internal fun Long.toIntOrNull() =
 	if (this in Int.MIN_VALUE.toLong() .. Int.MAX_VALUE.toLong()) toInt() else null

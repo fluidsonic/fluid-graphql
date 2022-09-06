@@ -10,9 +10,11 @@ internal actual fun Double.toConsistentString(): String =
 					string.contains('.') -> string.replace("e+", "E").replace("e-", "E-")
 					else -> string.replace("e+", ".0E").replace("e-", ".0E-")
 				}
+
 				string.contains('.') -> string
 				else -> "$string.0"
 			}
 		}
+
 		else -> toString()
 	}

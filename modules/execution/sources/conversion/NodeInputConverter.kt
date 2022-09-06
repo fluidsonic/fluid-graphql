@@ -18,6 +18,7 @@ internal object NodeInputConverter {
 			is GNonNullType -> context.invalid()
 			else -> null
 		}
+
 		else -> when (type) {
 			is GListType -> coerceValueForList(value = value, type = type, context = context)
 			is GNonNullType -> coerceValueForNonNull(value = value, type = type, context = context)

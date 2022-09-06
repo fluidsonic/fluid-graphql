@@ -1,5 +1,3 @@
-@file:Suppress("LocalVariableName")
-
 package testing
 
 import io.fluidsonic.graphql.*

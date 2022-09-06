@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public sealed interface GraphQLOperationBuilder :
+public /* sealed */ interface GraphQLOperationBuilder :
 	GraphQLOperationBuilderScope,
 	GraphQLDirectivesContainer,
 	GraphQLSelectionsContainer,
@@ -13,7 +13,7 @@ public sealed interface GraphQLOperationBuilder :
 
 
 @GraphQLMarker
-public sealed interface GraphQLOperationBuilderScope :
+public /* sealed */ interface GraphQLOperationBuilderScope :
 	GraphQLDirectivesContainerScope,
 	GraphQLSelectionsContainerScope,
 	GraphQLVariableContainerScope
@@ -63,18 +63,18 @@ public fun GraphQLOperationBuilder(
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.mutation(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.mutation).apply(configure).build()
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.query(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.query).apply(configure).build()
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.subscription(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.subscription).apply(configure).build()

@@ -19,6 +19,7 @@ internal object DefaultFieldSelectionExecutor {
 					is GNonNullType -> error("Field '${parentType.name}.${fieldDefinition.name}' of type '${fieldDefinition.type}' resolved to null.")
 					else -> GResult.success()
 				}
+
 				else -> when (type) {
 					is GCompositeType -> {
 						val childType = when (type) {

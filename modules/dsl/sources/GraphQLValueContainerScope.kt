@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public sealed interface GraphQLValueContainerScope {
+public /* sealed */ interface GraphQLValueContainerScope {
 
 	@GraphQLMarker
 	public fun enum(name: String): GEnumValue {
@@ -22,12 +22,12 @@ public sealed interface GraphQLValueContainerScope {
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueContainerScope.list(configure: GraphQLValueListBuilder.() -> Unit): GListValue =
 	GraphQLValueListBuilder().apply(configure).build()
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueContainerScope.obj(configure: GraphQLArgumentsBuilder.() -> Unit): GObjectValue =
 	GObjectValue(GraphQLArgumentsBuilder().apply(configure).build())

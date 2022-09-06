@@ -6,7 +6,7 @@ import kotlin.reflect.*
 
 
 @GraphQLMarker
-public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefinitionContainerScope {
+public /* sealed */ interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefinitionContainerScope {
 
 	@GraphQLMarker
 	public fun fragment(definition: GFragmentDefinition): GFragmentRef
@@ -36,7 +36,7 @@ public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefi
 
 
 @GraphQLMarker
-public sealed interface GraphQLFragmentDefinitionContainerScope : GraphQLTypeContainerScope {
+public /* sealed */ interface GraphQLFragmentDefinitionContainerScope : GraphQLTypeContainerScope {
 
 	@GraphQLMarker
 	public fun fragment(typeCondition: String, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory =
@@ -57,7 +57,7 @@ public sealed interface GraphQLFragmentDefinitionContainerScope : GraphQLTypeCon
 }
 
 
-internal sealed interface GraphQLFragmentDefinitionContainerInternal : GraphQLFragmentDefinitionContainer {
+internal interface GraphQLFragmentDefinitionContainerInternal : GraphQLFragmentDefinitionContainer {
 
 	val definitions: MutableList<GDefinition>
 	val unusedFragmentDefinitionRefFactories: MutableList<RefFactory>

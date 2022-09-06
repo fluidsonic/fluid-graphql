@@ -4,7 +4,7 @@ import kotlin.js.*
 
 
 @GraphQLMarker
-public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope {
+public /* sealed */ interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope {
 
 	public fun build(): List<GDirective>
 
@@ -21,7 +21,7 @@ public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope
 
 
 @GraphQLMarker
-public sealed interface GraphQLDirectivesBuilderScope : GraphQLValueContainerScope {
+public /* sealed */ interface GraphQLDirectivesBuilderScope : GraphQLValueContainerScope {
 
 	@GraphQLMarker
 	public operator fun String.invoke() {

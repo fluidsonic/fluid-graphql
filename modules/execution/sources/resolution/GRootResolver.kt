@@ -27,7 +27,6 @@ public /*fun*/ interface GRootResolver {
 
 
 // Remove when fixed: https://youtrack.jetbrains.com/issue/KT-40165
-@Suppress("ObjectLiteralToLambda")
 public fun <Parent : Any> GRootResolver(resolveRoot: suspend GRootResolverContext.() -> Any): GRootResolver =
 	object : GRootResolver {
 

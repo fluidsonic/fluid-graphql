@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public sealed interface GraphQLSelectionsContainer : GraphQLSelectionsContainerScope {
+public /* sealed */ interface GraphQLSelectionsContainer : GraphQLSelectionsContainerScope {
 
 	// TODO Move to extension and inline.
 	@GraphQLMarker
@@ -31,7 +31,7 @@ public sealed interface GraphQLSelectionsContainer : GraphQLSelectionsContainerS
 
 
 @GraphQLMarker
-public sealed interface GraphQLSelectionsContainerScope {
+public /* sealed */ interface GraphQLSelectionsContainerScope {
 
 	@GraphQLMarker
 	public fun on(type: String, configure: GraphQLInlineFragmentSelectionBuilder.() -> Unit) {
@@ -102,7 +102,7 @@ public sealed interface GraphQLSelectionsContainerScope {
 }
 
 
-internal sealed interface GraphQLSelectionsContainerInternal : GraphQLSelectionsContainer {
+internal interface GraphQLSelectionsContainerInternal : GraphQLSelectionsContainer {
 
 	val selections: MutableList<GSelection>
 

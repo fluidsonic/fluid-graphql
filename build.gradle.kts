@@ -1,10 +1,10 @@
 import io.fluidsonic.gradle.*
 
 plugins {
-	id("io.fluidsonic.gradle") version "1.1.25"
+	id("io.fluidsonic.gradle") version "1.2.1"
 }
 
-fluidLibrary(name = "graphql", version = "0.12.0") {
+fluidLibrary(name = "graphql", version = "0.13.0") {
 	allModules {
 		language {
 			withExperimentalApi("io.fluidsonic.graphql.InternalGraphqlApi")

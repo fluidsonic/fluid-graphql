@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public sealed interface GraphQLDirectivesContainer : GraphQLDirectivesContainerScope {
+public /* sealed */ interface GraphQLDirectivesContainer : GraphQLDirectivesContainerScope {
 
 	@GraphQLMarker
 	public fun directives(directives: List<GDirective>)
@@ -10,10 +10,10 @@ public sealed interface GraphQLDirectivesContainer : GraphQLDirectivesContainerS
 
 
 @GraphQLMarker
-public sealed interface GraphQLDirectivesContainerScope
+public /* sealed */ interface GraphQLDirectivesContainerScope
 
 
-internal sealed interface GraphQLDirectivesContainerInternal : GraphQLDirectivesContainer {
+internal interface GraphQLDirectivesContainerInternal : GraphQLDirectivesContainer {
 
 	var directives: List<GDirective>?
 

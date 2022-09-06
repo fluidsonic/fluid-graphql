@@ -4,14 +4,14 @@ import kotlin.internal.*
 
 
 @GraphQLMarker
-public sealed interface GraphQLVariableBuilder : GraphQLVariableBuilderScope, GraphQLDirectivesContainer {
+public /* sealed */ interface GraphQLVariableBuilder : GraphQLVariableBuilderScope, GraphQLDirectivesContainer {
 
 	public fun build(): GVariableDefinition
 }
 
 
 @GraphQLMarker
-public sealed interface GraphQLVariableBuilderScope : GraphQLValueContainerScope, GraphQLDirectivesContainerScope {
+public /* sealed */ interface GraphQLVariableBuilderScope : GraphQLValueContainerScope, GraphQLDirectivesContainerScope {
 
 	@GraphQLMarker
 	public fun default(value: Boolean) {

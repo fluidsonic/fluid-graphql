@@ -49,6 +49,7 @@ public enum class GDirectiveLocation {
 				GOperationType.query -> QUERY
 				GOperationType.subscription -> SUBSCRIPTION
 			}
+
 			is GScalarType -> SCALAR
 			is GScalarTypeExtension -> SCALAR
 			is GSchemaDefinition -> SCHEMA

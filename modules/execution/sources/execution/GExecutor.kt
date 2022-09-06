@@ -8,8 +8,8 @@ public interface GExecutor {
 		documentSource: String,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty()
-	): GResult<Any?> =
+		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty(),
+	): GResult<Map<String, Any?>> =
 		execute(
 			documentSource = GDocumentSource.of(documentSource),
 			extensions = extensions,
@@ -22,8 +22,8 @@ public interface GExecutor {
 		documentSource: GDocumentSource.Parsable,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty()
-	): GResult<Any?> =
+		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty(),
+	): GResult<Map<String, Any?>> =
 		GDocument.parse(documentSource).flatMapValue { document ->
 			execute(
 				document = document,
@@ -38,11 +38,11 @@ public interface GExecutor {
 		document: GDocument,
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
-		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty()
-	): GResult<Any?>
+		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty(),
+	): GResult<Map<String, Any?>>
 
 
-	public fun serializeResult(result: GResult<Any?>): Map<String, Any?>
+	public fun serializeResult(result: GResult<Map<String, Any?>>): Map<String, Any?>
 
 
 	public companion object {
@@ -54,7 +54,7 @@ public interface GExecutor {
 			nodeInputCoercer: GNodeInputCoercer<Any?>? = null,
 			outputCoercer: GOutputCoercer<Any>? = null,
 			variableInputCoercer: GVariableInputCoercer<Any?>? = null,
-			rootResolver: GRootResolver = GRootResolver.unit()
+			rootResolver: GRootResolver = GRootResolver.unit(),
 		): GExecutor =
 			DefaultExecutor(
 				exceptionHandler = exceptionHandler,

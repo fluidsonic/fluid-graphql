@@ -155,9 +155,11 @@ public inline fun <Value, TransformedValue> GResult<Value>.flatMapValue(action: 
 						else -> errors
 					}
 				}
+
 				else -> transformed
 			}
 		}
+
 		is GResult.Failure -> this
 	}
 

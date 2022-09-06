@@ -258,6 +258,7 @@ internal class Lexer(
 						value += charCode.toChar()
 						position += 4
 					}
+
 					else ->
 						syntaxError(
 							description = "Invalid character escape sequence: \\$char.",

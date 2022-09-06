@@ -58,7 +58,6 @@ fun assertErrors(expected: List<String>, actual: List<GError>) {
 }
 
 
-@Suppress("NAME_SHADOWING")
 internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,
@@ -81,7 +80,6 @@ internal fun assertValidationRule(
 }
 
 
-@Suppress("NAME_SHADOWING")
 internal fun assertValidationRule(
 	rule: ValidationRule.Provider,
 	errors: List<String>,

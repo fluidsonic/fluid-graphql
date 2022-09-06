@@ -6,7 +6,7 @@ import kotlin.contracts.*
 import kotlin.jvm.*
 
 
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 internal fun <Receiver, Value> Receiver.identity(value: Value) =
 	value
 

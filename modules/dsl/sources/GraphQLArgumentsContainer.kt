@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public sealed interface GraphQLArgumentsContainer : GraphQLArgumentsContainerScope {
+public /* sealed */ interface GraphQLArgumentsContainer : GraphQLArgumentsContainerScope {
 
 	@GraphQLMarker
 	public fun arguments(arguments: List<GArgument>)
@@ -10,10 +10,10 @@ public sealed interface GraphQLArgumentsContainer : GraphQLArgumentsContainerSco
 
 
 @GraphQLMarker
-public sealed interface GraphQLArgumentsContainerScope
+public /* sealed */ interface GraphQLArgumentsContainerScope
 
 
-internal sealed interface GraphQLArgumentsContainerInternal : GraphQLArgumentsContainer {
+internal interface GraphQLArgumentsContainerInternal : GraphQLArgumentsContainer {
 
 	var arguments: List<GArgument>?
 

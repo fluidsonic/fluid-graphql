@@ -132,7 +132,6 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 	override fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit) {
-		@Suppress("UNCHECKED_CAST")
 		definitions += (named as UnionTypeDefinitionBuilderImpl).apply(configure).build()
 	}
 
@@ -315,13 +314,11 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 
 
 		fun argument(name: ArgumentDefinitionContainer.NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit) {
-			@Suppress("UNCHECKED_CAST")
 			argumentDefinitions += (name as ArgumentDefinitionBuilderImpl).apply(configure).build()
 		}
 
 
 		fun argument(name: ArgumentDefinitionContainer.NameAndTypeAndDefault, configure: ArgumentDefinitionBuilder.() -> Unit) {
-			@Suppress("UNCHECKED_CAST")
 			argumentDefinitions += (name as ArgumentDefinitionBuilderImpl).apply(configure).build()
 		}
 
@@ -585,7 +582,6 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		)
 
 
-		@Suppress("UNCHECKED_CAST")
 		override fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.() -> Unit) {
 			fieldDefinitions += (name as FieldDefinitionBuilderImpl).apply(configure).build()
 		}
@@ -629,7 +625,6 @@ internal class DefaultSchemaBuilder : GSchemaBuilder {
 		)
 
 
-		@Suppress("UNCHECKED_CAST")
 		override fun field(name: FieldDefinitionContainer.NameAndType, configure: FieldDefinitionBuilder.() -> Unit) {
 			fieldDefinitions += (name as FieldDefinitionBuilderImpl).apply(configure).build()
 		}

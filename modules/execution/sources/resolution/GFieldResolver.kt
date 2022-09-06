@@ -14,7 +14,6 @@ public suspend fun <Parent : Any> GFieldResolver<Parent>.resolveField(parent: Pa
 
 
 // Remove when fixed: https://youtrack.jetbrains.com/issue/KT-40165
-@Suppress("ObjectLiteralToLambda")
 public fun <Parent : Any> GFieldResolver(resolveField: suspend GFieldResolverContext.(parent: Parent) -> Any?): GFieldResolver<Parent> =
 	object : GFieldResolver<Parent> {
 

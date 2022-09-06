@@ -4,7 +4,7 @@ import kotlin.js.*
 
 
 @GraphQLMarker
-public sealed interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, GraphQLFragmentDefinitionContainer {
+public /* sealed */ interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, GraphQLFragmentDefinitionContainer {
 
 	public fun build(): GDocument
 
@@ -14,11 +14,10 @@ public sealed interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, Gr
 
 
 @GraphQLMarker
-public sealed interface GraphQLDocumentBuilderScope : GraphQLFragmentDefinitionContainerScope
+public /* sealed */ interface GraphQLDocumentBuilderScope : GraphQLFragmentDefinitionContainerScope
 
 
 @GraphQLMarker
-@Suppress("unused")
 public inline fun GraphQLDocumentBuilderScope.mutation(
 	name: String? = null,
 	configure: GraphQLOperationBuilderScope.() -> Unit,
@@ -30,7 +29,6 @@ public inline fun GraphQLDocumentBuilderScope.mutation(
 
 
 @GraphQLMarker
-@Suppress("unused")
 public inline fun GraphQLDocumentBuilderScope.query(
 	name: String? = null,
 	configure: GraphQLOperationBuilderScope.() -> Unit,
@@ -42,7 +40,6 @@ public inline fun GraphQLDocumentBuilderScope.query(
 
 
 @GraphQLMarker
-@Suppress("unused")
 public inline fun GraphQLDocumentBuilderScope.subscription(
 	name: String? = null,
 	configure: GraphQLOperationBuilderScope.() -> Unit,
@@ -82,12 +79,11 @@ public fun GraphQLDocumentBuilder(): GraphQLDocumentBuilder =
 
 
 @GraphQLMarker
-@Suppress("unused")
 public inline fun GraphQL(configure: GraphQLDocumentBuilderScope.() -> Unit): GDocument =
 	GraphQLDocumentBuilder().apply(configure).build()
 
 
 @GraphQLMarker
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.document(configure: GraphQLDocumentBuilderScope.() -> Unit): GDocument =
 	GraphQLDocumentBuilder().apply(configure).build()

@@ -518,7 +518,7 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBui
 
 
 @SchemaBuilderKeywordB
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 public fun GraphQL.schema(configure: GSchemaBuilder.() -> Unit): GSchema =
 	DefaultSchemaBuilder().apply(configure).build()
 

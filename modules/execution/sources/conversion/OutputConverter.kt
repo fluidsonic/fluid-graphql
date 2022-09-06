@@ -111,6 +111,7 @@ internal object OutputConverter {
 				type = type,
 				context = context
 			)
+
 			else -> error("Output conversion only supports leaf and object types but ${type.kind} type '${type.toRef()}' was encountered.")
 		}
 

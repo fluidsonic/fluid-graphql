@@ -1589,6 +1589,10 @@ public sealed class GNamedType(
 	final override val underlyingNamedType: GNamedType get() = this
 
 
+	override val name: String
+		get() = nameNode.value
+
+
 	override fun toRef(): GNamedTypeRef =
 		GTypeRef(name)
 
