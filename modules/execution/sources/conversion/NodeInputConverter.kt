@@ -250,7 +250,7 @@ internal object NodeInputConverter {
 	private data class Context(
 		override val argumentDefinition: GArgumentDefinition?,
 		override val execution: DefaultExecutorContext,
-		val fieldSelectionPath: GPath?,
+		override val fieldSelectionPath: GPath?,
 		val fullType: GType,
 		val fullValue: GValue?,
 		private val isDefaultValue: Boolean,

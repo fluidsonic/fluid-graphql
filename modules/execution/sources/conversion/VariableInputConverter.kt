@@ -270,7 +270,7 @@ internal object VariableInputConverter {
 		val fullType: GType,
 		val fullValue: Any?,
 		val isUsingCoercerProvidedByType: Boolean,
-		val path: GPath,
+		override val path: GPath,
 		override val variableDefinition: GVariableDefinition,
 		override val type: GType,
 		val value: Any?,

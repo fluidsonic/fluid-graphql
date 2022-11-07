@@ -24,7 +24,24 @@ public class GPath(elements: List<Element> = emptyList()) {
 
 
 	override fun toString(): String =
-		elements.joinToString(separator = "")
+		buildString {
+			elements.forEachIndexed { index, element ->
+				when (element) {
+					is Element.Index -> {
+						append('[')
+						append(element.value)
+						append(']')
+					}
+
+					is Element.Name -> {
+						if (index > 0)
+							append('.')
+
+						append(element.value)
+					}
+				}
+			}
+		}
 
 
 	public companion object {
@@ -95,7 +112,7 @@ public class GPath(elements: List<Element> = emptyList()) {
 
 
 			override fun toString(): String =
-				".$value"
+				value
 		}
 
 
@@ -110,7 +127,7 @@ public class GPath(elements: List<Element> = emptyList()) {
 
 
 			override fun toString(): String =
-				"[$value]"
+				value.toString()
 		}
 	}
 }

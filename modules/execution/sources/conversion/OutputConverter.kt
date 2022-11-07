@@ -8,6 +8,7 @@ internal object OutputConverter {
 		value: Any,
 		type: GType,
 		parentType: GObjectType,
+		path: GPath,
 		fieldDefinition: GFieldDefinition,
 		context: DefaultExecutorContext,
 	): GResult<Any> {
@@ -16,6 +17,7 @@ internal object OutputConverter {
 			fieldDefinition = fieldDefinition,
 			isUsingCoercerProvidedByType = false,
 			parentType = parentType,
+			path = path,
 			type = type,
 			value = value
 		)
@@ -127,6 +129,7 @@ internal object OutputConverter {
 		override val fieldDefinition: GFieldDefinition,
 		val isUsingCoercerProvidedByType: Boolean,
 		override val parentType: GObjectType,
+		override val path: GPath,
 		override val type: GType,
 		val value: Any,
 	) : GOutputCoercerContext {

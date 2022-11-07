@@ -1,12 +1,12 @@
 package io.fluidsonic.graphql
 
 
-public class GError(
+public data class GError(
 	public val message: String,
 	public val path: GPath? = null,
 	public val nodes: List<GNode> = emptyList(),
 	public val origins: List<GDocumentPosition> = emptyList(),
-	public val extensions: Map<String, Any?> = emptyMap()
+	public val extensions: Map<String, Any?> = emptyMap(),
 ) {
 
 	public fun describe(): String = buildString {

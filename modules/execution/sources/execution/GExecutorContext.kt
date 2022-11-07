@@ -24,4 +24,11 @@ public interface GExecutorContext {
 
 	@SchemaBuilderKeywordB // FIXME ok?
 	public val variableValues: Map<String, Any?>
+
+
+	public interface Child {
+
+		@SchemaBuilderKeywordB // FIXME ok?
+		public val execution: GExecutorContext
+	}
 }

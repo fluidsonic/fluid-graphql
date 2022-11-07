@@ -7,6 +7,7 @@ internal class DefaultFieldResolverContext(
 	override val fieldDefinition: GFieldDefinition,
 	private val parent: Any,
 	override val parentType: GObjectType,
+	override val path: GPath,
 ) : GFieldResolverContext {
 
 	@Suppress("UNCHECKED_CAST")

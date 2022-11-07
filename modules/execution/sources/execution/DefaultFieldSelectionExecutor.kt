@@ -46,6 +46,7 @@ internal object DefaultFieldSelectionExecutor {
 								value = childValue,
 								type = childType,
 								parentType = parentType,
+								path = path,
 								fieldDefinition = fieldDefinition,
 								context = context
 							)
@@ -57,6 +58,7 @@ internal object DefaultFieldSelectionExecutor {
 							value = value,
 							type = type,
 							parentType = parentType,
+							path = path,
 							fieldDefinition = fieldDefinition,
 							context = context
 						)
@@ -103,6 +105,7 @@ internal object DefaultFieldSelectionExecutor {
 		value: Any,
 		type: GType,
 		parentType: GObjectType,
+		path: GPath,
 		fieldDefinition: GFieldDefinition,
 		context: DefaultExecutorContext,
 	): GResult<Any> =
@@ -111,7 +114,8 @@ internal object DefaultFieldSelectionExecutor {
 			type = type,
 			fieldDefinition = fieldDefinition,
 			parentType = parentType,
-			context = context
+			path = path,
+			context = context,
 		)
 
 
@@ -273,7 +277,8 @@ internal object DefaultFieldSelectionExecutor {
 				execution = context,
 				fieldDefinition = fieldDefinition,
 				parent = parent,
-				parentType = parentType
+				parentType = parentType,
+				path = path,
 			)
 
 			GResult.catchErrors {

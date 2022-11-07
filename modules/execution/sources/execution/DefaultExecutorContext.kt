@@ -18,7 +18,7 @@ internal data class DefaultExecutorContext(
 	val selectionSetExecutor: DefaultSelectionSetExecutor,
 	val variableInputCoercer: GVariableInputCoercer<Any?>?,
 	val variableInputConverter: VariableInputConverter,
-	override val variableValues: Map<String, Any?>
+	override val variableValues: Map<String, Any?>,
 ) : GExecutorContext, GRootResolverContext {
 
 	override val execution: GExecutorContext
@@ -34,7 +34,18 @@ internal data class DefaultExecutorContext(
 		}
 		catch (exception: Throwable) {
 			with(exceptionHandler ?: throw exception) {
-				DefaultExceptionHandlerContext(origin = origin()).handleException(exception).throwException()
+				@Suppress("NAME_SHADOWING")
+				val origin = origin()
+
+				DefaultExceptionHandlerContext(origin = origin)
+					.handleException(exception)
+					.let { error ->
+						when (error.path) {
+							null -> origin.path?.let { error.copy(path = it) } ?: error
+							else -> error
+						}
+					}
+					.throwException()
 			}
 		}
 	}

@@ -6,6 +6,9 @@ public interface GVariableInputCoercerContext : GInputCoercerContext {
 	@SchemaBuilderKeywordB // FIXME ok?
 	public val hasValue: Boolean
 
+	@SchemaBuilderKeywordB
+	public val path: GPath
+
 	@SchemaBuilderKeywordB // FIXME ok?
 	public val variableDefinition: GVariableDefinition
 

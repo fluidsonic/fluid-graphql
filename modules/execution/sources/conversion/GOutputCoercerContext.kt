@@ -1,16 +1,16 @@
 package io.fluidsonic.graphql
 
 
-public interface GOutputCoercerContext {
-
-	@SchemaBuilderKeywordB // FIXME ok?
-	public val execution: GExecutorContext
+public interface GOutputCoercerContext : GExecutorContext.Child {
 
 	@SchemaBuilderKeywordB // FIXME ok?
 	public val fieldDefinition: GFieldDefinition
 
 	@SchemaBuilderKeywordB // FIXME ok?
 	public val parentType: GObjectType
+
+	@SchemaBuilderKeywordB
+	public val path: GPath
 
 	@SchemaBuilderKeywordB // FIXME ok?
 	public val type: GType
