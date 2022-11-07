@@ -8,7 +8,7 @@ class ExceptionHandlerTests {
 
 	@Test
 	fun testHandledExceptionInFieldResolver() = runBlockingTest {
-		val testError1 = GError(message = "test 1")
+		val testError1 = GError(message = "test 1", path = GPath.ofName("foo"))
 		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
 
@@ -66,7 +66,7 @@ class ExceptionHandlerTests {
 
 	@Test
 	fun testHandledExceptionInNodeInputCoercer() = runBlockingTest {
-		val testError1 = GError(message = "test 1")
+		val testError1 = GError(message = "test 1", path = GPath.ofName("foo"))
 		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
 
@@ -132,7 +132,7 @@ class ExceptionHandlerTests {
 
 	@Test
 	fun testHandledExceptionInOutputCoercer() = runBlockingTest {
-		val testError1 = GError(message = "test 1")
+		val testError1 = GError(message = "test 1", path = GPath.ofName("foo"))
 		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
 
@@ -198,7 +198,7 @@ class ExceptionHandlerTests {
 
 	@Test
 	fun testHandledExceptionInRootResolver() = runBlockingTest {
-		val testError = GError(message = "test")
+		val testError = GError(message = "test", path = GPath.ofName("foo"))
 		val testException = TestException(1)
 
 		val exceptions = mutableListOf<Throwable>()
@@ -285,7 +285,7 @@ class ExceptionHandlerTests {
 
 	@Test
 	fun testHandledExceptionInVariableInputCoercer() = runBlockingTest {
-		val testError = GError(message = "test")
+		val testError = GError(message = "test", path = GPath.ofName("foo"))
 		val testException = TestException(1)
 
 		val exceptions = mutableListOf<Throwable>()
