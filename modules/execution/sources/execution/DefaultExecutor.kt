@@ -50,7 +50,7 @@ internal class DefaultExecutor(
 			parent = context.root,
 			parentType = context.rootType,
 			path = GPath.root,
-			context = context
+			context = context,
 		)
 
 
@@ -61,7 +61,7 @@ internal class DefaultExecutor(
 			?.let { GResult.success(it) }
 			?: GResult.failure(GError(
 				if (name != null) "There is no operation named '$name' in the document."
-				else "There is no anonymous operations in the document."
+				else "There is no anonymous operation in the document."
 			))
 
 

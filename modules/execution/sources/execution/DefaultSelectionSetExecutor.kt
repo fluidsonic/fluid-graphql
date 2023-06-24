@@ -43,7 +43,8 @@ internal object DefaultSelectionSetExecutor {
 	): GResult<Nothing?> {
 		when (selection) {
 			is GFieldSelection -> {
-				fieldSelectionsByResponseKey.getOrPut(selection.alias ?: selection.name) { mutableListOf() } += selection
+				fieldSelectionsByResponseKey.getOrPut(selection.alias ?: selection.name, ::mutableListOf)
+					.add(selection)
 
 				return GResult.success()
 			}
