@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **fluid-graphql** is a Kotlin Multiplatform GraphQL library (package: `io.fluidsonic.graphql`). It targets **JVM**, **JS**, and **Darwin** (macOS/iOS). Version 0.15.0.
 
+## Git
+
+Run `git` directly without `-C` — the working directory is always the project root.
+
 ## Build Commands
 
 ```bash
