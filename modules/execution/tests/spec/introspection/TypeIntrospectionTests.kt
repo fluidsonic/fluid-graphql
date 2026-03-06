@@ -567,8 +567,6 @@ class TypeIntrospectionTests {
 	}
 
 
-	// Known bug: includeDeprecated logic inverted — when true, deprecated items are excluded instead of included
-	@Ignore("Known bug: includeDeprecated logic inverted")
 	@Test
 	fun testFieldsIncludeDeprecated() = runTest {
 		val schema = GraphQL.schema {

@@ -20,9 +20,12 @@ internal class Validator(
 	companion object {
 
 		val default = Validator(rules = listOf(
+			AllVariableUsesDefinedRule,
+			AllVariablesUsedRule,
 			AnonymousOperationExclusivityRule,
 			ArgumentExistenceRule,
 			ArgumentRequirementRule,
+			ArgumentUniquenessRule,
 			DirectiveExclusivityRule,
 			DirectiveExistenceRule,
 			DirectiveLocationValidityRule,
@@ -46,6 +49,7 @@ internal class Validator(
 			ValueValidityRule,
 			VariableDefinitionNameExclusivityRule,
 			VariableDefinitionTypeValidityRule,
+			VariablesInAllowedPositionRule,
 		))
 	}
 }

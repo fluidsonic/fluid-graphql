@@ -90,7 +90,6 @@ class ExecutingRequestsTests {
 	}
 
 
-	@Ignore("Known bug: executor falls back to single operation when operationName does not match")
 	@Test
 	fun testErrorWhenOperationNameDoesNotMatch() = runTest {
 		val schema = GraphQL.schema {

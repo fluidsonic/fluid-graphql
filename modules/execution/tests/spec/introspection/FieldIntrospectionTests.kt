@@ -204,12 +204,10 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		// By default (includeDeprecated: false) deprecated fields are included in the result
-		// We query all fields to find oldField
 		val result = executor.serializeResult(executor.execute("""
 			{
 			  __type(name: "MyObject") {
-			    fields {
+			    fields(includeDeprecated: true) {
 			      name
 			      isDeprecated
 			      deprecationReason

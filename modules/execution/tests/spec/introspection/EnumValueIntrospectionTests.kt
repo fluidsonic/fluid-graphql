@@ -89,7 +89,7 @@ class EnumValueIntrospectionTests {
 		val result = executor.serializeResult(executor.execute("""
 			{
 			  __type(name: "Status") {
-			    enumValues { name isDeprecated deprecationReason }
+			    enumValues(includeDeprecated: true) { name isDeprecated deprecationReason }
 			  }
 			}
 		""".trimIndent()))

@@ -30,6 +30,15 @@ internal data class DefaultExecutorContext(
 			return action()
 		}
 		catch (exception: GErrorException) {
+			val resolvedOrigin = origin()
+			if (resolvedOrigin is GExceptionOrigin.FieldResolver || resolvedOrigin is GExceptionOrigin.OutputCoercer) {
+				val path = resolvedOrigin.path
+				if (path != null && path.elements.isNotEmpty()) {
+					throw GErrorException(exception.errors.map { error ->
+						if (error.path == null) error.copy(path = path) else error
+					})
+				}
+			}
 			throw exception
 		}
 		catch (exception: Throwable) {

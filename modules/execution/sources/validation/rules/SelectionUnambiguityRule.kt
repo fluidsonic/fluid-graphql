@@ -74,8 +74,8 @@ internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
 
 				// If both fields belong to different Object types they can never be part of the same response.
 				bothFieldsAreOfDistinctObjectType = firstField.parentType !== otherField.parentType &&
-					firstField.type is GObjectType &&
-					otherField.type is GObjectType
+					firstField.parentType is GObjectType &&
+					otherField.parentType is GObjectType
 				if (bothFieldsAreOfDistinctObjectType)
 					return@incompatible false
 

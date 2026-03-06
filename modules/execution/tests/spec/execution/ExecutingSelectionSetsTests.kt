@@ -126,7 +126,6 @@ class ExecutingSelectionSetsTests {
 	}
 
 
-	@Ignore("Known bug: @include(if: false) does not exclude the field")
 	@Test
 	fun testIncludeFalseExcludesField() = runTest {
 		val schema = GraphQL.schema {

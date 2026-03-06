@@ -2,7 +2,6 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-import kotlin.test.Ignore
 import kotlinx.coroutines.test.*
 
 
@@ -106,7 +105,6 @@ class ResponseFormatTests {
 	}
 
 
-	@Ignore("Known behavior: resolver-thrown GErrors do not include path info")
 	@Test
 	fun testErrorObjectHasPath() = runTest {
 		val schema = GraphQL.schema {
@@ -128,7 +126,6 @@ class ResponseFormatTests {
 	}
 
 
-	@Ignore("Known behavior: resolver-thrown GErrors do not include path info")
 	@Test
 	fun testPathForNestedField() = runTest {
 		val schema = GraphQL.schema {
@@ -157,7 +154,6 @@ class ResponseFormatTests {
 	}
 
 
-	@Ignore("Known behavior: resolver-thrown GErrors do not include path info")
 	@Test
 	fun testPathForListElement() = runTest {
 		val schema = GraphQL.schema {

@@ -2,7 +2,6 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-import kotlin.test.Ignore
 import kotlinx.coroutines.test.*
 
 // GraphQL Spec §6.2 — Executing Operations
@@ -26,7 +25,6 @@ class ExecutingOperationsTests {
 	}
 
 
-	@Ignore("Known bug: mutation serial execution not enforced")
 	@Test
 	fun testMutationFieldsExecuteSerially() = runTest {
 		val executionOrder = mutableListOf<String>()
@@ -134,7 +132,6 @@ class ExecutingOperationsTests {
 	}
 
 
-	@Ignore("Known behavior: omitted nullable variable causes coercion error instead of being treated as null")
 	@Test
 	fun testNullVariableValueVsOmittedVariable() = runTest {
 		val schema = GraphQL.schema {

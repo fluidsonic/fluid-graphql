@@ -7,7 +7,6 @@ import kotlin.test.*
 // GraphQL Spec §5.2.4 — Subscription Single Root Field
 class Sec5_2_4_SubscriptionTests {
 
-	@Ignore("Known bug: SubscriptionRootFieldExclusivityRule disabled")
 	@Test
 	fun testValidSubscriptionWithSingleField() {
 		assertValidationRule(
@@ -24,7 +23,6 @@ class Sec5_2_4_SubscriptionTests {
 	}
 
 
-	@Ignore("Known bug: SubscriptionRootFieldExclusivityRule disabled")
 	@Test
 	fun testValidSubscriptionWithFragment() {
 		assertValidationRule(
@@ -42,12 +40,21 @@ class Sec5_2_4_SubscriptionTests {
 	}
 
 
-	@Ignore("Known bug: SubscriptionRootFieldExclusivityRule disabled")
 	@Test
 	fun testInvalidSubscriptionWithMultipleFields() {
 		assertValidationRule(
 			rule = SubscriptionRootFieldExclusivityRule,
-			errors = listOf("Subscription operations must have exactly one root field."),
+			errors = listOf("""
+				Subscription operations must have exactly one root field.
+
+				<document>:1:20
+				1 | subscription sub { newMessage newComment }
+				  |                    ^
+
+				<document>:1:31
+				1 | subscription sub { newMessage newComment }
+				  |                               ^
+			"""),
 			document = """
 				|subscription sub { newMessage newComment }
 			""",
@@ -59,12 +66,17 @@ class Sec5_2_4_SubscriptionTests {
 	}
 
 
-	@Ignore("Known bug: SubscriptionRootFieldExclusivityRule disabled")
 	@Test
 	fun testInvalidSubscriptionWithIntrospection() {
 		assertValidationRule(
 			rule = SubscriptionRootFieldExclusivityRule,
-			errors = listOf("Subscription operations must have exactly one root field."),
+			errors = listOf("""
+				Subscription operations must have exactly one root field.
+
+				<document>:1:20
+				1 | subscription sub { __typename }
+				  |                    ^
+			"""),
 			document = """
 				|subscription sub { __typename }
 			""",

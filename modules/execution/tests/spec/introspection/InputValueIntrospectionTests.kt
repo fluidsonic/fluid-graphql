@@ -182,7 +182,6 @@ class InputValueIntrospectionTests {
 	}
 
 
-	@Ignore("Known bug: __InputValue.isDeprecated not implemented")
 	@Test
 	fun testInputValueIsDeprecatedNotImplemented() = runTest {
 		val schema = GraphQL.schema {

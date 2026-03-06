@@ -534,6 +534,7 @@ public sealed class GArgumentDefinition(
 	GNode.WithDefaultValue,
 	GNode.WithDirectives,
 	GNode.WithName,
+	GNode.WithOptionalDeprecation,
 	GNode.WithOptionalDescription {
 
 	override val descriptionNode: GStringValue? = description

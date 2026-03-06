@@ -33,7 +33,7 @@ class ExceptionHandlerTests {
 		assertEquals(
 			expected = GResult.success(
 				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
-				errors = listOf(testError1, testError2)
+				errors = listOf(testError1, testError2.copy(path = GPath.ofName("bar")))
 			),
 			actual = result
 		)
@@ -161,7 +161,7 @@ class ExceptionHandlerTests {
 		assertEquals(
 			expected = GResult.success(
 				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
-				errors = listOf(testError1, testError2)
+				errors = listOf(testError1, testError2.copy(path = GPath.ofName("bar")))
 			),
 			actual = result
 		)

@@ -42,23 +42,33 @@ internal class DefaultExecutor(
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
 	private suspend fun executeOperation(
-		strategy: Strategy, // FIXME use
+		strategy: Strategy,
 		context: DefaultExecutorContext,
 	): GResult<Map<String, Any?>> =
-		context.selectionSetExecutor.execute(
-			selectionSet = context.operation.selectionSet,
-			parent = context.root,
-			parentType = context.rootType,
-			path = GPath.root,
-			context = context,
-		)
+		when (strategy) {
+			Strategy.parallel -> context.selectionSetExecutor.execute(
+				selectionSet = context.operation.selectionSet,
+				parent = context.root,
+				parentType = context.rootType,
+				path = GPath.root,
+				context = context,
+			)
+			Strategy.serial -> context.selectionSetExecutor.executeSerially(
+				selectionSet = context.operation.selectionSet,
+				parent = context.root,
+				parentType = context.rootType,
+				path = GPath.root,
+				context = context,
+			)
+		}
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
 	private fun getOperation(document: GDocument, name: String?) =
-		document.operation(name)
-			.ifNull { document.definitions.filterIsInstance<GOperationDefinition>().singleOrNull() }
-			?.let { GResult.success(it) }
+		when (name) {
+			null -> document.definitions.filterIsInstance<GOperationDefinition>().singleOrNull()
+			else -> document.operation(name)
+		}?.let { GResult.success(it) }
 			?: GResult.failure(GError(
 				if (name != null) "There is no operation named '$name' in the document."
 				else "There is no anonymous operation in the document."

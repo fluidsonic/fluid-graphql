@@ -7,11 +7,10 @@ import kotlin.test.*
 // GraphQL Spec §5.8.4 — All Variables Used
 class Sec5_8_4_AllVariablesUsedTests {
 
-	@Ignore("Known bug: AllVariablesUsedRule not implemented")
 	@Test
 	fun testAcceptsVariableUsed() {
 		assertValidationRule(
-			rule = VariableDefinitionNameExclusivityRule,
+			rule = AllVariablesUsedRule,
 			errors = emptyList(),
 			document = """
 				|query Q(${'$'}x: String) { field(arg: ${'$'}x) }
@@ -23,12 +22,17 @@ class Sec5_8_4_AllVariablesUsedTests {
 	}
 
 
-	@Ignore("Known bug: AllVariablesUsedRule not implemented")
 	@Test
 	fun testRejectsVariableNotUsed() {
 		assertValidationRule(
-			rule = VariableDefinitionNameExclusivityRule,
-			errors = listOf("Variable '\$x' is defined but never used."),
+			rule = AllVariablesUsedRule,
+			errors = listOf("""
+				Variable '${'$'}x' is defined but never used.
+
+				<document>:1:10
+				1 | query Q(${'$'}x: String) { field }
+				  |          ^
+			"""),
 			document = """
 				|query Q(${'$'}x: String) { field }
 			""",
@@ -39,11 +43,10 @@ class Sec5_8_4_AllVariablesUsedTests {
 	}
 
 
-	@Ignore("Known bug: AllVariablesUsedRule not implemented")
 	@Test
 	fun testAcceptsVariableUsedInFragment() {
 		assertValidationRule(
-			rule = VariableDefinitionNameExclusivityRule,
+			rule = AllVariablesUsedRule,
 			errors = emptyList(),
 			document = """
 				|query Q(${'$'}x: String) { ...frag }

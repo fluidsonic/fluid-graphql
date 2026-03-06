@@ -226,8 +226,14 @@ internal object NodeInputConverter {
 
 	private fun coerceVariableValue(value: GVariableRef, context: Context): Any? =
 		when {
-			context.execution.variableValues.containsKey(value.name) -> context.execution.variableValues[value.name]
-			else -> coerceValueAbsence(defaultValue = context.argumentDefinition?.defaultValue, context = context)
+			context.execution.variableValues.containsKey(value.name) ->
+				context.execution.variableValues[value.name]
+			context.argumentDefinition?.defaultValue != null ->
+				coerceValueAbsence(defaultValue = context.argumentDefinition!!.defaultValue, context = context)
+			context.type is GNonNullType ->
+				context.invalid()
+			else ->
+				null
 		}
 
 

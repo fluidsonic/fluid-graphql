@@ -7,11 +7,10 @@ import kotlin.test.*
 // GraphQL Spec §5.4.2 — Argument Uniqueness
 class Sec5_4_2_ArgumentUniquenessTests {
 
-	@Ignore("Known bug: ArgumentUniquenessRule not implemented")
 	@Test
 	fun testAcceptsUniqueArgs() {
 		assertValidationRule(
-			rule = ArgumentExistenceRule,
+			rule = ArgumentUniquenessRule,
 			errors = emptyList(),
 			document = """
 				|{ field(a: 1, b: 2) }
@@ -23,12 +22,21 @@ class Sec5_4_2_ArgumentUniquenessTests {
 	}
 
 
-	@Ignore("Known bug: ArgumentUniquenessRule not implemented")
 	@Test
 	fun testRejectsDuplicateArgs() {
 		assertValidationRule(
-			rule = ArgumentExistenceRule,
-			errors = listOf("Argument 'a' must not occur multiple times."),
+			rule = ArgumentUniquenessRule,
+			errors = listOf("""
+				Argument 'a' must not occur multiple times.
+
+				<document>:1:9
+				1 | { field(a: 1, a: 2) }
+				  |         ^
+
+				<document>:1:15
+				1 | { field(a: 1, a: 2) }
+				  |               ^
+			"""),
 			document = """
 				|{ field(a: 1, a: 2) }
 			""",

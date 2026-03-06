@@ -1,5 +1,8 @@
 package io.fluidsonic.graphql
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+
 
 internal object DefaultSelectionSetExecutor {
 
@@ -117,6 +120,41 @@ internal object DefaultSelectionSetExecutor {
 			fieldSelectionsByResponseKey = mutableMapOf(),
 			visitedFragments = mutableSetOf()
 		).flatMapValue { fieldSelections ->
+			coroutineScope {
+				fieldSelections
+					.map { (key, selections) ->
+						key to async {
+							context.fieldSelectionExecutor.execute(
+								selections = selections,
+								parent = parent,
+								parentType = parentType,
+								path = path.addName(selections.first().name),
+								context = context
+							)
+						}
+					}
+					.map { (key, deferred) -> key to deferred.await() }
+					.toMap()
+					.flatten()
+			}
+		}
+
+
+	suspend fun executeSerially(
+		selectionSet: GSelectionSet,
+		parent: Any,
+		parentType: GObjectType,
+		path: GPath,
+		context: DefaultExecutorContext,
+	): GResult<Map<String, Any?>> =
+		collectFieldSelections(
+			selectionSet = selectionSet,
+			parentType = parentType,
+			context = context,
+			path = path,
+			fieldSelectionsByResponseKey = mutableMapOf(),
+			visitedFragments = mutableSetOf()
+		).flatMapValue { fieldSelections ->
 			fieldSelections
 				.mapValues { (_, fieldSelections) ->
 					context.fieldSelectionExecutor.execute(
@@ -158,9 +196,9 @@ internal object DefaultSelectionSetExecutor {
 
 		val include = getDirectiveValues(GLanguage.defaultIncludeDirective, fieldSelectionPath = fieldSelectionPath, context = context)
 			.ifErrors { return GResult.failure(it) }
-			.let { it?.get("if") as Boolean? ?: false }
+			.let { it?.get("if") as Boolean? ?: true }
 		if (!include)
-			return GResult.success(true)
+			return GResult.success(false)
 
 		return GResult.success(true)
 	}

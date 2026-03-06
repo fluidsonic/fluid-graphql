@@ -90,7 +90,7 @@ internal object Introspection {
 						return@resolve null
 
 					var fieldDefinitions = type.fieldDefinitions
-					if (arguments["includeDeprecated"] as Boolean)
+					if (!(arguments["includeDeprecated"] as Boolean))
 						fieldDefinitions = fieldDefinitions.filter { it.deprecation === null }
 
 					return@resolve fieldDefinitions
@@ -123,7 +123,7 @@ internal object Introspection {
 						return@resolve null
 
 					var values = type.values
-					if (arguments["includeDeprecated"] as Boolean)
+					if (!(arguments["includeDeprecated"] as Boolean))
 						values = values.filter { it.deprecation === null }
 
 					return@resolve values
@@ -198,6 +198,14 @@ internal object Introspection {
 				description("A GraphQL-formatted string representing the default value for this input value.")
 
 				resolve<String?> { it.defaultValue?.toString() }
+			}
+
+			field("isDeprecated" of !Boolean) {
+				resolve<Boolean> { it.deprecation !== null }
+			}
+
+			field("deprecationReason" of String) {
+				resolve<String?> { it.deprecationReason }
 			}
 		}
 

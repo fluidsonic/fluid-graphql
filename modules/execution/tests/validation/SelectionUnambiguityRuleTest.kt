@@ -25,7 +25,6 @@ class SelectionUnambiguityRuleTest {
 	}
 
 
-	@Ignore // FIXME needs implementation
 	@Test
 	fun testAcceptsConflictingFieldNamesAndArgumentsForDisjointObjectTypes() {
 		assertValidationRule(
