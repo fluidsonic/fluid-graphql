@@ -1,12 +1,10 @@
 package io.fluidsonic.graphql
 
 import kotlin.internal.*
-import kotlin.js.*
 
 
-// https://youtrack.jetbrains.com/issue/KT-52764/KJS-IR-Module-has-a-reference-to-symbol-caused-by-sealed-interface-with-private-inheritors
 @GraphQLMarker
-public /* sealed */ interface GraphQLArgumentsBuilder : GraphQLArgumentsBuilderScope {
+public sealed interface GraphQLArgumentsBuilder : GraphQLArgumentsBuilderScope {
 
 	@GraphQLMarker
 	public fun argument(argument: GArgument)
@@ -23,7 +21,7 @@ public /* sealed */ interface GraphQLArgumentsBuilder : GraphQLArgumentsBuilderS
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLArgumentsBuilderScope : GraphQLValueContainerScope {
+public sealed interface GraphQLArgumentsBuilderScope : GraphQLValueContainerScope {
 
 	@GraphQLMarker
 	public infix fun String.to(value: Boolean) {
@@ -179,6 +177,5 @@ private class GraphQLArgumentsBuilderImpl : GraphQLArgumentsBuilder {
 }
 
 
-@JsName("_GraphQLArgumentsBuilder")
 public fun GraphQLArgumentsBuilder(): GraphQLArgumentsBuilder =
 	GraphQLArgumentsBuilderImpl()

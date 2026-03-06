@@ -1,18 +1,16 @@
 package io.fluidsonic.graphql
 
-import kotlin.js.*
-
 // TODO Remove redundant 'arguments {}' and allow specifying arguments directly.
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLDirectiveBuilder : GraphQLDirectiveBuilderScope, GraphQLArgumentsContainer {
+public sealed interface GraphQLDirectiveBuilder : GraphQLDirectiveBuilderScope, GraphQLArgumentsContainer {
 
 	public fun build(): GDirective
 }
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLDirectiveBuilderScope : GraphQLValueContainerScope, GraphQLArgumentsContainerScope
+public sealed interface GraphQLDirectiveBuilderScope : GraphQLValueContainerScope, GraphQLArgumentsContainerScope
 
 
 private class GraphQLDirectiveBuilderImpl(
@@ -37,6 +35,5 @@ private class GraphQLDirectiveBuilderImpl(
 }
 
 
-@JsName("_GraphQLDirectiveBuilder")
 public fun GraphQLDirectiveBuilder(name: String): GraphQLDirectiveBuilder =
 	GraphQLDirectiveBuilderImpl(name = name)

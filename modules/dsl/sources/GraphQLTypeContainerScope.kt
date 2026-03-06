@@ -7,7 +7,7 @@ import kotlin.reflect.*
 
 @GraphQLMarker
 @Suppress("PropertyName")
-public /* sealed */ interface GraphQLTypeContainerScope {
+public sealed interface GraphQLTypeContainerScope {
 
 	@GraphQLMarker
 	public val Boolean: GNamedTypeRef

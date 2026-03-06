@@ -1,10 +1,8 @@
 package io.fluidsonic.graphql
 
-import kotlin.js.*
-
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, GraphQLFragmentDefinitionContainer {
+public sealed interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, GraphQLFragmentDefinitionContainer {
 
 	public fun build(): GDocument
 
@@ -14,7 +12,7 @@ public /* sealed */ interface GraphQLDocumentBuilder : GraphQLDocumentBuilderSco
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLDocumentBuilderScope : GraphQLFragmentDefinitionContainerScope
+public sealed interface GraphQLDocumentBuilderScope : GraphQLFragmentDefinitionContainerScope
 
 
 @GraphQLMarker
@@ -73,7 +71,6 @@ internal class GraphQLDocumentBuilderImpl : GraphQLDocumentBuilder, GraphQLFragm
 }
 
 
-@JsName("_GraphQLDocumentBuilder")
 public fun GraphQLDocumentBuilder(): GraphQLDocumentBuilder =
 	GraphQLDocumentBuilderImpl()
 

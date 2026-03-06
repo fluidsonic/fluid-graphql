@@ -254,7 +254,7 @@ internal object DefaultFieldSelectionExecutor {
 		// FIXME support default resolver
 		context.schema.getPossibleTypes(abstractType)
 			.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false } // FIXME
-			?: error("Cannot resolve abstract type '${abstractType.name}' for Kotlin type '${objectValue::class.qualifiedOrSimpleName}': $objectValue")
+			?: error("Cannot resolve abstract type '${abstractType.name}' for Kotlin type '${objectValue::class.qualifiedName}': $objectValue")
 
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()

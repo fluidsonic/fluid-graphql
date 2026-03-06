@@ -1,18 +1,17 @@
 package io.fluidsonic.graphql
 
 import kotlin.internal.*
-import kotlin.js.*
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLValueListBuilder : GraphQLValueListBuilderScope {
+public sealed interface GraphQLValueListBuilder : GraphQLValueListBuilderScope {
 
 	public fun build(): GListValue
 }
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLValueListBuilderScope : GraphQLValueContainerScope {
+public sealed interface GraphQLValueListBuilderScope : GraphQLValueContainerScope {
 
 	@GraphQLMarker
 	public fun add(value: Boolean) {
@@ -146,7 +145,6 @@ private class GraphQLValueListBuilderImpl : GraphQLValueListBuilder {
 }
 
 
-@JsName("_GraphQLValueListBuilder")
 public fun GraphQLValueListBuilder(): GraphQLValueListBuilder =
 	GraphQLValueListBuilderImpl()
 

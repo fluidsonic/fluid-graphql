@@ -2,7 +2,7 @@ package io.fluidsonic.graphql
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLValueContainerScope {
+public sealed interface GraphQLValueContainerScope {
 
 	@GraphQLMarker
 	public fun enum(name: String): GEnumValue {

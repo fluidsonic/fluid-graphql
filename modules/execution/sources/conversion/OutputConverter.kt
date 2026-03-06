@@ -151,7 +151,7 @@ internal object OutputConverter {
 				}
 
 				append(":\n")
-				append(value::class.qualifiedOrSimpleName ?: "<anonymous class>")
+				append(value::class.qualifiedName ?: "<anonymous class>")
 				append(": ")
 				append(value)
 			})

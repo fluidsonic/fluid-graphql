@@ -197,7 +197,7 @@ internal object Printer {
 
 	private fun IndentingWriter.writeNode(value: GFloatValue) {
 		// FIXME Write own implementation for consistent results?
-		writeRaw(value.value.toConsistentString())
+		writeRaw(value.value.toString())
 	}
 
 

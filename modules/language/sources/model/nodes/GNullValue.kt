@@ -1,7 +1,5 @@
 package io.fluidsonic.graphql
 
-import kotlin.js.*
-
 
 public class GNullValue(
 	origin: GDocumentPosition? = null,
@@ -40,6 +38,5 @@ public class GNullValue(
 }
 
 
-@JsName("_GNullValue")
 public fun GNullValue(): GNullValue =
 	GNullValue.withoutOrigin

@@ -32,4 +32,5 @@ fun identityOf(value: Any?): String =
 	}
 
 
-expect fun uniqueIdOf(value: Any): String
+fun uniqueIdOf(value: Any): String =
+	System.identityHashCode(value).toString()

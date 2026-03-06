@@ -6,7 +6,7 @@ import kotlin.reflect.*
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLVariableContainer : GraphQLVariableContainerScope {
+public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope {
 
 	@GraphQLMarker
 	public fun variable(definition: GVariableDefinition): GVariableRef
@@ -36,7 +36,7 @@ public /* sealed */ interface GraphQLVariableContainer : GraphQLVariableContaine
 
 
 @GraphQLMarker
-public /* sealed */ interface GraphQLVariableContainerScope : GraphQLTypeContainerScope {
+public sealed interface GraphQLVariableContainerScope : GraphQLTypeContainerScope {
 
 	@GraphQLMarker
 	public fun variable(type: String): RefFactory =

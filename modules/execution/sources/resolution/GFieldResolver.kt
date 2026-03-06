@@ -1,8 +1,7 @@
 package io.fluidsonic.graphql
 
 
-// Make fun interface when fixed: https://youtrack.jetbrains.com/issue/KT-40165
-public /*fun*/ interface GFieldResolver<in Parent : Any> {
+public fun interface GFieldResolver<in Parent : Any> {
 
 	public suspend fun GFieldResolverContext.resolveField(parent: Parent): Any?
 }
@@ -11,12 +10,3 @@ public /*fun*/ interface GFieldResolver<in Parent : Any> {
 @SchemaBuilderKeywordB // FIXME
 public suspend fun <Parent : Any> GFieldResolver<Parent>.resolveField(parent: Parent, context: GFieldResolverContext): Any? =
 	with(context) { resolveField(parent) }
-
-
-// Remove when fixed: https://youtrack.jetbrains.com/issue/KT-40165
-public fun <Parent : Any> GFieldResolver(resolveField: suspend GFieldResolverContext.(parent: Parent) -> Any?): GFieldResolver<Parent> =
-	object : GFieldResolver<Parent> {
-
-		override suspend fun GFieldResolverContext.resolveField(parent: Parent): Any? =
-			resolveField(parent)
-	}
