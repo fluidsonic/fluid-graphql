@@ -10,6 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Run `git` directly without `-C` — the working directory is always the project root.
 
+## Shell Commands
+
+- Do not use `cat` or `$()` shell substitution in Bash commands
+- `cd` must always be used alone — never combined with other commands in the same Bash call
+- "remember that" means persist the information to CLAUDE.md
+
 ## Build Commands
 
 ```bash
