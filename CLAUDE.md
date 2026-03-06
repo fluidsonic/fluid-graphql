@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**fluid-graphql** is a Kotlin Multiplatform GraphQL library (package: `io.fluidsonic.graphql`). It targets **JVM**, **JS**, and **Darwin** (macOS/iOS). Version 0.15.0.
+**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.15.0.
 
 ## Git
 
@@ -22,8 +22,7 @@ Run `git` directly without `-C` — the working directory is always the project 
 ```bash
 ./gradlew build              # Build all modules and run tests
 ./gradlew check              # Run all tests
-./gradlew allTests           # Run all tests across all targets
-./gradlew jvmTest            # Run JVM tests only (fastest)
+./gradlew jvmTest            # Run all tests
 ./gradlew :fluid-graphql-language:jvmTest   # Run tests for a single module
 ./gradlew :fluid-graphql-execution:jvmTest  # Run execution module tests
 ```
@@ -66,9 +65,9 @@ language  <--  dsl  <--  execution
 - All public API is in the single package `io.fluidsonic.graphql`
 - GraphQL types/nodes are prefixed with `G` (e.g., `GNode`, `GDocument`, `GSchema`, `GExecutor`)
 - DSL builder types are prefixed with `GraphQL` (e.g., `GraphQLDocumentBuilder`)
-- Platform-specific code goes in `sources-jvm/`, `sources-js/`, `sources-darwin/` directories
-- Tests go in `tests/` (common) and `tests-jvm/`, `tests-js/`, `tests-darwin/` (platform-specific)
+- Tests go in `tests/`; spec compliance tests in `tests/spec/`
 - Tests use `kotlin.test` framework (not JUnit directly)
 - Internal API is annotated with `@InternalGraphqlApi`
 - Source directories use flat `sources/` instead of the standard `src/main/kotlin/` layout
 - Tab indentation
+- Spec test helpers: `assertValidationRule(rule, errors, document, schema?)` and `assertExecution(schema, document, ..., expected)` in `modules/execution/tests/utility/`
