@@ -2,12 +2,12 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-
+import kotlinx.coroutines.test.*
 
 class ExceptionHandlerTests {
 
 	@Test
-	fun testHandledExceptionInFieldResolver() = runBlockingTest {
+	fun testHandledExceptionInFieldResolver() = runTest {
 		val testError1 = GError(message = "test 1", path = GPath.ofName("foo"))
 		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
@@ -41,7 +41,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testRethrownExceptionInFieldResolver() = runBlockingTest {
+	fun testRethrownExceptionInFieldResolver() = runTest {
 		val testError = GError(message = "test")
 		val testException = TestException(1)
 
@@ -65,7 +65,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testHandledExceptionInNodeInputCoercer() = runBlockingTest {
+	fun testHandledExceptionInNodeInputCoercer() = runTest {
 		val testError1 = GError(message = "test 1", path = GPath.ofName("foo"))
 		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
@@ -103,7 +103,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testRethrownExceptionInNodeInputCoercer() = runBlockingTest {
+	fun testRethrownExceptionInNodeInputCoercer() = runTest {
 		val testError = GError(message = "test")
 		val testException = TestException(1)
 
@@ -131,7 +131,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testHandledExceptionInOutputCoercer() = runBlockingTest {
+	fun testHandledExceptionInOutputCoercer() = runTest {
 		val testError1 = GError(message = "test 1", path = GPath.ofName("foo"))
 		val testError2 = GError(message = "test 2")
 		val testException = TestException(1)
@@ -169,7 +169,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testRethrownExceptionInOutputCoercer() = runBlockingTest {
+	fun testRethrownExceptionInOutputCoercer() = runTest {
 		val testError = GError(message = "test")
 		val testException = TestException(1)
 
@@ -197,7 +197,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testHandledExceptionInRootResolver() = runBlockingTest {
+	fun testHandledExceptionInRootResolver() = runTest {
 		val testError = GError(message = "test", path = GPath.ofName("foo"))
 		val testException = TestException(1)
 
@@ -231,7 +231,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testIgnoresErrorExceptionInRootResolver() = runBlockingTest {
+	fun testIgnoresErrorExceptionInRootResolver() = runTest {
 		val testError = GError(message = "test")
 
 		val result = GExecutor
@@ -259,7 +259,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testRethrownExceptionInRootResolver() = runBlockingTest {
+	fun testRethrownExceptionInRootResolver() = runTest {
 		val testException = TestException(1)
 
 		val thrownException = kotlin.runCatching {
@@ -284,7 +284,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testHandledExceptionInVariableInputCoercer() = runBlockingTest {
+	fun testHandledExceptionInVariableInputCoercer() = runTest {
 		val testError = GError(message = "test", path = GPath.ofName("foo"))
 		val testException = TestException(1)
 
@@ -320,7 +320,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testIgnoresErrorExceptionsInVariableInputCoercer() = runBlockingTest {
+	fun testIgnoresErrorExceptionsInVariableInputCoercer() = runTest {
 		val testError = GError(message = "test")
 
 		val result = GExecutor
@@ -350,7 +350,7 @@ class ExceptionHandlerTests {
 
 
 	@Test
-	fun testRethrownExceptionInVariableInputCoercer() = runBlockingTest {
+	fun testRethrownExceptionInVariableInputCoercer() = runTest {
 		val testException = TestException(1)
 
 		val thrownException = kotlin.runCatching {

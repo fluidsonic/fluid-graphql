@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew :fluid-graphql-execution:jvmTest  # Run execution module tests
 ```
 
-Uses the `io.fluidsonic.gradle` plugin (v1.3.1) for build configuration. Gradle 8.1.1.
+Uses the `io.fluidsonic.gradle` plugin (v2.0.2) for build configuration. Gradle 9.1.0. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
 
 ## Architecture
 

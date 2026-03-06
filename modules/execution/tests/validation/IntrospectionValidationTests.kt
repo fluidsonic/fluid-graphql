@@ -2,12 +2,12 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-
+import kotlinx.coroutines.test.*
 
 class IntrospectionValidationTests {
 
 	@Test
-	fun testFragments() = runBlockingTest {
+	fun testFragments() = runTest {
 		val document = """
 			|{
 			|  __schema {

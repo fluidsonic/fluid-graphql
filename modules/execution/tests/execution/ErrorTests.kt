@@ -2,12 +2,12 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-
+import kotlinx.coroutines.test.*
 
 class ErrorTests {
 
 	@Test
-	fun testErrorForInvalidFieldInNonValidatedQuery() = runBlockingTest {
+	fun testErrorForInvalidFieldInNonValidatedQuery() = runTest {
 		val schema = GraphQL.schema { Query {} }
 		val document = "{ foo }"
 

@@ -6,12 +6,12 @@ fluidLibraryModule(description = "FIXME") {
 			dependencies {
 				api(project(":fluid-graphql-language"))
 
-				implementation(kotlinx("coroutines-core", "1.7.1"))
+				implementation(kotlinx("coroutines-core", "1.10.2"))
 				implementation(project(":fluid-graphql-dsl"))
 			}
 
 			testDependencies {
-				implementation(kotlinx("coroutines-test", "1.7.1"))
+				implementation(kotlinx("coroutines-test", "1.10.2"))
 			}
 		}
 

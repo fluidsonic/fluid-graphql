@@ -2,13 +2,13 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-
+import kotlinx.coroutines.test.*
 
 // https://github.com/graphql/graphql-js/blob/master/src/execution/__tests__/union-interface-test.js
 class UnionInterfaceExecutionTests {
 
 	@Test
-	fun testCanIntrospectOnUnionAndIntersectionTypes() = runBlockingTest {
+	fun testCanIntrospectOnUnionAndIntersectionTypes() = runTest {
 		val document = """
 			|{
 			|  Named: __type(name: "Named") {
@@ -145,7 +145,7 @@ class UnionInterfaceExecutionTests {
 
 
 	@Test
-	fun testExecutesUsingUnionTypesWithInlineFragments() = runBlockingTest {
+	fun testExecutesUsingUnionTypesWithInlineFragments() = runTest {
 		val document = """
 			|{
 			|  __typename
@@ -194,7 +194,7 @@ class UnionInterfaceExecutionTests {
 
 
 	@Test
-	fun testExecutesUsingInterfaceTypesWithInlineFragments() = runBlockingTest {
+	fun testExecutesUsingInterfaceTypesWithInlineFragments() = runTest {
 		val document = """
 			|{
 			|  __typename
@@ -260,7 +260,7 @@ class UnionInterfaceExecutionTests {
 
 
 	@Test
-	fun testAcceptsFragmentConditionsOfAbstractTypes() = runBlockingTest {
+	fun testAcceptsFragmentConditionsOfAbstractTypes() = runTest {
 		val document = """
 			|{
 			|  __typename

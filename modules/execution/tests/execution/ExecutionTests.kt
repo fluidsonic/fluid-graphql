@@ -2,13 +2,13 @@ package testing
 
 import io.fluidsonic.graphql.*
 import kotlin.test.*
-
+import kotlinx.coroutines.test.*
 
 // https://github.com/graphql/graphql-js/blob/master/src/execution/__tests__/schema-test.js
 class ExecutionTests {
 
 	@Test
-	fun testExecutesWithAComplexSchema() = runBlockingTest {
+	fun testExecutesWithAComplexSchema() = runTest {
 		val document = """
 			|{
 			|  feed {
@@ -88,7 +88,7 @@ class ExecutionTests {
 
 
 	@Test
-	fun testExecutesWithoutOperationName() = runBlockingTest {
+	fun testExecutesWithoutOperationName() = runTest {
 		val document = """
 			|query Test {
 			|  foo
