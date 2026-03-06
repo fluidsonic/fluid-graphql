@@ -13,3 +13,4 @@
 .tmp
 build
 out
+.worktrees
