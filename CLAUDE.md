@@ -15,6 +15,7 @@ Run `git` directly without `-C` — the working directory is always the project 
 - Do not use `cat` or `$()` shell substitution in Bash commands
 - `cd` must always be used alone — never combined with other commands in the same Bash call
 - "remember that" means persist the information to CLAUDE.md
+- Never use project-external MEMORY.md files — always persist to CLAUDE.md
 
 ## Build Commands
 
