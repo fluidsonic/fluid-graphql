@@ -1,11 +1,28 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * The sealed base class for every GraphQL AST node.
+ *
+ * Every node carries:
+ * - [origin] — the location in the source document where the node was parsed, or `null` if not available.
+ * - [extensions] — a typed key-value map for attaching arbitrary metadata without modifying the AST.
+ *
+ * Child traversal is available via [children], [childAt], [countChildren], and [hasChildren].
+ * Structural equality (ignoring origin) is supported via [equalsNode].
+ * Serialisation back to a GraphQL string is available via [GNode.print] or [toString].
+ *
+ * Access extension values directly with `node[MyKey]` using a [GNodeExtensionKey].
+ *
+ * Nested `With*` interfaces declare optional capabilities such as having a name, directives,
+ * field definitions, etc. They are mixed into concrete node classes.
+ */
 public sealed class GNode(
 	public val extensions: GNodeExtensionSet<GNode>,
 	public val origin: GDocumentPosition?,
 ) {
 
+	/** Returns the child node at the given [index], or `null` if the index is out of range. */
 	public fun childAt(index: Int): GNode? {
 		var childIndex = 0
 
@@ -20,6 +37,7 @@ public sealed class GNode(
 	}
 
 
+	/** Returns all direct children of this node as a list. */
 	public fun children(): List<GNode> {
 		var list: MutableList<GNode>? = null
 
@@ -32,6 +50,7 @@ public sealed class GNode(
 	}
 
 
+	/** Returns the number of direct children of this node. */
 	public fun countChildren(): Int {
 		var count = 0
 		forEachChild { count += 1 }
@@ -40,6 +59,12 @@ public sealed class GNode(
 	}
 
 
+	/**
+	 * Compares this node to [other] for structural equality.
+	 *
+	 * When [includingOrigin] is `true`, source positions are also compared;
+	 * when `false` (the default), only the logical content is compared.
+	 */
 	public abstract fun equalsNode(other: GNode, includingOrigin: Boolean = false): Boolean
 
 
@@ -286,10 +311,12 @@ public sealed class GNode(
 	}
 
 
+	/** Returns the extension value for [extensionKey], or `null` if not set. */
 	public operator fun <Value : Any> get(extensionKey: GNodeExtensionKey<Value>): Value? =
 		extensions[extensionKey]
 
 
+	/** Returns `true` if this node has at least one direct child. */
 	public fun hasChildren(): Boolean {
 		forEachChild { return true }
 
@@ -303,74 +330,94 @@ public sealed class GNode(
 
 	public companion object {
 
+		/** Serialises [node] to a GraphQL string, using [indent] for indentation. */
 		public fun print(node: GNode, indent: String = "\t"): String =
 			Printer.print(node = node, indent = indent)
 	}
 
 
+	/** Marks a node that carries a list of [GArgument]s. */
 	public interface WithArguments {
 
 		public val arguments: List<GArgument>
 
+		/** Returns the argument with the given [name], or `null` if not present. */
 		public fun argument(name: String): GArgument? =
 			arguments.firstOrNull { it.name == name }
 	}
 
 
+	/** Marks a node that declares a list of [GArgumentDefinition]s. */
 	public interface WithArgumentDefinitions {
 
 		public val argumentDefinitions: List<GArgumentDefinition>
 
 
+		/** Returns the argument definition with the given [name], or `null` if not found. */
 		public fun argumentDefinition(name: String): GArgumentDefinition? =
 			argumentDefinitions.firstOrNull { it.name == name }
 	}
 
 
+	/** Marks a node ([GVariableDefinition] or [GArgumentDefinition]) that may carry a default value and a [GTypeRef]. */
 	public interface WithDefaultValue : WithDirectives, WithType {
 
 		public val defaultValue: GValue?
 
 
+		/** Returns `true` if supplying a value at runtime is optional. */
 		public fun isOptional(): Boolean =
 			!isRequired()
 
 
+		/**
+		 * Returns `true` if a value must be supplied at runtime.
+		 *
+		 * A definition is required when its [type] is [GNonNullTypeRef], it has no [defaultValue],
+		 * and it is not annotated with `@optional`.
+		 */
 		public fun isRequired(): Boolean =
 			type is GNonNullTypeRef && defaultValue === null && directive(GLanguage.defaultOptionalDirective.name) == null
 	}
 
 
+	/** Marks a node that carries a list of applied [GDirective]s. */
 	public interface WithDirectives {
 
 		public val directives: List<GDirective>
 
 
+		/** Returns the first directive with the given [name], or `null` if not present. */
 		public fun directive(name: String): GDirective? =
 			directives.firstOrNull { it.name == name }
 
 
+		/** Returns all directives with the given [name]. */
 		public fun directives(name: String): List<GDirective> =
 			directives.filter { it.name == name }
 	}
 
 
+	/** Marks a node (object or interface type) that exposes a list of [GFieldDefinition]s. */
 	public interface WithFieldDefinitions {
 
 		public val fieldDefinitions: List<GFieldDefinition>
 
 
+		/** Returns the field definition with the given [name], or `null` if not found. */
 		public fun fieldDefinition(name: String): GFieldDefinition? =
 			fieldDefinitions.firstOrNull { it.name == name }
 	}
 
 
+	/** Marks a node (object or interface type) that declares implemented interfaces. */
 	public interface WithInterfaces {
 
 		public val interfaces: List<GNamedTypeRef>
 	}
 
 
+	/** Marks a node with a required, non-nullable name. */
 	public interface WithName : WithOptionalName {
 
 		override val name: String
@@ -381,18 +428,22 @@ public sealed class GNode(
 	}
 
 
+	/** Marks a node that maps operation types to their root object types. */
 	public interface WithOperationTypeDefinitions {
 
 		public val operationTypeDefinitions: List<GOperationTypeDefinition>
 
 
+		/** Returns the operation type definition for the given [operationType], or `null` if not defined. */
 		public fun operationTypeDefinition(operationType: GOperationType): GOperationTypeDefinition? =
 			operationTypeDefinitions.firstOrNull { it.operationType == operationType }
 	}
 
 
+	/** Marks a named, directive-carrying node that may be annotated with `@deprecated`. */
 	public interface WithOptionalDeprecation : WithDirectives, WithName {
 
+		/** Returns the `@deprecated` directive if present, or `null`. */
 		public val deprecation: GDirective?
 			get() = directive(GLanguage.defaultDeprecatedDirective.name)
 
@@ -402,6 +453,7 @@ public sealed class GNode(
 	}
 
 
+	/** Marks a node (type or field definition) that may carry a description string. */
 	public interface WithOptionalDescription {
 
 		public val description: String?
@@ -412,6 +464,7 @@ public sealed class GNode(
 	}
 
 
+	/** Marks a node with an optional name (e.g. an anonymous operation). */
 	public interface WithOptionalName {
 
 		public val name: String?
@@ -422,27 +475,35 @@ public sealed class GNode(
 	}
 
 
+	/** Marks a node that references a [GTypeRef] (e.g. a variable or argument definition). */
 	public interface WithType {
 
 		public val type: GTypeRef
 	}
 
 
+	/** Marks an executable definition that declares variables. */
 	public interface WithVariableDefinitions {
 
 		public val variableDefinitions: List<GVariableDefinition>
 
 
+		/** Returns the variable definition with the given [name], or `null` if not found. */
 		public fun variableDefinition(name: String): GVariableDefinition? =
 			variableDefinitions.firstOrNull { it.name == name }
 	}
 }
 
 
+/**
+ * Compares two nullable nodes for structural equality, returning `true` if both are `null`
+ * or if they are [GNode.equalsNode]-equal with the given [includingOrigin] setting.
+ */
 public fun GNode?.equalsNode(other: GNode?, includingOrigin: Boolean = false): Boolean =
 	this === other || (this !== null && other !== null && equalsNode(other, includingOrigin = includingOrigin))
 
 
+/** Compares two lists of nullable nodes element-by-element using [GNode.equalsNode]. */
 public fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean): Boolean {
 	if (this === other)
 		return true
@@ -459,6 +520,12 @@ public fun List<GNode?>.equalsNode(other: List<GNode?>, includingOrigin: Boolean
 }
 
 
+/**
+ * Sealed base class for abstract GraphQL types: [GInterfaceType] and [GUnionType].
+ *
+ * Abstract types can appear in selection sets but their possible concrete types must be
+ * resolved via [GSchema.getPossibleTypes].
+ */
 public sealed class GAbstractType(
 	description: GStringValue?,
 	directives: List<GDirective>,
@@ -479,6 +546,11 @@ public sealed class GAbstractType(
 }
 
 
+/**
+ * A named argument passed to a field or directive (`name: value`).
+ *
+ * The argument's definition (if any) is found via [GNode.WithArgumentDefinitions.argumentDefinition].
+ */
 public class GArgument(
 	name: GName,
 	public val value: GValue,
@@ -518,6 +590,13 @@ public class GArgument(
 }
 
 
+/**
+ * Sealed base class for input argument definitions.
+ *
+ * Concrete subclasses: [GFieldArgumentDefinition] (for object/interface field arguments),
+ * [GDirectiveArgumentDefinition] (for directive arguments), and
+ * [GInputObjectArgumentDefinition] (for input object fields).
+ */
 public sealed class GArgumentDefinition(
 	override val defaultValue: GValue?,
 	description: GStringValue?,
@@ -557,6 +636,7 @@ public sealed class GArgumentDefinition(
 }
 
 
+/** The built-in GraphQL `Boolean` scalar type. */
 // https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
 public object GBooleanType : GScalarType(name = "Boolean")
 
@@ -601,6 +681,12 @@ public fun GBooleanValue(value: Boolean): GBooleanValue =
 	GBooleanValue(value = value, origin = null)
 
 
+/**
+ * Sealed base class for composite GraphQL types: [GObjectType], [GInterfaceType], [GUnionType],
+ * and [GInputObjectType].
+ *
+ * Composite types can have selection sets applied to them in queries.
+ */
 public sealed class GCompositeType(
 	description: GStringValue?,
 	directives: List<GDirective>,
@@ -621,6 +707,12 @@ public sealed class GCompositeType(
 }
 
 
+/**
+ * A user-defined (custom) GraphQL scalar type.
+ *
+ * Unlike the built-in scalars, custom scalars require coercion logic to be registered
+ * in the execution layer.
+ */
 // https://graphql.github.io/graphql-spec/draft/#sec-Scalars.Input-Coercion
 public class GCustomScalarType(
 	name: GName,
@@ -653,6 +745,12 @@ public class GCustomScalarType(
 }
 
 
+/**
+ * Sealed base class for all top-level definitions in a [GDocument].
+ *
+ * Subclasses: [GExecutableDefinition] (operations and fragments) and
+ * [GTypeSystemDefinition] (type, directive, and schema definitions).
+ */
 public sealed class GDefinition(
 	extensions: GNodeExtensionSet<GDefinition>,
 	origin: GDocumentPosition?,
@@ -952,6 +1050,11 @@ public class GEnumValueDefinition(
 }
 
 
+/**
+ * Sealed base class for executable definitions: [GOperationDefinition] and [GFragmentDefinition].
+ *
+ * These appear in query documents sent to a GraphQL server.
+ */
 public sealed class GExecutableDefinition(
 	extensions: GNodeExtensionSet<GExecutableDefinition>,
 	origin: GDocumentPosition?,
@@ -1002,6 +1105,12 @@ public class GFieldArgumentDefinition(
 }
 
 
+/**
+ * The definition of a field on an object or interface type in the schema.
+ *
+ * Includes the field's return [type], optional [argumentDefinitions], optional [description],
+ * and any applied [directives] (e.g. `@deprecated`).
+ */
 public class GFieldDefinition(
 	name: GName,
 	public val type: GTypeRef,
@@ -1060,6 +1169,7 @@ public class GFieldDefinition(
 }
 
 
+/** The built-in GraphQL `Float` scalar type. */
 // https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
 public object GFloatType : GScalarType(name = "Float")
 
@@ -1117,10 +1227,16 @@ public fun GFloatValue(value: Int): GFloatValue =
 	GFloatValue(value.toDouble())
 
 
+/** The built-in GraphQL `ID` scalar type. */
 // https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
 public object GIdType : GScalarType(name = "ID")
 
 
+/**
+ * An inline fragment spread (`... on Type { ... }` or `... { ... }`) within a selection set.
+ *
+ * When [typeCondition] is absent, the fragment applies to the enclosing type unconditionally.
+ */
 public class GInlineFragmentSelection(
 	public val selectionSet: GSelectionSet,
 	public val typeCondition: GNamedTypeRef?,
@@ -1286,6 +1402,7 @@ public class GInputObjectTypeExtension(
 }
 
 
+/** The built-in GraphQL `Int` scalar type. */
 // https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
 public object GIntType : GScalarType(name = "Int")
 
@@ -1399,6 +1516,11 @@ public class GInterfaceTypeExtension(
 }
 
 
+/**
+ * Sealed base class for GraphQL leaf types: [GScalarType] and [GEnumType].
+ *
+ * Leaf types have no selection set — fields of these types resolve to concrete values.
+ */
 public sealed class GLeafType(
 	name: GName,
 	description: GStringValue? = null,
@@ -1456,6 +1578,11 @@ public class GListType(
 }
 
 
+/**
+ * A type reference representing a GraphQL list type (`[ElementType]`).
+ *
+ * Use [GListTypeRef] factory function to create one from a type name.
+ */
 public class GListTypeRef(
 	public val elementType: GTypeRef,
 	origin: GDocumentPosition? = null,
@@ -1568,6 +1695,14 @@ public fun GName(value: String): GName =
 	GName(value = value, origin = null)
 
 
+/**
+ * Sealed base class for all named (i.e. non-wrapping) GraphQL types.
+ *
+ * Subclasses: [GScalarType], [GObjectType], [GInterfaceType], [GUnionType],
+ * [GEnumType], and [GInputObjectType].
+ *
+ * Named types are identified by [name] and are registered in the schema's type map.
+ */
 public sealed class GNamedType(
 	description: GStringValue?,
 	override val directives: List<GDirective>,
@@ -1602,6 +1737,11 @@ public sealed class GNamedType(
 }
 
 
+/**
+ * A type reference to a named type by name (e.g. `String`, `MyObject`).
+ *
+ * Create with [GTypeRef]`(name)` or [GNamedTypeRef]`(name)`.
+ */
 public class GNamedTypeRef(
 	name: GName,
 	origin: GDocumentPosition? = null,
@@ -1683,6 +1823,12 @@ public class GNonNullType(
 }
 
 
+/**
+ * A type reference representing a non-null type (`Type!`).
+ *
+ * The wrapped [nullableRef] must itself not be a [GNonNullTypeRef].
+ * Create with [GNonNullTypeRef]`(name)` or via [GTypeRef.nonNullableRef].
+ */
 public class GNonNullTypeRef(
 	override val nullableRef: GTypeRef,
 	origin: GDocumentPosition? = null,
@@ -1835,6 +1981,12 @@ public class GObjectTypeExtension(
 }
 
 
+/**
+ * An input object value literal, represented as a list of field-value pairs (`{ field: value }`).
+ *
+ * Each field is stored as a [GArgument]. Use [GNode.WithArguments.argument] to look up a field by name.
+ * [unwrap] returns a `Map<String, Any?>` of the field values.
+ */
 public class GObjectValue(
 	override val arguments: List<GArgument>,
 	origin: GDocumentPosition? = null,
@@ -1873,6 +2025,10 @@ public class GObjectValue(
 }
 
 
+/**
+ * Maps a [GOperationType] (query/mutation/subscription) to its root object type inside a
+ * `schema { ... }` definition.
+ */
 public class GOperationTypeDefinition(
 	public val operationType: GOperationType,
 	public val type: GNamedTypeRef,
@@ -1896,6 +2052,12 @@ public class GOperationTypeDefinition(
 }
 
 
+/**
+ * Sealed base class for GraphQL scalar types.
+ *
+ * Built-in singletons: [GBooleanType], [GFloatType], [GIdType], [GIntType], [GStringType].
+ * User-defined scalars use [GCustomScalarType].
+ */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalars
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalar
 public sealed class GScalarType(
@@ -2009,6 +2171,7 @@ public class GSchemaExtension(
 }
 
 
+/** The built-in GraphQL `String` scalar type. */
 // https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
 public object GStringType : GScalarType(name = "String")
 
@@ -2055,6 +2218,17 @@ public fun GStringValue(value: String): GStringValue =
 	GStringValue(value = value, isBlock = false)
 
 
+/**
+ * Sealed base class for all GraphQL types used during schema resolution and execution.
+ *
+ * Unlike [GTypeRef] (which is just a syntactic reference), a [GType] is a fully resolved type.
+ * The type hierarchy is:
+ * - [GNamedType]: [GScalarType], [GObjectType], [GInterfaceType], [GUnionType], [GEnumType], [GInputObjectType]
+ * - [GWrappingType]: [GListType], [GNonNullType]
+ *
+ * Use [isInputType] / [isOutputType] to check usage context, and [isSubtypeOf] / [isSupertypeOf]
+ * to test subtype relationships. The companion [GType.defaultTypes] lists the five built-in scalars.
+ */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-The-__Type-Type
@@ -2077,6 +2251,7 @@ public sealed class GType(
 	public abstract fun toRef(): GTypeRef
 
 
+	/** Returns `true` if this type can be used as an input type ([GScalarType], [GEnumType], [GInputObjectType], and [GWrappingType] wrappers thereof). */
 	// https://graphql.github.io/graphql-spec/June2018/#IsInputType()
 	public fun isInputType(): Boolean =
 		when (this) {
@@ -2086,6 +2261,7 @@ public sealed class GType(
 		}
 
 
+	/** Returns `true` if this type can be used as an output type ([GScalarType], [GObjectType], [GInterfaceType], [GUnionType], [GEnumType], and [GWrappingType] wrappers thereof). */
 	// https://graphql.github.io/graphql-spec/June2018/#IsOutputType()
 	public fun isOutputType(): Boolean =
 		when (this) {
@@ -2095,10 +2271,12 @@ public sealed class GType(
 		}
 
 
+	/** Returns `true` if this type is a subtype of [other]. */
 	public fun isSubtypeOf(other: GType): Boolean =
 		other.isSupertypeOf(this)
 
 
+	/** Returns `true` if [other] is a subtype of this type. */
 	public abstract fun isSupertypeOf(other: GType): Boolean
 
 
@@ -2114,6 +2292,7 @@ public sealed class GType(
 	}
 
 
+	/** Identifies the kind of a [GType] at runtime, matching the `__TypeKind` introspection enum. */
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds
 	public enum class Kind {
@@ -2146,6 +2325,11 @@ public sealed class GType(
 }
 
 
+/**
+ * Sealed base class for type extension definitions (`extend type Foo { ... }`).
+ *
+ * Concrete subclasses mirror each concrete [GNamedType] with an `Extension` suffix.
+ */
 public sealed class GTypeExtension(
 	override val directives: List<GDirective>,
 	extensions: GNodeExtensionSet<GTypeExtension>,
@@ -2166,6 +2350,17 @@ public sealed class GTypeExtension(
 }
 
 
+/**
+ * Sealed base class for GraphQL type references — the syntactic representation of a type
+ * as it appears in a schema or query document.
+ *
+ * Concrete subclasses: [GNamedTypeRef], [GListTypeRef], [GNonNullTypeRef].
+ *
+ * Use [GTypeRef.parse] to parse a type reference from a string, and [GSchema.resolveType] to
+ * resolve it to a concrete [GType].
+ *
+ * Convenience ref constants: [GBooleanTypeRef], [GFloatTypeRef], [GIdTypeRef], [GIntTypeRef], [GStringTypeRef].
+ */
 public sealed class GTypeRef(
 	extensions: GNodeExtensionSet<GTypeRef>,
 	origin: GDocumentPosition?,
@@ -2186,6 +2381,11 @@ public sealed class GTypeRef(
 
 	public companion object {
 
+		/**
+		 * Parses a type reference string (e.g. `"String!"`, `"[Int]"`) from [source].
+		 *
+		 * Returns a [GResult.Success] with the parsed type reference, or a [GResult.Failure] with parse errors.
+		 */
 		public fun parse(source: GDocumentSource.Parsable): GResult<GTypeRef> =
 			Parser.parseTypeReference(source)
 
@@ -2196,17 +2396,32 @@ public sealed class GTypeRef(
 }
 
 
+/** Creates a [GNamedTypeRef] for the given type [name]. Shorthand for [GNamedTypeRef]`(name)`. */
 public fun GTypeRef(name: String): GNamedTypeRef =
 	GNamedTypeRef(name)
 
 
+/** Reusable type reference for the built-in `Boolean` scalar. */
 public val GBooleanTypeRef: GNamedTypeRef = GTypeRef("Boolean")
+
+/** Reusable type reference for the built-in `Float` scalar. */
 public val GFloatTypeRef: GNamedTypeRef = GTypeRef("Float")
+
+/** Reusable type reference for the built-in `ID` scalar. */
 public val GIdTypeRef: GNamedTypeRef = GTypeRef("ID")
+
+/** Reusable type reference for the built-in `Int` scalar. */
 public val GIntTypeRef: GNamedTypeRef = GTypeRef("Int")
+
+/** Reusable type reference for the built-in `String` scalar. */
 public val GStringTypeRef: GNamedTypeRef = GTypeRef("String")
 
 
+/**
+ * Sealed base class for type system definitions in an SDL document.
+ *
+ * Subclasses: [GType] subclasses, [GDirectiveDefinition], and [GSchemaDefinition].
+ */
 public sealed class GTypeSystemDefinition(
 	extensions: GNodeExtensionSet<GTypeSystemDefinition>,
 	origin: GDocumentPosition?,
@@ -2219,6 +2434,11 @@ public sealed class GTypeSystemDefinition(
 }
 
 
+/**
+ * Sealed base class for type system extension definitions (`extend type/schema ...`).
+ *
+ * Subclasses: [GTypeExtension] and [GSchemaExtension].
+ */
 public sealed class GTypeSystemExtension(
 	extensions: GNodeExtensionSet<GTypeSystemExtension>,
 	origin: GDocumentPosition?,
@@ -2325,6 +2545,11 @@ public class GUnionTypeExtension(
 }
 
 
+/**
+ * Sealed base class for wrapping types that modify another type: [GListType] and [GNonNullType].
+ *
+ * The wrapped [wrappedType] is accessible directly; use [GType.underlyingNamedType] to unwrap fully.
+ */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
 public sealed class GWrappingType(

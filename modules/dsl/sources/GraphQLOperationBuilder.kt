@@ -1,6 +1,12 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Builder for a single GraphQL [GOperationDefinition] (query, mutation, or subscription).
+ *
+ * Use [GraphQL.query], [GraphQL.mutation], or [GraphQL.subscription] to obtain a standalone
+ * operation, or use [GraphQLDocumentBuilderScope.query] etc. to add one directly to a document.
+ */
 @GraphQLMarker
 public sealed interface GraphQLOperationBuilder :
 	GraphQLOperationBuilderScope,
@@ -8,10 +14,15 @@ public sealed interface GraphQLOperationBuilder :
 	GraphQLSelectionsContainer,
 	GraphQLVariableContainer {
 
+	/** Builds and returns the [GOperationDefinition]. */
 	public fun build(): GOperationDefinition
 }
 
 
+/**
+ * Scope interface for [GraphQLOperationBuilder], providing selections, variables, and
+ * directives DSL functions.
+ */
 @GraphQLMarker
 public sealed interface GraphQLOperationBuilderScope :
 	GraphQLDirectivesContainerScope,
@@ -55,6 +66,7 @@ internal class GraphQLOperationBuilderImpl(
 }
 
 
+/** Creates a new [GraphQLOperationBuilder] for the given operation [type] and optional [name]. */
 public fun GraphQLOperationBuilder(
 	name: String? = null,
 	type: GOperationType,
@@ -62,18 +74,33 @@ public fun GraphQLOperationBuilder(
 	GraphQLOperationBuilderImpl(name = name, type = type)
 
 
+/**
+ * Builds a standalone mutation [GOperationDefinition].
+ *
+ * @param name optional operation name.
+ */
 @GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.mutation(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.mutation).apply(configure).build()
 
 
+/**
+ * Builds a standalone query [GOperationDefinition].
+ *
+ * @param name optional operation name.
+ */
 @GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.query(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.query).apply(configure).build()
 
 
+/**
+ * Builds a standalone subscription [GOperationDefinition].
+ *
+ * @param name optional operation name.
+ */
 @GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.subscription(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =

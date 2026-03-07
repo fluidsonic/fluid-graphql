@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Builder for a [GFieldSelection] within a selection set.
+ *
+ * Provides arguments, directives, and nested sub-selection capabilities.
+ */
 @GraphQLMarker
 public sealed interface GraphQLFieldSelectionBuilder :
 	GraphQLFieldSelectionBuilderScope,
@@ -8,10 +13,12 @@ public sealed interface GraphQLFieldSelectionBuilder :
 	GraphQLDirectivesContainer,
 	GraphQLSelectionsContainer {
 
+	/** Builds and returns the [GFieldSelection]. */
 	public fun build(): GFieldSelection
 }
 
 
+/** Scope interface for [GraphQLFieldSelectionBuilder]. */
 @GraphQLMarker
 public sealed interface GraphQLFieldSelectionBuilderScope :
 	GraphQLArgumentsContainerScope,
@@ -46,6 +53,9 @@ private class GraphQLFieldSelectionBuilderImpl(
 }
 
 
+/**
+ * Creates a new [GraphQLFieldSelectionBuilder] for the field named [name], with an optional [alias].
+ */
 public fun GraphQLFieldSelectionBuilder(
 	name: String,
 	alias: String? = null,

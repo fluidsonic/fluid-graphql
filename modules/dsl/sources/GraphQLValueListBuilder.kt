@@ -3,13 +3,24 @@ package io.fluidsonic.graphql
 import kotlin.internal.*
 
 
+/**
+ * Builder for a [GListValue].
+ *
+ * Use [add] to append values and [build] to produce the final list.
+ */
 @GraphQLMarker
 public sealed interface GraphQLValueListBuilder : GraphQLValueListBuilderScope {
 
+	/** Builds and returns the [GListValue]. */
 	public fun build(): GListValue
 }
 
 
+/**
+ * Scope interface for [GraphQLValueListBuilder].
+ *
+ * Provides typed [add] overloads for all supported GraphQL scalar types and raw [GValue] nodes.
+ */
 @GraphQLMarker
 public sealed interface GraphQLValueListBuilderScope : GraphQLValueContainerScope {
 
@@ -125,6 +136,7 @@ public sealed interface GraphQLValueListBuilderScope : GraphQLValueContainerScop
 	}
 
 
+	/** Appends a raw [GValue] to the list. */
 	@GraphQLMarker
 	public fun add(value: GValue)
 }
@@ -145,16 +157,19 @@ private class GraphQLValueListBuilderImpl : GraphQLValueListBuilder {
 }
 
 
+/** Creates a new [GraphQLValueListBuilder]. */
 public fun GraphQLValueListBuilder(): GraphQLValueListBuilder =
 	GraphQLValueListBuilderImpl()
 
 
+/** Creates a nested [GListValue] inside a list builder. */
 @GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueListBuilder.list(configure: GraphQLValueListBuilder.() -> Unit): GListValue =
 	GraphQLValueListBuilder().apply(configure).build()
 
 
+/** Creates a [GObjectValue] inside a list builder using the [GraphQLArgumentsBuilder] DSL. */
 @GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueListBuilder.obj(configure: GraphQLArgumentsBuilder.() -> Unit): GObjectValue =

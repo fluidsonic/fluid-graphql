@@ -1,6 +1,12 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A top-level GraphQL operation definition (`query`, `mutation`, or `subscription`).
+ *
+ * The [name] is optional for anonymous operations. Variable definitions declare the variables
+ * the operation accepts; directives may apply `@skip` / `@include` or custom directives.
+ */
 public class GOperationDefinition(
 	public val type: GOperationType,
 	name: GName? = null,

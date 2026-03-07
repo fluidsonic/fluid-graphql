@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A named fragment spread (`...FragmentName`) within a selection set.
+ *
+ * The referenced fragment is resolved by [GDocument.fragment] using [name].
+ */
 public class GFragmentSelection(
 	name: GName,
 	directives: List<GDirective> = emptyList(),

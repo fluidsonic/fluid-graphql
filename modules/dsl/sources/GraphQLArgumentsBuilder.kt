@@ -3,9 +3,21 @@ package io.fluidsonic.graphql
 import kotlin.internal.*
 
 
+/**
+ * Builder for a list of [GArgument] instances (or an object value's fields).
+ *
+ * Use `"name" to value` syntax to add arguments:
+ * ```kotlin
+ * arguments {
+ *     "id" to "123"
+ *     "limit" to 10
+ * }
+ * ```
+ */
 @GraphQLMarker
 public sealed interface GraphQLArgumentsBuilder : GraphQLArgumentsBuilderScope {
 
+	/** Adds a pre-built [GArgument]. */
 	@GraphQLMarker
 	public fun argument(argument: GArgument)
 
@@ -20,6 +32,12 @@ public sealed interface GraphQLArgumentsBuilder : GraphQLArgumentsBuilderScope {
 }
 
 
+/**
+ * Scope interface for [GraphQLArgumentsBuilder].
+ *
+ * Provides typed `"name" to value` infix overloads for all supported GraphQL value types.
+ * Kotlin's default `to` operator is blocked in this scope to avoid mistakes.
+ */
 @GraphQLMarker
 public sealed interface GraphQLArgumentsBuilderScope : GraphQLValueContainerScope {
 
@@ -150,6 +168,7 @@ public sealed interface GraphQLArgumentsBuilderScope : GraphQLValueContainerScop
 
 
 	// TODO Move to extension and inline once we have context receivers.
+	/** Sets an argument to a nested object value built with the [GraphQLArgumentsBuilder] DSL. */
 	@GraphQLMarker
 	public infix fun String.to(configure: GraphQLArgumentsBuilder.() -> Unit) {
 		to(GObjectValue(GraphQLArgumentsBuilder().apply(configure).build()))
@@ -177,5 +196,6 @@ private class GraphQLArgumentsBuilderImpl : GraphQLArgumentsBuilder {
 }
 
 
+/** Creates a new [GraphQLArgumentsBuilder]. */
 public fun GraphQLArgumentsBuilder(): GraphQLArgumentsBuilder =
 	GraphQLArgumentsBuilderImpl()

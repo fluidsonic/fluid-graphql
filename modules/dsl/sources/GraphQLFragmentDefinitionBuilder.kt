@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Builder for a [GFragmentDefinition].
+ *
+ * Provides selections, variables, and directives. Use via [GraphQLFragmentDefinitionContainerScope.fragment].
+ */
 @GraphQLMarker
 public sealed interface GraphQLFragmentDefinitionBuilder :
 	GraphQLFragmentDefinitionBuilderScope,
@@ -8,10 +13,12 @@ public sealed interface GraphQLFragmentDefinitionBuilder :
 	GraphQLSelectionsContainer,
 	GraphQLVariableContainer {
 
+	/** Builds and returns the [GFragmentDefinition]. */
 	public fun build(): GFragmentDefinition
 }
 
 
+/** Scope interface for [GraphQLFragmentDefinitionBuilder]. */
 @GraphQLMarker
 public sealed interface GraphQLFragmentDefinitionBuilderScope :
 	GraphQLDirectivesContainerScope,
@@ -54,5 +61,9 @@ private class GraphQLFragmentDefinitionBuilderImpl(
 }
 
 
+/**
+ * Creates a new [GraphQLFragmentDefinitionBuilder] for a fragment with the given [name] and
+ * [typeCondition].
+ */
 public fun GraphQLFragmentDefinitionBuilder(name: String, typeCondition: GNamedTypeRef): GraphQLFragmentDefinitionBuilder =
 	GraphQLFragmentDefinitionBuilderImpl(name = name, typeCondition = typeCondition)

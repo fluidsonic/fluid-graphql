@@ -1,20 +1,37 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Builder for a [GDocument].
+ *
+ * Add operations via [query], [mutation], [subscription], and fragment definitions via [fragment].
+ * Call [build] when done to produce the [GDocument].
+ */
 @GraphQLMarker
 public sealed interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, GraphQLFragmentDefinitionContainer {
 
+	/** Builds and returns the [GDocument] containing all added definitions. */
 	public fun build(): GDocument
 
+	/** Adds a pre-built [GOperationDefinition] to the document. */
 	@GraphQLMarker
 	public fun operation(definition: GOperationDefinition)
 }
 
 
+/**
+ * Scope interface for [GraphQLDocumentBuilder], providing [query], [mutation], [subscription],
+ * and [fragment] DSL functions.
+ */
 @GraphQLMarker
 public sealed interface GraphQLDocumentBuilderScope : GraphQLFragmentDefinitionContainerScope
 
 
+/**
+ * Adds a mutation operation to the document.
+ *
+ * @param name optional operation name.
+ */
 @GraphQLMarker
 public inline fun GraphQLDocumentBuilderScope.mutation(
 	name: String? = null,
@@ -26,6 +43,11 @@ public inline fun GraphQLDocumentBuilderScope.mutation(
 }
 
 
+/**
+ * Adds a query operation to the document.
+ *
+ * @param name optional operation name.
+ */
 @GraphQLMarker
 public inline fun GraphQLDocumentBuilderScope.query(
 	name: String? = null,
@@ -37,6 +59,11 @@ public inline fun GraphQLDocumentBuilderScope.query(
 }
 
 
+/**
+ * Adds a subscription operation to the document.
+ *
+ * @param name optional operation name.
+ */
 @GraphQLMarker
 public inline fun GraphQLDocumentBuilderScope.subscription(
 	name: String? = null,
@@ -71,15 +98,35 @@ internal class GraphQLDocumentBuilderImpl : GraphQLDocumentBuilder, GraphQLFragm
 }
 
 
+/** Creates a new [GraphQLDocumentBuilder]. */
 public fun GraphQLDocumentBuilder(): GraphQLDocumentBuilder =
 	GraphQLDocumentBuilderImpl()
 
 
+/**
+ * Builds a [GDocument] using a lambda, without an explicit receiver.
+ *
+ * Prefer [GraphQL.document] for readability.
+ */
 @GraphQLMarker
 public inline fun GraphQL(configure: GraphQLDocumentBuilderScope.() -> Unit): GDocument =
 	GraphQLDocumentBuilder().apply(configure).build()
 
 
+/**
+ * Builds a [GDocument] using the document builder DSL.
+ *
+ * ```kotlin
+ * val doc = GraphQL.document {
+ *     query("GetUser") {
+ *         "user"(alias = "currentUser") {
+ *             "id"()
+ *             "name"()
+ *         }
+ *     }
+ * }
+ * ```
+ */
 @GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.document(configure: GraphQLDocumentBuilderScope.() -> Unit): GDocument =

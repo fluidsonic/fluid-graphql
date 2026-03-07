@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Mixin interface for builders that hold a list of [GSelection] instances.
+ *
+ * Adds concrete implementations for field, fragment spread, and inline fragment selections.
+ */
 @GraphQLMarker
 public sealed interface GraphQLSelectionsContainer : GraphQLSelectionsContainerScope {
 
@@ -18,6 +23,7 @@ public sealed interface GraphQLSelectionsContainer : GraphQLSelectionsContainerS
 	}
 
 
+	/** Adds a pre-built [GSelection] to this selection set. */
 	@GraphQLMarker
 	public fun selection(selection: GSelection)
 
@@ -30,25 +36,32 @@ public sealed interface GraphQLSelectionsContainer : GraphQLSelectionsContainerS
 }
 
 
+/**
+ * Scope interface for building a [GSelectionSet].
+ *
+ * Use `"fieldName"()` for field selections, [fragment] for fragment spreads, and
+ * [on] for inline fragments.
+ */
 @GraphQLMarker
 public sealed interface GraphQLSelectionsContainerScope {
 
+	/** Adds an inline fragment selection for the given type name (string). */
 	@GraphQLMarker
 	public fun on(type: String, configure: GraphQLInlineFragmentSelectionBuilder.() -> Unit) {
 		on(type = GNamedTypeRef(type), configure = configure)
 	}
 
-
+	/** Adds an inline fragment selection for the given [type] condition. */
 	@GraphQLMarker
 	public fun on(type: GNamedTypeRef, configure: GraphQLInlineFragmentSelectionBuilder.() -> Unit)
 
-
+	/** Adds a fragment spread for the named fragment (no directives). */
 	@GraphQLMarker
 	public fun fragment(name: String) {
 		fragment(name = GFragmentRef(name))
 	}
 
-
+	/** Adds a fragment spread with no directives. */
 	@GraphQLMarker
 	public fun fragment(name: GFragmentRef) {
 		fragment(name = name) {}
@@ -56,6 +69,7 @@ public sealed interface GraphQLSelectionsContainerScope {
 
 
 	// TODO Move to extension and inline.
+	/** Adds a fragment spread by string name with optional directives. */
 	@GraphQLMarker
 	public fun fragment(name: String, configure: GraphQLFragmentSelectionBuilder.() -> Unit) {
 		fragment(name = GFragmentRef(name), configure = configure)
@@ -63,10 +77,12 @@ public sealed interface GraphQLSelectionsContainerScope {
 
 
 	// TODO Move to extension and inline.
+	/** Adds a fragment spread with optional directives. */
 	@GraphQLMarker
 	public fun fragment(name: GFragmentRef, configure: GraphQLFragmentSelectionBuilder.() -> Unit)
 
 
+	/** Adds a `__typename` field selection. */
 	@GraphQLMarker
 	@Suppress("FunctionName")
 	public fun __typename() {
@@ -75,6 +91,7 @@ public sealed interface GraphQLSelectionsContainerScope {
 	}
 
 
+	/** Adds a fragment spread with no directives. */
 	@GraphQLMarker
 	public operator fun GFragmentRef.invoke() {
 		fragment(name = this) {}
@@ -82,12 +99,14 @@ public sealed interface GraphQLSelectionsContainerScope {
 
 
 	// TODO Move to extension and inline.
+	/** Adds a fragment spread with optional directives. */
 	@GraphQLMarker
 	public operator fun GFragmentRef.invoke(configure: GraphQLFragmentSelectionBuilder.() -> Unit) {
 		fragment(name = this, configure = configure)
 	}
 
 
+	/** Adds a field selection with the given name, optional alias, and no sub-selections. */
 	@GraphQLMarker
 	public operator fun String.invoke(
 		alias: String? = null,
@@ -97,6 +116,10 @@ public sealed interface GraphQLSelectionsContainerScope {
 
 
 	// TODO Move to extension and inline.
+	/**
+	 * Adds a field selection with the given name, optional alias, and sub-selections/arguments
+	 * configured in [configure].
+	 */
 	@GraphQLMarker
 	public operator fun String.invoke(alias: String? = null, configure: GraphQLFieldSelectionBuilder.() -> Unit)
 }

@@ -14,3 +14,6 @@
 build
 out
 .worktrees
+
+.playwright-mcp/
+docs-*.png

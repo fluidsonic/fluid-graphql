@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * An explicit `schema { query: Query mutation: Mutation ... }` definition in a GraphQL SDL document.
+ *
+ * When absent, the [GSchema] factory uses the conventional root type names (`Query`, `Mutation`, `Subscription`).
+ */
 public class GSchemaDefinition(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition>,
 	override val descriptionNode: GStringValue? = null,

@@ -1,16 +1,21 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Builder for a [GInlineFragmentSelection] (`... on TypeName { ... }`) within a selection set.
+ */
 @GraphQLMarker
 public sealed interface GraphQLInlineFragmentSelectionBuilder :
 	GraphQLInlineFragmentSelectionBuilderScope,
 	GraphQLDirectivesContainer,
 	GraphQLSelectionsContainer {
 
+	/** Builds and returns the [GInlineFragmentSelection]. */
 	public fun build(): GInlineFragmentSelection
 }
 
 
+/** Scope interface for [GraphQLInlineFragmentSelectionBuilder]. */
 @GraphQLMarker
 public sealed interface GraphQLInlineFragmentSelectionBuilderScope :
 	GraphQLDirectivesContainerScope,
@@ -44,5 +49,6 @@ private class GraphQLInlineFragmentSelectionBuilderImpl(
 }
 
 
+/** Creates a new [GraphQLInlineFragmentSelectionBuilder] for the given type condition [type]. */
 public fun GraphQLInlineFragmentSelectionBuilder(type: GNamedTypeRef): GraphQLInlineFragmentSelectionBuilder =
 	GraphQLInlineFragmentSelectionBuilderImpl(type = type)

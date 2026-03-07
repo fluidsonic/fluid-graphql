@@ -1,6 +1,18 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A resolved GraphQL schema, containing all type definitions, directive definitions,
+ * and root operation types derived from a [GDocument].
+ *
+ * Use [GSchema.parse] to create a schema from a GraphQL SDL string, or call the
+ * [GSchema] factory function to build one from an already-parsed [GDocument].
+ *
+ * Built-in scalar types (`Boolean`, `Float`, `ID`, `Int`, `String`) and the standard
+ * directives (`@deprecated`, `@include`, `@skip`, `@specifiedBy`) are added automatically.
+ *
+ * @see GSchema.parse
+ */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
 public class GSchema internal constructor(
 	public val directiveDefinitions: List<GDirectiveDefinition>,
@@ -30,15 +42,27 @@ public class GSchema internal constructor(
 				.associate { union -> union.name to union.possibleTypes.mapNotNull { typesByName[it.name] as? GObjectType } }
 
 
+	/** Returns the directive definition with the given [name], or `null` if not found. */
 	public fun directiveDefinition(name: String): GDirectiveDefinition? =
 		directiveDefinitions.firstOrNull { it.name == name }
 
 
+	/**
+	 * Returns the concrete object types that are possible for [type].
+	 *
+	 * For a [GObjectType], returns a list containing only that type itself.
+	 * For a [GInterfaceType] or [GUnionType], returns the object types that implement or belong to it.
+	 */
 	public fun getPossibleTypes(type: GCompositeType): List<GObjectType> =
 		if (type is GObjectType) listOf(type)
 		else possibleTypesByType[type.name].orEmpty()
 
 
+	/**
+	 * Resolves a type reference to a [GType], following list and non-null wrappers.
+	 *
+	 * Returns `null` if the underlying named type is not defined in this schema.
+	 */
 	public fun resolveType(ref: GTypeRef): GType? =
 		when (ref) {
 			is GListTypeRef -> resolveType(ref.elementType)?.let { GListType(elementType = it) }
@@ -47,14 +71,17 @@ public class GSchema internal constructor(
 		}
 
 
+	/** Resolves a named type reference to a [GNamedType], or `null` if not found. */
 	public fun resolveType(ref: GNamedTypeRef): GNamedType? =
 		resolveType(ref.name)
 
 
+	/** Resolves a type by name, or `null` if not found. */
 	public fun resolveType(name: String): GNamedType? =
 		typesByName[name]
 
 
+	/** Returns the root object type for the given [operationType] (query, mutation, or subscription). */
 	public fun rootTypeForOperationType(operationType: GOperationType): GObjectType? =
 		when (operationType) {
 			GOperationType.mutation -> mutationType
@@ -69,10 +96,17 @@ public class GSchema internal constructor(
 		).toString()
 
 
+	/**
+	 * Validates that [value] is a legal GraphQL value for [type].
+	 *
+	 * Returns a list of [GError]s describing any violations; an empty list means the value is valid.
+	 * [GVariableRef] values (`$var`) are not validated and are silently skipped.
+	 */
 	public fun validateValue(value: GValue, type: GType): List<GError> =
 		validateValue(value = value, typeRef = null, type = type).orEmpty()
 
 
+	/** Validates that [value] is a legal GraphQL value for the type identified by [typeRef]. */
 	public fun validateValue(value: GValue, typeRef: GTypeRef): List<GError> =
 		validateValue(value = value, typeRef = typeRef, type = null).orEmpty()
 
@@ -338,16 +372,31 @@ public class GSchema internal constructor(
 
 	public companion object {
 
+		/**
+		 * Parses a GraphQL SDL document from [source] and builds a [GSchema].
+		 *
+		 * Returns a [GResult.Success] with the schema, or a [GResult.Failure] with parse errors.
+		 */
 		public fun parse(source: GDocumentSource.Parsable): GResult<GSchema> =
 			GDocument.parse(source).mapValue(::GSchema)
 
 
+		/** Parses a GraphQL SDL string and builds a [GSchema]. */
 		public fun parse(content: String, name: String = "<document>"): GResult<GSchema> =
 			parse(GDocumentSource.of(content = content, name = name))
 	}
 }
 
 
+/**
+ * Builds a [GSchema] from an already-parsed [GDocument].
+ *
+ * Extracts type and directive definitions, resolves root operation types (from an explicit
+ * `schema { ... }` definition or by convention: `Query`, `Mutation`, `Subscription`), and
+ * adds the standard built-in directives if they are not already defined in the document.
+ *
+ * Set [supportOptional] to `true` to also register the non-standard `@optional` directive.
+ */
 public fun GSchema(
 	document: GDocument,
 	supportOptional: Boolean = false,

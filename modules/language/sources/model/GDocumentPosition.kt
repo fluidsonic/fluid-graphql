@@ -1,6 +1,14 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A position (or range) within a [GDocumentSource], used to point to errors in source text.
+ *
+ * All positional properties default to `-1` (unknown). Implement them if your source supports
+ * rich error reporting; leave them as defaults for position-less sources.
+ *
+ * Call [describe] to get a human-readable string with a code excerpt and caret pointer.
+ */
 public interface GDocumentPosition {
 
 	public val column: Int
@@ -22,6 +30,10 @@ public interface GDocumentPosition {
 		get() = -1
 
 
+	/**
+	 * Returns a human-readable description of this position, including the [source] name,
+	 * [line]:[column] coordinates, and a code excerpt with a caret pointer when available.
+	 */
 	public fun describe(): String = buildString {
 		append(source.name)
 

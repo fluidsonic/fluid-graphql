@@ -3,13 +3,22 @@ package io.fluidsonic.graphql
 import kotlin.internal.*
 
 
+/**
+ * Builder for a single [GVariableDefinition] in an operation or fragment.
+ */
 @GraphQLMarker
 public sealed interface GraphQLVariableBuilder : GraphQLVariableBuilderScope, GraphQLDirectivesContainer {
 
+	/** Builds and returns the [GVariableDefinition]. */
 	public fun build(): GVariableDefinition
 }
 
 
+/**
+ * Scope interface for [GraphQLVariableBuilder].
+ *
+ * Provides typed [default] overloads for setting the variable's default value.
+ */
 @GraphQLMarker
 public sealed interface GraphQLVariableBuilderScope : GraphQLValueContainerScope, GraphQLDirectivesContainerScope {
 
@@ -125,11 +134,13 @@ public sealed interface GraphQLVariableBuilderScope : GraphQLValueContainerScope
 	}
 
 
+	/** Sets the default value for the variable using a raw [GValue]. */
 	@GraphQLMarker
 	public fun default(value: GValue)
 
 
 	// TODO Move to extension and inline once we have context receivers.
+	/** Sets the default value to an object value built with the [GraphQLArgumentsBuilder] DSL. */
 	@GraphQLMarker
 	public fun default(configure: GraphQLArgumentsBuilder.() -> Unit) {
 		default(GObjectValue(GraphQLArgumentsBuilder().apply(configure).build()))
@@ -171,5 +182,6 @@ private class GraphQLVariableBuilderImpl(
 }
 
 
+/** Creates a new [GraphQLVariableBuilder] for a variable with the given [name] and [type]. */
 public fun GraphQLVariableBuilder(name: String, type: GTypeRef): GraphQLVariableBuilder =
 	GraphQLVariableBuilderImpl(name = name, type = type)

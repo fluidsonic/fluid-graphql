@@ -1,6 +1,12 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A named GraphQL fragment definition (`fragment Foo on Bar { ... }`).
+ *
+ * Referenced from operations via [GFragmentSelection]. The [typeCondition] constrains the
+ * object types on which this fragment can be applied.
+ */
 public class GFragmentDefinition(
 	name: GName,
 	public val typeCondition: GNamedTypeRef,

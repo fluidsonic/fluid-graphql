@@ -1,6 +1,15 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A GraphQL error, matching the error format defined by the GraphQL specification.
+ *
+ * @property message Human-readable description of the error.
+ * @property path The field path in the response where the error occurred, if applicable.
+ * @property nodes AST nodes associated with this error; their [GNode.origin] is used when describing the error.
+ * @property origins Explicit source locations to include in the error description.
+ * @property extensions Arbitrary additional metadata attached to this error.
+ */
 public data class GError(
 	public val message: String,
 	public val path: GPath? = null,
@@ -9,6 +18,10 @@ public data class GError(
 	public val extensions: Map<String, Any?> = emptyMap(),
 ) {
 
+	/**
+	 * Returns a human-readable description of this error, including [GDocumentPosition] context
+	 * with a code excerpt and caret pointer for every associated [GNode] or explicit origin.
+	 */
 	public fun describe(): String = buildString {
 		append(message)
 
@@ -26,6 +39,7 @@ public data class GError(
 	}
 
 
+	/** Throws a [GErrorException] wrapping this error. */
 	public fun throwException(): Nothing {
 		throw GErrorException(this)
 	}

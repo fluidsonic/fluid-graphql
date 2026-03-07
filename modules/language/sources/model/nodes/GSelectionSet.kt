@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+/** A `{ ... }` block containing a list of [GSelection]s in a GraphQL operation or fragment. */
 public class GSelectionSet(
 	public val selections: List<GSelection>,
 	origin: GDocumentPosition? = null,

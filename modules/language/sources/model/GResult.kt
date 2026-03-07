@@ -1,6 +1,15 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * The result of a GraphQL operation that may succeed with a value or fail with errors.
+ *
+ * A [Success] carries a [Value] and an optional list of non-fatal errors.
+ * A [Failure] has no value and at least one error.
+ *
+ * Use the companion factory functions [GResult.success] and [GResult.failure] to create instances.
+ * Use extension functions like [mapValue], [flatMapValue], [ifErrors], and [flatten] to transform results.
+ */
 public sealed class GResult<out Value>(
 	public val errors: List<GError>
 ) {
@@ -10,24 +19,28 @@ public sealed class GResult<out Value>(
 	abstract override fun toString(): String
 
 
+	/** Returns the value if this is a [Success], or `null` if this is a [Failure]. */
 	public fun valueOrNull(): Value? = when (this) {
 		is Success -> value
 		is Failure -> null
 	}
 
 
+	/** Returns the value if this is a [Success], or throws a [GErrorException] if this is a [Failure]. */
 	public fun valueOrThrow(): Value = when (this) {
 		is Success -> value
 		is Failure -> throw GErrorException(errors)
 	}
 
 
+	/** Returns the value only if this is a [Success] with no errors, otherwise `null`. */
 	public fun valueWithoutErrorsOrNull(): Value? = when (this) {
 		is Success -> if (errors.isEmpty()) value else null
 		is Failure -> null
 	}
 
 
+	/** Returns the value if this is a [Success] with no errors, or throws a [GErrorException] otherwise. */
 	public fun valueWithoutErrorsOrThrow(): Value = when (this) { // FIXME refactor
 		is Success -> if (errors.isEmpty()) value else throw GErrorException(errors)
 		is Failure -> throw GErrorException(errors)
@@ -39,6 +52,10 @@ public sealed class GResult<out Value>(
 		private val nullResult = Success(null)
 
 
+		/**
+		 * Runs [action] and wraps the result in a [Success], or catches any [GErrorException]
+		 * thrown and returns it as a [Failure].
+		 */
 		public inline fun <Value> catchErrors(action: () -> Value): GResult<Value> =
 			try {
 				success(action())
@@ -130,6 +147,15 @@ public sealed class GResult<out Value>(
 }
 
 
+/**
+ * Returns the value if there are no errors, or calls [action] with the error list otherwise.
+ *
+ * The [action] must not return normally — it must throw or call a non-local return.
+ * This makes it convenient for early-exit patterns:
+ * ```
+ * val value = result.ifErrors { errors -> return GResult.failure(errors) }
+ * ```
+ */
 public inline fun <Value> GResult<Value>.ifErrors(action: (result: List<GError>) -> Nothing): Value =
 	when {
 		errors.isNotEmpty() -> action(errors)
@@ -137,6 +163,7 @@ public inline fun <Value> GResult<Value>.ifErrors(action: (result: List<GError>)
 	}
 
 
+/** If this is a [GResult.Failure], replaces it with the result of [action]; otherwise returns this unchanged. */
 public inline fun <Value> GResult<Value>.flatMapErrors(action: (errors: List<GError>) -> GResult<Value>): GResult<Value> =
 	when (this) {
 		is GResult.Failure -> action(errors)
@@ -144,6 +171,10 @@ public inline fun <Value> GResult<Value>.flatMapErrors(action: (errors: List<GEr
 	}
 
 
+/**
+ * If this is a [GResult.Success], passes the value to [action] and returns its result,
+ * merging any accumulated errors. If this is a [GResult.Failure], returns this unchanged.
+ */
 public inline fun <Value, TransformedValue> GResult<Value>.flatMapValue(action: (value: Value) -> GResult<TransformedValue>): GResult<TransformedValue> =
 	when (this) {
 		is GResult.Success -> {
@@ -164,6 +195,7 @@ public inline fun <Value, TransformedValue> GResult<Value>.flatMapValue(action: 
 	}
 
 
+/** Transforms the error list of this result using [action], leaving the value unchanged. */
 public inline fun <Value> GResult<Value>.mapErrors(action: (errors: List<GError>) -> List<GError>): GResult<Value> =
 	when (this) {
 		is GResult.Failure -> GResult.failure(action(errors))
@@ -171,6 +203,10 @@ public inline fun <Value> GResult<Value>.mapErrors(action: (errors: List<GError>
 	}
 
 
+/**
+ * Transforms the value of a [GResult.Success] using [action], preserving errors.
+ * If this is a [GResult.Failure], returns this unchanged.
+ */
 public inline fun <Value, TransformedValue> GResult<Value>.mapValue(action: (value: Value) -> TransformedValue): GResult<TransformedValue> =
 	when (this) {
 		is GResult.Success -> GResult.success(value = action(value), errors = errors)
@@ -178,6 +214,12 @@ public inline fun <Value, TransformedValue> GResult<Value>.mapValue(action: (val
 	}
 
 
+/**
+ * Combines a collection of results into a single result.
+ *
+ * Collects all errors from every element. If any element is a [GResult.Failure], the combined
+ * result is also a failure. Otherwise, returns a [GResult.Success] with all values as a list.
+ */
 public fun <Value> Iterable<GResult<Value>>.flatten(): GResult<List<Value>> {
 	val errors = mutableListOf<GError>()
 	val values = mutableListOf<Value>()
@@ -199,6 +241,12 @@ public fun <Value> Iterable<GResult<Value>>.flatten(): GResult<List<Value>> {
 }
 
 
+/**
+ * Combines a map of results into a single result keyed by the same keys.
+ *
+ * Collects all errors from every entry. If any entry is a [GResult.Failure], the combined
+ * result is also a failure. Otherwise, returns a [GResult.Success] with a map of all values.
+ */
 public fun <Key, Value> Map<Key, GResult<Value>>.flatten(): GResult<Map<Key, Value>> {
 	val errors = mutableListOf<GError>()
 	val values = mutableMapOf<Key, Value>()

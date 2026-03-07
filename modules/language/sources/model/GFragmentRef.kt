@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A lightweight reference to a named GraphQL fragment, identified by its [name].
+ *
+ * Used to refer to a [GFragmentDefinition] without holding a direct reference to the full AST node.
+ */
 public class GFragmentRef(
 	public val name: String,
 ) {

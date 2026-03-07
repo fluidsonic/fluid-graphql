@@ -5,12 +5,24 @@ import kotlin.reflect.*
 
 
 // FIXME Add DSL for setting input & output coercers.
+/**
+ * DSL extensions for the schema builder that add execution-specific configuration.
+ *
+ * Use the typed [Object] overloads on [GSchemaBuilder] to associate a Kotlin type with a
+ * GraphQL object type, enabling type-safe field resolvers via [FieldDefinitionBuilder.resolve].
+ */
 public object GDslForExecution {
 
+	/**
+	 * Field definition builder that knows the Kotlin [ParentKotlinType] of the enclosing object.
+	 *
+	 * Obtained inside a typed [GSchemaBuilder.Object] block. Use [resolve] to attach a resolver.
+	 */
 	public class FieldDefinitionBuilder<ParentKotlinType : Any> internal constructor(
 		delegate: GSchemaBuilder.FieldDefinitionBuilder
 	) : GSchemaBuilder.FieldDefinitionBuilder by delegate {
 
+		/** Attaches a field resolver that receives the parent object as [ParentKotlinType]. */
 		@SchemaBuilderKeywordB
 		public fun <Result> resolve(
 			resolver: suspend GFieldResolverContext.(context: ParentKotlinType) -> Result
@@ -22,6 +34,12 @@ public object GDslForExecution {
 	}
 
 
+	/**
+	 * Object type definition builder that knows the Kotlin [KotlinType] mapped to this GraphQL object.
+	 *
+	 * Obtained inside a typed [GSchemaBuilder.Object] block. Use [field] to define fields with
+	 * type-safe resolvers via [FieldDefinitionBuilder].
+	 */
 	public class ObjectTypeDefinitionBuilder<KotlinType : Any> internal constructor(
 		private val delegate: GSchemaBuilder.ObjectTypeDefinitionBuilder
 	) : GSchemaBuilder.ObjectTypeDefinitionBuilder by delegate {
@@ -49,6 +67,13 @@ public object GDslForExecution {
 }
 
 
+/**
+ * Attaches a field resolver to this field definition.
+ *
+ * The [resolver] lambda receives the parent object as an untyped `Any`.
+ * For a type-safe alternative, use [GDslForExecution.FieldDefinitionBuilder.resolve] inside
+ * a typed [GSchemaBuilder.Object] block.
+ */
 @SchemaBuilderKeywordB
 public fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
 	resolver: suspend GFieldResolverContext.(context: Any) -> Result
@@ -59,6 +84,12 @@ public fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
 }
 
 
+/**
+ * Defines a GraphQL object type associated with the Kotlin class [kotlinType].
+ *
+ * Inside [configure], use [GDslForExecution.ObjectTypeDefinitionBuilder.field] to define fields
+ * with type-safe resolvers that receive instances of [KotlinType] as the parent.
+ */
 @SchemaBuilderType
 public fun <KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
@@ -73,6 +104,12 @@ public fun <KotlinType : Any> GSchemaBuilder.Object(
 }
 
 
+/**
+ * Defines a GraphQL object type named by [type] and associated with the Kotlin class [kotlinType].
+ *
+ * Inside [configure], use [GDslForExecution.ObjectTypeDefinitionBuilder.field] to define fields
+ * with type-safe resolvers that receive instances of [KotlinType] as the parent.
+ */
 @SchemaBuilderType
 public fun <KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
@@ -105,6 +142,11 @@ public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 }
 
 
+/**
+ * Attaches an inline input coercer to this scalar type definition.
+ *
+ * The [coercer] is called when a value for this scalar is provided inline in a document (not via a variable).
+ */
 @SchemaBuilderKeywordB
 public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceNodeInput(
 	coercer: GNodeInputCoercerContext.(input: GValue) -> Result
@@ -115,6 +157,12 @@ public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceNodeInput(
 }
 
 
+/**
+ * Attaches an output coercer to this scalar type definition.
+ *
+ * The [coercer] is called when a resolver returns a value of this scalar type, converting it
+ * to a GraphQL-serializable form.
+ */
 @SchemaBuilderKeywordB
 public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutput(
 	coercer: GOutputCoercerContext.(input: Any) -> Result
@@ -125,6 +173,11 @@ public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutpu
 }
 
 
+/**
+ * Attaches a variable input coercer to this scalar type definition.
+ *
+ * The [coercer] is called when a value for this scalar is provided as a variable.
+ */
 @SchemaBuilderKeywordB
 public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceVariableInput(
 	coercer: GVariableInputCoercerContext.(input: Any) -> Result

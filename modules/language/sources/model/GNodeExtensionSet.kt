@@ -1,8 +1,20 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * An immutable, type-safe container of arbitrary metadata attached to a [GNode].
+ *
+ * Retrieve values with the `[]` operator and a [GNodeExtensionKey]. Build instances using the
+ * [invoke] factory or [Builder].
+ *
+ * The set is parameterised by the [Node] type so that extensions can be constrained to specific
+ * node subtypes at the call site.
+ *
+ * @see GNodeExtensionKey
+ */
 public interface GNodeExtensionSet<out Node : GNode> {
 
+	/** Returns the value associated with [key], or `null` if not present. */
 	public operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 
 	public fun isEmpty(): Boolean
@@ -12,21 +24,26 @@ public interface GNodeExtensionSet<out Node : GNode> {
 
 	public companion object {
 
+		/** Creates a [GNodeExtensionSet] by building it with the given [action] on a [Builder]. */
 		public inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet<Node> =
 			Builder.default<Node>().apply(action).build()
 
 
+		/** Returns an empty [GNodeExtensionSet]. */
 		public fun <Node : GNode> empty(): GNodeExtensionSet<Node> =
 			Empty
 	}
 
 
+	/** Mutable builder for constructing a [GNodeExtensionSet]. */
 	public interface Builder<out Node : GNode> {
 
 		public fun build(): GNodeExtensionSet<Node> // FIXME make private
 
+		/** Returns the value associated with [key], or `null` if not set. */
 		public operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?
 
+		/** Sets the value for [key], or removes it when [value] is `null`. */
 		public operator fun <Value : Any> set(key: GNodeExtensionKey<in Value>, value: Value?)
 
 		override fun toString(): String
@@ -102,5 +119,6 @@ public interface GNodeExtensionSet<out Node : GNode> {
 }
 
 
+/** Returns `true` if this set contains at least one entry. */
 public fun GNodeExtensionSet<*>.isNotEmpty(): Boolean =
 	!isEmpty()

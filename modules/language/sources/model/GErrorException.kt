@@ -1,6 +1,12 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A [RuntimeException] that carries one or more [GError]s.
+ *
+ * Thrown by [GResult.valueOrThrow], [GResult.valueWithoutErrorsOrThrow], and [GError.throwException].
+ * Use [toFailure] to convert back to a [GResult.Failure].
+ */
 public class GErrorException(public val errors: List<GError>) : RuntimeException() {
 
 	init {
@@ -16,6 +22,7 @@ public class GErrorException(public val errors: List<GError>) : RuntimeException
 		get() = errors.joinToString(separator = "\n\n---\n\n") { it.describe() }
 
 
+	/** Converts this exception into a [GResult.Failure] containing the same errors. */
 	public fun toFailure(): GResult<Nothing> =
 		GResult.failure(errors)
 }

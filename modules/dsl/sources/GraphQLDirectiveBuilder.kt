@@ -2,13 +2,20 @@ package io.fluidsonic.graphql
 
 // TODO Remove redundant 'arguments {}' and allow specifying arguments directly.
 
+/**
+ * Builder for a single [GDirective] application.
+ *
+ * Arguments are added via the [arguments] DSL from [GraphQLArgumentsContainer].
+ */
 @GraphQLMarker
 public sealed interface GraphQLDirectiveBuilder : GraphQLDirectiveBuilderScope, GraphQLArgumentsContainer {
 
+	/** Builds and returns the [GDirective]. */
 	public fun build(): GDirective
 }
 
 
+/** Scope interface for [GraphQLDirectiveBuilder]. */
 @GraphQLMarker
 public sealed interface GraphQLDirectiveBuilderScope : GraphQLValueContainerScope, GraphQLArgumentsContainerScope
 
@@ -35,5 +42,6 @@ private class GraphQLDirectiveBuilderImpl(
 }
 
 
+/** Creates a new [GraphQLDirectiveBuilder] for a directive with the given [name]. */
 public fun GraphQLDirectiveBuilder(name: String): GraphQLDirectiveBuilder =
 	GraphQLDirectiveBuilderImpl(name = name)

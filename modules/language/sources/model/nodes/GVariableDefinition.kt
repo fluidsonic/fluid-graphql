@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Declares a variable in a GraphQL operation (`$name: Type = defaultValue`).
+ *
+ * Use [GNode.WithDefaultValue.isRequired] to check whether a value must be supplied at runtime.
+ */
 public class GVariableDefinition(
 	name: GName,
 	override val type: GTypeRef,

@@ -1,6 +1,11 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A GraphQL directive application (`@name(arg: value)`).
+ *
+ * The directive's definition (if any) is resolved from the schema via [GSchema.directiveDefinition].
+ */
 public class GDirective(
 	name: GName,
 	override val arguments: List<GArgument> = emptyList(),

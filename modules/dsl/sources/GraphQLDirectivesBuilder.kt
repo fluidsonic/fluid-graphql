@@ -1,11 +1,19 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * Builder for a list of directive applications.
+ *
+ * Use `"directiveName" { ... }` syntax to add directives, or pass pre-built [GDirective]
+ * instances via [directive].
+ */
 @GraphQLMarker
 public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope {
 
+	/** Builds and returns the list of [GDirective] instances. */
 	public fun build(): List<GDirective>
 
+	/** Adds a pre-built [GDirective]. */
 	@GraphQLMarker
 	public fun directive(directive: GDirective)
 
@@ -18,15 +26,27 @@ public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope
 }
 
 
+/**
+ * Scope interface for [GraphQLDirectivesBuilder].
+ *
+ * Invoke a string as a function to apply a directive by name:
+ * ```kotlin
+ * directives {
+ *     "skip" { arguments { "if" to true } }
+ *     "deprecated"()
+ * }
+ * ```
+ */
 @GraphQLMarker
 public sealed interface GraphQLDirectivesBuilderScope : GraphQLValueContainerScope {
 
+	/** Applies the directive with this name and no arguments. */
 	@GraphQLMarker
 	public operator fun String.invoke() {
 		this {}
 	}
 
-
+	/** Applies the directive with this name, configuring its arguments via [configure]. */
 	@GraphQLMarker
 	public operator fun String.invoke(configure: GraphQLDirectiveBuilder.() -> Unit)
 }
@@ -51,5 +71,6 @@ private class GraphQLDirectivesBuilderImpl : GraphQLDirectivesBuilder {
 }
 
 
+/** Creates a new [GraphQLDirectivesBuilder]. */
 public fun GraphQLDirectivesBuilder(): GraphQLDirectivesBuilder =
 	GraphQLDirectivesBuilderImpl()

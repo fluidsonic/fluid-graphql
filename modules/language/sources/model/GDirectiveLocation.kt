@@ -1,6 +1,12 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * All valid locations where a GraphQL directive can be applied, as defined by the GraphQL spec.
+ *
+ * Locations are divided into executable (applied to operations/fragments/fields) and
+ * type system (applied to schema definitions) categories.
+ */
 public enum class GDirectiveLocation {
 
 	ARGUMENT_DEFINITION,
@@ -26,6 +32,10 @@ public enum class GDirectiveLocation {
 
 	public companion object {
 
+		/**
+		 * Returns the [GDirectiveLocation] that corresponds to the given AST [node],
+		 * or `null` if directives cannot be applied to that node type.
+		 */
 		public fun forNode(node: GNode): GDirectiveLocation? = when (node) {
 			is GInputObjectArgumentDefinition -> INPUT_FIELD_DEFINITION // Must be checked before superclass 'GArgumentDefinition'.
 

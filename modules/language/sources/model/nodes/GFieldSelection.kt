@@ -1,6 +1,12 @@
 package io.fluidsonic.graphql
 
 
+/**
+ * A field selection in a GraphQL operation or fragment (`alias: fieldName(args) { ... }`).
+ *
+ * The [alias] overrides the response key; if absent, [name] is used as the response key.
+ * Leaf fields have no [selectionSet]; object/interface/union fields have one.
+ */
 public class GFieldSelection(
 	name: GName,
 	public val selectionSet: GSelectionSet? = null,
