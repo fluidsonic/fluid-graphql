@@ -25,7 +25,7 @@ class InterfaceTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val animalType = schema.resolveType("Animal") as? GInterfaceType
 		assertNotNull(animalType)
-		assertEquals(2, animalType!!.fieldDefinitions.size)
+		assertEquals(2, animalType.fieldDefinitions.size)
 		assertNotNull(animalType.fieldDefinition("name"))
 		assertNotNull(animalType.fieldDefinition("sound"))
 	}
@@ -52,7 +52,7 @@ class InterfaceTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val dogType = schema.resolveType("Dog") as? GObjectType
 		assertNotNull(dogType)
-		assertTrue(dogType!!.interfaces.any { it.name == "Animal" })
+		assertTrue(dogType.interfaces.any { it.name == "Animal" })
 	}
 
 
@@ -67,6 +67,6 @@ class InterfaceTypeTests {
 		val schema = result.valueOrThrow()
 		val animalType = schema.resolveType("Animal") as? GInterfaceType
 		assertNotNull(animalType)
-		assertTrue(animalType!!.interfaces.any { it.name == "Named" })
+		assertTrue(animalType.interfaces.any { it.name == "Named" })
 	}
 }

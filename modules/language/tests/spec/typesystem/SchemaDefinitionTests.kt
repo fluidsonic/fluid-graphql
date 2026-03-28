@@ -11,7 +11,7 @@ class SchemaDefinitionTests {
 	fun testSchemaWithQueryTypeOnly() {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
 		assertNotNull(schema.queryType)
-		assertEquals("Query", schema.queryType!!.name)
+		assertEquals("Query", schema.queryType.name)
 	}
 
 
@@ -22,7 +22,7 @@ class SchemaDefinitionTests {
 			type Mutation { doSomething: String }
 		""".trimIndent()).valueOrThrow()
 		assertNotNull(schema.mutationType)
-		assertEquals("Mutation", schema.mutationType!!.name)
+		assertEquals("Mutation", schema.mutationType.name)
 	}
 
 
@@ -33,7 +33,7 @@ class SchemaDefinitionTests {
 			type Subscription { onEvent: String }
 		""".trimIndent()).valueOrThrow()
 		assertNotNull(schema.subscriptionType)
-		assertEquals("Subscription", schema.subscriptionType!!.name)
+		assertEquals("Subscription", schema.subscriptionType.name)
 	}
 
 
@@ -51,7 +51,7 @@ class SchemaDefinitionTests {
 			type MyQuery { field: String }
 		""".trimIndent()).valueOrThrow()
 		assertNotNull(schema.queryType)
-		assertEquals("MyQuery", schema.queryType!!.name)
+		assertEquals("MyQuery", schema.queryType.name)
 	}
 
 
@@ -63,7 +63,7 @@ class SchemaDefinitionTests {
 		""".trimIndent()).valueOrThrow()
 		val personType = schema.resolveType("Person")
 		assertNotNull(personType)
-		assertEquals("Person", personType!!.name)
+		assertEquals("Person", personType.name)
 	}
 
 

@@ -12,9 +12,11 @@ class WrappingTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: [String] }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		assertIs<GListTypeRef>(field!!.type)
+		assertIs<GListTypeRef>(field.type)
 	}
 
 
@@ -23,9 +25,11 @@ class WrappingTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: String! }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		assertIs<GNonNullTypeRef>(field!!.type)
+		assertIs<GNonNullTypeRef>(field.type)
 	}
 
 
@@ -34,11 +38,13 @@ class WrappingTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: [String]! }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		val outerNonNull = field!!.type as? GNonNullTypeRef
+		val outerNonNull = field.type as? GNonNullTypeRef
 		assertNotNull(outerNonNull)
-		assertIs<GListTypeRef>(outerNonNull!!.nullableRef)
+		assertIs<GListTypeRef>(outerNonNull.nullableRef)
 	}
 
 
@@ -47,13 +53,15 @@ class WrappingTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: [String!]! }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		val outerNonNull = field!!.type as? GNonNullTypeRef
+		val outerNonNull = field.type as? GNonNullTypeRef
 		assertNotNull(outerNonNull)
-		val listType = outerNonNull!!.nullableRef as? GListTypeRef
+		val listType = outerNonNull.nullableRef as? GListTypeRef
 		assertNotNull(listType)
-		assertIs<GNonNullTypeRef>(listType!!.elementType)
+		assertIs<GNonNullTypeRef>(listType.elementType)
 	}
 
 
@@ -62,9 +70,11 @@ class WrappingTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: String }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		assertIs<GNamedTypeRef>(field!!.type)
-		assertEquals("String", (field.type as GNamedTypeRef).name)
+		assertIs<GNamedTypeRef>(field.type)
+		assertEquals("String", field.type.name)
 	}
 }

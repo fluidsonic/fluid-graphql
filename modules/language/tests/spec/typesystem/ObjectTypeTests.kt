@@ -14,7 +14,7 @@ class ObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val queryType = schema.queryType
 		assertNotNull(queryType)
-		assertEquals(2, queryType!!.fieldDefinitions.size)
+		assertEquals(2, queryType.fieldDefinitions.size)
 		assertNotNull(queryType.fieldDefinition("name"))
 		assertNotNull(queryType.fieldDefinition("age"))
 	}
@@ -29,7 +29,7 @@ class ObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val dogType = schema.resolveType("Dog") as? GObjectType
 		assertNotNull(dogType)
-		assertTrue(dogType!!.interfaces.any { it.name == "Animal" })
+		assertTrue(dogType.interfaces.any { it.name == "Animal" })
 	}
 
 
@@ -40,9 +40,9 @@ class ObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val queryType = schema.queryType
 		assertNotNull(queryType)
-		val field = queryType!!.fieldDefinition("greet")
+		val field = queryType.fieldDefinition("greet")
 		assertNotNull(field)
-		assertEquals(1, field!!.argumentDefinitions.size)
+		assertEquals(1, field.argumentDefinitions.size)
 		assertEquals("name", field.argumentDefinitions.first().name)
 	}
 
@@ -52,9 +52,11 @@ class ObjectTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: String }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		assertIs<GNamedTypeRef>(field!!.type)
+		assertIs<GNamedTypeRef>(field.type)
 	}
 
 
@@ -63,9 +65,11 @@ class ObjectTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: String! }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		assertIs<GNonNullTypeRef>(field!!.type)
+		assertIs<GNonNullTypeRef>(field.type)
 	}
 
 
@@ -74,8 +78,10 @@ class ObjectTypeTests {
 		val schema = GSchema.parse("""
 			type Query { field: [String] }
 		""".trimIndent()).valueOrThrow()
-		val field = schema.queryType!!.fieldDefinition("field")
+		val queryType = schema.queryType
+		assertNotNull(queryType)
+		val field = queryType.fieldDefinition("field")
 		assertNotNull(field)
-		assertIs<GListTypeRef>(field!!.type)
+		assertIs<GListTypeRef>(field.type)
 	}
 }

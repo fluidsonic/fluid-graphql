@@ -29,7 +29,7 @@ class UnionTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val unionType = schema.resolveType("SearchResult") as? GUnionType
 		assertNotNull(unionType)
-		assertEquals(2, unionType!!.possibleTypes.size)
+		assertEquals(2, unionType.possibleTypes.size)
 		assertTrue(unionType.possibleTypes.any { it.name == "Photo" })
 		assertTrue(unionType.possibleTypes.any { it.name == "Person" })
 	}
@@ -59,7 +59,7 @@ class UnionTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val unionType = schema.resolveType("SearchResult") as? GUnionType
 		assertNotNull(unionType)
-		for (memberRef in unionType!!.possibleTypes) {
+		for (memberRef in unionType.possibleTypes) {
 			val memberType = schema.resolveType(memberRef.name)
 			assertNotNull(memberType, "Expected type '${memberRef.name}' to exist in schema")
 			assertIs<GObjectType>(memberType)

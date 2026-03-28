@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
+## [Unreleased]
+
+### Fixed
+
+- Removed unnecessary non-null assertions and casts in spec test files to eliminate compilation warnings.
+
+
 ## [0.16.0] - 2026-03-28
 
 ### Changed

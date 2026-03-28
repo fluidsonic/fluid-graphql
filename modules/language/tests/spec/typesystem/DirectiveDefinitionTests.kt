@@ -36,13 +36,13 @@ class DirectiveDefinitionTests {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
 		val skipDirective = schema.directiveDefinition("skip")
 		assertNotNull(skipDirective)
-		val ifArg = skipDirective!!.argumentDefinition("if")
+		val ifArg = skipDirective.argumentDefinition("if")
 		assertNotNull(ifArg)
 		// @skip(if: Boolean!) — the type must be non-null Boolean
-		assertIs<GNonNullTypeRef>(ifArg!!.type)
-		val innerType = (ifArg.type as GNonNullTypeRef).nullableRef as? GNamedTypeRef
+		assertIs<GNonNullTypeRef>(ifArg.type)
+		val innerType = ifArg.type.nullableRef as? GNamedTypeRef
 		assertNotNull(innerType)
-		assertEquals("Boolean", innerType!!.name)
+		assertEquals("Boolean", innerType.name)
 	}
 
 
@@ -51,9 +51,9 @@ class DirectiveDefinitionTests {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
 		val includeDirective = schema.directiveDefinition("include")
 		assertNotNull(includeDirective)
-		val ifArg = includeDirective!!.argumentDefinition("if")
+		val ifArg = includeDirective.argumentDefinition("if")
 		assertNotNull(ifArg)
-		assertEquals("if", ifArg!!.name)
+		assertEquals("if", ifArg.name)
 	}
 
 
@@ -62,9 +62,9 @@ class DirectiveDefinitionTests {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
 		val deprecatedDirective = schema.directiveDefinition("deprecated")
 		assertNotNull(deprecatedDirective)
-		val reasonArg = deprecatedDirective!!.argumentDefinition("reason")
+		val reasonArg = deprecatedDirective.argumentDefinition("reason")
 		assertNotNull(reasonArg)
 		// @deprecated has a default value for reason
-		assertNotNull(reasonArg!!.defaultValue)
+		assertNotNull(reasonArg.defaultValue)
 	}
 }

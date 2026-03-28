@@ -39,7 +39,7 @@ class FragmentTests {
 		val op = doc.definitions.single() as GOperationDefinition
 		val inline = op.selectionSet.selections.single() as GInlineFragmentSelection
 		assertNotNull(inline.typeCondition)
-		assertEquals("Query", inline.typeCondition!!.name)
+		assertEquals("Query", inline.typeCondition.name)
 	}
 
 

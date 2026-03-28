@@ -13,7 +13,7 @@ class ScalarTypeTests {
 		val type = schema.resolveType("Int")
 		assertNotNull(type)
 		assertIs<GScalarType>(type)
-		assertEquals("Int", type!!.name)
+		assertEquals("Int", type.name)
 	}
 
 
@@ -23,7 +23,7 @@ class ScalarTypeTests {
 		val type = schema.resolveType("Float")
 		assertNotNull(type)
 		assertIs<GScalarType>(type)
-		assertEquals("Float", type!!.name)
+		assertEquals("Float", type.name)
 	}
 
 
@@ -33,7 +33,7 @@ class ScalarTypeTests {
 		val type = schema.resolveType("String")
 		assertNotNull(type)
 		assertIs<GScalarType>(type)
-		assertEquals("String", type!!.name)
+		assertEquals("String", type.name)
 	}
 
 
@@ -43,7 +43,7 @@ class ScalarTypeTests {
 		val type = schema.resolveType("Boolean")
 		assertNotNull(type)
 		assertIs<GScalarType>(type)
-		assertEquals("Boolean", type!!.name)
+		assertEquals("Boolean", type.name)
 	}
 
 
@@ -53,7 +53,7 @@ class ScalarTypeTests {
 		val type = schema.resolveType("ID")
 		assertNotNull(type)
 		assertIs<GScalarType>(type)
-		assertEquals("ID", type!!.name)
+		assertEquals("ID", type.name)
 	}
 
 
@@ -65,7 +65,7 @@ class ScalarTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val type = schema.resolveType("UUID")
 		assertNotNull(type)
-		assertEquals("UUID", type!!.name)
+		assertEquals("UUID", type.name)
 	}
 
 

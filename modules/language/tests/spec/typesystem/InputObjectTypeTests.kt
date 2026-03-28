@@ -25,7 +25,7 @@ class InputObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
-		assertEquals(2, inputType!!.argumentDefinitions.size)
+		assertEquals(2, inputType.argumentDefinitions.size)
 	}
 
 
@@ -37,12 +37,12 @@ class InputObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
-		val nameField = inputType!!.argumentDefinition("name")
+		val nameField = inputType.argumentDefinition("name")
 		assertNotNull(nameField)
-		assertIs<GNonNullTypeRef>(nameField!!.type)
+		assertIs<GNonNullTypeRef>(nameField.type)
 		val ageField = inputType.argumentDefinition("age")
 		assertNotNull(ageField)
-		assertIs<GNamedTypeRef>(ageField!!.type)
+		assertIs<GNamedTypeRef>(ageField.type)
 	}
 
 
@@ -54,9 +54,9 @@ class InputObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
-		val nameField = inputType!!.argumentDefinition("name")
+		val nameField = inputType.argumentDefinition("name")
 		assertNotNull(nameField)
-		assertTrue(nameField!!.isRequired())
+		assertTrue(nameField.isRequired())
 	}
 
 
@@ -68,9 +68,9 @@ class InputObjectTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
-		val ageField = inputType!!.argumentDefinition("age")
+		val ageField = inputType.argumentDefinition("age")
 		assertNotNull(ageField)
-		assertTrue(ageField!!.isOptional())
+		assertTrue(ageField.isOptional())
 	}
 
 

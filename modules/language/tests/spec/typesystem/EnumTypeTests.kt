@@ -25,7 +25,7 @@ class EnumTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val enumType = schema.resolveType("Direction") as? GEnumType
 		assertNotNull(enumType)
-		assertEquals(4, enumType!!.values.size)
+		assertEquals(4, enumType.values.size)
 	}
 
 
@@ -37,7 +37,7 @@ class EnumTypeTests {
 		""".trimIndent()).valueOrThrow()
 		val enumType = schema.resolveType("Direction") as? GEnumType
 		assertNotNull(enumType)
-		val valueNames = enumType!!.values.map { it.name }
+		val valueNames = enumType.values.map { it.name }
 		assertTrue("NORTH" in valueNames)
 		assertTrue("SOUTH" in valueNames)
 		assertTrue("EAST" in valueNames)
@@ -67,8 +67,8 @@ class EnumTypeTests {
 		val schema = result.valueOrThrow()
 		val enumType = schema.resolveType("Status") as? GEnumType
 		assertNotNull(enumType)
-		val inactiveValue = enumType!!.value("INACTIVE")
+		val inactiveValue = enumType.value("INACTIVE")
 		assertNotNull(inactiveValue)
-		assertNotNull(inactiveValue!!.deprecation)
+		assertNotNull(inactiveValue.deprecation)
 	}
 }
