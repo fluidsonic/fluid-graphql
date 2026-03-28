@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 
 - Removed unnecessary non-null assertions and casts in spec test files to eliminate compilation warnings.
+- Fixed Dokka documentation generation warnings by configuring cross-module link resolution.
 
 
 ## [0.16.0] - 2026-03-28

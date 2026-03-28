@@ -24,3 +24,11 @@ fluidLibraryModule(description = "A Kotlin/JVM GraphQL library") {
 		jvm()
 	}
 }
+
+// TODO Move Dokka cross-module config to fluid-gradle.
+dependencies {
+	"dokka"(project(":fluid-graphql-language"))
+	"dokka"(project(":fluid-graphql-dsl"))
+	"dokka"(project(":fluid-graphql-execution"))
+}
+
