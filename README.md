@@ -1,5 +1,10 @@
 # fluid-graphql
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.fluidsonic.graphql/fluid-graphql?label=Maven%20Central)](https://search.maven.org/artifact/io.fluidsonic.graphql/fluid-graphql)
+[![Tests](https://github.com/fluidsonic/fluid-graphql/workflows/Tests/badge.svg)](https://github.com/fluidsonic/fluid-graphql/actions?workflow=Tests)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20%20(JVM)-blue.svg)](https://github.com/JetBrains/kotlin/releases/v2.3.20)
+[![#fluid-libraries Slack Channel](https://img.shields.io/badge/slack-%23fluid--libraries-543951.svg?label=Slack)](https://kotlinlang.slack.com/messages/C7UDFSVT2/)
+
 A Kotlin/JVM GraphQL library for building schemas, executing queries, and parsing GraphQL documents.
 
 ## Installation
@@ -9,7 +14,7 @@ Add the umbrella artifact (includes all modules) to your Gradle build:
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.fluidsonic.graphql:fluid-graphql:0.15.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql:0.16.0")
 }
 ```
 
@@ -18,13 +23,13 @@ Or depend on individual modules:
 ```kotlin
 dependencies {
     // Core type system, parser, printer, AST
-    implementation("io.fluidsonic.graphql:fluid-graphql-language:0.15.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql-language:0.16.0")
 
     // Kotlin DSL for building schemas and documents
-    implementation("io.fluidsonic.graphql:fluid-graphql-dsl:0.15.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql-dsl:0.16.0")
 
     // Query execution engine and validation
-    implementation("io.fluidsonic.graphql:fluid-graphql-execution:0.15.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql-execution:0.16.0")
 }
 ```
 

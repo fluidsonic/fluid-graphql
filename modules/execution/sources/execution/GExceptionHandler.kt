@@ -12,5 +12,6 @@ package io.fluidsonic.graphql
  */
 public fun interface GExceptionHandler {
 
+	/** Handles [exception] and returns a [GError] to include in the GraphQL response. */
 	public fun GExceptionHandlerContext.handleException(exception: Throwable): GError
 }

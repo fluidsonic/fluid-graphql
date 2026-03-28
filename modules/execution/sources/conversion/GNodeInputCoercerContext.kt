@@ -10,11 +10,10 @@ package io.fluidsonic.graphql
 public interface GNodeInputCoercerContext : GInputCoercerContext {
 
 	/** The response path of the field selection that triggered this coercion, or `null` if not within a field. */
-	@SchemaBuilderKeywordB
 	public val fieldSelectionPath: GPath?
 
 
-	@SchemaBuilderKeywordB // FIXME
+	/** Convenience extension to invoke another [GNodeInputCoercer] within this context. */
 	public fun <Input> GNodeInputCoercer<Input>.coerceNodeInput(input: Input): Any? =
 		with(this@GNodeInputCoercerContext) { coerceNodeInput(input) }
 }

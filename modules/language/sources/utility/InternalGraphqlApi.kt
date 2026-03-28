@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+/** Marks declarations that are internal to the `io.fluidsonic.graphql` library and should not be used externally. */
 @RequiresOptIn(
 	level = RequiresOptIn.Level.ERROR,
 	message = "This is an internal io.fluidsonic.graphql API that should not be used from outside of io.fluidsonic.graphql. " +

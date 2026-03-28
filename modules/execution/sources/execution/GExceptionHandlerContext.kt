@@ -7,6 +7,5 @@ package io.fluidsonic.graphql
 public interface GExceptionHandlerContext {
 
 	/** Where in the execution pipeline the exception was thrown. */
-	@SchemaBuilderKeywordB // FIXME
 	public val origin: GExceptionOrigin
 }

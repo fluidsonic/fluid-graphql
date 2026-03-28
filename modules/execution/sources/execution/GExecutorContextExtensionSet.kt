@@ -21,6 +21,7 @@ public interface GExecutorContextExtensionSet {
 	/** Returns the value associated with [key], or `null` if not present. */
 	public operator fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Value?
 
+	/** Returns `true` if this set contains no extensions. */
 	public fun isEmpty(): Boolean
 
 	override fun toString(): String
@@ -42,7 +43,8 @@ public interface GExecutorContextExtensionSet {
 	/** Mutable builder for constructing a [GExecutorContextExtensionSet]. */
 	public interface Builder {
 
-		public fun build(): GExecutorContextExtensionSet // FIXME make private
+		/** Builds an immutable [GExecutorContextExtensionSet] from the current state. */
+		public fun build(): GExecutorContextExtensionSet
 
 		/** Returns the value associated with [key], or `null` if not present. */
 		public operator fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Value?
@@ -55,6 +57,7 @@ public interface GExecutorContextExtensionSet {
 
 		public companion object {
 
+			/** Creates a new empty [Builder]. */
 			public fun default(): Builder =
 				Default()
 		}
@@ -123,5 +126,6 @@ public interface GExecutorContextExtensionSet {
 }
 
 
+/** Returns `true` if this set contains at least one extension. */
 public fun GExecutorContextExtensionSet.isNotEmpty(): Boolean =
 	!isEmpty()

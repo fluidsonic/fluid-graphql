@@ -38,7 +38,7 @@ public interface GNodeExtensionSet<out Node : GNode> {
 	/** Mutable builder for constructing a [GNodeExtensionSet]. */
 	public interface Builder<out Node : GNode> {
 
-		public fun build(): GNodeExtensionSet<Node> // FIXME make private
+		public fun build(): GNodeExtensionSet<Node>
 
 		/** Returns the value associated with [key], or `null` if not set. */
 		public operator fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value?

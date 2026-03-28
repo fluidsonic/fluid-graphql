@@ -1,6 +1,6 @@
 import io.fluidsonic.gradle.*
 
-fluidLibraryModule(description = "FIXME") {
+fluidLibraryModule(description = "Kotlin DSL for building GraphQL schemas and documents") {
 	targets {
 		common {
 			dependencies {

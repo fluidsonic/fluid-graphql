@@ -14,7 +14,6 @@ public sealed interface GraphQLDirectivesContainer : GraphQLDirectivesContainerS
 	 *
 	 * Can only be called once per builder; subsequent calls throw.
 	 */
-	@GraphQLMarker
 	public fun directives(directives: List<GDirective>)
 }
 
@@ -40,7 +39,6 @@ internal interface GraphQLDirectivesContainerInternal : GraphQLDirectivesContain
 /**
  * Applies a `directives { ... }` block to this element using the [GraphQLDirectivesBuilder] DSL.
  */
-@GraphQLMarker
 public inline fun GraphQLDirectivesContainerScope.directives(configure: GraphQLDirectivesBuilderScope.() -> Unit) {
 	when (this) {
 		is GraphQLDirectivesContainer ->

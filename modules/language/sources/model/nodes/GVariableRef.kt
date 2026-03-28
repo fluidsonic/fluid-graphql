@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+/** A GraphQL variable reference (`$name`) within a value position. */
 public class GVariableRef(
 	name: GName,
 	origin: GDocumentPosition? = null,

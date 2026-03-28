@@ -12,5 +12,6 @@ package io.fluidsonic.graphql
  */
 public fun interface GOutputCoercer<in Output : Any> {
 
+	/** Coerces the given [output] value into a GraphQL-serializable form. */
 	public fun GOutputCoercerContext.coerceOutput(output: Output): Any
 }

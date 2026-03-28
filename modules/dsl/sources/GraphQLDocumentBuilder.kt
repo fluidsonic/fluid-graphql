@@ -14,7 +14,6 @@ public sealed interface GraphQLDocumentBuilder : GraphQLDocumentBuilderScope, Gr
 	public fun build(): GDocument
 
 	/** Adds a pre-built [GOperationDefinition] to the document. */
-	@GraphQLMarker
 	public fun operation(definition: GOperationDefinition)
 }
 
@@ -32,7 +31,6 @@ public sealed interface GraphQLDocumentBuilderScope : GraphQLFragmentDefinitionC
  *
  * @param name optional operation name.
  */
-@GraphQLMarker
 public inline fun GraphQLDocumentBuilderScope.mutation(
 	name: String? = null,
 	configure: GraphQLOperationBuilderScope.() -> Unit,
@@ -48,7 +46,6 @@ public inline fun GraphQLDocumentBuilderScope.mutation(
  *
  * @param name optional operation name.
  */
-@GraphQLMarker
 public inline fun GraphQLDocumentBuilderScope.query(
 	name: String? = null,
 	configure: GraphQLOperationBuilderScope.() -> Unit,
@@ -64,7 +61,6 @@ public inline fun GraphQLDocumentBuilderScope.query(
  *
  * @param name optional operation name.
  */
-@GraphQLMarker
 public inline fun GraphQLDocumentBuilderScope.subscription(
 	name: String? = null,
 	configure: GraphQLOperationBuilderScope.() -> Unit,
@@ -108,7 +104,6 @@ public fun GraphQLDocumentBuilder(): GraphQLDocumentBuilder =
  *
  * Prefer [GraphQL.document] for readability.
  */
-@GraphQLMarker
 public inline fun GraphQL(configure: GraphQLDocumentBuilderScope.() -> Unit): GDocument =
 	GraphQLDocumentBuilder().apply(configure).build()
 
@@ -127,7 +122,6 @@ public inline fun GraphQL(configure: GraphQLDocumentBuilderScope.() -> Unit): GD
  * }
  * ```
  */
-@GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.document(configure: GraphQLDocumentBuilderScope.() -> Unit): GDocument =
 	GraphQLDocumentBuilder().apply(configure).build()

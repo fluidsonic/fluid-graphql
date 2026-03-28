@@ -14,7 +14,6 @@ public sealed interface GraphQLArgumentsContainer : GraphQLArgumentsContainerSco
 	 *
 	 * Can only be called once per builder; subsequent calls throw.
 	 */
-	@GraphQLMarker
 	public fun arguments(arguments: List<GArgument>)
 }
 
@@ -40,7 +39,6 @@ internal interface GraphQLArgumentsContainerInternal : GraphQLArgumentsContainer
 /**
  * Applies an `arguments { ... }` block to this element using the [GraphQLArgumentsBuilder] DSL.
  */
-@GraphQLMarker
 public inline fun GraphQLArgumentsContainerScope.arguments(configure: GraphQLArgumentsBuilderScope.() -> Unit) {
 	when (this) {
 		is GraphQLArgumentsContainer ->

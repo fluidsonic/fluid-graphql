@@ -14,7 +14,6 @@ import kotlin.reflect.*
 public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefinitionContainerScope {
 
 	/** Adds a pre-built [GFragmentDefinition] and returns a reference to it. */
-	@GraphQLMarker
 	public fun fragment(definition: GFragmentDefinition): GFragmentRef
 
 
@@ -44,7 +43,6 @@ public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefi
 		}
 
 
-		@GraphQLMarker
 		override fun provideDelegate(thisRef: Nothing?, property: KProperty<*>): ReadOnlyProperty<Nothing?, GFragmentRef> {
 			val ref = register(this, property.name)
 
@@ -65,21 +63,17 @@ public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefi
 public sealed interface GraphQLFragmentDefinitionContainerScope : GraphQLTypeContainerScope {
 
 	/** Defines a fragment on [typeCondition] whose name is derived from a `by`-delegated property. */
-	@GraphQLMarker
 	public fun fragment(typeCondition: String, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory =
 		fragment(type(typeCondition), configure = configure)
 
 	/** Defines a fragment with an explicit [name] on a type given by its string [typeCondition]. */
-	@GraphQLMarker
 	public fun fragment(name: String, typeCondition: String, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): GFragmentRef =
 		fragment(name = name, typeCondition = type(typeCondition), configure = configure)
 
 	/** Defines a fragment with an explicit [name] and [typeCondition]. */
-	@GraphQLMarker
 	public fun fragment(name: String, typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): GFragmentRef
 
 	/** Defines a fragment on [typeCondition] whose name is derived from a `by`-delegated property. */
-	@GraphQLMarker
 	public fun fragment(typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory
 }
 
@@ -95,7 +89,6 @@ internal interface GraphQLFragmentDefinitionContainerInternal : GraphQLFragmentD
 	}
 
 
-	@GraphQLMarker
 	override fun fragment(definition: GFragmentDefinition): GFragmentRef {
 		val name = definition.name
 		check(GLanguage.isValidFragmentName(name)) { "Invalid fragment name: $name" }
@@ -108,12 +101,10 @@ internal interface GraphQLFragmentDefinitionContainerInternal : GraphQLFragmentD
 
 
 	// TODO Move to extension and inline once we have context receivers.
-	@GraphQLMarker
 	override fun fragment(name: String, typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): GFragmentRef =
 		fragment(GraphQLFragmentDefinitionBuilder(name = name, typeCondition = typeCondition).apply(configure).build())
 
 
-	@GraphQLMarker
 	override fun fragment(typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory =
 		RefFactory { factory, name ->
 			unusedFragmentDefinitionRefFactories -= factory

@@ -14,10 +14,11 @@ package io.fluidsonic.graphql
  */
 public fun interface GFieldResolver<in Parent : Any> {
 
+	/** Resolves the field value for the given [parent] object. */
 	public suspend fun GFieldResolverContext.resolveField(parent: Parent): Any?
 }
 
 
-@SchemaBuilderKeywordB // FIXME
+/** Invokes [resolveField] with the given [parent] and [context]. */
 public suspend fun <Parent : Any> GFieldResolver<Parent>.resolveField(parent: Parent, context: GFieldResolverContext): Any? =
 	with(context) { resolveField(parent) }

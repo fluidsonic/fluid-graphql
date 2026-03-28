@@ -23,7 +23,6 @@ public object GDslForExecution {
 	) : GSchemaBuilder.FieldDefinitionBuilder by delegate {
 
 		/** Attaches a field resolver that receives the parent object as [ParentKotlinType]. */
-		@SchemaBuilderKeywordB
 		public fun <Result> resolve(
 			resolver: suspend GFieldResolverContext.(context: ParentKotlinType) -> Result
 		) {
@@ -53,8 +52,8 @@ public object GDslForExecution {
 		}
 
 
+		/** Defines a field with a type-safe resolver that receives the parent as [KotlinType]. */
 		@JvmName("fieldWithType")
-		@SchemaBuilderKeywordB
 		public fun field(
 			name: GSchemaBuilder.FieldDefinitionContainer.NameAndType,
 			configure: FieldDefinitionBuilder<KotlinType>.() -> Unit
@@ -74,7 +73,6 @@ public object GDslForExecution {
  * For a type-safe alternative, use [GDslForExecution.FieldDefinitionBuilder.resolve] inside
  * a typed [GSchemaBuilder.Object] block.
  */
-@SchemaBuilderKeywordB
 public fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
 	resolver: suspend GFieldResolverContext.(context: Any) -> Result
 ) {
@@ -90,7 +88,6 @@ public fun <Result> GSchemaBuilder.FieldDefinitionBuilder.resolve(
  * Inside [configure], use [GDslForExecution.ObjectTypeDefinitionBuilder.field] to define fields
  * with type-safe resolvers that receive instances of [KotlinType] as the parent.
  */
-@SchemaBuilderType
 public fun <KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
 	kotlinType: KClass<KotlinType>,
@@ -110,7 +107,6 @@ public fun <KotlinType : Any> GSchemaBuilder.Object(
  * Inside [configure], use [GDslForExecution.ObjectTypeDefinitionBuilder.field] to define fields
  * with type-safe resolvers that receive instances of [KotlinType] as the parent.
  */
-@SchemaBuilderType
 public fun <KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
 	kotlinType: KClass<KotlinType>,
@@ -124,7 +120,7 @@ public fun <KotlinType : Any> GSchemaBuilder.Object(
 }
 
 
-@SchemaBuilderType
+/** Defines a GraphQL object type named by [type], with [KotlinType] inferred via reified type parameter. */
 public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 	type: GNamedTypeRef,
 	noinline configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
@@ -133,7 +129,7 @@ public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 }
 
 
-@SchemaBuilderType
+/** Defines a GraphQL object type with interfaces, with [KotlinType] inferred via reified type parameter. */
 public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 	named: GSchemaBuilder.Interfaces,
 	noinline configure: GDslForExecution.ObjectTypeDefinitionBuilder<KotlinType>.() -> Unit
@@ -147,7 +143,6 @@ public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
  *
  * The [coercer] is called when a value for this scalar is provided inline in a document (not via a variable).
  */
-@SchemaBuilderKeywordB
 public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceNodeInput(
 	coercer: GNodeInputCoercerContext.(input: GValue) -> Result
 ) {
@@ -163,7 +158,6 @@ public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceNodeInput(
  * The [coercer] is called when a resolver returns a value of this scalar type, converting it
  * to a GraphQL-serializable form.
  */
-@SchemaBuilderKeywordB
 public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutput(
 	coercer: GOutputCoercerContext.(input: Any) -> Result
 ) {
@@ -178,7 +172,6 @@ public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutpu
  *
  * The [coercer] is called when a value for this scalar is provided as a variable.
  */
-@SchemaBuilderKeywordB
 public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceVariableInput(
 	coercer: GVariableInputCoercerContext.(input: Any) -> Result
 ) {

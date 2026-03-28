@@ -33,7 +33,7 @@ internal class DefaultExecutor(
 					strategy = when (context.operation.type) {
 						GOperationType.query -> Strategy.parallel
 						GOperationType.mutation -> Strategy.serial
-						GOperationType.subscription -> error("Subscription operations are not yet supported.")
+						GOperationType.subscription -> throw UnsupportedOperationException("Subscription operations are not yet supported.")
 					},
 					context = context
 				)
@@ -93,7 +93,7 @@ internal class DefaultExecutor(
 			outputCoercer = outputCoercer,
 			outputConverter = OutputConverter,
 			rootType = schema.rootTypeForOperationType(operation.type)
-				?: error("Schema is not configured for ${operation.type} operations."), // FIXME GError?
+				?: error("Schema is not configured for ${operation.type} operations."),
 			root = Unit,
 			schema = schema,
 			selectionSetExecutor = DefaultSelectionSetExecutor,

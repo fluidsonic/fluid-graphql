@@ -14,5 +14,6 @@ package io.fluidsonic.graphql
  */
 public fun interface GNodeInputCoercer<in Input> {
 
+	/** Coerces the given inline [input] value into a Kotlin value. */
 	public fun GNodeInputCoercerContext.coerceNodeInput(input: Input): Any?
 }

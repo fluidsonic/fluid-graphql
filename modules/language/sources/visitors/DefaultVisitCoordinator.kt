@@ -35,7 +35,7 @@ private class DefaultVisit<Result, Data>(
 			State.completed,
 			State.initial,
 			->
-				error(".abort() cannot be called here.")
+				check(false) { ".abort() cannot be called here." }
 		}
 	}
 
@@ -103,7 +103,7 @@ private class DefaultVisit<Result, Data>(
 				return
 
 			State.afterVisitingChildren ->
-				error(".skipChildren() cannot be called after .visitChildren() for the same node.")
+				check(false) { ".skipChildren() cannot be called after .visitChildren() for the same node." }
 
 			State.beforeVisitingChildren ->
 				state = State.skippingChildren
@@ -111,7 +111,7 @@ private class DefaultVisit<Result, Data>(
 			State.completed,
 			State.initial,
 			->
-				error(".skipChildren() cannot be called here.")
+				check(false) { ".skipChildren() cannot be called here." }
 		}
 	}
 
@@ -147,7 +147,7 @@ private class DefaultVisit<Result, Data>(
 				Unit
 
 			State.afterVisitingChildren ->
-				error("Cannot call .visitChildren() multiple times for the same node.")
+				check(false) { "Cannot call .visitChildren() multiple times for the same node." }
 
 			State.beforeVisitingChildren -> {
 				try {
@@ -162,7 +162,7 @@ private class DefaultVisit<Result, Data>(
 			State.completed,
 			State.initial,
 			->
-				error(".visitChildren() cannot be called here.")
+				check(false) { ".visitChildren() cannot be called here." }
 		}
 
 

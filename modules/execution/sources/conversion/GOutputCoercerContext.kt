@@ -9,18 +9,16 @@ package io.fluidsonic.graphql
  */
 public interface GOutputCoercerContext : GExecutorContext.Child {
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The schema definition of the field whose value is being coerced. */
 	public val fieldDefinition: GFieldDefinition
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The object type that contains the field being coerced. */
 	public val parentType: GObjectType
 
 	/** The response path to the field currently being coerced. */
-	@SchemaBuilderKeywordB
 	public val path: GPath
 
 	/** The expected GraphQL output type for the value being coerced. */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public val type: GType
 
 	/**
@@ -28,15 +26,13 @@ public interface GOutputCoercerContext : GExecutorContext.Child {
 	 *
 	 * @param details Optional human-readable description of why the value is invalid.
 	 */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public fun invalid(details: String? = null): Nothing // FIXME do we need this on the output side?
 
 	/** Delegates to the next output coercer in the chain. */
-	@SchemaBuilderKeywordB // FIXME
 	public fun next(): Any // TODO Should this be nullable?
 
 
-	@SchemaBuilderKeywordB // FIXME
+	/** Convenience extension to invoke another [GOutputCoercer] within this context. */
 	public fun <Output : Any> GOutputCoercer<Output>.coerceOutput(output: Output): Any? =
 		with(this@GOutputCoercerContext) { coerceOutput(output) }
 }

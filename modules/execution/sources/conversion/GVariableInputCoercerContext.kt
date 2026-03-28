@@ -15,18 +15,16 @@ public interface GVariableInputCoercerContext : GInputCoercerContext {
 	 * `false` when the variable was declared but not supplied; in that case [next] will use
 	 * the default value from the variable definition.
 	 */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public val hasValue: Boolean
 
 	/** The path identifying this variable in the variables map. */
-	@SchemaBuilderKeywordB
 	public val path: GPath
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The definition of the variable being coerced. */
 	public val variableDefinition: GVariableDefinition
 
 
-	@SchemaBuilderKeywordB // FIXME
+	/** Convenience extension to invoke another [GVariableInputCoercer] within this context. */
 	public fun <Input> GVariableInputCoercer<Input>.coerceVariableInput(input: Input): Any? =
 		with(this@GVariableInputCoercerContext) { coerceVariableInput(input) }
 }

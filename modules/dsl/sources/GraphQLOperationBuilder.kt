@@ -79,7 +79,6 @@ public fun GraphQLOperationBuilder(
  *
  * @param name optional operation name.
  */
-@GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.mutation(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.mutation).apply(configure).build()
@@ -90,7 +89,6 @@ public inline fun GraphQL.mutation(name: String? = null, configure: GraphQLOpera
  *
  * @param name optional operation name.
  */
-@GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.query(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.query).apply(configure).build()
@@ -101,7 +99,6 @@ public inline fun GraphQL.query(name: String? = null, configure: GraphQLOperatio
  *
  * @param name optional operation name.
  */
-@GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.subscription(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.subscription).apply(configure).build()

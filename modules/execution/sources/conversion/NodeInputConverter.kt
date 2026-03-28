@@ -229,7 +229,7 @@ internal object NodeInputConverter {
 			context.execution.variableValues.containsKey(value.name) ->
 				context.execution.variableValues[value.name]
 			context.argumentDefinition?.defaultValue != null ->
-				coerceValueAbsence(defaultValue = context.argumentDefinition!!.defaultValue, context = context)
+				coerceValueAbsence(defaultValue = context.argumentDefinition.defaultValue, context = context)
 			context.type is GNonNullType ->
 				context.invalid()
 			else ->

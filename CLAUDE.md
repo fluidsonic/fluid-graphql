@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.15.0.
+**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.16.0.
 
 ## Git
 
@@ -27,7 +27,9 @@ Run `git` directly without `-C` — the working directory is always the project 
 ./gradlew :fluid-graphql-execution:jvmTest  # Run execution module tests
 ```
 
-Uses the `io.fluidsonic.gradle` plugin (v2.0.2) for build configuration. Gradle 9.1.0. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
+Uses the `io.fluidsonic.gradle` plugin (v3.0.0) for build configuration. Gradle 9.4.1. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
+Requires JDK 21+.
+kotlinx-coroutines: 1.10.2.
 
 ## Architecture
 
@@ -71,3 +73,4 @@ language  <--  dsl  <--  execution
 - Source directories use flat `sources/` instead of the standard `src/main/kotlin/` layout
 - Tab indentation
 - Spec test helpers: `assertValidationRule(rule, errors, document, schema?)` and `assertExecution(schema, document, ..., expected)` in `modules/execution/tests/utility/`
+- Tags have no `v` prefix (e.g., `0.15.0`, not `v0.15.0`)

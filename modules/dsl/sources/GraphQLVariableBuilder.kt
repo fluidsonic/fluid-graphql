@@ -22,25 +22,25 @@ public sealed interface GraphQLVariableBuilder : GraphQLVariableBuilderScope, Gr
 @GraphQLMarker
 public sealed interface GraphQLVariableBuilderScope : GraphQLValueContainerScope, GraphQLDirectivesContainerScope {
 
-	@GraphQLMarker
+	/** Sets the default value to a [Boolean]. */
 	public fun default(value: Boolean) {
 		default(GBooleanValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [Boolean]. */
 	public fun default(value: Boolean?) {
 		default(value?.let(::GBooleanValue) ?: GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a [Byte] (coerced to GraphQL Int). */
 	public fun default(value: Byte) {
 		default(GIntValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [Byte] (coerced to GraphQL Int). */
 	@LowPriorityInOverloadResolution // https://youtrack.jetbrains.com/issue/KT-645
 	@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 	public fun default(value: Byte?) {
@@ -48,55 +48,55 @@ public sealed interface GraphQLVariableBuilderScope : GraphQLValueContainerScope
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a [Double] (coerced to GraphQL Float). */
 	public fun default(value: Double) {
 		default(GFloatValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [Double] (coerced to GraphQL Float). */
 	public fun default(value: Double?) {
 		default(value?.let(::GFloatValue) ?: GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a [Float] (coerced to GraphQL Float). */
 	public fun default(value: Float) {
 		default(GFloatValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [Float] (coerced to GraphQL Float). */
 	public fun default(value: Float?) {
 		default(value?.let(::GFloatValue) ?: GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to an [Int]. */
 	public fun default(value: Int) {
 		default(GIntValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [Int]. */
 	public fun default(value: Int?) {
 		default(value?.let(::GIntValue) ?: GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to null. */
 	public fun default(value: Nothing?) {
 		default(GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a [Short] (coerced to GraphQL Int). */
 	public fun default(value: Short) {
 		default(GIntValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [Short] (coerced to GraphQL Int). */
 	@LowPriorityInOverloadResolution // https://youtrack.jetbrains.com/issue/KT-645
 	@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 	public fun default(value: Short?) {
@@ -104,44 +104,42 @@ public sealed interface GraphQLVariableBuilderScope : GraphQLValueContainerScope
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [String]. */
 	public fun default(value: String?) {
 		default(value?.let(::GStringValue) ?: GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a [UByte] (coerced to GraphQL Int). */
 	public fun default(value: UByte) {
 		default(GIntValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [UByte] (coerced to GraphQL Int). */
 	public fun default(value: UByte?) {
 		default(value?.let(::GIntValue) ?: GNullValue())
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a [UShort] (coerced to GraphQL Int). */
 	public fun default(value: UShort) {
 		default(GIntValue(value))
 	}
 
 
-	@GraphQLMarker
+	/** Sets the default value to a nullable [UShort] (coerced to GraphQL Int). */
 	public fun default(value: UShort?) {
 		default(value?.let(::GIntValue) ?: GNullValue())
 	}
 
 
 	/** Sets the default value for the variable using a raw [GValue]. */
-	@GraphQLMarker
 	public fun default(value: GValue)
 
 
 	// TODO Move to extension and inline once we have context receivers.
 	/** Sets the default value to an object value built with the [GraphQLArgumentsBuilder] DSL. */
-	@GraphQLMarker
 	public fun default(configure: GraphQLArgumentsBuilder.() -> Unit) {
 		default(GObjectValue(GraphQLArgumentsBuilder().apply(configure).build()))
 	}

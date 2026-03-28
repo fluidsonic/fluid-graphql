@@ -10,6 +10,7 @@ package io.fluidsonic.graphql
  */
 public fun interface GRootResolver {
 
+	/** Produces the root value for the current operation. */
 	public suspend fun GRootResolverContext.resolveRoot(): Any
 
 

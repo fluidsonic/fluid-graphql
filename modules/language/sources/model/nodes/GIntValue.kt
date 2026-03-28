@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+/** A GraphQL integer value literal. */
 public class GIntValue(
 	public val value: Int,
 	origin: GDocumentPosition? = null,
@@ -37,21 +38,26 @@ public class GIntValue(
 }
 
 
+/** Creates a [GIntValue] from a [Byte]. */
 public fun GIntValue(value: Byte): GIntValue =
 	GIntValue(value.toInt())
 
 
+/** Creates a [GIntValue] without a source origin. */
 public fun GIntValue(value: Int): GIntValue =
 	GIntValue(value = value, origin = null)
 
 
+/** Creates a [GIntValue] from a [UByte]. */
 public fun GIntValue(value: UByte): GIntValue =
 	GIntValue(value.toInt())
 
 
+/** Creates a [GIntValue] from a [Short]. */
 public fun GIntValue(value: Short): GIntValue =
 	GIntValue(value.toInt())
 
 
+/** Creates a [GIntValue] from a [UShort]. */
 public fun GIntValue(value: UShort): GIntValue =
 	GIntValue(value.toInt())

@@ -9,5 +9,5 @@ package io.fluidsonic.graphql
  */
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+@Target(AnnotationTarget.CLASS)
 public annotation class GraphQLMarker

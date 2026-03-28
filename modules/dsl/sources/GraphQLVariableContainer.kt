@@ -15,7 +15,6 @@ import kotlin.reflect.*
 public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope {
 
 	/** Adds a pre-built [GVariableDefinition] and returns a reference to it. */
-	@GraphQLMarker
 	public fun variable(definition: GVariableDefinition): GVariableRef
 
 
@@ -42,7 +41,6 @@ public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope
 		}
 
 
-		@GraphQLMarker
 		override fun provideDelegate(thisRef: Nothing?, property: KProperty<*>): ReadOnlyProperty<Nothing?, GVariableRef> {
 			val ref = register(this, property.name)
 
@@ -63,41 +61,33 @@ public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope
 public sealed interface GraphQLVariableContainerScope : GraphQLTypeContainerScope {
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	@GraphQLMarker
 	public fun variable(type: String): RefFactory =
 		variable(type(type))
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	@GraphQLMarker
 	public fun variable(type: String, configure: GraphQLVariableBuilder.() -> Unit): RefFactory =
 		variable(type(type), configure = configure)
 
 	/** Declares a variable with an explicit [name] and a type given by its string name. */
-	@GraphQLMarker
 	public fun variable(name: String, type: String): GVariableRef =
 		variable(name = name, type = type(type))
 
 	/** Declares a variable with an explicit [name] and a type given by its string name. */
-	@GraphQLMarker
 	public fun variable(name: String, type: String, configure: GraphQLVariableBuilder.() -> Unit): GVariableRef =
 		variable(name = name, type = type(type), configure = configure)
 
 	/** Declares a variable with an explicit [name] and [type]. */
-	@GraphQLMarker
 	public fun variable(name: String, type: GTypeRef): GVariableRef =
 		variable(name = name, type = type) {}
 
 	/** Declares a variable with an explicit [name] and [type]. */
-	@GraphQLMarker
 	public fun variable(name: String, type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): GVariableRef
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	@GraphQLMarker
 	public fun variable(type: GTypeRef): RefFactory =
 		variable(type = type) {}
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	@GraphQLMarker
 	public fun variable(type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): RefFactory
 }
 
@@ -113,7 +103,6 @@ internal interface GraphQLVariableContainerInternal : GraphQLVariableContainer {
 	}
 
 
-	@GraphQLMarker
 	override fun variable(definition: GVariableDefinition): GVariableRef {
 		val name = definition.name
 		check(GLanguage.isValidTypeName(name)) { "Invalid variable name: $name" }
@@ -126,12 +115,10 @@ internal interface GraphQLVariableContainerInternal : GraphQLVariableContainer {
 
 
 	// TODO Move to extension and inline once we have context receivers.
-	@GraphQLMarker
 	override fun variable(name: String, type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): GVariableRef =
 		variable(GraphQLVariableBuilder(name = name, type = type).apply(configure).build())
 
 
-	@GraphQLMarker
 	override fun variable(type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): RefFactory =
 		RefFactory { factory, name ->
 			unusedVariableRefFactories -= factory

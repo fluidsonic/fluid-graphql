@@ -8,24 +8,28 @@ import kotlin.reflect.*
 // The DSL color in IntelliJ IDEA depends on the hash code of the FQN of marker class.
 // Therefore, we add a random letter to get the desired "DSL style number" (for now).
 
+/** DSL marker for schema builder keyword scopes. */
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+@Target(AnnotationTarget.CLASS)
 public annotation class SchemaBuilderKeywordB
 
+/** DSL marker for built-in type scopes in the schema builder. */
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+@Target(AnnotationTarget.CLASS)
 public annotation class SchemaBuilderBuiltinTypeA
 
+/** DSL marker for type scopes in the schema builder. */
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+@Target(AnnotationTarget.CLASS)
 public annotation class SchemaBuilderType
 
+/** DSL marker for the schema builder DSL. */
 @DslMarker
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.TYPEALIAS)
+@Target(AnnotationTarget.CLASS)
 public annotation class SchemaBuilderDsl
 
 
@@ -60,33 +64,26 @@ public interface GSchemaBuilder {
 	 * Object(User) { ... }
 	 * ```
 	 */
-	@SchemaBuilderType
 	public val type: NamedTypeRefFactory
 		get() = NamedTypeRefFactory
 
 	/** Creates a named type reference by string name. */
-	@SchemaBuilderType
 	public fun type(name: String): GNamedTypeRef =
 		GTypeRef(name)
 
 	/** Defines a custom directive with the given [name]. */
-	@SchemaBuilderKeywordB
 	public fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = noOp)
 
 	/** Defines an enum type. */
-	@SchemaBuilderType
 	public fun Enum(type: GNamedTypeRef, configure: EnumTypeDefinitionBuilder.() -> Unit)
 
 	/** Defines an input object type. */
-	@SchemaBuilderType
 	public fun InputObject(type: GNamedTypeRef, configure: InputObjectTypeDefinitionBuilder.() -> Unit)
 
 	/** Defines an interface type. */
-	@SchemaBuilderType
 	public fun Interface(type: GNamedTypeRef, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
 
 	/** Defines an interface type that implements other interfaces, specified via [implements]. */
-	@SchemaBuilderType
 	public fun Interface(named: Interfaces, configure: InterfaceTypeDefinitionBuilder.() -> Unit)
 
 	/**
@@ -94,25 +91,20 @@ public interface GSchemaBuilder {
 	 *
 	 * Use [Mutation] with an explicit [GNamedTypeRef] to use a different name.
 	 */
-	@SchemaBuilderType
 	public fun Mutation(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		Mutation(type(GLanguage.defaultMutationTypeName), configure)
 	}
 
 	/** References an existing type as the mutation root without defining fields inline. */
-	@SchemaBuilderType
 	public fun Mutation(type: GNamedTypeRef)
 
 	/** Defines the mutation root type with the given [type] name. */
-	@SchemaBuilderType
 	public fun Mutation(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	/** Defines an object type that implements interfaces, specified via [implements]. */
-	@SchemaBuilderType
 	public fun Object(named: Interfaces, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	/** Defines an object type. */
-	@SchemaBuilderType
 	public fun Object(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	/**
@@ -120,21 +112,17 @@ public interface GSchemaBuilder {
 	 *
 	 * Use [Query] with an explicit [GNamedTypeRef] to use a different name.
 	 */
-	@SchemaBuilderType
 	public fun Query(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		Query(type(GLanguage.defaultQueryTypeName), configure)
 	}
 
 	/** References an existing type as the query root without defining fields inline. */
-	@SchemaBuilderType
 	public fun Query(type: GNamedTypeRef)
 
 	/** Defines the query root type with the given [type] name. */
-	@SchemaBuilderType
 	public fun Query(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	/** Defines a custom scalar type. */
-	@SchemaBuilderType
 	public fun Scalar(type: GNamedTypeRef, configure: ScalarTypeDefinitionBuilder.() -> Unit = noOp)
 
 	/**
@@ -142,17 +130,14 @@ public interface GSchemaBuilder {
 	 *
 	 * Use [Subscription] with an explicit [GNamedTypeRef] to use a different name.
 	 */
-	@SchemaBuilderType
 	public fun Subscription(configure: ObjectTypeDefinitionBuilder.() -> Unit) {
 		Subscription(type(GLanguage.defaultSubscriptionTypeName), configure)
 	}
 
 	/** References an existing type as the subscription root without defining fields inline. */
-	@SchemaBuilderType
 	public fun Subscription(type: GNamedTypeRef)
 
 	/** Defines the subscription root type with the given [type] name. */
-	@SchemaBuilderType
 	public fun Subscription(type: GNamedTypeRef, configure: ObjectTypeDefinitionBuilder.() -> Unit)
 
 	/**
@@ -161,7 +146,6 @@ public interface GSchemaBuilder {
 	 * Use the [with]/[or] DSL to declare the possible types:
 	 * `type("SearchResult") with type("Post") or type("User")`
 	 */
-	@SchemaBuilderType
 	public fun Union(named: PossibleTypes, configure: UnionTypeDefinitionBuilder.() -> Unit = noOp)
 
 	/**
@@ -172,7 +156,6 @@ public interface GSchemaBuilder {
 	 * Object(type("Cat") implements type("Animal")) { ... }
 	 * ```
 	 */
-	@SchemaBuilderKeywordB
 	public infix fun GNamedTypeRef.implements(interfaceType: GNamedTypeRef): Interfaces
 
 	/**
@@ -182,7 +165,6 @@ public interface GSchemaBuilder {
 	 * Union(type("SearchResult") with type("Post") or type("User"))
 	 * ```
 	 */
-	@SchemaBuilderKeywordB
 	public infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes
 
 
@@ -199,14 +181,13 @@ public interface GSchemaBuilder {
 	public interface ArgumentContainer {
 
 		/** Adds an argument described by the given [name]/value pair. */
-		@SchemaBuilderKeywordB
 		public fun argument(name: NameAndValue)
 
 		/** Creates a name/value pair for use with [argument]. */
-		@SchemaBuilderKeywordB
 		public infix fun String.with(value: Value): NameAndValue
 
 
+		/** Represents a name/value pair for use with [argument]. */
 		public interface NameAndValue
 	}
 
@@ -231,25 +212,23 @@ public interface GSchemaBuilder {
 	public interface ArgumentDefinitionContainer : TypeRefContainer, ValueContainer {
 
 		/** Declares an argument with a name and type. */
-		@SchemaBuilderKeywordB
 		public fun argument(name: NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit = noOp)
 
 		/** Declares an argument with a name, type, and default value. */
-		@SchemaBuilderKeywordB
 		public fun argument(name: NameAndTypeAndDefault, configure: ArgumentDefinitionBuilder.() -> Unit = noOp)
 
 		/** Creates a name/type pair for use with [argument]. */
-		@SchemaBuilderKeywordB
 		public infix fun String.of(type: GTypeRef): NameAndType
 
 
+		/** Represents a name/type pair for use with [argument]. */
 		public interface NameAndType {
 
 			/** Provides a default value, producing a [NameAndTypeAndDefault]. */
-			@SchemaBuilderKeywordB
 			public infix fun default(default: Value): NameAndTypeAndDefault
 		}
 
+		/** Represents a name/type/default triple for use with [argument]. */
 		public interface NameAndTypeAndDefault
 	}
 
@@ -264,7 +243,6 @@ public interface GSchemaBuilder {
 		 * When [reason] is `null`, no reason text is included. Defaults to the standard
 		 * GraphQL deprecation message.
 		 */
-		@SchemaBuilderKeywordB
 		public fun deprecated(reason: String? = defaultDeprecatedReason)
 	}
 
@@ -274,7 +252,6 @@ public interface GSchemaBuilder {
 	public interface DescriptionContainer {
 
 		/** Sets the description for this schema element. */
-		@SchemaBuilderKeywordB
 		public fun description(text: String)
 	}
 
@@ -299,70 +276,68 @@ public interface GSchemaBuilder {
 	@SchemaBuilderDsl
 	public interface DirectiveDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer {
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: argument definition. */
 		public val ARGUMENT_DEFINITION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: enum type definition. */
 		public val ENUM: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: enum value definition. */
 		public val ENUM_VALUE: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: field. */
 		public val FIELD: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: field definition. */
 		public val FIELD_DEFINITION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: fragment definition. */
 		public val FRAGMENT_DEFINITION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: fragment spread. */
 		public val FRAGMENT_SPREAD: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: inline fragment. */
 		public val INLINE_FRAGMENT: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: input field definition. */
 		public val INPUT_FIELD_DEFINITION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: input object type definition. */
 		public val INPUT_OBJECT: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: interface type definition. */
 		public val INTERFACE: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: mutation operation. */
 		public val MUTATION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: object type definition. */
 		public val OBJECT: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: query operation. */
 		public val QUERY: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: scalar type definition. */
 		public val SCALAR: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: schema definition. */
 		public val SCHEMA: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: subscription operation. */
 		public val SUBSCRIPTION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: union type definition. */
 		public val UNION: DirectiveLocation
 
-		@SchemaBuilderBuiltinTypeA
+		/** Directive location: variable definition. */
 		public val VARIABLE_DEFINITION: DirectiveLocation
 
 
 		/** Declares that the directive may appear at the given [DirectiveLocation]. */
-		@SchemaBuilderKeywordB
 		public fun on(any: DirectiveLocation)
 
 		/** Declares that the directive may appear at any of the given locations. */
-		@SchemaBuilderKeywordB
 		public fun on(any: DirectiveLocationSet)
 
 
@@ -370,7 +345,6 @@ public interface GSchemaBuilder {
 		public interface DirectiveLocation {
 
 			/** Combines this location with [other] into a [DirectiveLocationSet]. */
-			@SchemaBuilderKeywordB
 			public infix fun or(other: DirectiveLocation): DirectiveLocationSet
 		}
 
@@ -379,7 +353,6 @@ public interface GSchemaBuilder {
 		public interface DirectiveLocationSet {
 
 			/** Adds [other] to this location set. */
-			@SchemaBuilderKeywordB
 			public infix fun or(other: DirectiveLocation): DirectiveLocationSet
 		}
 	}
@@ -390,7 +363,6 @@ public interface GSchemaBuilder {
 	public interface DirectiveContainer {
 
 		/** Applies the directive with the given [name] to this schema element. */
-		@SchemaBuilderKeywordB
 		public fun directive(name: String, configure: DirectiveBuilder.() -> Unit = noOp)
 	}
 
@@ -400,7 +372,6 @@ public interface GSchemaBuilder {
 	public interface EnumTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer {
 
 		/** Declares an enum value with the given [name]. */
-		@SchemaBuilderKeywordB
 		public fun value(name: String, configure: ValueBuilder.() -> Unit = noOp)
 
 
@@ -436,14 +407,13 @@ public interface GSchemaBuilder {
 	public interface FieldDefinitionContainer : TypeRefContainer {
 
 		/** Declares a field with the given name and type. */
-		@SchemaBuilderKeywordB
 		public fun field(name: NameAndType, configure: FieldDefinitionBuilder.() -> Unit = noOp)
 
 		/** Creates a name/type pair for use with [field]. */
-		@SchemaBuilderKeywordB
 		public infix fun String.of(type: GTypeRef): NameAndType
 
 
+		/** Represents a name/type pair for use with [field]. */
 		public interface NameAndType
 	}
 
@@ -472,7 +442,6 @@ public interface GSchemaBuilder {
 	public interface Interfaces {
 
 		/** Adds another interface to the list. */
-		@SchemaBuilderKeywordB
 		public infix fun and(type: GNamedTypeRef): Interfaces
 	}
 
@@ -484,7 +453,7 @@ public interface GSchemaBuilder {
 	 */
 	public object NamedTypeRefFactory {
 
-		@SchemaBuilderType
+		/** Returns a [GNamedTypeRef] whose name is the delegating property's name. */
 		public operator fun getValue(thisRef: Any?, property: KProperty<*>): GNamedTypeRef =
 			GTypeRef(property.name)
 	}
@@ -495,11 +464,9 @@ public interface GSchemaBuilder {
 	public interface NodeBuilder {
 
 		/** Reads a custom extension value associated with [key] from this AST node. */
-		@SchemaBuilderKeywordB
 		public fun <Value : Any> extension(key: GNodeExtensionKey<out Value>): Value?
 
 		/** Attaches a custom extension [value] associated with [key] to this AST node. */
-		@SchemaBuilderKeywordB
 		public fun <Value : Any> extension(key: GNodeExtensionKey<in Value>, value: Value)
 	}
 
@@ -523,7 +490,6 @@ public interface GSchemaBuilder {
 	public interface PossibleTypes {
 
 		/** Adds another possible type to the union. */
-		@SchemaBuilderKeywordB
 		public infix fun or(type: GNamedTypeRef): PossibleTypes
 	}
 
@@ -547,27 +513,27 @@ public interface GSchemaBuilder {
 	@Suppress("PropertyName")
 	public interface TypeRefContainer {
 
-		@SchemaBuilderBuiltinTypeA
+		/** Reference to the built-in `Boolean` scalar type. */
 		public val Boolean: GTypeRef
 			get() = GBooleanTypeRef
 
-		@SchemaBuilderBuiltinTypeA
+		/** Reference to the built-in `Float` scalar type. */
 		public val Float: GTypeRef
 			get() = GFloatTypeRef
 
-		@SchemaBuilderBuiltinTypeA
+		/** Reference to the built-in `ID` scalar type. */
 		public val ID: GTypeRef
 			get() = GIdTypeRef
 
-		@SchemaBuilderBuiltinTypeA
+		/** Reference to the built-in `Int` scalar type. */
 		public val Int: GTypeRef
 			get() = GIntTypeRef
 
-		@SchemaBuilderBuiltinTypeA
+		/** Reference to the built-in `String` scalar type. */
 		public val String: GTypeRef
 			get() = GStringTypeRef
 
-		@SchemaBuilderBuiltinTypeA
+		/** Wraps [type] in a [GListTypeRef]. */
 		public fun List(type: GTypeRef): GTypeRef
 
 
@@ -578,7 +544,7 @@ public interface GSchemaBuilder {
 		 */
 		public operator fun GTypeRef.not(): GNonNullTypeRef =
 			if (this is GNonNullTypeRef)
-				error("Cannot use '!' on a type that's already non-null")
+				error("Cannot use '!' on a type that's already non-null.")
 			else
 				GNonNullTypeRef(this)
 	}
@@ -612,7 +578,6 @@ public interface GSchemaBuilder {
 
 /** Creates a [GSchemaBuilder.Value] for the given enum value name, or null. */
 @JvmName("floatValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.enum(value: String?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -620,15 +585,15 @@ public fun GSchemaBuilder.ValueContainer.enum(value: String?): GSchemaBuilder.Va
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] wrapping a null [GValue]. */
 @JvmName("nullValue")
-@SchemaBuilderKeywordB
 @Suppress("DEPRECATION_ERROR", "UNUSED_PARAMETER")
 public fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value =
 	value(GNullValue())
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable [Boolean]. */
 @JvmName("booleanValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -636,8 +601,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable [Double]. */
 @JvmName("floatValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -645,8 +610,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.V
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable [Int]. */
 @JvmName("intValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -654,8 +619,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Valu
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable [String]. */
 @JvmName("stringValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -663,8 +628,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.V
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable list of null values. */
 @JvmName("nullListValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -672,8 +637,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBu
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable list of [Boolean] values. */
 @JvmName("booleanListValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -681,8 +646,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBu
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable list of [Double] values. */
 @JvmName("floatListValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -690,8 +655,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBui
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable list of [Int] values. */
 @JvmName("intListValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -699,8 +664,8 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilde
 	}
 
 
+/** Creates a [GSchemaBuilder.Value] from a nullable list of [String] values. */
 @JvmName("stringListValue")
-@SchemaBuilderKeywordB
 public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBuilder.Value =
 	when (value) {
 		null -> value(value)
@@ -719,7 +684,6 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBui
  * }
  * ```
  */
-@SchemaBuilderKeywordB
 @Suppress("UnusedReceiverParameter")
 public fun GraphQL.schema(configure: GSchemaBuilder.() -> Unit): GSchema =
 	DefaultSchemaBuilder().apply(configure).build()

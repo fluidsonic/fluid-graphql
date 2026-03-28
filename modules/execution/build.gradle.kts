@@ -1,6 +1,6 @@
 import io.fluidsonic.gradle.*
 
-fluidLibraryModule(description = "FIXME") {
+fluidLibraryModule(description = "GraphQL query execution engine with validation") {
 	targets {
 		common {
 			dependencies {

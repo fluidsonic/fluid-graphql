@@ -15,39 +15,36 @@ import kotlin.reflect.*
 @Suppress("PropertyName")
 public sealed interface GraphQLTypeContainerScope {
 
-	@GraphQLMarker
+	/** Reference to the built-in `Boolean` scalar type. */
 	public val Boolean: GNamedTypeRef
 		get() = GBooleanTypeRef
 
-	@GraphQLMarker
+	/** Reference to the built-in `Float` scalar type. */
 	public val Float: GNamedTypeRef
 		get() = GFloatTypeRef
 
-	@GraphQLMarker
+	/** Reference to the built-in `ID` scalar type. */
 	public val ID: GNamedTypeRef
 		get() = GIdTypeRef
 
-	@GraphQLMarker
+	/** Reference to the built-in `Int` scalar type. */
 	public val Int: GNamedTypeRef
 		get() = GIntTypeRef
 
-	@GraphQLMarker
+	/** Reference to the built-in `String` scalar type. */
 	public val String: GNamedTypeRef
 		get() = GStringTypeRef
 
 
 	/** Wraps [type] in a [GListTypeRef]. */
-	@GraphQLMarker
 	public fun List(type: GTypeRef): GTypeRef =
 		GListTypeRef(type)
 
 	/** Wraps a type named [type] in a [GListTypeRef]. */
-	@GraphQLMarker
 	public fun List(type: String): GTypeRef =
 		GListTypeRef(type(type))
 
 	/** Creates a [GNamedTypeRef] for the type with the given [name]. */
-	@GraphQLMarker
 	public fun type(name: String): GNamedTypeRef {
 		check(GLanguage.isValidTypeName(name)) { "Invalid type name: $name" }
 
@@ -59,7 +56,6 @@ public sealed interface GraphQLTypeContainerScope {
 	 *
 	 * Throws if the type is already non-null.
 	 */
-	@GraphQLMarker
 	public operator fun GTypeRef.not(): GNonNullTypeRef =
 		when (this) {
 			is GNonNullTypeRef -> error("Cannot use '!' on a type that's already non-null.")
@@ -71,7 +67,6 @@ public sealed interface GraphQLTypeContainerScope {
 	 *
 	 * Equivalent to `!type(name)`.
 	 */
-	@GraphQLMarker
 	public operator fun String.not(): GNonNullTypeRef =
 		GNonNullTypeRef(type(this))
 
@@ -101,7 +96,6 @@ public sealed interface GraphQLTypeContainerScope {
  * val User by type
  * ```
  */
-@GraphQLMarker
 @Suppress("UnusedReceiverParameter")
 public val GraphQLTypeContainerScope.type: RefFactory
 	get() = RefFactory

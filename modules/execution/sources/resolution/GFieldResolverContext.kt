@@ -11,17 +11,15 @@ package io.fluidsonic.graphql
 public interface GFieldResolverContext : GExecutorContext.Child {
 
 	/** Coerced argument values keyed by argument name. */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public val arguments: Map<String, Any?>
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The schema definition of the field being resolved. */
 	public val fieldDefinition: GFieldDefinition
 
 	/** The response path to the field currently being resolved. */
-	@SchemaBuilderKeywordB
 	public val path: GPath
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The object type that contains the field being resolved. */
 	public val parentType: GObjectType
 
 	/**
@@ -29,6 +27,5 @@ public interface GFieldResolverContext : GExecutorContext.Child {
 	 *
 	 * Returns `null` if there is no further resolver, or when the next resolver returns `null`.
 	 */
-	@SchemaBuilderKeywordB // FIXME
 	public suspend fun next(): Any?
 }

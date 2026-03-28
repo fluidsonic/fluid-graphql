@@ -17,36 +17,41 @@ public sealed interface GExceptionOrigin {
 
 	/** An exception thrown by a [GFieldResolver]. */
 	public class FieldResolver(
-		public override val context: GFieldResolverContext,
+		override val context: GFieldResolverContext,
+		/** The resolver that threw the exception. */
 		public val resolver: GFieldResolver<*>,
 	) : GExceptionOrigin
 
 
 	/** An exception thrown by a [GNodeInputCoercer]. */
 	public class NodeInputCoercer(
+		/** The coercer that threw the exception. */
 		public val coercer: GNodeInputCoercer<*>,
-		public override val context: GNodeInputCoercerContext,
+		override val context: GNodeInputCoercerContext,
 	) : GExceptionOrigin
 
 
 	/** An exception thrown by a [GOutputCoercer]. */
 	public class OutputCoercer(
+		/** The coercer that threw the exception. */
 		public val coercer: GOutputCoercer<*>,
-		public override val context: GOutputCoercerContext,
+		override val context: GOutputCoercerContext,
 	) : GExceptionOrigin
 
 
 	/** An exception thrown by a [GRootResolver]. */
 	public class RootResolver(
-		public override val context: GRootResolverContext,
+		override val context: GRootResolverContext,
+		/** The resolver that threw the exception. */
 		public val resolver: GRootResolver,
 	) : GExceptionOrigin
 
 
 	/** An exception thrown by a [GVariableInputCoercer]. */
 	public class VariableInputCoercer(
+		/** The coercer that threw the exception. */
 		public val coercer: GVariableInputCoercer<*>,
-		public override val context: GVariableInputCoercerContext,
+		override val context: GVariableInputCoercerContext,
 	) : GExceptionOrigin
 }
 

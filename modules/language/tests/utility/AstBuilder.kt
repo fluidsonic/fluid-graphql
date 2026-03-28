@@ -718,4 +718,5 @@ object AstBuilder {
 
 
 @DslMarker
+@Target(AnnotationTarget.CLASS)
 annotation class AstBuilderDsl

@@ -10,27 +10,25 @@ package io.fluidsonic.graphql
  */
 public interface GExecutorContext {
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The parsed GraphQL document being executed. */
 	public val document: GDocument
 
 	/** Per-request extensions attached when calling [GExecutor.execute]. */
-	@SchemaBuilderKeywordB
 	public val extensions: GExecutorContextExtensionSet
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The specific operation being executed within the [document]. */
 	public val operation: GOperationDefinition
 
 	/** The root value returned by [GRootResolver] for this operation. */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public val root: Any
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The object type of the root operation (Query, Mutation, or Subscription). */
 	public val rootType: GObjectType
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** The schema being executed against. */
 	public val schema: GSchema
 
-	@SchemaBuilderKeywordB // FIXME ok?
+	/** Coerced variable values for the current operation. */
 	public val variableValues: Map<String, Any?>
 
 
@@ -39,7 +37,7 @@ public interface GExecutorContext {
 	 */
 	public interface Child {
 
-		@SchemaBuilderKeywordB // FIXME ok?
+		/** The parent [GExecutorContext] for this execution. */
 		public val execution: GExecutorContext
 	}
 }

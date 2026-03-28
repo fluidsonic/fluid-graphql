@@ -10,11 +10,9 @@ package io.fluidsonic.graphql
 public interface GInputCoercerContext : GExecutorContext.Child {
 
 	/** The argument definition for the value being coerced, or `null` if not within an argument. */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public val argumentDefinition: GArgumentDefinition?
 
 	/** The expected GraphQL type for the value being coerced. */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public val type: GType // FIXME make all generic?
 
 	/**
@@ -22,7 +20,6 @@ public interface GInputCoercerContext : GExecutorContext.Child {
 	 *
 	 * @param details Optional human-readable description of why the value is invalid.
 	 */
-	@SchemaBuilderKeywordB // FIXME ok?
 	public fun invalid(details: String? = null): Nothing
 
 	/**
@@ -30,6 +27,5 @@ public interface GInputCoercerContext : GExecutorContext.Child {
 	 *
 	 * Returns `null` if there is no further coercer or the next coercer returns `null`.
 	 */
-	@SchemaBuilderKeywordB // FIXME
 	public fun next(): Any?
 }

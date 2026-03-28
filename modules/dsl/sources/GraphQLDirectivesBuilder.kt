@@ -14,12 +14,10 @@ public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope
 	public fun build(): List<GDirective>
 
 	/** Adds a pre-built [GDirective]. */
-	@GraphQLMarker
 	public fun directive(directive: GDirective)
 
 
 	// TODO Move to extension and inline.
-	@GraphQLMarker
 	public override operator fun String.invoke(configure: GraphQLDirectiveBuilder.() -> Unit) {
 		directive(GraphQLDirectiveBuilder(name = this).apply(configure).build())
 	}
@@ -41,13 +39,11 @@ public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope
 public sealed interface GraphQLDirectivesBuilderScope : GraphQLValueContainerScope {
 
 	/** Applies the directive with this name and no arguments. */
-	@GraphQLMarker
 	public operator fun String.invoke() {
 		this {}
 	}
 
 	/** Applies the directive with this name, configuring its arguments via [configure]. */
-	@GraphQLMarker
 	public operator fun String.invoke(configure: GraphQLDirectiveBuilder.() -> Unit)
 }
 

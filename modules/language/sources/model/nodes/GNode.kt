@@ -641,6 +641,7 @@ public sealed class GArgumentDefinition(
 public object GBooleanType : GScalarType(name = "Boolean")
 
 
+/** A GraphQL boolean value literal (`true` or `false`). */
 public class GBooleanValue(
 	public val value: Boolean,
 	origin: GDocumentPosition? = null,
@@ -677,6 +678,7 @@ public class GBooleanValue(
 }
 
 
+/** Creates a [GBooleanValue] without a source origin. */
 public fun GBooleanValue(value: Boolean): GBooleanValue =
 	GBooleanValue(value = value, origin = null)
 
@@ -763,6 +765,7 @@ public sealed class GDefinition(
 }
 
 
+/** An argument definition within a [GDirectiveDefinition]. */
 public class GDirectiveArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
@@ -801,6 +804,7 @@ public class GDirectiveArgumentDefinition(
 }
 
 
+/** A GraphQL directive definition (`directive @name on LOCATION`). */
 public class GDirectiveDefinition(
 	name: GName,
 	locations: List<GName>,
@@ -864,6 +868,7 @@ public class GDirectiveDefinition(
 }
 
 
+/** A GraphQL enum type definition. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Enums
 // https://graphql.github.io/graphql-spec/draft/#sec-Enums.Input-Coercion
 public class GEnumType(
@@ -913,6 +918,7 @@ public class GEnumType(
 			(other is GNonNullType && other.nullableType === this)
 
 
+	/** Returns the value definition with the given [name], or `null` if not found. */
 	public fun value(name: String): GEnumValueDefinition? =
 		values.firstOrNull { it.name == name }
 
@@ -921,6 +927,7 @@ public class GEnumType(
 }
 
 
+/** A GraphQL enum type extension (`extend enum Foo { ... }`). */
 public class GEnumTypeExtension(
 	name: GName,
 	public val values: List<GEnumValueDefinition>,
@@ -957,6 +964,7 @@ public class GEnumTypeExtension(
 			)
 
 
+	/** Returns the value definition with the given [name], or `null` if not found. */
 	public fun value(name: String): GEnumValueDefinition? =
 		values.firstOrNull { it.name == name }
 
@@ -965,6 +973,7 @@ public class GEnumTypeExtension(
 }
 
 
+/** A GraphQL enum value literal. */
 public class GEnumValue(
 	public val name: String,
 	origin: GDocumentPosition? = null,
@@ -1001,10 +1010,12 @@ public class GEnumValue(
 }
 
 
+/** Creates a [GEnumValue] without a source origin. */
 public fun GEnumValue(name: String): GEnumValue =
 	GEnumValue(name = name, origin = null)
 
 
+/** The definition of a single value within a [GEnumType]. */
 public class GEnumValueDefinition(
 	name: GName,
 	description: GStringValue? = null,
@@ -1067,6 +1078,7 @@ public sealed class GExecutableDefinition(
 }
 
 
+/** An argument definition within a [GFieldDefinition]. */
 public class GFieldArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
@@ -1174,6 +1186,7 @@ public class GFieldDefinition(
 public object GFloatType : GScalarType(name = "Float")
 
 
+/** A GraphQL float value literal. The [value] must be finite. */
 public class GFloatValue(
 	public val value: Double,
 	origin: GDocumentPosition? = null,
@@ -1215,14 +1228,17 @@ public class GFloatValue(
 }
 
 
+/** Creates a [GFloatValue] without a source origin. */
 public fun GFloatValue(value: Double): GFloatValue =
 	GFloatValue(value = value, origin = null)
 
 
+/** Creates a [GFloatValue] from a [Float]. */
 public fun GFloatValue(value: Float): GFloatValue =
 	GFloatValue(value.toDouble())
 
 
+/** Creates a [GFloatValue] from an [Int]. */
 public fun GFloatValue(value: Int): GFloatValue =
 	GFloatValue(value.toDouble())
 
@@ -1263,6 +1279,7 @@ public class GInlineFragmentSelection(
 }
 
 
+/** An argument (field) definition within a [GInputObjectType]. */
 public class GInputObjectArgumentDefinition(
 	name: GName,
 	type: GTypeRef,
@@ -1301,6 +1318,7 @@ public class GInputObjectArgumentDefinition(
 }
 
 
+/** A GraphQL input object type definition. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
 public class GInputObjectType(
@@ -1360,6 +1378,7 @@ public class GInputObjectType(
 }
 
 
+/** A GraphQL input object type extension (`extend input Foo { ... }`). */
 public class GInputObjectTypeExtension(
 	name: GName,
 	override val argumentDefinitions: List<GInputObjectArgumentDefinition> = emptyList(),
@@ -1407,6 +1426,7 @@ public class GInputObjectTypeExtension(
 public object GIntType : GScalarType(name = "Int")
 
 
+/** A GraphQL interface type definition. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interfaces
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interface
 public class GInterfaceType(
@@ -1468,6 +1488,7 @@ public class GInterfaceType(
 }
 
 
+/** A GraphQL interface type extension (`extend interface Foo { ... }`). */
 public class GInterfaceTypeExtension(
 	name: GName,
 	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
@@ -1541,6 +1562,7 @@ public sealed class GLeafType(
 }
 
 
+/** A resolved GraphQL list type, wrapping an [elementType]. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.List
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.List
 public class GListType(
@@ -1615,6 +1637,7 @@ public class GListTypeRef(
 }
 
 
+/** Creates a [GListTypeRef] whose element is a named type reference for [name]. */
 public fun GListTypeRef(
 	name: String,
 	extensions: GNodeExtensionSet<GListTypeRef> = GNodeExtensionSet.empty(),
@@ -1622,6 +1645,7 @@ public fun GListTypeRef(
 	GListTypeRef(GTypeRef(name), extensions = extensions)
 
 
+/** A GraphQL list value literal (`[element1, element2, ...]`). */
 public class GListValue(
 	public val elements: List<GValue>,
 	origin: GDocumentPosition? = null,
@@ -1658,10 +1682,12 @@ public class GListValue(
 }
 
 
+/** Creates a [GListValue] without a source origin. */
 public fun GListValue(elements: List<GValue>): GListValue =
 	GListValue(elements = elements, origin = null)
 
 
+/** A GraphQL name token, used for identifiers throughout the AST. */
 public class GName(
 	public val value: String,
 	origin: GDocumentPosition? = null,
@@ -1691,6 +1717,7 @@ public class GName(
 }
 
 
+/** Creates a [GName] without a source origin. */
 public fun GName(value: String): GName =
 	GName(value = value, origin = null)
 
@@ -1786,6 +1813,7 @@ public class GNamedTypeRef(
 }
 
 
+/** A resolved GraphQL non-null type, wrapping a [nullableType]. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-System.Non-Null
 // https://graphql.github.io/graphql-spec/June2018/#sec-Type-Kinds.Non-Null
 public class GNonNullType(
@@ -1867,6 +1895,7 @@ public class GNonNullTypeRef(
 }
 
 
+/** Creates a [GNonNullTypeRef] whose nullable part is a named type reference for [name]. */
 public fun GNonNullTypeRef(
 	name: String,
 	extensions: GNodeExtensionSet<GNonNullTypeRef> = GNodeExtensionSet.empty(),
@@ -1874,6 +1903,7 @@ public fun GNonNullTypeRef(
 	GNonNullTypeRef(GTypeRef(name), extensions = extensions)
 
 
+/** A GraphQL object type definition. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Object
 public class GObjectType(
@@ -1934,6 +1964,7 @@ public class GObjectType(
 }
 
 
+/** A GraphQL object type extension (`extend type Foo { ... }`). */
 public class GObjectTypeExtension(
 	name: GName,
 	override val fieldDefinitions: List<GFieldDefinition> = emptyList(),
@@ -2109,6 +2140,7 @@ public sealed class GScalarType(
 }
 
 
+/** A GraphQL scalar type extension (`extend scalar Foo @directive`). */
 public class GScalarTypeExtension(
 	name: GName,
 	directives: List<GDirective> = emptyList(),
@@ -2145,6 +2177,7 @@ public class GScalarTypeExtension(
 }
 
 
+/** A GraphQL schema extension (`extend schema { ... }`). */
 public class GSchemaExtension(
 	override val operationTypeDefinitions: List<GOperationTypeDefinition> = emptyList(),
 	override val directives: List<GDirective> = emptyList(),
@@ -2176,6 +2209,7 @@ public class GSchemaExtension(
 public object GStringType : GScalarType(name = "String")
 
 
+/** A GraphQL string value literal. May be a single-line or block string ([isBlock]). */
 public class GStringValue(
 	public val value: String,
 	public val isBlock: Boolean = false,
@@ -2214,6 +2248,7 @@ public class GStringValue(
 }
 
 
+/** Creates a single-line [GStringValue] without a source origin. */
 public fun GStringValue(value: String): GStringValue =
 	GStringValue(value = value, isBlock = false)
 
@@ -2451,6 +2486,7 @@ public sealed class GTypeSystemExtension(
 }
 
 
+/** A GraphQL union type definition. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Unions
 // https://graphql.github.io/graphql-spec/June2018/#sec-Union
 public class GUnionType(
@@ -2505,6 +2541,7 @@ public class GUnionType(
 }
 
 
+/** A GraphQL union type extension (`extend union Foo = Bar | Baz`). */
 public class GUnionTypeExtension(
 	name: GName,
 	public val possibleTypes: List<GNamedTypeRef> = emptyList(),

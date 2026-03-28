@@ -1,6 +1,7 @@
 package io.fluidsonic.graphql
 
 
+/** A GraphQL `null` value literal. */
 public class GNullValue(
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GNullValue> = GNodeExtensionSet.empty(),
@@ -33,10 +34,12 @@ public class GNullValue(
 
 	public companion object {
 
+		/** A shared [GNullValue] instance with no source origin. */
 		public val withoutOrigin: GNullValue = GNullValue(origin = null)
 	}
 }
 
 
+/** Returns a shared [GNullValue] instance without a source origin. */
 public fun GNullValue(): GNullValue =
 	GNullValue.withoutOrigin

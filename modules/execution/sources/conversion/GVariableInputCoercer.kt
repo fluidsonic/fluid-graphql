@@ -14,5 +14,6 @@ package io.fluidsonic.graphql
  */
 public fun interface GVariableInputCoercer<in Input> {
 
+	/** Coerces the given variable [input] value into a Kotlin value. */
 	public fun GVariableInputCoercerContext.coerceVariableInput(input: Input): Any?
 }
