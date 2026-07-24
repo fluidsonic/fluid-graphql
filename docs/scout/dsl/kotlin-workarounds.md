@@ -1,0 +1,11 @@
+# Code in modules/dsl that looks wrong but is a deliberate Kotlin workaround
+
+Four patterns a cleanup pass would be tempted to "fix", each breaking something real.
+
+**`@LowPriorityInOverloadResolution` from `kotlin.internal`.** `GraphQLArgumentsBuilder.kt`, `GraphQLValueListBuilder.kt`, and `GraphQLVariableBuilder.kt` import `kotlin.internal.*` and annotate nullable primitive overloads with it (inline comments cite KT-645, nullable-primitive overload ambiguity), requiring `@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")`. This is a version-fragile dependency on Kotlin-internal API: compiler upgrades that tighten internal-API access break these three files first.
+
+**Shared `noOp` default lambda.** `GSchemaBuilder.kt` defaults optional-configure parameters to a private top-level `val noOp: Any?.() -> Unit = {}` instead of `= {}`, with a comment linking KT-40083. Do not inline it back.
+
+**Marker annotation names chosen for their FQN hash.** A comment in `GSchemaBuilder.kt` above the SchemaBuilder* markers explains that IntelliJ's DSL highlight color depends on the hash of the marker class's fully qualified name, so trailing letters (`SchemaBuilderKeywordB`, `SchemaBuilderBuiltinTypeA`) are deliberate. Renaming or moving them changes IDE presentation.
+
+**Null dispatch via smart-cast to `Nothing?`.** In the `GSchemaBuilder.ValueContainer.value(...)` extension overloads and `DefaultSchemaBuilder`'s private companion `GValue(...)` helpers, the null branch re-invokes the same-named function — which looks recursive but the smart-cast `Nothing?` argument resolves to the dedicated `Nothing?` overload producing `GNullValue`. Removing that overload creates real recursion. The family's distinct `@JvmName` annotations keep the `List` overloads compiling despite erasure; note the public `enum` extension carries `@JvmName("floatValue")` with no explanatory comment — renaming any public `@JvmName` changes the compiled JVM signature.
