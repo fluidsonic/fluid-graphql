@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentTypeConditionExistenceRule
+import kotlin.test.Test
 
 class FragmentTypeConditionExistenceRuleTest {
 
@@ -27,10 +26,9 @@ class FragmentTypeConditionExistenceRuleTest {
 			schema = """
 				|type Query { id: ID }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsFragmentsDefinitionOnExistingType() {
@@ -45,10 +43,9 @@ class FragmentTypeConditionExistenceRuleTest {
 			schema = """
 				|type Query { id: ID }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsInlineFragmentOnNonexistentType() {
@@ -63,7 +60,7 @@ class FragmentTypeConditionExistenceRuleTest {
 					2 |   ... on NotInSchema {
 					  |          ^
 					3 |     name
-				"""
+				""",
 			),
 			document = """
 				|fragment inlineNotExistingType on Dog {
@@ -75,10 +72,9 @@ class FragmentTypeConditionExistenceRuleTest {
 			schema = """
 				|type Query { id: ID }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsFragmentDefinitionOnNonexistentType() {
@@ -92,7 +88,7 @@ class FragmentTypeConditionExistenceRuleTest {
 					1 | fragment notOnExistingType on NotInSchema {
 					  |                               ^
 					2 |   name
-				"""
+				""",
 			),
 			document = """
 				|fragment notOnExistingType on NotInSchema {
@@ -102,7 +98,7 @@ class FragmentTypeConditionExistenceRuleTest {
 			schema = """
 				|type Query { id: ID }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
 }

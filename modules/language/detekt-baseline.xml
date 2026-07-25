@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:Lexer.kt:Lexer$char eq '\\' &amp;&amp; readChar(position + 1) eq '"' &amp;&amp; readChar(position + 2) eq '"' &amp;&amp; readChar(position + 3) eq '"'</ID>
+    <ID>ComplexCondition:Printer.kt:Printer$queryOperationWithNonStandardName == null &amp;&amp; mutationOperationWithNonStandardName == null &amp;&amp; subscriptionOperationWithNonStandardName == null &amp;&amp; definition.descriptionNode == null &amp;&amp; definition.directives.isEmpty()</ID>
+    <ID>CyclomaticComplexMethod:GNode.kt:GNode$private inline fun forEachChild</ID>
+    <ID>CyclomaticComplexMethod:GSchema.kt:GSchema$@Suppress("NAME_SHADOWING") private fun validateValue: List&lt;GError>?</ID>
+    <ID>CyclomaticComplexMethod:Lexer.kt:Lexer$private fun readString: Token</ID>
+    <ID>CyclomaticComplexMethod:Lexer.kt:Lexer$private fun readToken: Token</ID>
+    <ID>CyclomaticComplexMethod:Parser.kt:Parser$private fun parseValue: GValue</ID>
+    <ID>CyclomaticComplexMethod:VisitorContext.kt:VisitorContext$internal inline fun &lt;Result> with: Result</ID>
+    <ID>CyclomaticComplexMethod:VisitorContextTest.kt:VisitorContextTest.CapturedElement$override fun equals: Boolean</ID>
+    <ID>LargeClass:ParallelVisitorTest.kt:ParallelVisitorTest</ID>
+    <ID>LargeClass:Parser.kt:Parser</ID>
+    <ID>LargeClass:Printer.kt:Printer</ID>
+    <ID>LongMethod:AstParsingTests.kt:AstParsingTests$@Test fun testCreatesAst</ID>
+    <ID>LongMethod:GNode.kt:GNode$private inline fun forEachChild</ID>
+    <ID>LongMethod:GSchema.kt:GSchema$@Suppress("NAME_SHADOWING") private fun validateValue: List&lt;GError>?</ID>
+    <ID>LongMethod:NodeWalkerTest.kt:NodeWalkerTest$@Test fun testWalksADocument</ID>
+    <ID>LongMethod:ParallelVisitorTest.kt:ParallelVisitorTest$@Test fun testAborts</ID>
+    <ID>LongMethod:ParallelVisitorTest.kt:ParallelVisitorTest$@Test fun testSkipsChildren</ID>
+    <ID>LongMethod:ParallelVisitorTest.kt:ParallelVisitorTest$@Test fun testVisitsADocumentInParallel</ID>
+    <ID>LongMethod:Parser.kt:Parser$private fun parseValue: GValue</ID>
+    <ID>LongMethod:VisitorContext.kt:VisitorContext$internal inline fun &lt;Result> with: Result</ID>
+    <ID>LongMethod:VisitorContextTest.kt:VisitorContextTest$@Test fun testProvidesCorrectInformation</ID>
+    <ID>LongMethod:VisitorTest.kt:VisitorTest$@Test fun testVisitsADocument</ID>
+    <ID>LoopWithTooManyJumpStatements:Lexer.kt:Lexer$while</ID>
+    <ID>LoopWithTooManyJumpStatements:Lexer.kt:Lexer.Companion$for</ID>
+    <ID>MagicNumber:GDocumentPosition.kt:GDocumentPosition$120</ID>
+    <ID>MagicNumber:Lexer.kt:Lexer$3</ID>
+    <ID>MagicNumber:Lexer.kt:Lexer$4</ID>
+    <ID>MagicNumber:Lexer.kt:Lexer.Companion$10</ID>
+    <ID>MagicNumber:Lexer.kt:Lexer.Companion$12</ID>
+    <ID>MagicNumber:Lexer.kt:Lexer.Companion$4</ID>
+    <ID>MagicNumber:Lexer.kt:Lexer.Companion$8</ID>
+    <ID>MagicNumber:SourceCharacter.kt:SourceCharacter$0x20</ID>
+    <ID>MagicNumber:SourceCharacter.kt:SourceCharacter$16</ID>
+    <ID>NestedBlockDepth:GSchema.kt:GSchema$@Suppress("NAME_SHADOWING") private fun validateValue: List&lt;GError>?</ID>
+    <ID>ReturnCount:DefaultNodeWalker.kt:DefaultNodeWalker$override fun nextChild: GNode?</ID>
+    <ID>ReturnCount:GNode.kt:public fun List&lt;GNode?>.equalsNode: Boolean</ID>
+    <ID>ReturnCount:GSchema.kt:GSchema$@Suppress("NAME_SHADOWING") private fun validateValue: List&lt;GError>?</ID>
+    <ID>TooGenericExceptionCaught:DefaultVisitCoordinator.kt:DefaultVisit$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ParallelVisitor.kt:ParallelVisit$e: Throwable</ID>
+    <ID>TooManyFunctions:GNode.kt:io.fluidsonic.graphql.GNode.kt</ID>
+    <ID>TooManyFunctions:Lexer.kt:Lexer</ID>
+    <ID>TooManyFunctions:Parser.kt:Parser</ID>
+    <ID>TooManyFunctions:Printer.kt:Printer</ID>
+    <ID>TooManyFunctions:Visitor.kt:Visitor$Hierarchical&lt;out Result, in Data> : Typed</ID>
+    <ID>TooManyFunctions:Visitor.kt:Visitor$Typed&lt;out Result, in Data> : Visitor</ID>
+    <ID>TooManyFunctions:Visitor.kt:Visitor.Hierarchical$WithoutData&lt;out Result> : Hierarchical</ID>
+    <ID>TooManyFunctions:Visitor.kt:Visitor.Typed$WithoutData&lt;out Result> : Typed</ID>
+  </CurrentIssues>
+</SmellBaseline>

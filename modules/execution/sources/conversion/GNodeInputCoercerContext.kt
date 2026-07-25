@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Context provided to a [GNodeInputCoercer] when coercing an inline input value (AST node).
  *
@@ -12,8 +11,6 @@ public interface GNodeInputCoercerContext : GInputCoercerContext {
 	/** The response path of the field selection that triggered this coercion, or `null` if not within a field. */
 	public val fieldSelectionPath: GPath?
 
-
 	/** Convenience extension to invoke another [GNodeInputCoercer] within this context. */
-	public fun <Input> GNodeInputCoercer<Input>.coerceNodeInput(input: Input): Any? =
-		with(this@GNodeInputCoercerContext) { coerceNodeInput(input) }
+	public fun <Input> GNodeInputCoercer<Input>.coerceNodeInput(input: Input): Any? = with(this@GNodeInputCoercerContext) { coerceNodeInput(input) }
 }

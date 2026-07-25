@@ -1,8 +1,10 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GOperationDefinition
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // GraphQL Spec §2.1 — Source Text
 class SourceTextTests {
@@ -13,13 +15,11 @@ class SourceTextTests {
 		assertEquals(1, doc.definitions.size)
 	}
 
-
 	@Test
 	fun testTabIgnored() {
 		val doc = GDocument.parse("\t{ field }").valueWithoutErrorsOrThrow()
 		assertEquals(1, doc.definitions.size)
 	}
-
 
 	@Test
 	fun testLineFeedTerminator() {
@@ -28,7 +28,6 @@ class SourceTextTests {
 		assertEquals(1, op.selectionSet.selections.size)
 	}
 
-
 	@Test
 	fun testCarriageReturnTerminator() {
 		val doc = GDocument.parse("{\rfield\r}").valueWithoutErrorsOrThrow()
@@ -36,14 +35,12 @@ class SourceTextTests {
 		assertEquals(1, op.selectionSet.selections.size)
 	}
 
-
 	@Test
 	fun testCRLFTerminator() {
 		val doc = GDocument.parse("{\r\nfield\r\n}").valueWithoutErrorsOrThrow()
 		val op = doc.definitions.single() as GOperationDefinition
 		assertEquals(1, op.selectionSet.selections.size)
 	}
-
 
 	@Test
 	fun testCommentIgnored() {
@@ -53,7 +50,6 @@ class SourceTextTests {
 		assertEquals("field", field.name)
 	}
 
-
 	@Test
 	fun testCommentToEndOfLine() {
 		val doc = GDocument.parse("{ field # inline comment\n}").valueWithoutErrorsOrThrow()
@@ -61,14 +57,12 @@ class SourceTextTests {
 		assertEquals(1, op.selectionSet.selections.size)
 	}
 
-
 	@Test
 	fun testInsignificantComma() {
 		val doc = GDocument.parse("{ a, b, c }").valueWithoutErrorsOrThrow()
 		val op = doc.definitions.single() as GOperationDefinition
 		assertEquals(3, op.selectionSet.selections.size)
 	}
-
 
 	@Test
 	fun testInsignificantCommaInArguments() {
@@ -78,14 +72,12 @@ class SourceTextTests {
 		assertEquals(2, field.arguments.size)
 	}
 
-
 	@Test
 	fun testTrailingComma() {
 		val doc = GDocument.parse("{ a, b, }").valueWithoutErrorsOrThrow()
 		val op = doc.definitions.single() as GOperationDefinition
 		assertEquals(2, op.selectionSet.selections.size)
 	}
-
 
 	@Test
 	fun testMaximalMunchToken() {
@@ -96,7 +88,6 @@ class SourceTextTests {
 		val field = selections.single() as GFieldSelection
 		assertEquals("a1", field.name)
 	}
-
 
 	@Test
 	fun testUnicodeBOM() {

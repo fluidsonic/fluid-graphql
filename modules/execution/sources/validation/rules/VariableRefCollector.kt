@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 internal fun collectVariableRefs(
 	selectionSet: GSelectionSet,
 	document: GDocument,
@@ -10,8 +9,9 @@ internal fun collectVariableRefs(
 	for (selection in selectionSet.selections) {
 		when (selection) {
 			is GFieldSelection -> {
-				for (arg in selection.arguments)
+				for (arg in selection.arguments) {
 					collectFromValue(arg.value, result)
+				}
 				selection.selectionSet?.let { result += collectVariableRefs(it, document, visitedFragments) }
 			}
 			is GFragmentSelection -> {
@@ -25,7 +25,6 @@ internal fun collectVariableRefs(
 	}
 	return result
 }
-
 
 private fun collectFromValue(value: GValue, result: MutableList<Pair<String, GVariableRef>>) {
 	when (value) {

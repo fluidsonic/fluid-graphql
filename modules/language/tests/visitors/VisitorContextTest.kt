@@ -1,8 +1,33 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GArgument
+import io.fluidsonic.graphql.GArgumentDefinition
+import io.fluidsonic.graphql.GCustomScalarType
+import io.fluidsonic.graphql.GDirective
+import io.fluidsonic.graphql.GDirectiveDefinition
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFieldDefinition
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GFragmentDefinition
+import io.fluidsonic.graphql.GInputObjectType
+import io.fluidsonic.graphql.GNode
+import io.fluidsonic.graphql.GNonNullType
+import io.fluidsonic.graphql.GObjectValue
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GOperationType
+import io.fluidsonic.graphql.GSchema
+import io.fluidsonic.graphql.GSelection
+import io.fluidsonic.graphql.GSelectionSet
+import io.fluidsonic.graphql.GStringType
+import io.fluidsonic.graphql.GStringValue
+import io.fluidsonic.graphql.GType
+import io.fluidsonic.graphql.Visit
+import io.fluidsonic.graphql.Visitor
+import io.fluidsonic.graphql.VisitorContext
+import io.fluidsonic.graphql.accept
+import io.fluidsonic.graphql.contextualize
+import io.fluidsonic.graphql.equalsNode
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class VisitorContextTest {
 
@@ -27,12 +52,14 @@ class VisitorContextTest {
 		 * }
 		 */
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|directive @directive(string: String!, input: Input!) on QUERY
 			|scalar Scalar
 			|input Input { string: String!, scalar: Scalar }
 			|type Query { field(string: String!, input: Input!): String! }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		val directiveDefinition = schema.directiveDefinition("directive")!!
 		val directiveStringArgumentDefinition = directiveDefinition.argumentDefinition("string")!!
@@ -54,27 +81,27 @@ class VisitorContextTest {
 		val actualElements = context.elements
 		val expectedElements = listOf(
 			CapturedElement(
-				node = document
+				node = document,
 			),
 			CapturedElement(
 				node = operationDefinition,
 				parentNode = document,
 				relatedOperationDefinition = operationDefinition,
-				relatedType = queryType
+				relatedType = queryType,
 			),
 			CapturedElement(
 				node = directive,
 				parentNode = operationDefinition,
 				relatedDirective = directive,
 				relatedDirectiveDefinition = directiveDefinition,
-				relatedOperationDefinition = operationDefinition
+				relatedOperationDefinition = operationDefinition,
 			),
 			CapturedElement(
 				node = directive.nameNode,
 				parentNode = directive,
 				relatedDirective = directive,
 				relatedDirectiveDefinition = directiveDefinition,
-				relatedOperationDefinition = operationDefinition
+				relatedOperationDefinition = operationDefinition,
 			),
 			CapturedElement(
 				node = stringArgument,
@@ -110,7 +137,7 @@ class VisitorContextTest {
 				relatedDirective = directive,
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
-				relatedType = nonNullInputType
+				relatedType = nonNullInputType,
 			),
 			CapturedElement(
 				node = inputArgument.nameNode,
@@ -119,7 +146,7 @@ class VisitorContextTest {
 				relatedDirective = directive,
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
-				relatedType = nonNullInputType
+				relatedType = nonNullInputType,
 			),
 			CapturedElement(
 				node = objectValue,
@@ -128,7 +155,7 @@ class VisitorContextTest {
 				relatedDirective = directive,
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
-				relatedType = nonNullInputType
+				relatedType = nonNullInputType,
 			),
 			CapturedElement(
 				node = stringArgument,
@@ -138,7 +165,7 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = inputType,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringArgument.nameNode,
@@ -148,7 +175,7 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = inputType,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringValue,
@@ -158,7 +185,7 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = inputType,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = scalarArgument,
@@ -168,7 +195,7 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = inputType,
-				relatedType = scalarType
+				relatedType = scalarType,
 			),
 			CapturedElement(
 				node = scalarArgument.nameNode,
@@ -178,7 +205,7 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = inputType,
-				relatedType = scalarType
+				relatedType = scalarType,
 			),
 			CapturedElement(
 				node = scalarObjectValue,
@@ -188,7 +215,7 @@ class VisitorContextTest {
 				relatedDirectiveDefinition = directiveDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = inputType,
-				relatedType = scalarType
+				relatedType = scalarType,
 			),
 			CapturedElement(
 				node = stringArgument,
@@ -222,7 +249,7 @@ class VisitorContextTest {
 				parentNode = operationDefinition,
 				relatedOperationDefinition = operationDefinition,
 				relatedParentType = queryType,
-				relatedSelectionSet = selectionSet
+				relatedSelectionSet = selectionSet,
 			),
 			CapturedElement(
 				node = fieldSelection,
@@ -233,7 +260,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = fieldSelection.nameNode,
@@ -244,7 +271,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringArgument,
@@ -256,7 +283,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringArgument.nameNode,
@@ -268,7 +295,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringValue,
@@ -280,7 +307,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = inputArgument,
@@ -292,7 +319,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullInputType
+				relatedType = nonNullInputType,
 			),
 			CapturedElement(
 				node = inputArgument.nameNode,
@@ -304,7 +331,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullInputType
+				relatedType = nonNullInputType,
 			),
 			CapturedElement(
 				node = objectValue,
@@ -316,7 +343,7 @@ class VisitorContextTest {
 				relatedParentType = queryType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullInputType
+				relatedType = nonNullInputType,
 			),
 			CapturedElement(
 				node = stringArgument,
@@ -328,7 +355,7 @@ class VisitorContextTest {
 				relatedParentType = inputType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringArgument.nameNode,
@@ -340,7 +367,7 @@ class VisitorContextTest {
 				relatedParentType = inputType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = stringValue,
@@ -352,7 +379,7 @@ class VisitorContextTest {
 				relatedParentType = inputType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = nonNullStringType
+				relatedType = nonNullStringType,
 			),
 			CapturedElement(
 				node = scalarArgument,
@@ -364,7 +391,7 @@ class VisitorContextTest {
 				relatedParentType = inputType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = scalarType
+				relatedType = scalarType,
 			),
 			CapturedElement(
 				node = scalarArgument.nameNode,
@@ -376,7 +403,7 @@ class VisitorContextTest {
 				relatedParentType = inputType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = scalarType
+				relatedType = scalarType,
 			),
 			CapturedElement(
 				node = scalarObjectValue,
@@ -388,7 +415,7 @@ class VisitorContextTest {
 				relatedParentType = inputType,
 				relatedSelection = fieldSelection,
 				relatedSelectionSet = selectionSet,
-				relatedType = scalarType
+				relatedType = scalarType,
 			),
 			CapturedElement(
 				node = stringArgument,
@@ -428,7 +455,6 @@ class VisitorContextTest {
 		assertEquals(expected = expectedElements, actual = actualElements)
 	}
 
-
 	@Suppress("EqualsOrHashCode")
 	private data class CapturedElement(
 		val node: GNode,
@@ -446,7 +472,6 @@ class VisitorContextTest {
 		val relatedSelectionSet: GSelectionSet? = null,
 		val relatedType: GType? = null,
 	) {
-
 
 		override fun equals(other: Any?): Boolean {
 			if (this === other) return true
@@ -470,33 +495,28 @@ class VisitorContextTest {
 			return true
 		}
 
-
-		override fun toString(): String {
-			return "CapturedElement(\n" +
-				"\tnode=${identityOf(node)}, \n" +
-				parentNode?.let { "\tparentNode=${identityOf(parentNode)}, \n" }.orEmpty() +
-				relatedArgumentDefinition?.let { "\trelatedArgumentDefinition=${identityOf(relatedArgumentDefinition)}, \n" }.orEmpty() +
-				relatedDirective?.let { "\trelatedDirective=${identityOf(relatedDirective)}, \n" }.orEmpty() +
-				relatedDirectiveDefinition?.let { "\trelatedDirectiveDefinition=${identityOf(relatedDirectiveDefinition)}, \n" }.orEmpty() +
-				relatedFieldDefinition?.let { "\trelatedFieldDefinition=${identityOf(relatedFieldDefinition)}, \n" }.orEmpty() +
-				relatedFieldSelection?.let { "\trelatedFieldSelection=${identityOf(relatedFieldSelection)}, \n" }.orEmpty() +
-				relatedFragmentDefinition?.let { "\trelatedFragmentDefinition=${identityOf(relatedFragmentDefinition)}, \n" }.orEmpty() +
-				relatedOperationDefinition?.let { "\trelatedOperationDefinition=${identityOf(relatedOperationDefinition)}, \n" }.orEmpty() +
-				relatedParentSelectionSet?.let { "\trelatedParentSelectionSet=${identityOf(relatedParentSelectionSet)}, \n" }.orEmpty() +
-				relatedParentType?.let { "\trelatedParentType=${identityOf(relatedParentType)}, \n" }.orEmpty() +
-				relatedSelection?.let { "\trelatedSelection=${identityOf(relatedSelection)}, \n" }.orEmpty() +
-				relatedSelectionSet?.let { "\trelatedSelectionSet=${identityOf(relatedSelectionSet)}, \n" }.orEmpty() +
-				relatedType?.let { "\trelatedType=${identityOf(relatedType)}\n" }.orEmpty() +
-				")"
-		}
+		override fun toString(): String = "CapturedElement(\n" +
+			"\tnode=${identityOf(node)}, \n" +
+			parentNode?.let { "\tparentNode=${identityOf(parentNode)}, \n" }.orEmpty() +
+			relatedArgumentDefinition?.let { "\trelatedArgumentDefinition=${identityOf(relatedArgumentDefinition)}, \n" }.orEmpty() +
+			relatedDirective?.let { "\trelatedDirective=${identityOf(relatedDirective)}, \n" }.orEmpty() +
+			relatedDirectiveDefinition?.let { "\trelatedDirectiveDefinition=${identityOf(relatedDirectiveDefinition)}, \n" }.orEmpty() +
+			relatedFieldDefinition?.let { "\trelatedFieldDefinition=${identityOf(relatedFieldDefinition)}, \n" }.orEmpty() +
+			relatedFieldSelection?.let { "\trelatedFieldSelection=${identityOf(relatedFieldSelection)}, \n" }.orEmpty() +
+			relatedFragmentDefinition?.let { "\trelatedFragmentDefinition=${identityOf(relatedFragmentDefinition)}, \n" }.orEmpty() +
+			relatedOperationDefinition?.let { "\trelatedOperationDefinition=${identityOf(relatedOperationDefinition)}, \n" }.orEmpty() +
+			relatedParentSelectionSet?.let { "\trelatedParentSelectionSet=${identityOf(relatedParentSelectionSet)}, \n" }.orEmpty() +
+			relatedParentType?.let { "\trelatedParentType=${identityOf(relatedParentType)}, \n" }.orEmpty() +
+			relatedSelection?.let { "\trelatedSelection=${identityOf(relatedSelection)}, \n" }.orEmpty() +
+			relatedSelectionSet?.let { "\trelatedSelectionSet=${identityOf(relatedSelectionSet)}, \n" }.orEmpty() +
+			relatedType?.let { "\trelatedType=${identityOf(relatedType)}\n" }.orEmpty() +
+			")"
 	}
-
 
 	private class CapturingContext(document: GDocument, schema: GSchema) : VisitorContext(document, schema) {
 
 		val elements = mutableListOf<CapturedElement>()
 	}
-
 
 	private class CapturingVisitor : Visitor.Hierarchical<Unit, CapturingContext>() {
 

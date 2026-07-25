@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentCycleDetectionRule
+import kotlin.test.Test
 
 class FragmentCycleDetectionRuleTest {
 
@@ -30,10 +29,9 @@ class FragmentCycleDetectionRuleTest {
 				|  }
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsCyclicFragmentReferences() {
@@ -84,7 +82,7 @@ class FragmentCycleDetectionRuleTest {
 					10 |   ...nameFragment
 					   |      ^
 					11 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -112,7 +110,7 @@ class FragmentCycleDetectionRuleTest {
 				|  ...nameFragment
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
 }

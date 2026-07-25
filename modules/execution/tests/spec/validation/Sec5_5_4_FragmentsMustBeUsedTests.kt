@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentDefinitionUsageRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.5.4 — Fragments Must Be Used
 class Sec5_5_4_FragmentsMustBeUsedTests {
@@ -19,23 +20,24 @@ class Sec5_5_4_FragmentsMustBeUsedTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsUnusedFragment() {
 		assertValidationRule(
 			rule = FragmentDefinitionUsageRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Fragment 'dogFields' is not used by any operation.
 
 				<document>:2:10
 				1 | { dog { name } }
 				2 | fragment dogFields on Dog { name }
 				  |          ^
-			"""),
+			""",
+			),
 			document = """
 				|{ dog { name } }
 				|fragment dogFields on Dog { name }
@@ -43,10 +45,9 @@ class Sec5_5_4_FragmentsMustBeUsedTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsMultipleUsedFragments() {
@@ -62,10 +63,9 @@ class Sec5_5_4_FragmentsMustBeUsedTests {
 				|type Query { dog: Dog cat: Cat }
 				|type Dog { name: String }
 				|type Cat { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsMultipleUnusedFragments() {
@@ -88,7 +88,7 @@ class Sec5_5_4_FragmentsMustBeUsedTests {
 					2 | fragment fragA on Query { id }
 					3 | fragment fragB on Query { id }
 					  |          ^
-				"""
+				""",
 			),
 			document = """
 				|{ id }
@@ -97,7 +97,7 @@ class Sec5_5_4_FragmentsMustBeUsedTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
 }

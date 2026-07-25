@@ -1,8 +1,21 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GError
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §6.4 — Executing Fields
 class ExecutingFieldsTests {
@@ -20,10 +33,9 @@ class ExecutingFieldsTests {
 		val result = executor.serializeResult(executor.execute("{ hello }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("hello" to "world")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testNullableFieldReturnsNull() = runTest {
@@ -36,10 +48,9 @@ class ExecutingFieldsTests {
 		val result = executor.serializeResult(executor.execute("{ nullable }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("nullable" to null)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testListFieldReturnsElements() = runTest {
@@ -52,10 +63,9 @@ class ExecutingFieldsTests {
 		val result = executor.serializeResult(executor.execute("{ items }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("items" to listOf("a", "b", "c"))),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testNestedObjectField() = runTest {
@@ -76,10 +86,9 @@ class ExecutingFieldsTests {
 		val result = executor.serializeResult(executor.execute("{ inner { value } }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("inner" to mapOf("value" to "nested"))),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testTypenameOnObjectType() = runTest {
@@ -92,10 +101,9 @@ class ExecutingFieldsTests {
 		val result = executor.serializeResult(executor.execute("{ __typename }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("__typename" to "Query")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testTypenameOnInterface() = runTest {
@@ -124,7 +132,6 @@ class ExecutingFieldsTests {
 		assertEquals(expected = "Rex", actual = animalData["name"])
 	}
 
-
 	@Test
 	fun testTypenameOnUnion() = runTest {
 		val schema = GraphQL.schema {
@@ -150,13 +157,12 @@ class ExecutingFieldsTests {
 		}
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.serializeResult(
-			executor.execute("{ search { __typename ... on Dog { name } } }")
+			executor.execute("{ search { __typename ... on Dog { name } } }"),
 		)
 		val searchData = (result["data"] as Map<*, *>)["search"] as Map<*, *>
 		assertEquals(expected = "Dog", actual = searchData["__typename"])
 		assertEquals(expected = "Buddy", actual = searchData["name"])
 	}
-
 
 	// --- Null propagation ---
 
@@ -179,7 +185,6 @@ class ExecutingFieldsTests {
 		assertNull(data["risky"])
 		assertNotNull(result["errors"])
 	}
-
 
 	@Test
 	fun testNonNullFieldPropagatesError() = runTest {
@@ -205,7 +210,6 @@ class ExecutingFieldsTests {
 		assertNull(data["parent"])
 		assertNotNull(result["errors"])
 	}
-
 
 	@Test
 	fun testNonNullChainPropagation() = runTest {
@@ -233,7 +237,6 @@ class ExecutingFieldsTests {
 		assertNotNull(result["errors"])
 	}
 
-
 	@Test
 	fun testPartialSuccessWithErrors() = runTest {
 		val schema = GraphQL.schema {
@@ -252,7 +255,6 @@ class ExecutingFieldsTests {
 		assertNotNull(result["errors"])
 	}
 
-
 	// --- Aliasing ---
 
 	@Test
@@ -270,7 +272,6 @@ class ExecutingFieldsTests {
 		assertEquals(expected = "value", actual = data["myAlias"])
 	}
 
-
 	@Test
 	fun testMultipleAliasesSameField() = runTest {
 		val schema = GraphQL.schema {
@@ -283,14 +284,13 @@ class ExecutingFieldsTests {
 		}
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.serializeResult(
-			executor.execute("""{ a: greet(name: "Alice") b: greet(name: "Bob") }""")
+			executor.execute("""{ a: greet(name: "Alice") b: greet(name: "Bob") }"""),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("a" to "Hello, Alice!", "b" to "Hello, Bob!")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	// --- Skip/Include combinations ---
 
@@ -308,7 +308,6 @@ class ExecutingFieldsTests {
 		assertEquals(expected = "fooValue", actual = data["foo"])
 	}
 
-
 	@Test
 	fun testSkipTrueOverridesIncludeTrue() = runTest {
 		val schema = GraphQL.schema {
@@ -324,7 +323,6 @@ class ExecutingFieldsTests {
 		assertTrue("foo" !in data)
 		assertEquals(expected = "barValue", actual = data["bar"])
 	}
-
 
 	private data class InnerData(val value: String)
 	private data class ParentData(val dummy: String = "")

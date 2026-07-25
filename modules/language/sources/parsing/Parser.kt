@@ -2,29 +2,21 @@ package io.fluidsonic.graphql
 
 import io.fluidsonic.graphql.Token.Kind as TokenKind
 
-
-internal class Parser private constructor(
-	source: GDocumentSource.Parsable,
-) {
+internal class Parser private constructor(source: GDocumentSource.Parsable) {
 
 	private val lexer = Lexer(source = source)
 
-
-	private inline fun <T> any(
-		openKind: TokenKind,
-		parse: () -> T,
-		closeKind: TokenKind,
-	): List<T> {
+	private inline fun <T> any(openKind: TokenKind, parse: () -> T, closeKind: TokenKind): List<T> {
 		expectToken(openKind)
 
 		val elements = mutableListOf<T>()
 
-		while (expectOptionalToken(closeKind) == null)
+		while (expectOptionalToken(closeKind) == null) {
 			elements += parse()
+		}
 
 		return elements
 	}
-
 
 	private fun expectKeyword(keyword: String) {
 		lexer.currentToken
@@ -33,72 +25,54 @@ internal class Parser private constructor(
 			?: unexpectedTokenError(expected = "\"$keyword\"")
 	}
 
+	private fun expectOptionalKeyword(keyword: String) = null != lexer.currentToken
+		.takeIf { it.kind == TokenKind.NAME && it.value == keyword }
+		?.also { lexer.advance() }
 
-	private fun expectOptionalKeyword(keyword: String) =
-		null != lexer.currentToken
-			.takeIf { it.kind == TokenKind.NAME && it.value == keyword }
-			?.also { lexer.advance() }
+	private fun expectOptionalToken(kind: TokenKind) = lexer.currentToken
+		.takeIf { it.kind == kind }
+		?.also { lexer.advance() }
 
+	private fun expectToken(kind: TokenKind) = lexer.currentToken
+		.takeIf { it.kind == kind }
+		?.also { lexer.advance() }
+		?: unexpectedTokenError(expected = kind.toString())
 
-	private fun expectOptionalToken(kind: TokenKind) =
-		lexer.currentToken
-			.takeIf { it.kind == kind }
-			?.also { lexer.advance() }
-
-
-	private fun expectToken(kind: TokenKind) =
-		lexer.currentToken
-			.takeIf { it.kind == kind }
-			?.also { lexer.advance() }
-			?: unexpectedTokenError(expected = kind.toString())
-
-
-	private fun makeOrigin(startToken: Token, endToken: Token = lexer.previousToken) =
-		lexer.source.makeOrigin(
-			startPosition = startToken.startPosition,
-			endPosition = endToken.endPosition,
-			column = startToken.startPosition - startToken.linePosition + 1,
-			line = startToken.lineNumber
+	private fun makeOrigin(startToken: Token, endToken: Token = lexer.previousToken) = lexer.source.makeOrigin(
+		startPosition = startToken.startPosition,
+		endPosition = endToken.endPosition,
+		column = startToken.startPosition - startToken.linePosition + 1,
+		line = startToken.lineNumber,
+	)
+		?: DocumentPosition(
+			source = lexer.source,
+			startToken = startToken,
+			endToken = endToken,
 		)
-			?: DocumentPosition(
-				source = lexer.source,
-				startToken = startToken,
-				endToken = endToken
-			)
 
-
-	private inline fun <T> many(
-		openKind: TokenKind,
-		parse: () -> T,
-		closeKind: TokenKind,
-	): List<T> {
+	private inline fun <T> many(openKind: TokenKind, parse: () -> T, closeKind: TokenKind): List<T> {
 		val elements = mutableListOf<T>()
 
 		expectToken(openKind)
 
-		do elements += parse()
-		while (expectOptionalToken(closeKind) == null)
+		do {
+			elements += parse()
+		} while (expectOptionalToken(closeKind) == null)
 
 		return elements
 	}
 
+	private inline fun <T> optionalMany(openKind: TokenKind, parse: () -> T, closeKind: TokenKind) = if (expectOptionalToken(openKind) != null) {
+		val elements = mutableListOf<T>()
 
-	private inline fun <T> optionalMany(
-		openKind: TokenKind,
-		parse: () -> T,
-		closeKind: TokenKind,
-	) =
-		if (expectOptionalToken(openKind) != null) {
-			val elements = mutableListOf<T>()
+		do {
+			elements += parse()
+		} while (expectOptionalToken(closeKind) == null)
 
-			do elements += parse()
-			while (expectOptionalToken(closeKind) == null)
-
-			elements
-		}
-		else
-			emptyList()
-
+		elements
+	} else {
+		emptyList()
+	}
 
 	private fun parseArgument(isConstant: Boolean): GArgument {
 		val startToken = lexer.currentToken
@@ -109,18 +83,15 @@ internal class Parser private constructor(
 		return GArgument(
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			value = value
+			value = value,
 		)
 	}
 
-
-	private fun parseArguments(isConstant: Boolean) =
-		optionalMany(
-			TokenKind.PAREN_L,
-			{ parseArgument(isConstant) },
-			TokenKind.PAREN_R
-		)
-
+	private fun parseArguments(isConstant: Boolean) = optionalMany(
+		TokenKind.PAREN_L,
+		{ parseArgument(isConstant) },
+		TokenKind.PAREN_R,
+	)
 
 	private fun parseArgumentDefinition(definitionType: ArgumentDefinitionType): GArgumentDefinition {
 		val startToken = lexer.currentToken
@@ -140,7 +111,7 @@ internal class Parser private constructor(
 					directives = directives,
 					name = name,
 					origin = makeOrigin(startToken = startToken),
-					type = type
+					type = type,
 				)
 
 			ArgumentDefinitionType.fieldDefinition ->
@@ -150,7 +121,7 @@ internal class Parser private constructor(
 					directives = directives,
 					name = name,
 					origin = makeOrigin(startToken = startToken),
-					type = type
+					type = type,
 				)
 
 			ArgumentDefinitionType.inputField ->
@@ -160,54 +131,47 @@ internal class Parser private constructor(
 					directives = directives,
 					name = name,
 					origin = makeOrigin(startToken = startToken),
-					type = type
+					type = type,
 				)
 		}
 	}
 
+	private fun parseArgumentDefinitions(isBlock: Boolean, definitionType: ArgumentDefinitionType) = optionalMany(
+		if (isBlock) TokenKind.BRACE_L else TokenKind.PAREN_L,
+		{ parseArgumentDefinition(definitionType) },
+		if (isBlock) TokenKind.BRACE_R else TokenKind.PAREN_R,
+	)
 
-	private fun parseArgumentDefinitions(isBlock: Boolean, definitionType: ArgumentDefinitionType) =
-		optionalMany(
-			if (isBlock) TokenKind.BRACE_L else TokenKind.PAREN_L,
-			{ parseArgumentDefinition(definitionType) },
-			if (isBlock) TokenKind.BRACE_R else TokenKind.PAREN_R
-		)
+	private fun parseDefinition() = when {
+		peek(TokenKind.NAME) ->
+			when (lexer.currentToken.value) {
+				"directive", "input", "enum", "interface", "scalar", "schema", "type", "union" ->
+					parseTypeSystemDefinition()
 
+				"extend" ->
+					parseTypeSystemExtension()
 
-	private fun parseDefinition() =
-		when {
-			peek(TokenKind.NAME) ->
-				when (lexer.currentToken.value) {
-					"directive", "input", "enum", "interface", "scalar", "schema", "type", "union" ->
-						parseTypeSystemDefinition()
+				"fragment" ->
+					parseFragmentDefinition()
 
-					"extend" ->
-						parseTypeSystemExtension()
+				"mutation", "query", "subscription" ->
+					parseOperationDefinition()
 
-					"fragment" ->
-						parseFragmentDefinition()
+				else ->
+					unexpectedTokenError()
+			}
 
-					"mutation", "query", "subscription" ->
-						parseOperationDefinition()
+		peek(TokenKind.BRACE_L) ->
+			parseOperationDefinition()
 
-					else ->
-						unexpectedTokenError()
-				}
+		peekDescription() ->
+			parseTypeSystemDefinition()
 
-			peek(TokenKind.BRACE_L) ->
-				parseOperationDefinition()
+		else ->
+			unexpectedTokenError()
+	}
 
-			peekDescription() ->
-				parseTypeSystemDefinition()
-
-			else ->
-				unexpectedTokenError()
-		}
-
-
-	private fun parseDescription() =
-		peekDescription().thenTake { parseStringValue() }
-
+	private fun parseDescription() = peekDescription().thenTake { parseStringValue() }
 
 	private fun parseDirective(isConstant: Boolean): GDirective {
 		val startToken = expectToken(TokenKind.AT)
@@ -217,10 +181,9 @@ internal class Parser private constructor(
 		return GDirective(
 			arguments = arguments,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	@Suppress("UNCHECKED_CAST")
 	private fun parseDirectiveDefinition(): GDirectiveDefinition {
@@ -241,61 +204,59 @@ internal class Parser private constructor(
 			isRepeatable = isRepeatable,
 			locations = locations,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseDirectiveLocation(): GName {
 		val token = lexer.currentToken
 		val name = parseName()
 
-		if (GDirectiveLocation.values().none { it.name == name.value })
+		if (GDirectiveLocation.values().none { it.name == name.value }) {
 			GError.syntax(
 				details = "'${name.value}' is not a valid directive location. Valid values are: ${GDirectiveLocation.values().sortedBy { it.name }.joinToString()}",
-				origin = makeOrigin(startToken = token, endToken = token)
+				origin = makeOrigin(startToken = token, endToken = token),
 			).throwException()
+		}
 
 		return name
 	}
-
 
 	private fun parseDirectiveLocations(): List<GName> {
 		val locations = mutableListOf<GName>()
 
 		expectOptionalToken(TokenKind.PIPE)
 
-		do locations += parseDirectiveLocation()
-		while (expectOptionalToken(TokenKind.PIPE) != null)
+		do {
+			locations += parseDirectiveLocation()
+		} while (expectOptionalToken(TokenKind.PIPE) != null)
 
 		return locations
 	}
 
-
 	private fun parseDirectives(isConstant: Boolean): List<GDirective> {
 		val directives = mutableListOf<GDirective>()
 
-		while (peek(TokenKind.AT))
+		while (peek(TokenKind.AT)) {
 			directives += parseDirective(isConstant = isConstant)
+		}
 
 		return directives
 	}
-
 
 	private fun parseDocument(): GDocument {
 		val startToken = lexer.currentToken
 		val definitions = many(
 			TokenKind.START_OF_INPUT,
 			this::parseDefinition,
-			TokenKind.END_OF_INPUT
+			TokenKind.END_OF_INPUT,
 		)
 
 		return GDocument(
 			definitions = definitions,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	@Suppress("UNUSED_EXPRESSION") // https://youtrack.jetbrains.com/issue/KT-21282
 	private inline fun <Result> parseEntireInput(parse: Parser.() -> Result): Result {
@@ -305,7 +266,6 @@ internal class Parser private constructor(
 
 		return result
 	}
-
 
 	private fun parseEnumTypeDefinition(): GEnumType {
 		val startToken = lexer.currentToken
@@ -320,10 +280,9 @@ internal class Parser private constructor(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			values = values
+			values = values,
 		)
 	}
-
 
 	private fun parseEnumTypeExtension(): GEnumTypeExtension {
 		val startToken = lexer.currentToken
@@ -333,17 +292,17 @@ internal class Parser private constructor(
 		val directives = parseDirectives(isConstant = true)
 		val values = parseEnumValueDefinitions()
 
-		if (directives.isEmpty() && values.isEmpty())
+		if (directives.isEmpty() && values.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GEnumTypeExtension(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			values = values
+			values = values,
 		)
 	}
-
 
 	private fun parseEnumValueDefinition(): GEnumValueDefinition {
 		val startToken = lexer.currentToken
@@ -355,18 +314,15 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
 
-
-	private fun parseEnumValueDefinitions() =
-		optionalMany(
-			TokenKind.BRACE_L,
-			this::parseEnumValueDefinition,
-			TokenKind.BRACE_R
-		)
-
+	private fun parseEnumValueDefinitions() = optionalMany(
+		TokenKind.BRACE_L,
+		this::parseEnumValueDefinition,
+		TokenKind.BRACE_R,
+	)
 
 	private fun parseFieldSelection(): GFieldSelection {
 		val startToken = lexer.currentToken
@@ -378,8 +334,7 @@ internal class Parser private constructor(
 		if (expectOptionalToken(TokenKind.COLON) != null) {
 			alias = nameOrAlias
 			name = parseName()
-		}
-		else {
+		} else {
 			alias = null
 			name = nameOrAlias
 		}
@@ -394,10 +349,9 @@ internal class Parser private constructor(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			selectionSet = selectionSet
+			selectionSet = selectionSet,
 		)
 	}
-
 
 	@Suppress("UNCHECKED_CAST")
 	private fun parseFieldDefinition(): GFieldDefinition {
@@ -416,18 +370,15 @@ internal class Parser private constructor(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			type = type
+			type = type,
 		)
 	}
 
-
-	private fun parseFieldDefinitions() =
-		optionalMany(
-			TokenKind.BRACE_L,
-			this::parseFieldDefinition,
-			TokenKind.BRACE_R
-		)
-
+	private fun parseFieldDefinitions() = optionalMany(
+		TokenKind.BRACE_L,
+		this::parseFieldDefinition,
+		TokenKind.BRACE_R,
+	)
 
 	private fun parseFragmentSelection(): GSelection {
 		val startToken = expectToken(TokenKind.SPREAD)
@@ -440,7 +391,7 @@ internal class Parser private constructor(
 			return GFragmentSelection(
 				directives = directives,
 				name = name,
-				origin = makeOrigin(startToken = startToken)
+				origin = makeOrigin(startToken = startToken),
 			)
 		}
 
@@ -452,10 +403,9 @@ internal class Parser private constructor(
 			directives = directives,
 			selectionSet = selectionSet,
 			origin = makeOrigin(startToken = startToken),
-			typeCondition = typeCondition
+			typeCondition = typeCondition,
 		)
 	}
-
 
 	private fun parseFragmentDefinition(): GFragmentDefinition {
 		val startToken = lexer.currentToken
@@ -473,31 +423,29 @@ internal class Parser private constructor(
 			origin = makeOrigin(startToken = startToken),
 			selectionSet = selectionSet,
 			typeCondition = typeCondition,
-			variableDefinitions = variableDefinitions
+			variableDefinitions = variableDefinitions,
 		)
 	}
 
-
-	private fun parseFragmentName() =
-		lexer.currentToken
-			.takeIf { it.value != "on" }
-			?.let { parseName() }
-			?: unexpectedTokenError()
-
+	private fun parseFragmentName() = lexer.currentToken
+		.takeIf { it.value != "on" }
+		?.let { parseName() }
+		?: unexpectedTokenError()
 
 	private fun parseImplementsInterfaces(): List<GNamedTypeRef> {
-		if (!expectOptionalKeyword("implements"))
+		if (!expectOptionalKeyword("implements")) {
 			return emptyList()
+		}
 
 		val interfaces = mutableListOf<GNamedTypeRef>()
 
 		expectOptionalToken(TokenKind.AMP)
-		do interfaces += parseNamedType()
-		while (expectOptionalToken(TokenKind.AMP) != null)
+		do {
+			interfaces += parseNamedType()
+		} while (expectOptionalToken(TokenKind.AMP) != null)
 
 		return interfaces
 	}
-
 
 	@Suppress("UNCHECKED_CAST")
 	private fun parseInputObjectTypeDefinition(): GInputObjectType {
@@ -514,10 +462,9 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	@Suppress("UNCHECKED_CAST")
 	private fun parseInputObjectTypeExtension(): GInputObjectTypeExtension {
@@ -529,17 +476,17 @@ internal class Parser private constructor(
 		val arguments = parseArgumentDefinitions(isBlock = true, definitionType = ArgumentDefinitionType.inputField)
 			as List<GInputObjectArgumentDefinition>
 
-		if (directives.isEmpty() && arguments.isEmpty())
+		if (directives.isEmpty() && arguments.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GInputObjectTypeExtension(
 			argumentDefinitions = arguments,
 			directives = directives,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseInterfaceTypeDefinition(): GInterfaceType {
 		val startToken = lexer.currentToken
@@ -556,10 +503,9 @@ internal class Parser private constructor(
 			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseInterfaceTypeExtension(): GInterfaceTypeExtension {
 		val startToken = lexer.currentToken
@@ -570,43 +516,41 @@ internal class Parser private constructor(
 		val directives = parseDirectives(isConstant = true)
 		val fields = parseFieldDefinitions()
 
-		if (interfaces.isEmpty() && directives.isEmpty() && fields.isEmpty())
+		if (interfaces.isEmpty() && directives.isEmpty() && fields.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GInterfaceTypeExtension(
 			directives = directives,
 			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseList(isConstant: Boolean): GListValue {
 		val startToken = lexer.currentToken
 		val elements = any(
 			TokenKind.BRACKET_L,
 			{ parseValue(isConstant = isConstant) },
-			TokenKind.BRACKET_R
+			TokenKind.BRACKET_R,
 		)
 
 		return GListValue(
 			elements = elements,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseName(): GName {
 		val startToken = expectToken(TokenKind.NAME)
 
 		return GName(
 			origin = makeOrigin(startToken = startToken),
-			value = startToken.value!!
+			value = startToken.value!!,
 		)
 	}
-
 
 	private fun parseNamedType(): GNamedTypeRef {
 		val startToken = lexer.currentToken
@@ -614,10 +558,9 @@ internal class Parser private constructor(
 
 		return GNamedTypeRef(
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseObjectTypeDefinition(): GObjectType {
 		val startToken = lexer.currentToken
@@ -634,10 +577,9 @@ internal class Parser private constructor(
 			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseObjectTypeExtension(): GObjectTypeExtension {
 		val startToken = lexer.currentToken
@@ -648,33 +590,32 @@ internal class Parser private constructor(
 		val directives = parseDirectives(true)
 		val fields = parseFieldDefinitions()
 
-		if (interfaces.isEmpty() && directives.isEmpty() && fields.isEmpty())
+		if (interfaces.isEmpty() && directives.isEmpty() && fields.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GObjectTypeExtension(
 			directives = directives,
 			fieldDefinitions = fields,
 			interfaces = interfaces,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseObjectValue(isConstant: Boolean): GObjectValue {
 		val startToken = lexer.currentToken
 		val arguments = any(
 			TokenKind.BRACE_L,
 			{ parseArgument(isConstant = isConstant) },
-			TokenKind.BRACE_R
+			TokenKind.BRACE_R,
 		)
 
 		return GObjectValue(
 			arguments = arguments,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseOperationDefinition(): GOperationDefinition {
 		val startToken = lexer.currentToken
@@ -688,7 +629,7 @@ internal class Parser private constructor(
 				origin = makeOrigin(startToken = startToken),
 				selectionSet = selectionSet,
 				type = GOperationType.query,
-				variableDefinitions = emptyList()
+				variableDefinitions = emptyList(),
 			)
 		}
 
@@ -704,10 +645,9 @@ internal class Parser private constructor(
 			origin = makeOrigin(startToken = startToken),
 			selectionSet = selectionSet,
 			type = type,
-			variableDefinitions = variableDefinitions
+			variableDefinitions = variableDefinitions,
 		)
 	}
-
 
 	private fun parseOperationType(): GOperationType {
 		val token = expectToken(TokenKind.NAME)
@@ -720,7 +660,6 @@ internal class Parser private constructor(
 		}
 	}
 
-
 	private fun parseOperationTypeDefinition(): GOperationTypeDefinition {
 		val startToken = lexer.currentToken
 		val operation = parseOperationType()
@@ -730,10 +669,9 @@ internal class Parser private constructor(
 		return GOperationTypeDefinition(
 			operationType = operation,
 			origin = makeOrigin(startToken = startToken),
-			type = type
+			type = type,
 		)
 	}
-
 
 	private fun parseScalarTypeExtension(): GScalarTypeExtension {
 		val startToken = lexer.currentToken
@@ -742,16 +680,16 @@ internal class Parser private constructor(
 		val name = parseName()
 		val directives = parseDirectives(isConstant = true)
 
-		if (directives.isEmpty())
+		if (directives.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GScalarTypeExtension(
 			directives = directives,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseSchemaExtension(): GSchemaExtension {
 		val startToken = lexer.currentToken
@@ -761,19 +699,19 @@ internal class Parser private constructor(
 		val operationTypes = optionalMany(
 			TokenKind.BRACE_L,
 			this::parseOperationTypeDefinition,
-			TokenKind.BRACE_R
+			TokenKind.BRACE_R,
 		)
 
-		if (directives.isEmpty() && operationTypes.isEmpty())
+		if (directives.isEmpty() && operationTypes.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GSchemaExtension(
 			directives = directives,
 			operationTypeDefinitions = operationTypes,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseScalarTypeDefinition(): GCustomScalarType {
 		val startToken = lexer.currentToken
@@ -786,10 +724,9 @@ internal class Parser private constructor(
 			description = description,
 			directives = directives,
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseSchemaDefinition(): GSchemaDefinition {
 		val startToken = lexer.currentToken
@@ -799,37 +736,36 @@ internal class Parser private constructor(
 		val operationTypes = many(
 			TokenKind.BRACE_L,
 			this::parseOperationTypeDefinition,
-			TokenKind.BRACE_R
+			TokenKind.BRACE_R,
 		)
 
 		return GSchemaDefinition(
 			descriptionNode = descriptionNode,
 			directives = directives,
 			operationTypeDefinitions = operationTypes,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
 
-
-	private fun parseSelection() =
-		if (peek(TokenKind.SPREAD)) parseFragmentSelection()
-		else parseFieldSelection()
-
+	private fun parseSelection() = if (peek(TokenKind.SPREAD)) {
+		parseFragmentSelection()
+	} else {
+		parseFieldSelection()
+	}
 
 	private fun parseSelectionSet(): GSelectionSet {
 		val startToken = lexer.currentToken
 		val selections = many(
 			TokenKind.BRACE_L,
 			this::parseSelection,
-			TokenKind.BRACE_R
+			TokenKind.BRACE_R,
 		)
 
 		return GSelectionSet(
 			origin = makeOrigin(startToken = startToken),
-			selections = selections
+			selections = selections,
 		)
 	}
-
 
 	private fun parseStringValue(): GStringValue {
 		val startToken = lexer.currentToken
@@ -838,10 +774,9 @@ internal class Parser private constructor(
 		return GStringValue(
 			isBlock = startToken.kind == TokenKind.BLOCK_STRING,
 			origin = makeOrigin(startToken = startToken),
-			value = startToken.value!!
+			value = startToken.value!!,
 		)
 	}
-
 
 	private fun parseTypeReference(): GTypeRef {
 		val startToken = lexer.currentToken
@@ -853,29 +788,33 @@ internal class Parser private constructor(
 
 			type = GListTypeRef(
 				elementType = type,
-				origin = makeOrigin(startToken = startToken)
+				origin = makeOrigin(startToken = startToken),
 			)
-		}
-		else
+		} else {
 			type = parseNamedType()
+		}
 
-		if (expectOptionalToken(TokenKind.BANG) != null)
+		if (expectOptionalToken(TokenKind.BANG) != null) {
 			type = GNonNullTypeRef(
 				nullableRef = type,
-				origin = makeOrigin(startToken = startToken)
+				origin = makeOrigin(startToken = startToken),
 			)
+		}
 
 		return type
 	}
 
-
 	private fun parseTypeSystemDefinition(): GTypeSystemDefinition {
 		val keywordToken =
-			if (peekDescription()) lexer.lookahead()
-			else lexer.currentToken
+			if (peekDescription()) {
+				lexer.lookahead()
+			} else {
+				lexer.currentToken
+			}
 
-		if (keywordToken.kind != TokenKind.NAME)
+		if (keywordToken.kind != TokenKind.NAME) {
 			unexpectedTokenError(keywordToken)
+		}
 
 		return when (keywordToken.value) {
 			"directive" -> parseDirectiveDefinition()
@@ -890,11 +829,11 @@ internal class Parser private constructor(
 		}
 	}
 
-
 	private fun parseTypeSystemExtension(): GTypeSystemExtension {
 		val keywordToken = lexer.lookahead()
-		if (keywordToken.kind != TokenKind.NAME)
+		if (keywordToken.kind != TokenKind.NAME) {
 			unexpectedTokenError(keywordToken)
+		}
 
 		return when (keywordToken.value) {
 			"schema" -> parseSchemaExtension()
@@ -908,20 +847,20 @@ internal class Parser private constructor(
 		}
 	}
 
-
 	private fun parseUnionMemberTypes(): List<GNamedTypeRef> {
-		if (expectOptionalToken(TokenKind.EQUALS) == null)
+		if (expectOptionalToken(TokenKind.EQUALS) == null) {
 			return emptyList()
+		}
 
 		val types = mutableListOf<GNamedTypeRef>()
 
 		expectOptionalToken(TokenKind.PIPE)
-		do types += parseNamedType()
-		while (expectOptionalToken(TokenKind.PIPE) != null)
+		do {
+			types += parseNamedType()
+		} while (expectOptionalToken(TokenKind.PIPE) != null)
 
 		return types
 	}
-
 
 	private fun parseUnionTypeDefinition(): GUnionType {
 		val startToken = lexer.currentToken
@@ -936,10 +875,9 @@ internal class Parser private constructor(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			possibleTypes = types
+			possibleTypes = types,
 		)
 	}
-
 
 	private fun parseUnionTypeExtension(): GUnionTypeExtension {
 		val startToken = lexer.currentToken
@@ -949,17 +887,17 @@ internal class Parser private constructor(
 		val directives = parseDirectives(isConstant = true)
 		val types = parseUnionMemberTypes()
 
-		if (directives.isEmpty() && types.isEmpty())
+		if (directives.isEmpty() && types.isEmpty()) {
 			unexpectedTokenError()
+		}
 
 		return GUnionTypeExtension(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			possibleTypes = types
+			possibleTypes = types,
 		)
 	}
-
 
 	private fun parseValue(isConstant: Boolean): GValue {
 		val startToken = lexer.currentToken
@@ -975,11 +913,10 @@ internal class Parser private constructor(
 				val stringValue = startToken.value!!
 				val floatValue = try {
 					stringValue.toDouble()
-				}
-				catch (e: NumberFormatException) {
+				} catch (e: NumberFormatException) {
 					GError.syntax(
 						details = "Invalid Float value '$stringValue'",
-						origin = makeOrigin(startToken = startToken, endToken = startToken)
+						origin = makeOrigin(startToken = startToken, endToken = startToken),
 					).throwException()
 				}
 
@@ -987,7 +924,7 @@ internal class Parser private constructor(
 
 				GFloatValue(
 					origin = makeOrigin(startToken = startToken),
-					value = floatValue
+					value = floatValue,
 				)
 			}
 
@@ -995,11 +932,10 @@ internal class Parser private constructor(
 				val stringValue = startToken.value!!
 				val intValue = try {
 					stringValue.toInt()
-				}
-				catch (e: NumberFormatException) {
+				} catch (e: NumberFormatException) {
 					GError.syntax(
 						details = "Invalid Int value '$stringValue'",
-						origin = makeOrigin(startToken = startToken, endToken = startToken)
+						origin = makeOrigin(startToken = startToken, endToken = startToken),
 					).throwException()
 				}
 
@@ -1007,7 +943,7 @@ internal class Parser private constructor(
 
 				GIntValue(
 					origin = makeOrigin(startToken = startToken),
-					value = intValue
+					value = intValue,
 				)
 			}
 
@@ -1023,33 +959,33 @@ internal class Parser private constructor(
 					"true", "false" ->
 						GBooleanValue(
 							origin = makeOrigin(startToken = startToken),
-							value = startToken.value == "true"
+							value = startToken.value == "true",
 						)
 
 					"null" ->
 						GNullValue(
-							origin = makeOrigin(startToken = startToken)
+							origin = makeOrigin(startToken = startToken),
 						)
 
 					else ->
 						GEnumValue(
 							name = startToken.value!!,
-							origin = makeOrigin(startToken = startToken)
+							origin = makeOrigin(startToken = startToken),
 						)
 				}
 			}
 
 			TokenKind.DOLLAR ->
-				if (isConstant)
+				if (isConstant) {
 					unexpectedTokenError()
-				else
+				} else {
 					parseVariable()
+				}
 
 			else ->
 				unexpectedTokenError()
 		}
 	}
-
 
 	private fun parseVariable(): GVariableRef {
 		val startToken = lexer.currentToken
@@ -1058,10 +994,9 @@ internal class Parser private constructor(
 
 		return GVariableRef(
 			name = name,
-			origin = makeOrigin(startToken = startToken)
+			origin = makeOrigin(startToken = startToken),
 		)
 	}
-
 
 	private fun parseVariableDefinition(): GVariableDefinition {
 		val startToken = lexer.currentToken
@@ -1077,93 +1012,68 @@ internal class Parser private constructor(
 			directives = directives,
 			name = name,
 			origin = makeOrigin(startToken = startToken),
-			type = type
+			type = type,
 		)
 	}
 
+	private fun parseVariableDefinitions() = optionalMany(
+		TokenKind.PAREN_L,
+		this::parseVariableDefinition,
+		TokenKind.PAREN_R,
+	)
 
-	private fun parseVariableDefinitions() =
-		optionalMany(
-			TokenKind.PAREN_L,
-			this::parseVariableDefinition,
-			TokenKind.PAREN_R
-		)
+	private fun peek(kind: TokenKind) = lexer.currentToken.kind == kind
 
+	private fun peekDescription() = peek(TokenKind.STRING) || peek(TokenKind.BLOCK_STRING)
 
-	private fun peek(kind: TokenKind) =
-		lexer.currentToken.kind == kind
-
-
-	private fun peekDescription() =
-		peek(TokenKind.STRING) || peek(TokenKind.BLOCK_STRING)
-
-
-	private fun unexpectedTokenError(token: Token = lexer.currentToken, expected: String? = null): Nothing =
-		GError.syntax(
-			details = when (expected) {
-				null -> "Unexpected $token."
-				else -> "Expected $expected, found $token."
-			},
-			origin = makeOrigin(startToken = token, endToken = token)
-		).throwException()
-
+	private fun unexpectedTokenError(token: Token = lexer.currentToken, expected: String? = null): Nothing = GError.syntax(
+		details = when (expected) {
+			null -> "Unexpected $token."
+			else -> "Expected $expected, found $token."
+		},
+		origin = makeOrigin(startToken = token, endToken = token),
+	).throwException()
 
 	companion object {
 
-		fun parseDocument(source: GDocumentSource.Parsable): GResult<GDocument> =
-			GResult.catchErrors {
-				Parser(source = source).parseDocument()
+		fun parseDocument(source: GDocumentSource.Parsable): GResult<GDocument> = GResult.catchErrors {
+			Parser(source = source).parseDocument()
+		}
+
+		fun parseTypeReference(source: GDocumentSource.Parsable): GResult<GTypeRef> = GResult.catchErrors {
+			Parser(source = source).parseEntireInput {
+				parseTypeReference()
 			}
+		}
 
-
-		fun parseTypeReference(source: GDocumentSource.Parsable): GResult<GTypeRef> =
-			GResult.catchErrors {
-				Parser(source = source).parseEntireInput {
-					parseTypeReference()
-				}
+		fun parseValue(source: GDocumentSource.Parsable): GResult<GValue> = GResult.catchErrors {
+			Parser(source = source).parseEntireInput {
+				parseValue(isConstant = true)
 			}
-
-
-		fun parseValue(source: GDocumentSource.Parsable): GResult<GValue> =
-			GResult.catchErrors {
-				Parser(source = source).parseEntireInput {
-					parseValue(isConstant = true)
-				}
-			}
+		}
 	}
-
 
 	private enum class ArgumentDefinitionType {
 
 		directiveDefinition,
 		fieldDefinition,
-		inputField
+		inputField,
 	}
 
-
-	private data class DocumentPosition(
-		override val source: GDocumentSource,
-		val startToken: Token,
-		val endToken: Token,
-	) : GDocumentPosition {
+	private data class DocumentPosition(override val source: GDocumentSource, val startToken: Token, val endToken: Token) : GDocumentPosition {
 
 		override val column: Int
 			get() = startToken.startPosition - startToken.linePosition + 1
 
-
 		override val endPosition
 			get() = endToken.endPosition
-
 
 		override val line
 			get() = startToken.lineNumber
 
-
 		override val startPosition
 			get() = startToken.startPosition
 
-
-		override fun toString() =
-			"$startPosition .. ${endPosition - 1}"
+		override fun toString() = "$startPosition .. ${endPosition - 1}"
 	}
 }

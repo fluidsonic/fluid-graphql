@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DirectiveLocationValidityRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.7.2 — Directives In Valid Locations
 class Sec5_7_2_DirectivesInValidLocationsTests {
@@ -17,10 +16,9 @@ class Sec5_7_2_DirectivesInValidLocationsTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsIncludeOnField() {
@@ -32,10 +30,9 @@ class Sec5_7_2_DirectivesInValidLocationsTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsSkipOnFragmentSpread() {
@@ -48,10 +45,9 @@ class Sec5_7_2_DirectivesInValidLocationsTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsSkipOnInlineFragment() {
@@ -63,16 +59,16 @@ class Sec5_7_2_DirectivesInValidLocationsTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsFieldDirectiveOnOperation() {
 		assertValidationRule(
 			rule = DirectiveLocationValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Directive '@onField' is not valid on QUERY but only on FIELD.
 
 				<document>:1:8
@@ -83,14 +79,15 @@ class Sec5_7_2_DirectivesInValidLocationsTests {
 				1 | type Query { field: String }
 				2 | directive @onField on FIELD
 				  |                       ^
-			"""),
+			""",
+			),
 			document = """
 				|query @onField { field }
 			""",
 			schema = """
 				|type Query { field: String }
 				|directive @onField on FIELD
-			"""
+			""",
 		)
 	}
 }

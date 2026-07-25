@@ -1,14 +1,11 @@
 package io.fluidsonic.graphql
 
-
 internal object Printer {
 
-	fun print(node: GNode, indent: String = "  ") =
-		IndentingWriter(indent = indent).run {
-			writeNode(node)
-			toString()
-		}
-
+	fun print(node: GNode, indent: String = "  ") = IndentingWriter(indent = indent).run {
+		writeNode(node)
+		toString()
+	}
 
 	private fun IndentingWriter.writeNode(node: GNode) {
 		when (node) {
@@ -59,13 +56,11 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeNode(argument: GArgument) {
 		writeNode(argument.nameNode)
 		writeRaw(": ")
 		writeNode(argument.value)
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GArgumentDefinition) {
 		definition.descriptionNode?.let { descriptionNode ->
@@ -84,18 +79,15 @@ internal object Printer {
 		writeDirectives(definition.directives)
 	}
 
-
 	private fun IndentingWriter.writeNode(value: GBooleanValue) {
 		writeRaw(if (value.value) "true" else "false")
 	}
-
 
 	private fun IndentingWriter.writeNode(directive: GDirective) {
 		writeRaw("@")
 		writeNode(directive.nameNode)
 		writeArguments(directive.arguments)
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GDirectiveDefinition) {
 		definition.descriptionNode?.let { descriptionNode ->
@@ -107,13 +99,13 @@ internal object Printer {
 		writeArgumentDefinitions(definition.argumentDefinitions)
 		writeRaw(" on ")
 		definition.locationNodes.forEachIndexed { index, location ->
-			if (index > 0)
+			if (index > 0) {
 				writeRaw(" | ")
+			}
 
 			writeNode(location)
 		}
 	}
-
 
 	private fun IndentingWriter.writeNode(document: GDocument) {
 		val startLength = length
@@ -129,7 +121,6 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeNode(type: GEnumType) {
 		type.descriptionNode?.let { descriptionNode ->
 			writeNode(descriptionNode)
@@ -142,7 +133,6 @@ internal object Printer {
 		writeEnumValueDefinitions(type.values)
 	}
 
-
 	private fun IndentingWriter.writeNode(extension: GEnumTypeExtension) {
 		writeRaw("extend enum ")
 		writeNode(extension.nameNode)
@@ -151,11 +141,9 @@ internal object Printer {
 		writeEnumValueDefinitions(extension.values)
 	}
 
-
 	private fun IndentingWriter.writeNode(value: GEnumValue) {
 		writeRaw(value.name)
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GEnumValueDefinition) {
 		definition.descriptionNode?.let { descriptionNode ->
@@ -165,7 +153,6 @@ internal object Printer {
 		writeNode(definition.nameNode)
 		writeDirectives(definition.directives)
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GFieldDefinition) {
 		definition.descriptionNode?.let { descriptionNode ->
@@ -178,7 +165,6 @@ internal object Printer {
 		writeNode(definition.type)
 		writeDirectives(definition.directives)
 	}
-
 
 	private fun IndentingWriter.writeNode(selection: GFieldSelection) {
 		selection.aliasNode?.let { alias ->
@@ -194,12 +180,10 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeNode(value: GFloatValue) {
 		// FIXME Write own implementation for consistent results?
 		writeRaw(value.value.toString())
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GFragmentDefinition) {
 		writeRaw("fragment ")
@@ -213,13 +197,11 @@ internal object Printer {
 		writeLinebreak()
 	}
 
-
 	private fun IndentingWriter.writeNode(selection: GFragmentSelection) {
 		writeRaw("...")
 		writeNode(selection.nameNode)
 		writeDirectives(selection.directives)
 	}
-
 
 	private fun IndentingWriter.writeNode(type: GInputObjectType) {
 		type.descriptionNode?.let { descriptionNode ->
@@ -232,14 +214,12 @@ internal object Printer {
 		writeInputObjectTypeArguments(type.argumentDefinitions)
 	}
 
-
 	private fun IndentingWriter.writeNode(extension: GInputObjectTypeExtension) {
 		writeRaw("extend input ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 		writeInputObjectTypeArguments(extension.argumentDefinitions)
 	}
-
 
 	private fun IndentingWriter.writeNode(selection: GInlineFragmentSelection) {
 		writeRaw("...")
@@ -252,11 +232,9 @@ internal object Printer {
 		writeNode(selection.selectionSet)
 	}
 
-
 	private fun IndentingWriter.writeNode(value: GIntValue) {
 		writeRaw(value.value.toString())
 	}
-
 
 	private fun IndentingWriter.writeNode(type: GInterfaceType) {
 		type.descriptionNode?.let { descriptionNode ->
@@ -270,7 +248,6 @@ internal object Printer {
 		writeFieldDefinitions(type.fieldDefinitions)
 	}
 
-
 	private fun IndentingWriter.writeNode(extension: GInterfaceTypeExtension) {
 		writeRaw("extend interface ")
 		writeNode(extension.nameNode)
@@ -279,18 +256,17 @@ internal object Printer {
 		writeFieldDefinitions(extension.fieldDefinitions)
 	}
 
-
 	private fun IndentingWriter.writeNode(value: GListValue) {
 		writeRaw("[")
 		value.elements.forEachIndexed { index, element ->
-			if (index > 0)
+			if (index > 0) {
 				writeRaw(", ")
+			}
 
 			writeNode(element)
 		}
 		writeRaw("]")
 	}
-
 
 	private fun IndentingWriter.writeNode(ref: GListTypeRef) {
 		writeRaw("[")
@@ -298,27 +274,22 @@ internal object Printer {
 		writeRaw("]")
 	}
 
-
 	private fun IndentingWriter.writeNode(name: GName) {
 		writeRaw(name.value)
 	}
 
-
 	private fun IndentingWriter.writeNode(ref: GNamedTypeRef) {
 		writeNode(ref.nameNode)
 	}
-
 
 	private fun IndentingWriter.writeNode(ref: GNonNullTypeRef) {
 		writeNode(ref.nullableRef)
 		writeRaw("!")
 	}
 
-
 	private fun IndentingWriter.writeNode(@Suppress("UNUSED_PARAMETER") value: GNullValue) {
 		writeRaw("null")
 	}
-
 
 	private fun IndentingWriter.writeNode(type: GObjectType) {
 		type.descriptionNode?.let { descriptionNode ->
@@ -331,7 +302,6 @@ internal object Printer {
 		writeFieldDefinitions(type.fieldDefinitions)
 	}
 
-
 	private fun IndentingWriter.writeNode(extension: GObjectTypeExtension) {
 		writeRaw("extend type ")
 		writeNode(extension.nameNode)
@@ -339,9 +309,8 @@ internal object Printer {
 		writeFieldDefinitions(extension.fieldDefinitions)
 	}
 
-
 	private fun IndentingWriter.writeNode(value: GObjectValue) {
-		if (value.arguments.isNotEmpty())
+		if (value.arguments.isNotEmpty()) {
 			writeBlock {
 				value.arguments.forEachIndexed { index, field ->
 					if (index > 0) {
@@ -354,10 +323,10 @@ internal object Printer {
 
 				writeLinebreak()
 			}
-		else
+		} else {
 			writeRaw("{}")
+		}
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GOperationDefinition) {
 		val canUseShortSyntax = definition.nameNode === null &&
@@ -374,8 +343,9 @@ internal object Printer {
 			}
 
 			if (definition.variableDefinitions.isNotEmpty()) {
-				if (definition.nameNode === null)
+				if (definition.nameNode === null) {
 					writeRaw(" ")
+				}
 
 				writeVariableDefinitions(definition.variableDefinitions)
 			}
@@ -388,13 +358,11 @@ internal object Printer {
 		writeLinebreak()
 	}
 
-
 	private fun IndentingWriter.writeNode(definition: GOperationTypeDefinition) {
 		writeRaw(definition.operationType.name)
 		writeRaw(": ")
 		writeNode(definition.type)
 	}
-
 
 	private fun IndentingWriter.writeNode(type: GScalarType) {
 		type.descriptionNode?.let { descriptionNode ->
@@ -406,13 +374,11 @@ internal object Printer {
 		writeDirectives(type.directives)
 	}
 
-
 	private fun IndentingWriter.writeNode(extension: GScalarTypeExtension) {
 		writeRaw("extend scalar ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GSchemaDefinition) {
 		val queryOperation = definition.operationTypeDefinition(GOperationType.query)
@@ -427,12 +393,14 @@ internal object Printer {
 		val subscriptionOperationWithNonStandardName = subscriptionOperation
 			?.takeIf { it.type.name != GLanguage.defaultSubscriptionTypeName }
 
-		if (queryOperationWithNonStandardName == null
-			&& mutationOperationWithNonStandardName == null
-			&& subscriptionOperationWithNonStandardName == null
-			&& definition.descriptionNode == null
-			&& definition.directives.isEmpty()
-		) return
+		if (queryOperationWithNonStandardName == null &&
+			mutationOperationWithNonStandardName == null &&
+			subscriptionOperationWithNonStandardName == null &&
+			definition.descriptionNode == null &&
+			definition.directives.isEmpty()
+		) {
+			return
+		}
 
 		definition.descriptionNode?.let { descriptionNode ->
 			writeNode(descriptionNode)
@@ -459,13 +427,11 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeNode(definition: GSchemaExtension) {
 		writeRaw("extend schema")
 		writeDirectives(definition.directives)
 		writeOperationTypeDefinitions(definition.operationTypeDefinitions)
 	}
-
 
 	private fun IndentingWriter.writeNode(set: GSelectionSet) {
 		writeBlock {
@@ -476,7 +442,6 @@ internal object Printer {
 		}
 	}
 
-
 	// FIXME proper escaping logic, line wrapping, indentation
 	private fun IndentingWriter.writeNode(value: GStringValue) {
 		val string = value.value
@@ -486,26 +451,27 @@ internal object Printer {
 				string.indexOfFirst { it == '\n' || it == '\r' } >= 0
 
 			writeRaw("\"\"\"")
-			if (isMultiline)
+			if (isMultiline) {
 				writeLinebreak()
+			}
 			writeRaw(string.replace("\"\"\"", "\\\"\"\""))
-			if (isMultiline)
+			if (isMultiline) {
 				writeLinebreak()
+			}
 			writeRaw("\"\"\"")
 			writeLinebreak()
-		}
-		else {
+		} else {
 			writeRaw("\"")
-			writeRaw(string
-				.replace("\\", "\\\\")
-				.replace("\"", "\\\"")
-				.replace("\n", "\\n")
-				.replace("\r", "\\r")
+			writeRaw(
+				string
+					.replace("\\", "\\\\")
+					.replace("\"", "\\\"")
+					.replace("\n", "\\n")
+					.replace("\r", "\\r"),
 			)
 			writeRaw("\"")
 		}
 	}
-
 
 	private fun IndentingWriter.writeNode(type: GUnionType) {
 		type.descriptionNode?.let { descriptionNode ->
@@ -518,14 +484,12 @@ internal object Printer {
 		writePossibleTypes(type.possibleTypes)
 	}
 
-
 	private fun IndentingWriter.writeNode(extension: GUnionTypeExtension) {
 		writeRaw("union ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 		writePossibleTypes(extension.possibleTypes)
 	}
-
 
 	private fun IndentingWriter.writeNode(definition: GVariableDefinition) {
 		writeRaw("$")
@@ -539,35 +503,33 @@ internal object Printer {
 		writeDirectives(definition.directives)
 	}
 
-
 	private fun IndentingWriter.writeNode(ref: GVariableRef) {
 		writeRaw("$")
 		writeNode(ref.nameNode)
 	}
 
-
-	private inline operator fun IndentingWriter.invoke(block: IndentingWriter.() -> Unit) =
-		block()
-
+	private inline operator fun IndentingWriter.invoke(block: IndentingWriter.() -> Unit) = block()
 
 	private fun IndentingWriter.writeArguments(arguments: Collection<GArgument>) {
-		if (arguments.isEmpty())
+		if (arguments.isEmpty()) {
 			return
+		}
 
 		writeRaw("(")
 		arguments.forEachIndexed { index, argument ->
-			if (index > 0)
+			if (index > 0) {
 				writeRaw(", ")
+			}
 
 			writeNode(argument)
 		}
 		writeRaw(")")
 	}
 
-
 	private fun IndentingWriter.writeArgumentDefinitions(definitions: List<GArgumentDefinition>) {
-		if (definitions.isEmpty())
+		if (definitions.isEmpty()) {
 			return
+		}
 
 		writeRaw("(")
 
@@ -576,19 +538,20 @@ internal object Printer {
 		if (multiline) {
 			indented {
 				definitions.forEachIndexed { index, definition ->
-					if (index > 0 && hasDescriptions)
+					if (index > 0 && hasDescriptions) {
 						writeLinebreak()
+					}
 
 					writeLinebreak()
 					writeNode(definition)
 				}
 				writeLinebreak()
 			}
-		}
-		else {
+		} else {
 			definitions.forEachIndexed { index, definition ->
-				if (index > 0)
+				if (index > 0) {
 					writeRaw(", ")
+				}
 
 				writeNode(definition)
 			}
@@ -596,7 +559,6 @@ internal object Printer {
 
 		writeRaw(")")
 	}
-
 
 	private inline fun <Result> IndentingWriter.writeBlock(block: () -> Result): Result {
 		writeRaw("{")
@@ -607,10 +569,10 @@ internal object Printer {
 		return result
 	}
 
-
 	private fun IndentingWriter.writeDirectives(directives: List<GDirective>) {
-		if (directives.isEmpty())
+		if (directives.isEmpty()) {
 			return
+		}
 
 		directives.forEach { directive ->
 			writeRaw(" ")
@@ -618,17 +580,18 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeEnumValueDefinitions(definitions: List<GEnumValueDefinition>) {
-		if (definitions.isEmpty())
+		if (definitions.isEmpty()) {
 			return
+		}
 
 		val includeExtraLinebreak = definitions.any { it.description != null }
 
 		writeBlock {
 			definitions.forEachIndexed { index, definition ->
-				if (index > 0 && includeExtraLinebreak)
+				if (index > 0 && includeExtraLinebreak) {
 					writeLinebreak()
+				}
 
 				writeNode(definition)
 				writeLinebreak()
@@ -636,10 +599,10 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeFieldDefinitions(definitions: List<GFieldDefinition>) {
-		if (definitions.isEmpty())
+		if (definitions.isEmpty()) {
 			return
+		}
 
 		writeRaw(" ")
 
@@ -650,8 +613,9 @@ internal object Printer {
 						definition.descriptionNode != null ||
 						definitions[index - 1].descriptionNode != null ||
 						definitions.getOrNull(index + 1)?.descriptionNode != null
-					)
+					) {
 						writeLinebreak()
+					}
 				}
 
 				writeNode(definition)
@@ -660,24 +624,25 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeImplementedInterfaces(interfaces: List<GNamedTypeRef>) {
-		if (interfaces.isEmpty())
+		if (interfaces.isEmpty()) {
 			return
+		}
 
 		writeRaw(" implements ")
 		interfaces.forEachIndexed { index, type ->
-			if (index > 0)
+			if (index > 0) {
 				writeRaw(" & ")
+			}
 
 			writeNode(type)
 		}
 	}
 
-
 	private fun IndentingWriter.writeInputObjectTypeArguments(definitions: List<GArgumentDefinition>) {
-		if (definitions.isEmpty())
+		if (definitions.isEmpty()) {
 			return
+		}
 
 		writeRaw(" ")
 
@@ -688,8 +653,9 @@ internal object Printer {
 						definition.description != null ||
 						definitions[index - 1].description != null ||
 						definitions.getOrNull(index + 1)?.description != null
-					)
+					) {
 						writeLinebreak()
+					}
 				}
 
 				writeNode(definition)
@@ -698,10 +664,10 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writeOperationTypeDefinitions(definitions: Collection<GOperationTypeDefinition>) {
-		if (definitions.isEmpty())
+		if (definitions.isEmpty()) {
 			return
+		}
 
 		writeBlock {
 			definitions.forEach { definition ->
@@ -711,30 +677,32 @@ internal object Printer {
 		}
 	}
 
-
 	private fun IndentingWriter.writePossibleTypes(types: Collection<GNamedTypeRef>) {
-		if (types.isEmpty())
+		if (types.isEmpty()) {
 			return
+		}
 
 		writeRaw(" = ")
 
 		types.forEachIndexed { index, type ->
-			if (index > 0)
+			if (index > 0) {
 				writeRaw(" | ")
+			}
 
 			writeNode(type.nameNode)
 		}
 	}
 
-
 	private fun IndentingWriter.writeVariableDefinitions(definitions: Collection<GVariableDefinition>) {
-		if (definitions.isEmpty())
+		if (definitions.isEmpty()) {
 			return
+		}
 
 		writeRaw("(")
 		definitions.forEachIndexed { index, definition ->
-			if (index > 0)
+			if (index > 0) {
 				writeRaw(", ")
+			}
 
 			writeNode(definition)
 		}

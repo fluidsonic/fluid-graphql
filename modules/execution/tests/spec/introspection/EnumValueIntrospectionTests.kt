@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // GraphQL Spec §4.5 — Enum Value Introspection
 class EnumValueIntrospectionTests {
@@ -20,25 +28,30 @@ class EnumValueIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Direction") {
 			    enumValues { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val enumValues = type["enumValues"] as List<Map<String, Any?>>
 		val names = enumValues.map { it["name"] }
 		assertTrue(names.contains("NORTH"), "Expected 'NORTH' in enumValues")
 		assertTrue(names.contains("SOUTH"), "Expected 'SOUTH' in enumValues")
 	}
-
 
 	@Test
 	fun testEnumValueIsDeprecatedFalse() = runTest {
@@ -52,24 +65,29 @@ class EnumValueIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Status") {
 			    enumValues { name isDeprecated }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val enumValues = type["enumValues"] as List<Map<String, Any?>>
 		val activeValue = enumValues.first { it["name"] == "ACTIVE" }
 		assertEquals(expected = false, actual = activeValue["isDeprecated"])
 	}
-
 
 	@Test
 	fun testEnumValueIsDeprecatedTrue() = runTest {
@@ -86,25 +104,30 @@ class EnumValueIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Status") {
 			    enumValues(includeDeprecated: true) { name isDeprecated deprecationReason }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val enumValues = type["enumValues"] as List<Map<String, Any?>>
 		val legacyValue = enumValues.first { it["name"] == "LEGACY" }
 		assertEquals(expected = true, actual = legacyValue["isDeprecated"])
 		assertEquals(expected = "Use ACTIVE instead", actual = legacyValue["deprecationReason"])
 	}
-
 
 	@Test
 	fun testMultipleEnumValues() = runTest {
@@ -120,18 +143,24 @@ class EnumValueIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Color") {
 			    enumValues { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val enumValues = type["enumValues"] as List<Map<String, Any?>>
 		assertEquals(expected = 3, actual = enumValues.size)

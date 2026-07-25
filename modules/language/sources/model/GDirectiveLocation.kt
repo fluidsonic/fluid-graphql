@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * All valid locations where a GraphQL directive can be applied, as defined by the GraphQL spec.
  *
@@ -27,8 +26,8 @@ public enum class GDirectiveLocation {
 	SCHEMA,
 	SUBSCRIPTION,
 	UNION,
-	VARIABLE_DEFINITION;
-
+	VARIABLE_DEFINITION,
+	;
 
 	public companion object {
 

@@ -1,28 +1,24 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Single-root-field
 internal object SubscriptionRootFieldExclusivityRule : ValidationRule.Singleton() {
 
 	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
-		if (definition.type != GOperationType.subscription)
+		if (definition.type != GOperationType.subscription) {
 			return
+		}
 
 		val fields = collectFields(definition.selectionSet, data.document, mutableSetOf())
 
 		if (fields.size != 1 || fields.keys.first().startsWith("__")) {
 			data.reportError(
 				message = "Subscription operations must have exactly one root field.",
-				nodes = fields.values.flatten()
+				nodes = fields.values.flatten(),
 			)
 		}
 	}
 
-	private fun collectFields(
-		selectionSet: GSelectionSet,
-		document: GDocument,
-		visitedFragments: MutableSet<String>,
-	): Map<String, List<GFieldSelection>> {
+	private fun collectFields(selectionSet: GSelectionSet, document: GDocument, visitedFragments: MutableSet<String>): Map<String, List<GFieldSelection>> {
 		val fields = mutableMapOf<String, MutableList<GFieldSelection>>()
 		for (selection in selectionSet.selections) {
 			when (selection) {

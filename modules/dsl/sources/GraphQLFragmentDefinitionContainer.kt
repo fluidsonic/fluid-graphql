@@ -1,9 +1,9 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GraphQLFragmentDefinitionContainer.*
-import kotlin.properties.*
-import kotlin.reflect.*
-
+import io.fluidsonic.graphql.GraphQLFragmentDefinitionContainer.RefFactory
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 /**
  * Container that accepts fragment definitions and tracks references to them.
@@ -15,7 +15,6 @@ public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefi
 
 	/** Adds a pre-built [GFragmentDefinition] and returns a reference to it. */
 	public fun fragment(definition: GFragmentDefinition): GFragmentRef
-
 
 	/**
 	 * A property delegate provider that registers a fragment definition using the delegating
@@ -31,17 +30,12 @@ public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefi
 	 * Must be used with `by` delegation — calling the result without delegation will throw.
 	 */
 	@GraphQLMarker
-	public class RefFactory internal constructor(
-		private val register: (factory: RefFactory, name: String) -> GFragmentRef,
-	) : PropertyDelegateProvider<Nothing?, ReadOnlyProperty<Nothing?, GFragmentRef>> {
+	public class RefFactory internal constructor(private val register: (factory: RefFactory, name: String) -> GFragmentRef) :
+		PropertyDelegateProvider<Nothing?, ReadOnlyProperty<Nothing?, GFragmentRef>> {
 
 		private val notDelegatedError: Throwable = IllegalStateException("This fragment() overload must be delegated to using 'by'.")
 
-
-		internal fun throwNotDelegatedError(): Nothing {
-			throw notDelegatedError
-		}
-
+		internal fun throwNotDelegatedError(): Nothing = throw notDelegatedError
 
 		override fun provideDelegate(thisRef: Nothing?, property: KProperty<*>): ReadOnlyProperty<Nothing?, GFragmentRef> {
 			val ref = register(this, property.name)
@@ -50,7 +44,6 @@ public sealed interface GraphQLFragmentDefinitionContainer : GraphQLFragmentDefi
 		}
 	}
 }
-
 
 /**
  * Scope for defining fragment definitions within a document or operation builder.
@@ -77,17 +70,14 @@ public sealed interface GraphQLFragmentDefinitionContainerScope : GraphQLTypeCon
 	public fun fragment(typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory
 }
 
-
 internal interface GraphQLFragmentDefinitionContainerInternal : GraphQLFragmentDefinitionContainer {
 
 	val definitions: MutableList<GDefinition>
 	val unusedFragmentDefinitionRefFactories: MutableList<RefFactory>
 
-
 	fun finalize() {
 		unusedFragmentDefinitionRefFactories.firstOrNull()?.throwNotDelegatedError()
 	}
-
 
 	override fun fragment(definition: GFragmentDefinition): GFragmentRef {
 		val name = definition.name
@@ -99,16 +89,13 @@ internal interface GraphQLFragmentDefinitionContainerInternal : GraphQLFragmentD
 		return GFragmentRef(name)
 	}
 
-
 	// TODO Move to extension and inline once we have context receivers.
 	override fun fragment(name: String, typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): GFragmentRef =
 		fragment(GraphQLFragmentDefinitionBuilder(name = name, typeCondition = typeCondition).apply(configure).build())
 
+	override fun fragment(typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory = RefFactory { factory, name ->
+		unusedFragmentDefinitionRefFactories -= factory
 
-	override fun fragment(typeCondition: GNamedTypeRef, configure: GraphQLFragmentDefinitionBuilder.() -> Unit): RefFactory =
-		RefFactory { factory, name ->
-			unusedFragmentDefinitionRefFactories -= factory
-
-			fragment(name = name, typeCondition = typeCondition, configure = configure)
-		}.also { unusedFragmentDefinitionRefFactories += it }
+		fragment(name = name, typeCondition = typeCondition, configure = configure)
+	}.also { unusedFragmentDefinitionRefFactories += it }
 }

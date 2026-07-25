@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DirectiveLocationValidityRule
+import kotlin.test.Test
 
 class DirectiveLocationValidityRuleTest {
 
@@ -82,10 +81,9 @@ class DirectiveLocationValidityRuleTest {
 				|directive @SUBSCRIPTION on SUBSCRIPTION
 				|directive @UNION on UNION
 				|directive @VARIABLE_DEFINITION on VARIABLE_DEFINITION
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDirectiveInUnspecifiedLocation() {
@@ -5204,7 +5202,7 @@ class DirectiveLocationValidityRuleTest {
 					446 | directive @UNION on UNION
 					447 | directive @VARIABLE_DEFINITION on VARIABLE_DEFINITION
 					    |                                   ^
-				"""
+				""",
 			),
 			document = """
 				|query someQuery(
@@ -5654,7 +5652,7 @@ class DirectiveLocationValidityRuleTest {
 				|directive @SUBSCRIPTION on SUBSCRIPTION
 				|directive @UNION on UNION
 				|directive @VARIABLE_DEFINITION on VARIABLE_DEFINITION
-			"""
+			""",
 		)
 	}
 }

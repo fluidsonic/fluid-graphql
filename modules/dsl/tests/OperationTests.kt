@@ -1,8 +1,17 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GFragmentRef
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.directives
+import io.fluidsonic.graphql.list
+import io.fluidsonic.graphql.mutation
+import io.fluidsonic.graphql.obj
+import io.fluidsonic.graphql.query
+import io.fluidsonic.graphql.subscription
+import io.fluidsonic.graphql.type
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class OperationTests {
 
@@ -21,7 +30,6 @@ class OperationTests {
 		)
 	}
 
-
 	@Test
 	fun testAnonymousQuery() {
 		assertEquals(
@@ -36,7 +44,6 @@ class OperationTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun testAnonymousSubscription() {
@@ -53,13 +60,15 @@ class OperationTests {
 		)
 	}
 
-
 	@Test
 	fun testFieldArguments() {
 		assertEquals(
 			actual = GraphQL.query {
 				"foo" {
-					arguments { "a" to 1; "b" to null }
+					arguments {
+						"a" to 1
+						"b" to null
+					}
 				}
 			}.toString(),
 			expected = """
@@ -70,7 +79,6 @@ class OperationTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun testFragments() {
@@ -121,7 +129,6 @@ class OperationTests {
 		)
 	}
 
-
 	@Test
 	fun testNamedMutation() {
 		assertEquals(
@@ -136,7 +143,6 @@ class OperationTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun testNamedQuery() {
@@ -153,7 +159,6 @@ class OperationTests {
 		)
 	}
 
-
 	@Test
 	fun testNamedSubscription() {
 		assertEquals(
@@ -168,7 +173,6 @@ class OperationTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun testVariables() {
@@ -186,7 +190,12 @@ class OperationTests {
 					default(1)
 				}
 				val variable7 by variable(Type) {
-					default(list { add(1); add(2) })
+					default(
+						list {
+							add(1)
+							add(2)
+						},
+					)
 				}
 				val variable8 by variable("Type") {
 					directives { "foo" { arguments { "a" to 2 } } }

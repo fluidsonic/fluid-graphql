@@ -1,11 +1,10 @@
 package io.fluidsonic.graphql
 
-
 // FIXME use refactored fluid-stdlib
 internal fun <Element> Iterable<Element>.joinToString(
 	separator: CharSequence,
 	lastSeparator: CharSequence,
-	transform: (element: Element) -> String = { it.toString() }
+	transform: (element: Element) -> String = { it.toString() },
 ) = buildString {
 	var previousElement: Element? = null
 	var size = 0
@@ -14,8 +13,9 @@ internal fun <Element> Iterable<Element>.joinToString(
 		size = index + 1
 
 		if (index > 0) {
-			if (index > 1)
+			if (index > 1) {
 				append(separator)
+			}
 
 			append(transform(previousElement!!))
 		}
@@ -24,8 +24,9 @@ internal fun <Element> Iterable<Element>.joinToString(
 	}
 
 	if (size > 0) {
-		if (size > 1)
+		if (size > 1) {
 			append(lastSeparator)
+		}
 
 		append(transform(previousElement!!))
 	}

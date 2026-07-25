@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ObjectFieldRequirementRule
+import kotlin.test.Test
 
 class ObjectFieldRequirementRuleTest {
 
@@ -21,10 +20,9 @@ class ObjectFieldRequirementRuleTest {
 				|   optional: Boolean! = true
 				|   required: Boolean!
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsAbsenceOfRequiredFields() {
@@ -49,7 +47,7 @@ class ObjectFieldRequirementRuleTest {
 					8 |    required2: Boolean!
 					  |    ^
 					9 | }
-				"""
+				""",
 			),
 			document = "{ id(input: {}) }",
 			schema = """
@@ -62,7 +60,7 @@ class ObjectFieldRequirementRuleTest {
 				|   required1: Boolean!
 				|   required2: Boolean!
 				|}
-			"""
+			""",
 		)
 	}
 }

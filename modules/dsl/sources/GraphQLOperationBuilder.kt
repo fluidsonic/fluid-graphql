@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Builder for a single GraphQL [GOperationDefinition] (query, mutation, or subscription).
  *
@@ -18,7 +17,6 @@ public sealed interface GraphQLOperationBuilder :
 	public fun build(): GOperationDefinition
 }
 
-
 /**
  * Scope interface for [GraphQLOperationBuilder], providing selections, variables, and
  * directives DSL functions.
@@ -29,12 +27,9 @@ public sealed interface GraphQLOperationBuilderScope :
 	GraphQLSelectionsContainerScope,
 	GraphQLVariableContainerScope
 
-
 @GraphQLMarker
-internal class GraphQLOperationBuilderImpl(
-	private val name: String?,
-	private val type: GOperationType,
-) : GraphQLOperationBuilder,
+internal class GraphQLOperationBuilderImpl(private val name: String?, private val type: GOperationType) :
+	GraphQLOperationBuilder,
 	GraphQLDirectivesContainerInternal,
 	GraphQLSelectionsContainerInternal,
 	GraphQLVariableContainerInternal {
@@ -44,11 +39,9 @@ internal class GraphQLOperationBuilderImpl(
 	override val unusedVariableRefFactories: MutableList<GraphQLVariableContainer.RefFactory> = mutableListOf()
 	override val variableDefinitions: MutableList<GVariableDefinition> = mutableListOf()
 
-
 	init {
 		check(name == null || GLanguage.isValidName(name)) { "Invalid operation name: $name" }
 	}
-
 
 	override fun build(): GOperationDefinition {
 		super.finalize()
@@ -65,14 +58,8 @@ internal class GraphQLOperationBuilderImpl(
 	}
 }
 
-
 /** Creates a new [GraphQLOperationBuilder] for the given operation [type] and optional [name]. */
-public fun GraphQLOperationBuilder(
-	name: String? = null,
-	type: GOperationType,
-): GraphQLOperationBuilder =
-	GraphQLOperationBuilderImpl(name = name, type = type)
-
+public fun GraphQLOperationBuilder(name: String? = null, type: GOperationType): GraphQLOperationBuilder = GraphQLOperationBuilderImpl(name = name, type = type)
 
 /**
  * Builds a standalone mutation [GOperationDefinition].
@@ -83,7 +70,6 @@ public fun GraphQLOperationBuilder(
 public inline fun GraphQL.mutation(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.mutation).apply(configure).build()
 
-
 /**
  * Builds a standalone query [GOperationDefinition].
  *
@@ -92,7 +78,6 @@ public inline fun GraphQL.mutation(name: String? = null, configure: GraphQLOpera
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQL.query(name: String? = null, configure: GraphQLOperationBuilderScope.() -> Unit): GOperationDefinition =
 	GraphQLOperationBuilder(name = name, type = GOperationType.query).apply(configure).build()
-
 
 /**
  * Builds a standalone subscription [GOperationDefinition].

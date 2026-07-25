@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.SelectionUnambiguityRule
+import kotlin.test.Test
 
 // https://github.com/graphql/graphql-js/blob/main/src/validation/__tests__/OverlappingFieldsCanBeMergedRule-test.ts
 class SelectionUnambiguityRuleTest {
@@ -20,10 +19,9 @@ class SelectionUnambiguityRuleTest {
 				|   other: id
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsConflictingFieldNamesAndArgumentsForDisjointObjectTypes() {
@@ -58,16 +56,16 @@ class SelectionUnambiguityRuleTest {
 				|   catString: String
 				|   catStringWithArg(bar: String): String
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingTypesSelection() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'id' in 'Query' is selected in multiple locations but with incompatible types.
 
 				<document>:2:4
@@ -89,23 +87,24 @@ class SelectionUnambiguityRuleTest {
 				<document>:1:27
 				1 | type Query { id: ID, foo: Int }
 				  |                           ^
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   id
 				|   id: foo
 				|}
 			""",
-			schema = "type Query { id: ID, foo: Int }"
+			schema = "type Query { id: ID, foo: Int }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingNullability() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'foo' in 'A' is selected in multiple locations but with incompatible types.
 
 				<document>:3:17
@@ -130,7 +129,8 @@ class SelectionUnambiguityRuleTest {
 				3 | type A { foo: String }
 				4 | type B { foo: String! }
 				  |               ^
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   bar {
@@ -144,16 +144,16 @@ class SelectionUnambiguityRuleTest {
 				|union AorB = A | B
 				|type A { foo: String }
 				|type B { foo: String! }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingListTypes() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'foo' in 'A' is selected in multiple locations but with incompatible types.
 
 				<document>:3:17
@@ -178,7 +178,8 @@ class SelectionUnambiguityRuleTest {
 				3 | type A { foo: String }
 				4 | type B { foo: [[String]] }
 				  |               ^
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   bar {
@@ -192,10 +193,9 @@ class SelectionUnambiguityRuleTest {
 				|union AorB = A | B
 				|type A { foo: String }
 				|type B { foo: [[String]] }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingFieldNames() {
@@ -224,7 +224,7 @@ class SelectionUnambiguityRuleTest {
 					<document>:1:27
 					1 | type Query { foo: String, bar: String }
 					  |                           ^
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -234,10 +234,9 @@ class SelectionUnambiguityRuleTest {
 			""",
 			schema = """
 				|type Query { foo: String, bar: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingArguments() {
@@ -258,7 +257,7 @@ class SelectionUnambiguityRuleTest {
 					3 |    foo(bar: 2)
 					  |             ^
 					4 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -268,16 +267,16 @@ class SelectionUnambiguityRuleTest {
 			""",
 			schema = """
 				|type Query { foo(bar: Int): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingSubSelections() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'bar' in 'Foo' is selected in multiple locations but with incompatible types.
 
 				<document>:3:7
@@ -301,7 +300,8 @@ class SelectionUnambiguityRuleTest {
 				1 | type Query { foo: Foo }
 				2 | type Foo { bar: String, baz: String! }
 				  |                              ^
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   foo {
@@ -313,16 +313,16 @@ class SelectionUnambiguityRuleTest {
 			schema = """
 				|type Query { foo: Foo }
 				|type Foo { bar: String, baz: String! }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDifferentTypesAlsoForDisjointObjectTypes() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'someValue' in 'Dog' is selected in multiple locations but with incompatible types.
 
 				<document>:3:8
@@ -348,7 +348,8 @@ class SelectionUnambiguityRuleTest {
 				12 |    meowVolume: Int
 				   |                ^
 				13 | }
-			"""),
+			""",
+			),
 			document = """
 				|fragment conflictingDifferingResponses on Pet {
 				|   ... on Dog {
@@ -373,7 +374,7 @@ class SelectionUnambiguityRuleTest {
 				|   name: String!
 				|   meowVolume: Int
 				|}
-			"""
+			""",
 		)
 	}
 }

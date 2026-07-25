@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.VariableDefinitionTypeValidityRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.8.2 — Variables Are Input Types
 class Sec5_8_2_VariablesAreInputTypesTests {
@@ -17,10 +16,9 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsStringVariableType() {
@@ -32,10 +30,9 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsListVariableType() {
@@ -47,10 +44,9 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsInputObjectVariableType() {
@@ -63,16 +59,16 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 			schema = """
 				|type Query { id: ID }
 				|input MyInput { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsObjectVariableType() {
 		assertValidationRule(
 			rule = VariableDefinitionTypeValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Variable '${'$'}x' cannot have output type 'MyObject'.
 
 				<document>:1:13
@@ -83,23 +79,24 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 				1 | type Query { id: ID }
 				2 | type MyObject { name: String }
 				  |      ^
-			"""),
+			""",
+			),
 			document = """
 				|query Q(${'$'}x: MyObject) { id }
 			""",
 			schema = """
 				|type Query { id: ID }
 				|type MyObject { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsInterfaceVariableType() {
 		assertValidationRule(
 			rule = VariableDefinitionTypeValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Variable '${'$'}x' cannot have output type 'MyInterface'.
 
 				<document>:1:13
@@ -110,23 +107,24 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 				1 | type Query { id: ID }
 				2 | interface MyInterface { name: String }
 				  |           ^
-			"""),
+			""",
+			),
 			document = """
 				|query Q(${'$'}x: MyInterface) { id }
 			""",
 			schema = """
 				|type Query { id: ID }
 				|interface MyInterface { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsUnionVariableType() {
 		assertValidationRule(
 			rule = VariableDefinitionTypeValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Variable '${'$'}x' cannot have output type 'MyUnion'.
 
 				<document>:1:13
@@ -137,7 +135,8 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 				2 | type MyTypeA { name: String }
 				3 | union MyUnion = MyTypeA
 				  |       ^
-			"""),
+			""",
+			),
 			document = """
 				|query Q(${'$'}x: MyUnion) { id }
 			""",
@@ -145,7 +144,7 @@ class Sec5_8_2_VariablesAreInputTypesTests {
 				|type Query { id: ID }
 				|type MyTypeA { name: String }
 				|union MyUnion = MyTypeA
-			"""
+			""",
 		)
 	}
 }

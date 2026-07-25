@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Mixin interface for builders that accept an `arguments { ... }` block.
  *
@@ -17,16 +16,13 @@ public sealed interface GraphQLArgumentsContainer : GraphQLArgumentsContainerSco
 	public fun arguments(arguments: List<GArgument>)
 }
 
-
 /** Scope interface for [GraphQLArgumentsContainer]. */
 @GraphQLMarker
 public sealed interface GraphQLArgumentsContainerScope
 
-
 internal interface GraphQLArgumentsContainerInternal : GraphQLArgumentsContainer {
 
 	var arguments: List<GArgument>?
-
 
 	override fun arguments(arguments: List<GArgument>) {
 		check(this.arguments == null) { "Cannot specify multiple 'arguments' blocks." }
@@ -34,7 +30,6 @@ internal interface GraphQLArgumentsContainerInternal : GraphQLArgumentsContainer
 		this.arguments = arguments
 	}
 }
-
 
 /**
  * Applies an `arguments { ... }` block to this element using the [GraphQLArgumentsBuilder] DSL.

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-Name-Uniqueness
 internal object VariableDefinitionNameExclusivityRule : ValidationRule.Singleton() {
 
@@ -14,11 +13,10 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule.Singleton
 			.forEach { (name, variableDefinitions) ->
 				data.reportError(
 					message = "Fragment '${definition.name}' must not contain multiple variables with the same name '$$name'.",
-					nodes = variableDefinitions.map { it.nameNode }
+					nodes = variableDefinitions.map { it.nameNode },
 				)
 			}
 	}
-
 
 	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		definition.variableDefinitions
@@ -32,7 +30,7 @@ internal object VariableDefinitionNameExclusivityRule : ValidationRule.Singleton
 
 				data.reportError(
 					message = "Operation$operationName must not contain multiple variables with the same name '$$name'.",
-					nodes = variableDefinitions.map { it.nameNode }
+					nodes = variableDefinitions.map { it.nameNode },
 				)
 			}
 	}

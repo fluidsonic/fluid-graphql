@@ -1,8 +1,19 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GBooleanType
+import io.fluidsonic.graphql.GDirective
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFloatType
+import io.fluidsonic.graphql.GIdType
+import io.fluidsonic.graphql.GIntType
+import io.fluidsonic.graphql.GListType
+import io.fluidsonic.graphql.GNonNullType
+import io.fluidsonic.graphql.GSchema
+import io.fluidsonic.graphql.GSelectionSet
+import io.fluidsonic.graphql.GStringType
+import io.fluidsonic.graphql.GVariableDefinition
+import io.fluidsonic.graphql.accept
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class VisitorTest {
 
@@ -10,7 +21,8 @@ class VisitorTest {
 	fun testVisitsADocument() {
 		val visitor = StackCollectingVisitor()
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query query(${'$'}variable: Int = 1 @foo) @foo(argument: 1) {
 			|   field(argument: 1) @foo {
 			|      ...fragment @foo
@@ -19,9 +31,11 @@ class VisitorTest {
 			|      }
 			|   }
 			|}
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|${'"'}""description${'"'}""
 			|enum Enum @foo { VALUE @foo }
 			|
@@ -71,7 +85,8 @@ class VisitorTest {
 			|}
 			|
 			|directive @foo on ARGUMENT_DEFINITION
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 		schema.document.accept(visitor, data = StackCollectingVisitor.Data())
@@ -110,29 +125,247 @@ class VisitorTest {
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "FragmentSelection(5)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "FragmentSelection(5)", "Name(6)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "FragmentSelection(5)", "Directive(6)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "FragmentSelection(5)", "Directive(6)", "Name(7)"),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"FragmentSelection(5)",
+				"Directive(6)",
+				"Name(7)",
+			),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)"),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "NamedTypeRef(6)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "NamedTypeRef(6)", "Name(7)"),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"NamedTypeRef(6)",
+				"Name(7)",
+			),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "Directive(6)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "Directive(6)", "Name(7)"),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"Directive(6)",
+				"Name(7)",
+			),
 			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Name(8)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "Name(9)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)", "Name(12)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)", "VariableRef(12)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "ObjectValue(10)", "Argument(11)", "VariableRef(12)", "Name(13)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "BooleanValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "IntValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "FloatValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "StringValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "EnumValue(10)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)", "FieldSelection(3)", "SelectionSet(4)", "InlineFragmentSelection(5)", "SelectionSet(6)", "FieldSelection(7)", "Argument(8)", "ListValue(9)", "NullValue(10)"),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Name(8)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"Name(9)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"ObjectValue(10)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"ObjectValue(10)",
+				"Argument(11)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"ObjectValue(10)",
+				"Argument(11)",
+				"Name(12)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"ObjectValue(10)",
+				"Argument(11)",
+				"VariableRef(12)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"ObjectValue(10)",
+				"Argument(11)",
+				"VariableRef(12)",
+				"Name(13)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"BooleanValue(10)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"IntValue(10)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"FloatValue(10)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"StringValue(10)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"EnumValue(10)",
+			),
+			listOf(
+				"Document(0)",
+				"OperationDefinition(1)",
+				"SelectionSet(2)",
+				"FieldSelection(3)",
+				"SelectionSet(4)",
+				"InlineFragmentSelection(5)",
+				"SelectionSet(6)",
+				"FieldSelection(7)",
+				"Argument(8)",
+				"ListValue(9)",
+				"NullValue(10)",
+			),
 			listOf("Document(0)"),
 			listOf("Document(0)", "EnumType(1)"),
 			listOf("Document(0)", "EnumType(1)", "StringValue(2)"),
@@ -313,7 +546,7 @@ class VisitorTest {
 			listOf("ScalarType(0)"),
 			listOf("ScalarType(0)", "Name(1)"),
 			listOf("ScalarType(0)"),
-			listOf("ScalarType(0)", "Name(1)")
+			listOf("ScalarType(0)", "Name(1)"),
 		)
 
 		val actualStacksString = makePrettyStacks(visitor.target.stacks)
@@ -322,14 +555,14 @@ class VisitorTest {
 		assertEquals(expected = expectedStacksString, actual = actualStacksString)
 	}
 
-
 	@Test
 	fun testSkipsChildren() {
 		val visitor = StackCollectingVisitor(
-			skipsChildrenInNode = { it is GSelectionSet || it is GVariableDefinition || it is GDirective }
+			skipsChildrenInNode = { it is GSelectionSet || it is GVariableDefinition || it is GDirective },
 		)
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query query(${'$'}variable: Int = 1 @foo) @foo(argument: 1) {
 			|   field(argument: 1) @foo {
 			|      ...fragment @foo
@@ -338,7 +571,8 @@ class VisitorTest {
 			|      }
 			|   }
 			|}
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 
@@ -348,7 +582,7 @@ class VisitorTest {
 			listOf("Document(0)", "OperationDefinition(1)", "Name(2)"),
 			listOf("Document(0)", "OperationDefinition(1)", "VariableDefinition(2)"),
 			listOf("Document(0)", "OperationDefinition(1)", "Directive(2)"),
-			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)")
+			listOf("Document(0)", "OperationDefinition(1)", "SelectionSet(2)"),
 		)
 
 		val actualStacksString = makePrettyStacks(visitor.target.stacks)
@@ -357,14 +591,14 @@ class VisitorTest {
 		assertEquals(expected = expectedStacksString, actual = actualStacksString)
 	}
 
-
 	@Test
 	fun testAborts() {
 		val visitor = StackCollectingVisitor(
-			abortsInNode = { it is GDirective }
+			abortsInNode = { it is GDirective },
 		)
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query query(${'$'}variable: Int = 1 @foo) @foo(argument: 1) {
 			|   field(argument: 1) @foo {
 			|      ...fragment @foo
@@ -373,7 +607,8 @@ class VisitorTest {
 			|      }
 			|   }
 			|}
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 
@@ -386,7 +621,7 @@ class VisitorTest {
 			listOf("Document(0)", "OperationDefinition(1)", "VariableDefinition(2)", "NamedTypeRef(3)"),
 			listOf("Document(0)", "OperationDefinition(1)", "VariableDefinition(2)", "NamedTypeRef(3)", "Name(4)"),
 			listOf("Document(0)", "OperationDefinition(1)", "VariableDefinition(2)", "IntValue(3)"),
-			listOf("Document(0)", "OperationDefinition(1)", "VariableDefinition(2)", "Directive(3)")
+			listOf("Document(0)", "OperationDefinition(1)", "VariableDefinition(2)", "Directive(3)"),
 		)
 
 		val actualStacksString = makePrettyStacks(visitor.target.stacks)
@@ -395,9 +630,7 @@ class VisitorTest {
 		assertEquals(expected = expectedStacksString, actual = actualStacksString)
 	}
 
-
-	private fun makePrettyStacks(stacks: List<List<String>>) =
-		"\n" + stacks.joinToString(",\n") { stack ->
-			"listOf(" + stack.joinToString(", ") { "\"$it\"" } + ")"
-		} + "\n"
+	private fun makePrettyStacks(stacks: List<List<String>>) = "\n" + stacks.joinToString(",\n") { stack ->
+		"listOf(" + stack.joinToString(", ") { "\"$it\"" } + ")"
+	} + "\n"
 }

@@ -2,14 +2,13 @@
 
 package io.fluidsonic.graphql
 
-import kotlin.contracts.*
-import kotlin.jvm.*
-
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+import kotlin.jvm.JvmName
 
 @Suppress("UnusedReceiverParameter")
-internal fun <Receiver, Value> Receiver.identity(value: Value) =
-	value
-
+internal fun <Receiver, Value> Receiver.identity(value: Value) = value
 
 // FIXME use refactored fluid-stdlib
 @OptIn(ExperimentalContracts::class)

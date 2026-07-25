@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A named GraphQL fragment definition (`fragment Foo on Bar { ... }`).
  *
@@ -15,17 +14,15 @@ public class GFragmentDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GFragmentDefinition> = GNodeExtensionSet.empty(),
-) :
-	GExecutableDefinition(
-		extensions = extensions,
-		origin = origin
-	),
+) : GExecutableDefinition(
+	extensions = extensions,
+	origin = origin,
+),
 	GNode.WithDirectives,
 	GNode.WithName,
 	GNode.WithVariableDefinitions {
 
 	override val nameNode: GName = name
-
 
 	public constructor(
 		name: String,
@@ -40,12 +37,11 @@ public class GFragmentDefinition(
 		selectionSet = selectionSet,
 		variableDefinitions = variableDefinitions,
 		directives = directives,
-		extensions = extensions
+		extensions = extensions,
 	)
 
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
+		(
 			other is GFragmentDefinition &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
@@ -54,7 +50,6 @@ public class GFragmentDefinition(
 				variableDefinitions.equalsNode(other.variableDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
 
 	public companion object
 }

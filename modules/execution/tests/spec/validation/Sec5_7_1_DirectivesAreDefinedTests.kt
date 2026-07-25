@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DirectiveExistenceRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.7.1 — Directives Are Defined
 class Sec5_7_1_DirectivesAreDefinedTests {
@@ -17,31 +16,31 @@ class Sec5_7_1_DirectivesAreDefinedTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsUnknownDirective() {
 		assertValidationRule(
 			rule = DirectiveExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Unknown directive '@unknown'.
 
 				<document>:1:10
 				1 | { field @unknown }
 				  |          ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field @unknown }
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsCustomDefinedDirective() {
@@ -54,10 +53,9 @@ class Sec5_7_1_DirectivesAreDefinedTests {
 			schema = """
 				|type Query { field: String }
 				|directive @myDirective on FIELD
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsIncludeDirective() {
@@ -69,10 +67,9 @@ class Sec5_7_1_DirectivesAreDefinedTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsMultipleUnknownDirectives() {
@@ -92,14 +89,14 @@ class Sec5_7_1_DirectivesAreDefinedTests {
 					<document>:1:20
 					1 | { field @unknown1 @unknown2 }
 					  |                    ^
-				"""
+				""",
 			),
 			document = """
 				|{ field @unknown1 @unknown2 }
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
 }

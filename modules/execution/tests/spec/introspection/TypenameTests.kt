@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.obj
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // GraphQL Spec §4 — Meta-fields: __typename
 class TypenameTests {
@@ -15,17 +23,20 @@ class TypenameTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __typename
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
 		assertEquals(expected = "Query", actual = data["__typename"])
 	}
-
 
 	@Test
 	fun testTypenameOnObjectField() = runTest {
@@ -39,22 +50,26 @@ class TypenameTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  obj {
 			    __typename
 			    id
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val obj = data["obj"] as Map<String, Any?>
 		assertEquals(expected = "MyObject", actual = obj["__typename"])
 	}
-
 
 	@Test
 	fun testTypenameAlongsideOtherFields() = runTest {
@@ -64,19 +79,22 @@ class TypenameTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __typename
 			  foo
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
 		assertEquals(expected = "Query", actual = data["__typename"])
 		assertEquals(expected = "bar", actual = data["foo"])
 	}
-
 
 	@Test
 	fun testTypenameOnUnionMember() = runTest {
@@ -96,22 +114,26 @@ class TypenameTests {
 			Union(Pet with Cat or Dog)
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  pet {
 			    ... on Cat { __typename meows }
 			    ... on Dog { __typename barks }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val pet = data["pet"] as Map<String, Any?>
 		assertEquals(expected = "Cat", actual = pet["__typename"])
 	}
-
 
 	@Test
 	fun testTypenameOnInterfaceImplementor() = runTest {
@@ -129,21 +151,25 @@ class TypenameTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  named {
 			    ... on Dog { __typename name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val named = data["named"] as Map<String, Any?>
 		assertEquals(expected = "Dog", actual = named["__typename"])
 	}
-
 
 	private class Cat(val meows: Boolean = true)
 	private class Dog(val barks: Boolean = true)

@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.directives
+import io.fluidsonic.graphql.isNotEmpty
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §4.6 — Directive Introspection
 class DirectiveIntrospectionTests {
@@ -15,18 +23,24 @@ class DirectiveIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    directives { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val directives = schemaData["directives"] as List<Map<String, Any?>>
 		val directiveNames = directives.map { it["name"] }
@@ -36,7 +50,6 @@ class DirectiveIntrospectionTests {
 		assertTrue(directiveNames.contains("specifiedBy"), "Expected 'specifiedBy' directive")
 	}
 
-
 	@Test
 	fun testSkipDirectiveLocations() = runTest {
 		val schema = GraphQL.schema {
@@ -45,7 +58,9 @@ class DirectiveIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    directives {
@@ -54,20 +69,24 @@ class DirectiveIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val directives = schemaData["directives"] as List<Map<String, Any?>>
 		val skipDirective = directives.first { it["name"] == "skip" }
+
 		@Suppress("UNCHECKED_CAST")
 		val locations = skipDirective["locations"] as List<String>
 		assertTrue(locations.contains("FIELD"), "Expected 'FIELD' in @skip locations, got: $locations")
 	}
-
 
 	@Test
 	fun testIncludeDirectiveLocations() = runTest {
@@ -77,7 +96,9 @@ class DirectiveIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    directives {
@@ -86,20 +107,24 @@ class DirectiveIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val directives = schemaData["directives"] as List<Map<String, Any?>>
 		val includeDirective = directives.first { it["name"] == "include" }
+
 		@Suppress("UNCHECKED_CAST")
 		val locations = includeDirective["locations"] as List<String>
 		assertTrue(locations.contains("FIELD"), "Expected 'FIELD' in @include locations, got: $locations")
 	}
-
 
 	@Test
 	fun testDeprecatedDirectiveArgs() = runTest {
@@ -109,7 +134,9 @@ class DirectiveIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    directives {
@@ -118,21 +145,25 @@ class DirectiveIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val directives = schemaData["directives"] as List<Map<String, Any?>>
 		val deprecatedDirective = directives.first { it["name"] == "deprecated" }
+
 		@Suppress("UNCHECKED_CAST")
 		val args = deprecatedDirective["args"] as List<Map<String, Any?>>
 		val argNames = args.map { it["name"] }
 		assertTrue(argNames.contains("reason"), "Expected 'reason' arg in @deprecated, got: $argNames")
 	}
-
 
 	@Test
 	fun testDirectiveHasNameAndLocations() = runTest {
@@ -142,7 +173,9 @@ class DirectiveIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    directives {
@@ -151,12 +184,16 @@ class DirectiveIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val directives = schemaData["directives"] as List<Map<String, Any?>>
 		assertTrue(directives.isNotEmpty(), "Expected at least one directive")

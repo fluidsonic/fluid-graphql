@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * An immutable, type-safe container of arbitrary metadata attached to a [GNode].
  *
@@ -21,19 +20,14 @@ public interface GNodeExtensionSet<out Node : GNode> {
 
 	override fun toString(): String
 
-
 	public companion object {
 
 		/** Creates a [GNodeExtensionSet] by building it with the given [action] on a [Builder]. */
-		public inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet<Node> =
-			Builder.default<Node>().apply(action).build()
-
+		public inline operator fun <Node : GNode> invoke(action: Builder<Node>.() -> Unit): GNodeExtensionSet<Node> = Builder.default<Node>().apply(action).build()
 
 		/** Returns an empty [GNodeExtensionSet]. */
-		public fun <Node : GNode> empty(): GNodeExtensionSet<Node> =
-			Empty
+		public fun <Node : GNode> empty(): GNodeExtensionSet<Node> = Empty
 	}
-
 
 	/** Mutable builder for constructing a [GNodeExtensionSet]. */
 	public interface Builder<out Node : GNode> {
@@ -48,77 +42,54 @@ public interface GNodeExtensionSet<out Node : GNode> {
 
 		override fun toString(): String
 
-
 		public companion object {
 
-			public fun <Node : GNode> default(): Builder<Node> =
-				Default()
+			public fun <Node : GNode> default(): Builder<Node> = Default()
 		}
-
 
 		private class Default<out Node : GNode> : Builder<Node> {
 
 			private val values: MutableMap<GNodeExtensionKey<*>, Any> = hashMapOf()
 
-
-			override fun build(): GNodeExtensionSet<Node> =
-				when {
-					values.isNotEmpty() -> Default(values.toMap())
-					else -> empty()
-				}
-
-
-			@Suppress("UNCHECKED_CAST")
-			override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value? =
-				values[key] as Value?
-
-
-			override fun <Value : Any> set(key: GNodeExtensionKey<in Value>, value: Value?) {
-				if (value != null)
-					values[key] = value
-				else
-					values.remove(key)
+			override fun build(): GNodeExtensionSet<Node> = when {
+				values.isNotEmpty() -> Default(values.toMap())
+				else -> empty()
 			}
 
+			@Suppress("UNCHECKED_CAST")
+			override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value? = values[key] as Value?
 
-			override fun toString() =
-				values.toString()
+			override fun <Value : Any> set(key: GNodeExtensionKey<in Value>, value: Value?) {
+				if (value != null) {
+					values[key] = value
+				} else {
+					values.remove(key)
+				}
+			}
+
+			override fun toString() = values.toString()
 		}
 	}
-
 
 	private class Default<out Node : GNode>(private val values: Map<GNodeExtensionKey<*>, Any>) : GNodeExtensionSet<Node> {
 
 		@Suppress("UNCHECKED_CAST")
-		override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value? =
-			values[key] as Value?
+		override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Value? = values[key] as Value?
 
+		override fun isEmpty() = values.isEmpty()
 
-		override fun isEmpty() =
-			values.isEmpty()
-
-
-		override fun toString() =
-			values.toString()
+		override fun toString() = values.toString()
 	}
-
 
 	private object Empty : GNodeExtensionSet<Nothing> {
 
-		override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Nothing? =
-			null
+		override fun <Value : Any> get(key: GNodeExtensionKey<out Value>): Nothing? = null
 
+		override fun isEmpty() = true
 
-		override fun isEmpty() =
-			true
-
-
-		override fun toString() =
-			"{}"
+		override fun toString() = "{}"
 	}
 }
 
-
 /** Returns `true` if this set contains at least one entry. */
-public fun GNodeExtensionSet<*>.isNotEmpty(): Boolean =
-	!isEmpty()
+public fun GNodeExtensionSet<*>.isNotEmpty(): Boolean = !isEmpty()

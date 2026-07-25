@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ValueValidityRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.6.1 — Values of Correct Type
 class Sec5_6_1_ValuesOfCorrectTypeTests {
@@ -17,10 +16,9 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			""",
 			schema = """
 				|type Query { field(arg: Int): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsStringValue() {
@@ -32,10 +30,9 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsBooleanValue() {
@@ -47,10 +44,9 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			""",
 			schema = """
 				|type Query { field(arg: Boolean): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsNullForNullable() {
@@ -62,16 +58,16 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsStringForInt() {
 		assertValidationRule(
 			rule = ValueValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Type 'Int' does not allow value '"hello"'.
 
 				<document>:1:14
@@ -81,22 +77,23 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 				<document>:1:25
 				1 | type Query { field(arg: Int): String }
 				  |                         ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field(arg: "hello") }
 			""",
 			schema = """
 				|type Query { field(arg: Int): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsIntForString() {
 		assertValidationRule(
 			rule = ValueValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Type 'String' does not allow value '42'.
 
 				<document>:1:14
@@ -106,22 +103,23 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 				<document>:1:25
 				1 | type Query { field(arg: String): String }
 				  |                         ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field(arg: 42) }
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsNullForNonNull() {
 		assertValidationRule(
 			rule = ValueValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Type 'String' does not allow value 'null'.
 
 				<document>:1:14
@@ -131,16 +129,16 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 				<document>:1:25
 				1 | type Query { field(arg: String!): String }
 				  |                         ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field(arg: null) }
 			""",
 			schema = """
 				|type Query { field(arg: String!): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsEnumValue() {
@@ -153,16 +151,16 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			schema = """
 				|type Query { field(arg: Status): String }
 				|enum Status { ACTIVE INACTIVE }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsStringForEnum() {
 		assertValidationRule(
 			rule = ValueValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Type 'Status' does not allow value '"ACTIVE"'.
 
 				<document>:1:14
@@ -173,17 +171,17 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 				1 | type Query { field(arg: Status): String }
 				  |                         ^
 				2 | enum Status { ACTIVE INACTIVE }
-			"""),
+			""",
+			),
 			document = """
 				|{ field(arg: "ACTIVE") }
 			""",
 			schema = """
 				|type Query { field(arg: Status): String }
 				|enum Status { ACTIVE INACTIVE }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsListValue() {
@@ -195,7 +193,7 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			""",
 			schema = """
 				|type Query { field(arg: [Int]): String }
-			"""
+			""",
 		)
 	}
 }

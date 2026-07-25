@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 internal object DefaultFieldSelectionExecutor {
 
 	// https://graphql.github.io/graphql-spec/June2018/#CompleteValue()
@@ -26,7 +25,7 @@ internal object DefaultFieldSelectionExecutor {
 							is GAbstractType -> resolveAbstractType(
 								abstractType = type,
 								objectValue = value,
-								context = context
+								context = context,
 							)
 
 							is GInputObjectType ->
@@ -40,7 +39,7 @@ internal object DefaultFieldSelectionExecutor {
 							parent = value,
 							parentType = childType,
 							path = path,
-							context = context
+							context = context,
 						).flatMapValue { childValue ->
 							convertOutput(
 								value = childValue,
@@ -48,7 +47,7 @@ internal object DefaultFieldSelectionExecutor {
 								parentType = parentType,
 								path = path,
 								fieldDefinition = fieldDefinition,
-								context = context
+								context = context,
 							)
 						}
 					}
@@ -60,7 +59,7 @@ internal object DefaultFieldSelectionExecutor {
 							parentType = parentType,
 							path = path,
 							fieldDefinition = fieldDefinition,
-							context = context
+							context = context,
 						)
 
 					is GListType ->
@@ -73,7 +72,7 @@ internal object DefaultFieldSelectionExecutor {
 									parentType = parentType,
 									fieldDefinition = fieldDefinition,
 									path = path.addIndex(index),
-									context = context
+									context = context,
 								)
 							}.flatten()
 
@@ -88,7 +87,7 @@ internal object DefaultFieldSelectionExecutor {
 							parentType = parentType,
 							fieldDefinition = fieldDefinition,
 							path = path,
-							context = context
+							context = context,
 						)
 				}
 			}
@@ -100,7 +99,6 @@ internal object DefaultFieldSelectionExecutor {
 			}
 		}
 
-
 	private fun convertOutput(
 		value: Any,
 		type: GType,
@@ -108,44 +106,39 @@ internal object DefaultFieldSelectionExecutor {
 		path: GPath,
 		fieldDefinition: GFieldDefinition,
 		context: DefaultExecutorContext,
-	): GResult<Any> =
-		context.outputConverter.convertOutput(
-			value = value,
-			type = type,
-			fieldDefinition = fieldDefinition,
-			parentType = parentType,
-			path = path,
-			context = context,
-		)
-
+	): GResult<Any> = context.outputConverter.convertOutput(
+		value = value,
+		type = type,
+		fieldDefinition = fieldDefinition,
+		parentType = parentType,
+		path = path,
+		context = context,
+	)
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
-	suspend fun execute(
-		selections: List<GFieldSelection>,
-		parent: Any,
-		parentType: GObjectType,
-		path: GPath,
-		context: DefaultExecutorContext,
-	): GResult<Any?> {
+	suspend fun execute(selections: List<GFieldSelection>, parent: Any, parentType: GObjectType, path: GPath, context: DefaultExecutorContext): GResult<Any?> {
 		// An error can occur only if this function was called directly with an empty selection list.
 		require(selections.isNotEmpty()) { "'selections' must contain at least one selection." }
 
 		val firstSelection = selections.first()
-		if (GLanguage.isValidIntrospectionName(firstSelection.name))
+		if (GLanguage.isValidIntrospectionName(firstSelection.name)) {
 			return executeIntrospection(
 				selections = selections,
 				originalParentType = parentType,
 				path = path,
-				context = context
+				context = context,
 			)
+		}
 
 		// An error can occur only if the document wasn't validated or if this function was called directly with an invalid selection.
 		val fieldDefinition = parentType.fieldDefinition(firstSelection.name)
-			?: return GResult.failure(GError(
-				message = "There is no field named '${firstSelection.name}' on type '${parentType.name}'.",
-				path = path,
-				nodes = listOf(firstSelection.nameNode),
-			))
+			?: return GResult.failure(
+				GError(
+					message = "There is no field named '${firstSelection.name}' on type '${parentType.name}'.",
+					path = path,
+					nodes = listOf(firstSelection.nameNode),
+				),
+			)
 
 		// An error can occur only if the schema wasn't validated.
 		val fieldType = TypeResolver.resolveType(context.schema, fieldDefinition.type)
@@ -159,16 +152,15 @@ internal object DefaultFieldSelectionExecutor {
 				fieldDefinition = fieldDefinition,
 				selections = selections,
 				path = path,
-				context = context
+				context = context,
 			),
 			type = fieldType,
 			parentType = parentType,
 			fieldDefinition = fieldDefinition,
 			path = path,
-			context = context
+			context = context,
 		)
 	}
-
 
 	private suspend fun executeIntrospection(
 		selections: List<GFieldSelection>,
@@ -216,7 +208,7 @@ internal object DefaultFieldSelectionExecutor {
 		val fieldContext = context.copy(
 			schema = Introspection.schema,
 			root = context.schema,
-			rootType = Introspection.schemaType
+			rootType = Introspection.schemaType,
 		)
 		val fieldType = TypeResolver.resolveType(fieldContext.schema, fieldDefinition.type)
 			?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${originalParentType.name}'.")
@@ -229,33 +221,25 @@ internal object DefaultFieldSelectionExecutor {
 				fieldDefinition = fieldDefinition,
 				selections = selections,
 				path = path,
-				context = fieldContext
+				context = fieldContext,
 			),
 			type = fieldType,
 			parentType = parentType,
 			fieldDefinition = fieldDefinition,
 			path = path,
-			context = fieldContext
+			context = fieldContext,
 		)
 	}
-
 
 	// https://graphql.github.io/graphql-spec/draft/#MergeSelectionSets()
 	private fun mergeSelectionSets(fieldSelections: List<GFieldSelection>) =
 		GSelectionSet(selections = fieldSelections.flatMap { it.selectionSet?.selections.orEmpty() })
 
-
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveAbstractType()
-	private fun resolveAbstractType(
-		abstractType: GAbstractType,
-		objectValue: Any,
-		context: DefaultExecutorContext,
-	) =
-		// FIXME support default resolver
+	private fun resolveAbstractType(abstractType: GAbstractType, objectValue: Any, context: DefaultExecutorContext) = // FIXME support default resolver
 		context.schema.getPossibleTypes(abstractType)
 			.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false } // FIXME
 			?: error("Cannot resolve abstract type '${abstractType.name}' for Kotlin type '${objectValue::class.qualifiedName}': $objectValue")
-
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
 	private suspend fun resolveFieldValue(
@@ -265,32 +249,31 @@ internal object DefaultFieldSelectionExecutor {
 		selections: List<GFieldSelection>,
 		path: GPath,
 		context: DefaultExecutorContext,
-	): GResult<Any?> =
-		context.nodeInputConverter.convertArguments(
-			node = selections.first(),
-			definitions = fieldDefinition.argumentDefinitions,
-			fieldSelectionPath = path,
-			context = context
-		).flatMapValue { argumentValues ->
-			val resolverContext = DefaultFieldResolverContext(
-				arguments = argumentValues,
-				execution = context,
-				fieldDefinition = fieldDefinition,
-				parent = parent,
-				parentType = parentType,
-				path = path,
-			)
+	): GResult<Any?> = context.nodeInputConverter.convertArguments(
+		node = selections.first(),
+		definitions = fieldDefinition.argumentDefinitions,
+		fieldSelectionPath = path,
+		context = context,
+	).flatMapValue { argumentValues ->
+		val resolverContext = DefaultFieldResolverContext(
+			arguments = argumentValues,
+			execution = context,
+			fieldDefinition = fieldDefinition,
+			parent = parent,
+			parentType = parentType,
+			path = path,
+		)
 
-			GResult.catchErrors {
-				when (val resolver = context.fieldResolver) {
-					null -> resolverContext.next()
-					else ->
-						context.withExceptionHandler(origin = { GExceptionOrigin.FieldResolver(resolver = resolver, context = resolverContext) }) {
-							with(resolver) {
-								resolverContext.resolveField(parent = parent)
-							}
+		GResult.catchErrors {
+			when (val resolver = context.fieldResolver) {
+				null -> resolverContext.next()
+				else ->
+					context.withExceptionHandler(origin = { GExceptionOrigin.FieldResolver(resolver = resolver, context = resolverContext) }) {
+						with(resolver) {
+							resolverContext.resolveField(parent = parent)
 						}
-				}
+					}
 			}
 		}
+	}
 }

@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GStringValue
+import io.fluidsonic.graphql.GValue
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // https://github.com/graphql/graphql-js/blob/master/src/language/__tests__/blockString-test.js
 class AstBlockStringNormalizationTests {
@@ -22,10 +23,9 @@ class AstBlockStringNormalizationTests {
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
-
 
 	@Test
 	fun testRemovesEmptyLeadingAndTrailingLines() {
@@ -45,10 +45,9 @@ class AstBlockStringNormalizationTests {
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
-
 
 	@Test
 	fun testRemovesBlankLeadingAndTrailingLines() {
@@ -68,10 +67,9 @@ class AstBlockStringNormalizationTests {
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
-
 
 	@Test
 	fun testRetainsIndentationFromFirstLine() {
@@ -87,10 +85,9 @@ class AstBlockStringNormalizationTests {
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
-
 
 	@Test
 	fun testDoesNotAlterTrailingSpaces() {
@@ -112,12 +109,11 @@ class AstBlockStringNormalizationTests {
 				"  World!   ",
 				"           ",
 				"Yours,     ",
-				"  GraphQL. "
+				"  GraphQL. ",
 			),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
-
 
 	@Test
 	fun testConsidersMixedTabsAndSpacesAsIndentation() {
@@ -135,10 +131,9 @@ class AstBlockStringNormalizationTests {
 
 		assertEquals(
 			expected = listOf("Hello,", "  World!", "", "Yours,", "  GraphQL."),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
-
 
 	@Test
 	fun testTrimsLeadingIndentationForSingleLine() {
@@ -150,11 +145,9 @@ class AstBlockStringNormalizationTests {
 
 		assertEquals(
 			expected = listOf("Hello"),
-			actual = parsed.split('\n')
+			actual = parsed.split('\n'),
 		)
 	}
 
-
-	private fun String.toBlockString() =
-		"\"\"\"${this.trimMargin()}\"\"\""
+	private fun String.toBlockString() = "\"\"\"${this.trimMargin()}\"\"\""
 }

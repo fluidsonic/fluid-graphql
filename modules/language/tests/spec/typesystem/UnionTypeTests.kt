@@ -1,32 +1,39 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GObjectType
+import io.fluidsonic.graphql.GSchema
+import io.fluidsonic.graphql.GUnionType
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §3.8 — Unions
 class UnionTypeTests {
 
 	@Test
 	fun testUnionDefinition() {
-		val result = GSchema.parse("""
+		val result = GSchema.parse(
+			"""
 			type Photo { url: String }
 			type Person { name: String }
 			union SearchResult = Photo | Person
 			type Query { search: SearchResult }
-		""".trimIndent())
+			""".trimIndent(),
+		)
 		assertTrue(result.errors.isEmpty(), "Expected no parse errors but got: ${result.errors}")
 	}
 
-
 	@Test
 	fun testUnionHasMembers() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			type Photo { url: String }
 			type Person { name: String }
 			union SearchResult = Photo | Person
 			type Query { search: SearchResult }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val unionType = schema.resolveType("SearchResult") as? GUnionType
 		assertNotNull(unionType)
 		assertEquals(2, unionType.possibleTypes.size)
@@ -34,29 +41,31 @@ class UnionTypeTests {
 		assertTrue(unionType.possibleTypes.any { it.name == "Person" })
 	}
 
-
 	@Test
 	fun testUnionIsUnionType() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			type Photo { url: String }
 			type Person { name: String }
 			union SearchResult = Photo | Person
 			type Query { search: SearchResult }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val unionType = schema.resolveType("SearchResult")
 		assertNotNull(unionType)
 		assertIs<GUnionType>(unionType)
 	}
 
-
 	@Test
 	fun testUnionMembersAreObjectTypes() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			type Photo { url: String }
 			type Person { name: String }
 			union SearchResult = Photo | Person
 			type Query { search: SearchResult }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val unionType = schema.resolveType("SearchResult") as? GUnionType
 		assertNotNull(unionType)
 		for (memberRef in unionType.possibleTypes) {

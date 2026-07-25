@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FieldSubselectionRule
+import kotlin.test.Test
 
 class FieldSubselectionRuleTest {
 
@@ -32,10 +31,9 @@ class FieldSubselectionRuleTest {
 				|}
 				|
 				|enum Enum { VALUE }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsCompositeTypeFieldsWithSubselection() {
@@ -60,10 +58,9 @@ class FieldSubselectionRuleTest {
 				|type Object1 implements Interface { id: ID }
 				|type Object2 { id: ID }
 				|union Union = Object1 | Object2
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsLeafFieldsWithSubselection() {
@@ -159,7 +156,7 @@ class FieldSubselectionRuleTest {
 					7 |    string: String
 					  |    ^
 					8 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -182,10 +179,9 @@ class FieldSubselectionRuleTest {
 				|}
 				|
 				|enum Enum { VALUE }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsCompositeTypeFieldsWithoutSubselection() {
@@ -236,7 +232,8 @@ class FieldSubselectionRuleTest {
 					4 |    union: Union
 					  |    ^
 					5 | }
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   interface
@@ -255,7 +252,7 @@ class FieldSubselectionRuleTest {
 				|type Object1 implements Interface { id: ID }
 				|type Object2 { id: ID }
 				|union Union = Object1 | Object2
-			"""
+			""",
 		)
 	}
 }

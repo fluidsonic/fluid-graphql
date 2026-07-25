@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Base context for input coercers, shared by [GNodeInputCoercerContext] and [GVariableInputCoercerContext].
  *

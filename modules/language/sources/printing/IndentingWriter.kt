@@ -1,32 +1,22 @@
 package io.fluidsonic.graphql
 
-
-internal class IndentingWriter(
-	val indent: String = "\t"
-) {
+internal class IndentingWriter(val indent: String = "\t") {
 
 	private val builder = StringBuilder()
 	private var currentLineIsIndented = false
 	private var indentationLevel = 0
 
-
-	inline fun <Result> indented(block: () -> Result) =
-		try {
-			indentationLevel += 1
-			block()
-		}
-		finally {
-			indentationLevel -= 1
-		}
-
+	inline fun <Result> indented(block: () -> Result) = try {
+		indentationLevel += 1
+		block()
+	} finally {
+		indentationLevel -= 1
+	}
 
 	val length
 		get() = builder.length
 
-
-	override fun toString() =
-		builder.toString()
-
+	override fun toString() = builder.toString()
 
 	private fun writeIndentationIfNeeded() {
 		if (!currentLineIsIndented) {
@@ -35,12 +25,10 @@ internal class IndentingWriter(
 		}
 	}
 
-
 	fun writeLinebreak() {
 		builder.append('\n')
 		currentLineIsIndented = false
 	}
-
 
 	fun writeRaw(string: String) {
 		var startIndex = 0
@@ -51,8 +39,9 @@ internal class IndentingWriter(
 				writeIndentationIfNeeded()
 				builder.append(string, startIndex, endIndex)
 			}
-			if (newlineIndex >= 0)
+			if (newlineIndex >= 0) {
 				writeLinebreak()
+			}
 
 			startIndex = endIndex + 1
 		}

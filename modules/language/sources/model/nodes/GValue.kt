@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * The sealed base class for all GraphQL value AST nodes.
  *
@@ -10,13 +9,11 @@ package io.fluidsonic.graphql
  * Use [parse] to parse a standalone value literal, [kind] to identify the value type at runtime,
  * and [unwrap] to convert to a plain Kotlin value (not supported for [GVariableRef]).
  */
-public sealed class GValue(
-	extensions: GNodeExtensionSet<GValue>,
-	origin: GDocumentPosition?,
-) : GNode(
-	extensions = extensions,
-	origin = origin
-) {
+public sealed class GValue(extensions: GNodeExtensionSet<GValue>, origin: GDocumentPosition?) :
+	GNode(
+		extensions = extensions,
+		origin = origin,
+	) {
 
 	/** Identifies the concrete kind of this value. */
 	public abstract val kind: Kind
@@ -29,7 +26,6 @@ public sealed class GValue(
 	 */
 	public abstract fun unwrap(): Any? // FIXME not language module
 
-
 	public companion object {
 
 		/**
@@ -37,14 +33,10 @@ public sealed class GValue(
 		 *
 		 * Returns a [GResult.Success] with the parsed value, or a [GResult.Failure] with parse errors.
 		 */
-		public fun parse(source: GDocumentSource.Parsable): GResult<GValue> =
-			Parser.parseValue(source)
+		public fun parse(source: GDocumentSource.Parsable): GResult<GValue> = Parser.parseValue(source)
 
-
-		public fun parse(content: String, name: String = "<value>"): GResult<GValue> =
-			parse(GDocumentSource.of(content = content, name = name))
+		public fun parse(content: String, name: String = "<value>"): GResult<GValue> = parse(GDocumentSource.of(content = content, name = name))
 	}
-
 
 	/** Identifies the kind of a [GValue] at runtime. */
 	public enum class Kind {
@@ -57,8 +49,8 @@ public sealed class GValue(
 		NULL,
 		OBJECT,
 		STRING,
-		VARIABLE;
-
+		VARIABLE,
+		;
 
 		override fun toString(): String = when (this) {
 			BOOLEAN -> "boolean"
@@ -71,7 +63,6 @@ public sealed class GValue(
 			STRING -> "string"
 			VARIABLE -> "variable"
 		}
-
 
 		public companion object
 	}

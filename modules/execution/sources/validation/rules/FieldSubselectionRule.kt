@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types
 internal object FieldSubselectionRule : ValidationRule.Singleton() {
 
@@ -22,16 +21,17 @@ internal object FieldSubselectionRule : ValidationRule.Singleton() {
 				selection.selectionSet?.let { selectionSet ->
 					data.reportError(
 						message = "Cannot select children of '${fieldType.name}' field '${selection.name}'.",
-						nodes = listOf(selectionSet, fieldDefinition.nameNode)
+						nodes = listOf(selectionSet, fieldDefinition.nameNode),
 					)
 				}
 
 			is GCompositeType ->
-				if (selection.selectionSet === null)
+				if (selection.selectionSet === null) {
 					data.reportError(
 						message = "Must select children of '${fieldType.name}' field '${selection.name}'.",
-						nodes = listOf(selection.nameNode, fieldDefinition.nameNode)
+						nodes = listOf(selection.nameNode, fieldDefinition.nameNode),
 					)
+				}
 
 			else ->
 				Unit

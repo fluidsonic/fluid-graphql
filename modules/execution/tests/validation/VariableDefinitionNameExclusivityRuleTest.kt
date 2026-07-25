@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.VariableDefinitionNameExclusivityRule
+import kotlin.test.Test
 
 class VariableDefinitionNameExclusivityRuleTest {
 
@@ -20,10 +19,9 @@ class VariableDefinitionNameExclusivityRuleTest {
 				|  id
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateVariableNames() {
@@ -96,7 +94,7 @@ class VariableDefinitionNameExclusivityRuleTest {
 					5 | fragment frag(${'$'}a: Int, ${'$'}b: Int, ${'$'}b: Int, ${'$'}c: Int, ${'$'}c: Int, ${'$'}c: Int) on Query {
 					  |                                                             ^
 					6 |   id
-				"""
+				""",
 			),
 			document = """
 				|query someQuery(${'$'}a: Int, ${'$'}b: Int, ${'$'}b: Int, ${'$'}c: Int, ${'$'}c: Int, ${'$'}c: Int) {
@@ -107,7 +105,7 @@ class VariableDefinitionNameExclusivityRuleTest {
 				|  id
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
 }

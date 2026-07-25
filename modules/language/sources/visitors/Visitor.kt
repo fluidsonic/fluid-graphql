@@ -1,22 +1,18 @@
 package io.fluidsonic.graphql
 
-
 @InternalGraphqlApi
 public abstract class Visitor<out Result, in Data> {
 
 	public abstract fun onNode(node: GNode, data: Data, visit: Visit): Result
-
 
 	public companion object {
 
 		// FIXME rename
 		public fun <Result> ofResult(result: Result): Visitor<Result, Any?> = object : Visitor<Result, Any?>() {
 
-			override fun onNode(node: GNode, data: Any?, visit: Visit) =
-				result
+			override fun onNode(node: GNode, data: Any?, visit: Visit) = result
 		}
 	}
-
 
 	public abstract class Hierarchical<out Result, in Data> : Typed<Result, Data>() {
 
@@ -79,7 +75,6 @@ public abstract class Visitor<out Result, in Data> {
 		override fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit): Result = onTypeExtension(extension, data, visit)
 		override fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit): Result = onAny(definition, data, visit)
 		override fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit): Result = onValue(ref, data, visit)
-
 
 		public abstract class WithoutData<out Result> : Hierarchical<Result, Nothing?>() {
 
@@ -203,13 +198,15 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onFragmentSelection(selection: GFragmentSelection, data: Nothing?, visit: Visit): Result = onFragmentSelection(selection, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?, visit: Visit): Result = onInlineFragmentSelection(selection, visit)
+			final override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?, visit: Visit): Result =
+				onInlineFragmentSelection(selection, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onInputObjectType(type: GInputObjectType, data: Nothing?, visit: Visit): Result = onInputObjectType(type, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?, visit: Visit): Result = onInputObjectTypeExtension(extension, visit)
+			final override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?, visit: Visit): Result =
+				onInputObjectTypeExtension(extension, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onIntValue(value: GIntValue, data: Nothing?, visit: Visit): Result = onIntValue(value, visit)
@@ -218,7 +215,8 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onInterfaceType(type: GInterfaceType, data: Nothing?, visit: Visit): Result = onInterfaceType(type, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?, visit: Visit): Result = onInterfaceTypeExtension(extension, visit)
+			final override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?, visit: Visit): Result =
+				onInterfaceTypeExtension(extension, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onLeafType(type: GLeafType, data: Nothing?, visit: Visit): Result = onNamedType(type, visit)
@@ -257,7 +255,8 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onOperationDefinition(definition: GOperationDefinition, data: Nothing?, visit: Visit): Result = onOperationDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?, visit: Visit): Result = onOperationTypeDefinition(definition, visit)
+			final override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?, visit: Visit): Result =
+				onOperationTypeDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onScalarType(type: GScalarType, data: Nothing?, visit: Visit): Result = onNamedType(type, visit)
@@ -269,7 +268,8 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onSchemaDefinition(definition: GSchemaDefinition, data: Nothing?, visit: Visit): Result = onSchemaDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?, visit: Visit): Result = onSchemaExtensionDefinition(definition, visit)
+			final override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?, visit: Visit): Result =
+				onSchemaExtensionDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onSelection(selection: GSelection, data: Nothing?, visit: Visit): Result = onAny(selection, visit)
@@ -315,58 +315,55 @@ public abstract class Visitor<out Result, in Data> {
 		}
 	}
 
-
 	public abstract class Typed<out Result, in Data> : Visitor<Result, Data>() {
 
 		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun onNode(node: GNode, data: Data, visit: Visit): Result =
-			when (node) {
-				is GArgument -> onArgument(node, data, visit)
-				is GArgumentDefinition -> onArgumentDefinition(node, data, visit)
-				is GBooleanValue -> onBooleanValue(node, data, visit)
-				is GDirective -> onDirective(node, data, visit)
-				is GDirectiveDefinition -> onDirectiveDefinition(node, data, visit)
-				is GDocument -> onDocument(node, data, visit)
-				is GEnumType -> onEnumType(node, data, visit)
-				is GEnumTypeExtension -> onEnumTypeExtension(node, data, visit)
-				is GEnumValue -> onEnumValue(node, data, visit)
-				is GEnumValueDefinition -> onEnumValueDefinition(node, data, visit)
-				is GFieldDefinition -> onFieldDefinition(node, data, visit)
-				is GFieldSelection -> onFieldSelection(node, data, visit)
-				is GFloatValue -> onFloatValue(node, data, visit)
-				is GFragmentDefinition -> onFragmentDefinition(node, data, visit)
-				is GFragmentSelection -> onFragmentSelection(node, data, visit)
-				is GInlineFragmentSelection -> onInlineFragmentSelection(node, data, visit)
-				is GInputObjectType -> onInputObjectType(node, data, visit)
-				is GInputObjectTypeExtension -> onInputObjectTypeExtension(node, data, visit)
-				is GIntValue -> onIntValue(node, data, visit)
-				is GInterfaceType -> onInterfaceType(node, data, visit)
-				is GInterfaceTypeExtension -> onInterfaceTypeExtension(node, data, visit)
-				is GListType -> onSyntheticNode(node, data, visit)
-				is GListTypeRef -> onListTypeRef(node, data, visit)
-				is GListValue -> onListValue(node, data, visit)
-				is GName -> onName(node, data, visit)
-				is GNamedTypeRef -> onNamedTypeRef(node, data, visit)
-				is GNonNullType -> onSyntheticNode(node, data, visit)
-				is GNonNullTypeRef -> onNonNullTypeRef(node, data, visit)
-				is GNullValue -> onNullValue(node, data, visit)
-				is GObjectType -> onObjectType(node, data, visit)
-				is GObjectTypeExtension -> onObjectTypeExtension(node, data, visit)
-				is GObjectValue -> onObjectValue(node, data, visit)
-				is GOperationDefinition -> onOperationDefinition(node, data, visit)
-				is GOperationTypeDefinition -> onOperationTypeDefinition(node, data, visit)
-				is GScalarType -> onScalarType(node, data, visit)
-				is GScalarTypeExtension -> onScalarTypeExtension(node, data, visit)
-				is GSchemaDefinition -> onSchemaDefinition(node, data, visit)
-				is GSchemaExtension -> onSchemaExtensionDefinition(node, data, visit)
-				is GSelectionSet -> onSelectionSet(node, data, visit)
-				is GStringValue -> onStringValue(node, data, visit)
-				is GUnionType -> onUnionType(node, data, visit)
-				is GUnionTypeExtension -> onUnionTypeExtension(node, data, visit)
-				is GVariableDefinition -> onVariableDefinition(node, data, visit)
-				is GVariableRef -> onVariableRef(node, data, visit)
-			}
-
+		final override fun onNode(node: GNode, data: Data, visit: Visit): Result = when (node) {
+			is GArgument -> onArgument(node, data, visit)
+			is GArgumentDefinition -> onArgumentDefinition(node, data, visit)
+			is GBooleanValue -> onBooleanValue(node, data, visit)
+			is GDirective -> onDirective(node, data, visit)
+			is GDirectiveDefinition -> onDirectiveDefinition(node, data, visit)
+			is GDocument -> onDocument(node, data, visit)
+			is GEnumType -> onEnumType(node, data, visit)
+			is GEnumTypeExtension -> onEnumTypeExtension(node, data, visit)
+			is GEnumValue -> onEnumValue(node, data, visit)
+			is GEnumValueDefinition -> onEnumValueDefinition(node, data, visit)
+			is GFieldDefinition -> onFieldDefinition(node, data, visit)
+			is GFieldSelection -> onFieldSelection(node, data, visit)
+			is GFloatValue -> onFloatValue(node, data, visit)
+			is GFragmentDefinition -> onFragmentDefinition(node, data, visit)
+			is GFragmentSelection -> onFragmentSelection(node, data, visit)
+			is GInlineFragmentSelection -> onInlineFragmentSelection(node, data, visit)
+			is GInputObjectType -> onInputObjectType(node, data, visit)
+			is GInputObjectTypeExtension -> onInputObjectTypeExtension(node, data, visit)
+			is GIntValue -> onIntValue(node, data, visit)
+			is GInterfaceType -> onInterfaceType(node, data, visit)
+			is GInterfaceTypeExtension -> onInterfaceTypeExtension(node, data, visit)
+			is GListType -> onSyntheticNode(node, data, visit)
+			is GListTypeRef -> onListTypeRef(node, data, visit)
+			is GListValue -> onListValue(node, data, visit)
+			is GName -> onName(node, data, visit)
+			is GNamedTypeRef -> onNamedTypeRef(node, data, visit)
+			is GNonNullType -> onSyntheticNode(node, data, visit)
+			is GNonNullTypeRef -> onNonNullTypeRef(node, data, visit)
+			is GNullValue -> onNullValue(node, data, visit)
+			is GObjectType -> onObjectType(node, data, visit)
+			is GObjectTypeExtension -> onObjectTypeExtension(node, data, visit)
+			is GObjectValue -> onObjectValue(node, data, visit)
+			is GOperationDefinition -> onOperationDefinition(node, data, visit)
+			is GOperationTypeDefinition -> onOperationTypeDefinition(node, data, visit)
+			is GScalarType -> onScalarType(node, data, visit)
+			is GScalarTypeExtension -> onScalarTypeExtension(node, data, visit)
+			is GSchemaDefinition -> onSchemaDefinition(node, data, visit)
+			is GSchemaExtension -> onSchemaExtensionDefinition(node, data, visit)
+			is GSelectionSet -> onSelectionSet(node, data, visit)
+			is GStringValue -> onStringValue(node, data, visit)
+			is GUnionType -> onUnionType(node, data, visit)
+			is GUnionTypeExtension -> onUnionTypeExtension(node, data, visit)
+			is GVariableDefinition -> onVariableDefinition(node, data, visit)
+			is GVariableRef -> onVariableRef(node, data, visit)
+		}
 
 		protected abstract fun onArgument(argument: GArgument, data: Data, visit: Visit): Result
 		protected abstract fun onArgumentDefinition(definition: GArgumentDefinition, data: Data, visit: Visit): Result
@@ -411,7 +408,6 @@ public abstract class Visitor<out Result, in Data> {
 		protected abstract fun onUnionTypeExtension(extension: GUnionTypeExtension, data: Data, visit: Visit): Result
 		protected abstract fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit): Result
 		protected abstract fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit): Result
-
 
 		public abstract class WithoutData<out Result> : Typed<Result, Nothing?>() {
 
@@ -505,13 +501,15 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onFragmentSelection(selection: GFragmentSelection, data: Nothing?, visit: Visit): Result = onFragmentSelection(selection, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?, visit: Visit): Result = onInlineFragmentSelection(selection, visit)
+			final override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Nothing?, visit: Visit): Result =
+				onInlineFragmentSelection(selection, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onInputObjectType(type: GInputObjectType, data: Nothing?, visit: Visit): Result = onInputObjectType(type, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?, visit: Visit): Result = onInputObjectTypeExtension(extension, visit)
+			final override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Nothing?, visit: Visit): Result =
+				onInputObjectTypeExtension(extension, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onIntValue(value: GIntValue, data: Nothing?, visit: Visit): Result = onIntValue(value, visit)
@@ -520,7 +518,8 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onInterfaceType(type: GInterfaceType, data: Nothing?, visit: Visit): Result = onInterfaceType(type, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?, visit: Visit): Result = onInterfaceTypeExtension(extension, visit)
+			final override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Nothing?, visit: Visit): Result =
+				onInterfaceTypeExtension(extension, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onListTypeRef(ref: GListTypeRef, data: Nothing?, visit: Visit): Result = onListTypeRef(ref, visit)
@@ -553,7 +552,8 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onOperationDefinition(definition: GOperationDefinition, data: Nothing?, visit: Visit): Result = onOperationDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?, visit: Visit): Result = onOperationTypeDefinition(definition, visit)
+			final override fun onOperationTypeDefinition(definition: GOperationTypeDefinition, data: Nothing?, visit: Visit): Result =
+				onOperationTypeDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onScalarType(type: GScalarType, data: Nothing?, visit: Visit): Result = onScalarType(type, visit)
@@ -565,7 +565,8 @@ public abstract class Visitor<out Result, in Data> {
 			final override fun onSchemaDefinition(definition: GSchemaDefinition, data: Nothing?, visit: Visit): Result = onSchemaDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-			final override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?, visit: Visit): Result = onSchemaExtensionDefinition(definition, visit)
+			final override fun onSchemaExtensionDefinition(definition: GSchemaExtension, data: Nothing?, visit: Visit): Result =
+				onSchemaExtensionDefinition(definition, visit)
 
 			@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
 			final override fun onSelectionSet(set: GSelectionSet, data: Nothing?, visit: Visit): Result = onSelectionSet(set, visit)
@@ -590,41 +591,26 @@ public abstract class Visitor<out Result, in Data> {
 		}
 	}
 
-
 	public abstract class WithoutData<out Result> : Visitor<Result, Nothing?>() {
 
 		public abstract fun onNode(node: GNode, visit: Visit): Result
 
-
 		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
-		final override fun onNode(node: GNode, data: Nothing?, visit: Visit): Result =
-			onNode(node, visit)
+		final override fun onNode(node: GNode, data: Nothing?, visit: Visit): Result = onNode(node, visit)
 	}
 
-
-	public fun <Data> Visit.visitChildren(data: Data): Unit =
-		__unsafeVisitChildren(data)
+	public fun <Data> Visit.visitChildren(data: Data): Unit = __unsafeVisitChildren(data)
 }
 
+@InternalGraphqlApi
+public fun <Result> GNode.accept(visitor: Visitor<Result, Nothing?>): Result = accept(visitor = visitor, data = null)
 
 @InternalGraphqlApi
-public fun <Result> GNode.accept(visitor: Visitor<Result, Nothing?>): Result =
-	accept(visitor = visitor, data = null)
-
+public fun <Result> GNode.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>): Result = accept(visitCoordinator = visitCoordinator, data = null)
 
 @InternalGraphqlApi
-public fun <Result> GNode.accept(visitCoordinator: VisitCoordinator<Result, Nothing?>): Result =
-	accept(visitCoordinator = visitCoordinator, data = null)
-
-
-@InternalGraphqlApi
-public fun <Result, Data> GNode.accept(
-	visitor: Visitor<Result, Data>,
-	data: Data
-): Result =
+public fun <Result, Data> GNode.accept(visitor: Visitor<Result, Data>, data: Data): Result =
 	accept(visitCoordinator = VisitCoordinator.default(visitor), data = data)
 
-
 @InternalGraphqlApi
-public fun <Result, Data> GNode.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data): Result =
-	visitCoordinator.visit(node = this, data = data)
+public fun <Result, Data> GNode.accept(visitCoordinator: VisitCoordinator<Result, Data>, data: Data): Result = visitCoordinator.visit(node = this, data = data)

@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FieldSelectionExistenceRule
+import kotlin.test.Test
 
 class FieldSelectionExistenceRuleTest {
 
@@ -14,10 +13,9 @@ class FieldSelectionExistenceRuleTest {
 			document = """
 				|{ id }
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsExistingFieldInNestedFieldSelection() {
@@ -30,10 +28,9 @@ class FieldSelectionExistenceRuleTest {
 			schema = """
 				|type Object { id: ID! }
 				|type Query { object: Object! }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsExistingFieldInInlineFragmentSelection() {
@@ -47,10 +44,9 @@ class FieldSelectionExistenceRuleTest {
 				|   }
 				|}
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsExistingFieldInFragmentSelection() {
@@ -64,10 +60,9 @@ class FieldSelectionExistenceRuleTest {
 				|
 				|fragment f on Query { id }
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsSchemaIntrospectionField() {
@@ -79,10 +74,9 @@ class FieldSelectionExistenceRuleTest {
 				|   __schema
 				|}
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsTypeIntrospectionField() {
@@ -94,10 +88,9 @@ class FieldSelectionExistenceRuleTest {
 				|   __type
 				|}
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsTypenameIntrospectionField() {
@@ -113,35 +106,36 @@ class FieldSelectionExistenceRuleTest {
 			schema = """
 				type Object { id: ID! }
 				type Query { object: Object! }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsNonexistentFieldInFieldSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field 'foo' on type 'Query'.
 
 				<document>:1:3
 				1 | { foo }
 				  |   ^
-			"""),
+			""",
+			),
 			document = """
 				|{ foo }
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsNonexistentFieldInInlineFragmentSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field 'foo' on type 'Query'.
 
 				<document>:3:8
@@ -149,7 +143,8 @@ class FieldSelectionExistenceRuleTest {
 				3 |        foo
 				  |        ^
 				4 |    }
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   ... {
@@ -157,23 +152,24 @@ class FieldSelectionExistenceRuleTest {
 				|   }
 				|}
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsNonexistentFieldInFragmentSelection() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field 'foo' on type 'Query'.
 
 				<document>:5:23
 				4 | 
 				5 | fragment f on Query { foo }
 				  |                       ^
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|   ...f
@@ -181,51 +177,53 @@ class FieldSelectionExistenceRuleTest {
 				|
 				|fragment f on Query { foo }
 			""",
-			schema = "type Query { id: ID! }"
+			schema = "type Query { id: ID! }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsSchemaIntrospectionInWrongLocation() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field '__schema' on type 'Object'.
 
 				<document>:1:12
 				1 | { object { __schema } }
 				  |            ^
-			"""),
+			""",
+			),
 			document = """
 				|{ object { __schema } }
 			""",
 			schema = """
 				|type Object { id: ID! }
 				|type Query { object: Object! }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsTypeIntrospectionInWrongLocation() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field '__type' on type 'Object'.
 
 				<document>:1:12
 				1 | { object { __type } }
 				  |            ^
-			"""),
+			""",
+			),
 			document = """
 				|{ object { __type } }
 			""",
 			schema = """
 				|type Object { id: ID! }
 				|type Query { object: Object! }
-			"""
+			""",
 		)
 	}
 }

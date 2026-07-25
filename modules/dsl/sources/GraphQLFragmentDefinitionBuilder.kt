@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Builder for a [GFragmentDefinition].
  *
@@ -17,7 +16,6 @@ public sealed interface GraphQLFragmentDefinitionBuilder :
 	public fun build(): GFragmentDefinition
 }
 
-
 /** Scope interface for [GraphQLFragmentDefinitionBuilder]. */
 @GraphQLMarker
 public sealed interface GraphQLFragmentDefinitionBuilderScope :
@@ -25,11 +23,8 @@ public sealed interface GraphQLFragmentDefinitionBuilderScope :
 	GraphQLSelectionsContainerScope,
 	GraphQLVariableContainerScope
 
-
-private class GraphQLFragmentDefinitionBuilderImpl(
-	private val name: String,
-	private val typeCondition: GNamedTypeRef,
-) : GraphQLFragmentDefinitionBuilder,
+private class GraphQLFragmentDefinitionBuilderImpl(private val name: String, private val typeCondition: GNamedTypeRef) :
+	GraphQLFragmentDefinitionBuilder,
 	GraphQLDirectivesContainerInternal,
 	GraphQLSelectionsContainerInternal,
 	GraphQLVariableContainerInternal {
@@ -39,11 +34,9 @@ private class GraphQLFragmentDefinitionBuilderImpl(
 	override val unusedVariableRefFactories: MutableList<GraphQLVariableContainer.RefFactory> = mutableListOf()
 	override val variableDefinitions: MutableList<GVariableDefinition> = mutableListOf()
 
-
 	init {
 		check(GLanguage.isValidFragmentName(name)) { "Invalid fragment name: $name" }
 	}
-
 
 	override fun build(): GFragmentDefinition {
 		super.finalize()
@@ -59,7 +52,6 @@ private class GraphQLFragmentDefinitionBuilderImpl(
 		)
 	}
 }
-
 
 /**
  * Creates a new [GraphQLFragmentDefinitionBuilder] for a fragment with the given [name] and

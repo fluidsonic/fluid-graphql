@@ -1,8 +1,17 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // https://github.com/graphql/graphql-js/blob/master/src/execution/__tests__/schema-test.js
 class ExecutionTests {
@@ -56,7 +65,7 @@ class ExecutionTests {
 						mapOf("id" to "7", "title" to "My Article 7"),
 						mapOf("id" to "8", "title" to "My Article 8"),
 						mapOf("id" to "9", "title" to "My Article 9"),
-						mapOf("id" to "10", "title" to "My Article 10")
+						mapOf("id" to "10", "title" to "My Article 10"),
 					),
 					"article" to mapOf(
 						"id" to "1",
@@ -69,23 +78,22 @@ class ExecutionTests {
 							"pic" to mapOf(
 								"url" to "cdn://123",
 								"width" to 640,
-								"height" to 480
+								"height" to 480,
 							),
 							"recentArticle" to mapOf(
 								"id" to "1",
 								"isPublished" to true,
 								"title" to "My Article 1",
 								"body" to "This is a post",
-								"keywords" to listOf("foo", "bar", 1, true, null)
-							)
-						)
-					)
-				)
+								"keywords" to listOf("foo", "bar", 1, true, null),
+							),
+						),
+					),
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testExecutesWithoutOperationName() = runTest {
@@ -95,24 +103,25 @@ class ExecutionTests {
 			|}
 		""".trimMargin()
 
-		val executor = GExecutor.default(schema = GraphQL.schema {
-			Query {
-				field("foo" of !Boolean) {
-					resolve { true }
+		val executor = GExecutor.default(
+			schema = GraphQL.schema {
+				Query {
+					field("foo" of !Boolean) {
+						resolve { true }
+					}
 				}
-			}
-		})
+			},
+		)
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf(
 				"data" to mapOf(
 					"foo" to true,
-				)
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	companion object {
 
@@ -190,26 +199,22 @@ class ExecutionTests {
 			Scalar(Keyword)
 		}
 
-
 		private val johnSmith = Author(
 			id = "123",
 			name = "John Smith",
-			recentArticleProvider = { article("1") }
+			recentArticleProvider = { article("1") },
 		)
 
-
-		private fun article(id: String): Article =
-			Article(
-				id = id,
-				isPublished = true,
-				author = johnSmith,
-				title = "My Article $id",
-				body = "This is a post",
-				hidden = "This data is not exposed in the schema",
-				keywords = listOf("foo", "bar", 1, true, null)
-			)
+		private fun article(id: String): Article = Article(
+			id = id,
+			isPublished = true,
+			author = johnSmith,
+			title = "My Article $id",
+			body = "This is a post",
+			hidden = "This data is not exposed in the schema",
+			keywords = listOf("foo", "bar", 1, true, null),
+		)
 	}
-
 
 	private data class Article(
 		val author: Author,
@@ -221,29 +226,17 @@ class ExecutionTests {
 		val keywords: List<Any?>,
 	)
 
-
-	private data class Author(
-		val id: String,
-		val name: String,
-		private val recentArticleProvider: () -> Article,
-	) {
+	private data class Author(val id: String, val name: String, private val recentArticleProvider: () -> Article) {
 
 		val recentArticle
 			get() = recentArticleProvider()
 
-
-		fun pic(width: Int, height: Int) =
-			Image(
-				url = "cdn://$id",
-				width = width,
-				height = height
-			)
+		fun pic(width: Int, height: Int) = Image(
+			url = "cdn://$id",
+			width = width,
+			height = height,
+		)
 	}
 
-
-	private data class Image(
-		val url: String,
-		val width: Int,
-		val height: Int,
-	)
+	private data class Image(val url: String, val width: Int, val height: Int)
 }

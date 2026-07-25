@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.OperationDefinitionNameExclusivityRule
+import kotlin.test.Test
 
 class OperationDefinitionNameExclusivityRuleTest {
 
@@ -16,10 +15,9 @@ class OperationDefinitionNameExclusivityRuleTest {
 				|query q2 { id: ID }
 				|query q3 { id: ID }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testIgnoresAnonymousOperations() {
@@ -34,10 +32,9 @@ class OperationDefinitionNameExclusivityRuleTest {
 				|{ id: ID }
 				|{ id: ID }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateOperationNames() {
@@ -62,17 +59,16 @@ class OperationDefinitionNameExclusivityRuleTest {
 					2 | query q { id: ID }
 					3 | query q { id: ID }
 					  |       ^
-				"""
+				""",
 			),
 			document = """
 				|query q { id: ID }
 				|query q { id: ID }
 				|query q { id: ID }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testReportsAllProblematicOperations() {
@@ -118,7 +114,7 @@ class OperationDefinitionNameExclusivityRuleTest {
 					5 | query r { id: ID }
 					6 | query r { id: ID }
 					  |       ^
-				"""
+				""",
 			),
 			document = """
 				|query q { id: ID }
@@ -128,7 +124,7 @@ class OperationDefinitionNameExclusivityRuleTest {
 				|query r { id: ID }
 				|query r { id: ID }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
 }

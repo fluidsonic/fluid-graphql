@@ -1,8 +1,11 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GOperationType
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 // GraphQL Spec §2.4 — Operations
 class OperationTests {
@@ -14,14 +17,12 @@ class OperationTests {
 		assertNull(op.name)
 	}
 
-
 	@Test
 	fun testQueryShorthandIsQueryType() {
 		val doc = GDocument.parse("{ field }").valueWithoutErrorsOrThrow()
 		val op = doc.definitions.single() as GOperationDefinition
 		assertEquals(GOperationType.query, op.type)
 	}
-
 
 	@Test
 	fun testNamedOperation() {
@@ -30,7 +31,6 @@ class OperationTests {
 		assertEquals("MyQuery", op.name)
 	}
 
-
 	@Test
 	fun testMutationOperation() {
 		val doc = GDocument.parse("mutation M { field }").valueWithoutErrorsOrThrow()
@@ -38,14 +38,12 @@ class OperationTests {
 		assertEquals(GOperationType.mutation, op.type)
 	}
 
-
 	@Test
 	fun testSubscriptionOperation() {
 		val doc = GDocument.parse("subscription S { field }").valueWithoutErrorsOrThrow()
 		val op = doc.definitions.single() as GOperationDefinition
 		assertEquals(GOperationType.subscription, op.type)
 	}
-
 
 	@Test
 	fun testOperationWithVariables() {
@@ -55,7 +53,6 @@ class OperationTests {
 		assertEquals("x", op.variableDefinitions.single().name)
 	}
 
-
 	@Test
 	fun testOperationWithDirectives() {
 		val doc = GDocument.parse("query Q @skip(if: false) { field }").valueWithoutErrorsOrThrow()
@@ -63,7 +60,6 @@ class OperationTests {
 		assertEquals(1, op.directives.size)
 		assertEquals("skip", op.directives.single().name)
 	}
-
 
 	@Test
 	fun testAnonymousMutation() {

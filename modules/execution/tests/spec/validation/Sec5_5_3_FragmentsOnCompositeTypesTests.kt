@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentTypeConditionValidityRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.5.3 — Fragments On Composite Types
 class Sec5_5_3_FragmentsOnCompositeTypesTests {
@@ -18,10 +19,9 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsFragmentOnInterface() {
@@ -35,10 +35,9 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 				|type Query { pet: Pet }
 				|interface Pet { name: String }
 				|type Dog implements Pet { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsFragmentOnUnion() {
@@ -53,44 +52,46 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsFragmentOnScalar() {
 		assertValidationRule(
 			rule = FragmentTypeConditionValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Fragment 'f' is specified on scalar 'String' but must be specified on an interface, object or union type.
 
 				<document>:1:15
 				1 | fragment f on String { something }
 				  |               ^
-			"""),
+			""",
+			),
 			document = """
 				|fragment f on String { something }
 			""",
 			schema = """
 				|type Query { name: String }
 				|scalar String
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsInlineFragmentOnScalar() {
 		assertValidationRule(
 			rule = FragmentTypeConditionValidityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Inline fragment is specified on scalar 'String' but must be specified on an interface, object or union type.
 
 				<document>:1:17
 				1 | { name { ... on String { foo } } }
 				  |                 ^
-			"""),
+			""",
+			),
 			document = """
 				|{ name { ... on String { foo } } }
 			""",
@@ -98,7 +99,7 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 				|type Query { name: ScalarType }
 				|scalar ScalarType
 				|scalar String
-			"""
+			""",
 		)
 	}
 }

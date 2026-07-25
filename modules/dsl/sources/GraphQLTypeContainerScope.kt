@@ -1,9 +1,9 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GraphQLTypeContainerScope.*
-import kotlin.properties.*
-import kotlin.reflect.*
-
+import io.fluidsonic.graphql.GraphQLTypeContainerScope.RefFactory
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 /**
  * Base scope providing built-in GraphQL type references for the document/operation builder DSL.
@@ -35,14 +35,11 @@ public sealed interface GraphQLTypeContainerScope {
 	public val String: GNamedTypeRef
 		get() = GStringTypeRef
 
-
 	/** Wraps [type] in a [GListTypeRef]. */
-	public fun List(type: GTypeRef): GTypeRef =
-		GListTypeRef(type)
+	public fun List(type: GTypeRef): GTypeRef = GListTypeRef(type)
 
 	/** Wraps a type named [type] in a [GListTypeRef]. */
-	public fun List(type: String): GTypeRef =
-		GListTypeRef(type(type))
+	public fun List(type: String): GTypeRef = GListTypeRef(type(type))
 
 	/** Creates a [GNamedTypeRef] for the type with the given [name]. */
 	public fun type(name: String): GNamedTypeRef {
@@ -56,20 +53,17 @@ public sealed interface GraphQLTypeContainerScope {
 	 *
 	 * Throws if the type is already non-null.
 	 */
-	public operator fun GTypeRef.not(): GNonNullTypeRef =
-		when (this) {
-			is GNonNullTypeRef -> error("Cannot use '!' on a type that's already non-null.")
-			else -> GNonNullTypeRef(this)
-		}
+	public operator fun GTypeRef.not(): GNonNullTypeRef = when (this) {
+		is GNonNullTypeRef -> error("Cannot use '!' on a type that's already non-null.")
+		else -> GNonNullTypeRef(this)
+	}
 
 	/**
 	 * Creates a non-null reference to the type with this name.
 	 *
 	 * Equivalent to `!type(name)`.
 	 */
-	public operator fun String.not(): GNonNullTypeRef =
-		GNonNullTypeRef(type(this))
-
+	public operator fun String.not(): GNonNullTypeRef = GNonNullTypeRef(type(this))
 
 	/**
 	 * Delegate provider that derives a [GNamedTypeRef] from the delegating property's name.
@@ -87,7 +81,6 @@ public sealed interface GraphQLTypeContainerScope {
 		}
 	}
 }
-
 
 /**
  * Delegate provider that creates a [GNamedTypeRef] from the property name.

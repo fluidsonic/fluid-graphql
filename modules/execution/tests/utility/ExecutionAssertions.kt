@@ -1,8 +1,8 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GSchema
+import kotlin.test.assertEquals
 
 internal suspend fun assertExecution(
 	schema: GSchema,
@@ -13,11 +13,10 @@ internal suspend fun assertExecution(
 ) {
 	val executor = GExecutor.default(schema = schema)
 	val result = executor.serializeResult(
-		executor.execute(document, operationName = operationName, variableValues = variableValues)
+		executor.execute(document, operationName = operationName, variableValues = variableValues),
 	)
 	assertEquals(expected = expected, actual = result)
 }
-
 
 internal suspend fun assertExecutionErrors(
 	schema: GSchema,

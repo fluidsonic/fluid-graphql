@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A resolved GraphQL schema, containing all type definitions, directive definitions,
  * and root operation types derived from a [GDocument].
@@ -41,11 +40,8 @@ public class GSchema internal constructor(
 				.filterIsInstance<GUnionType>()
 				.associate { union -> union.name to union.possibleTypes.mapNotNull { typesByName[it.name] as? GObjectType } }
 
-
 	/** Returns the directive definition with the given [name], or `null` if not found. */
-	public fun directiveDefinition(name: String): GDirectiveDefinition? =
-		directiveDefinitions.firstOrNull { it.name == name }
-
+	public fun directiveDefinition(name: String): GDirectiveDefinition? = directiveDefinitions.firstOrNull { it.name == name }
 
 	/**
 	 * Returns the concrete object types that are possible for [type].
@@ -53,48 +49,39 @@ public class GSchema internal constructor(
 	 * For a [GObjectType], returns a list containing only that type itself.
 	 * For a [GInterfaceType] or [GUnionType], returns the object types that implement or belong to it.
 	 */
-	public fun getPossibleTypes(type: GCompositeType): List<GObjectType> =
-		if (type is GObjectType) listOf(type)
-		else possibleTypesByType[type.name].orEmpty()
-
+	public fun getPossibleTypes(type: GCompositeType): List<GObjectType> = if (type is GObjectType) {
+		listOf(type)
+	} else {
+		possibleTypesByType[type.name].orEmpty()
+	}
 
 	/**
 	 * Resolves a type reference to a [GType], following list and non-null wrappers.
 	 *
 	 * Returns `null` if the underlying named type is not defined in this schema.
 	 */
-	public fun resolveType(ref: GTypeRef): GType? =
-		when (ref) {
-			is GListTypeRef -> resolveType(ref.elementType)?.let { GListType(elementType = it) }
-			is GNamedTypeRef -> resolveType(ref)
-			is GNonNullTypeRef -> resolveType(ref.nullableRef)?.let { GNonNullType(nullableType = it) }
-		}
-
+	public fun resolveType(ref: GTypeRef): GType? = when (ref) {
+		is GListTypeRef -> resolveType(ref.elementType)?.let { GListType(elementType = it) }
+		is GNamedTypeRef -> resolveType(ref)
+		is GNonNullTypeRef -> resolveType(ref.nullableRef)?.let { GNonNullType(nullableType = it) }
+	}
 
 	/** Resolves a named type reference to a [GNamedType], or `null` if not found. */
-	public fun resolveType(ref: GNamedTypeRef): GNamedType? =
-		resolveType(ref.name)
-
+	public fun resolveType(ref: GNamedTypeRef): GNamedType? = resolveType(ref.name)
 
 	/** Resolves a type by name, or `null` if not found. */
-	public fun resolveType(name: String): GNamedType? =
-		typesByName[name]
-
+	public fun resolveType(name: String): GNamedType? = typesByName[name]
 
 	/** Returns the root object type for the given [operationType] (query, mutation, or subscription). */
-	public fun rootTypeForOperationType(operationType: GOperationType): GObjectType? =
-		when (operationType) {
-			GOperationType.mutation -> mutationType
-			GOperationType.query -> queryType
-			GOperationType.subscription -> subscriptionType
-		}
+	public fun rootTypeForOperationType(operationType: GOperationType): GObjectType? = when (operationType) {
+		GOperationType.mutation -> mutationType
+		GOperationType.query -> queryType
+		GOperationType.subscription -> subscriptionType
+	}
 
-
-	override fun toString(): String =
-		GDocument(
-			definitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
-		).toString()
-
+	override fun toString(): String = GDocument(
+		definitions = document.definitions.filterIsInstance<GTypeSystemDefinition>(),
+	).toString()
 
 	/**
 	 * Validates that [value] is a legal GraphQL value for [type].
@@ -102,14 +89,10 @@ public class GSchema internal constructor(
 	 * Returns a list of [GError]s describing any violations; an empty list means the value is valid.
 	 * [GVariableRef] values (`$var`) are not validated and are silently skipped.
 	 */
-	public fun validateValue(value: GValue, type: GType): List<GError> =
-		validateValue(value = value, typeRef = null, type = type).orEmpty()
-
+	public fun validateValue(value: GValue, type: GType): List<GError> = validateValue(value = value, typeRef = null, type = type).orEmpty()
 
 	/** Validates that [value] is a legal GraphQL value for the type identified by [typeRef]. */
-	public fun validateValue(value: GValue, typeRef: GTypeRef): List<GError> =
-		validateValue(value = value, typeRef = typeRef, type = null).orEmpty()
-
+	public fun validateValue(value: GValue, typeRef: GTypeRef): List<GError> = validateValue(value = value, typeRef = typeRef, type = null).orEmpty()
 
 	// FIXME not here
 	@Suppress("NAME_SHADOWING")
@@ -127,7 +110,8 @@ public class GSchema internal constructor(
 		var errors = errors
 
 		// no inline: https://youtrack.jetbrains.com/issue/KT-31371
-		/* inline */ fun reportError(message: String? = null, nodeInsteadOfTypeRef: GNode? = null) {
+		/* inline */
+		fun reportError(message: String? = null, nodeInsteadOfTypeRef: GNode? = null) {
 			val message = message ?: run {
 				val valueText = when (value) {
 					is GListValue -> "a list value"
@@ -141,14 +125,15 @@ public class GSchema internal constructor(
 			(errors ?: mutableListOf<GError>().also { errors = it }).add(
 				GError(
 					message = message,
-					nodes = listOfNotNull(value, nodeInsteadOfTypeRef ?: fullyWrappedTypeRef)
-				)
+					nodes = listOfNotNull(value, nodeInsteadOfTypeRef ?: fullyWrappedTypeRef),
+				),
 			)
 		}
 
 		// We don't support variables here yet.
-		if (value is GVariableRef)
+		if (value is GVariableRef) {
 			return null
+		}
 
 		if (type is GNonNullType && value is GNullValue) {
 			reportError()
@@ -243,13 +228,16 @@ public class GSchema internal constructor(
 			is GInputObjectType ->
 				when (value) {
 					is GObjectValue -> {
-						for (argumentDefinition in namedType.argumentDefinitions)
-							if (argumentDefinition.isRequired())
-								if (value.argument(argumentDefinition.name) === null)
+						for (argumentDefinition in namedType.argumentDefinitions) {
+							if (argumentDefinition.isRequired()) {
+								if (value.argument(argumentDefinition.name) === null) {
 									reportError(
 										message = "Required field '${argumentDefinition.name}' of type '${namedType.name}' is missing.",
-										nodeInsteadOfTypeRef = argumentDefinition.nameNode
+										nodeInsteadOfTypeRef = argumentDefinition.nameNode,
 									)
+								}
+							}
+						}
 
 						for (field in value.arguments) {
 							val argumentDefinition = namedType.argumentDefinition(field.name)
@@ -258,11 +246,11 @@ public class GSchema internal constructor(
 									value = field.value,
 									typeRef = argumentDefinition.type,
 									type = null,
-									errors = errors ?: mutableListOf<GError>().also { errors = it }
+									errors = errors ?: mutableListOf<GError>().also { errors = it },
 								)
-							}
-							else
+							} else {
 								reportError()
+							}
 						}
 
 						true
@@ -300,14 +288,15 @@ public class GSchema internal constructor(
 			is GListType ->
 				when (value) {
 					is GListValue -> {
-						for (element in value.elements)
+						for (element in value.elements) {
 							validateValue(
 								value = element,
 								typeRef = (typeRef?.nullableRef as GListTypeRef?)?.elementType,
 								type = namedType.elementType,
 								fullyWrappedTypeRef = fullyWrappedTypeRef,
-								errors = errors ?: mutableListOf<GError>().also { errors = it }
+								errors = errors ?: mutableListOf<GError>().also { errors = it },
 							)
+						}
 
 						true
 					}
@@ -324,7 +313,7 @@ public class GSchema internal constructor(
 							typeRef = (typeRef?.nullableRef as GListTypeRef?)?.elementType,
 							type = namedType.elementType,
 							fullyWrappedTypeRef = fullyWrappedTypeRef,
-							errors = errors ?: mutableListOf<GError>().also { errors = it }
+							errors = errors ?: mutableListOf<GError>().also { errors = it },
 						)
 
 						true
@@ -363,12 +352,12 @@ public class GSchema internal constructor(
 				true // We don't check types - only values.
 		}
 
-		if (!isValidValue)
+		if (!isValidValue) {
 			reportError()
+		}
 
 		return errors
 	}
-
 
 	public companion object {
 
@@ -377,16 +366,12 @@ public class GSchema internal constructor(
 		 *
 		 * Returns a [GResult.Success] with the schema, or a [GResult.Failure] with parse errors.
 		 */
-		public fun parse(source: GDocumentSource.Parsable): GResult<GSchema> =
-			GDocument.parse(source).mapValue(::GSchema)
-
+		public fun parse(source: GDocumentSource.Parsable): GResult<GSchema> = GDocument.parse(source).mapValue(::GSchema)
 
 		/** Parses a GraphQL SDL string and builds a [GSchema]. */
-		public fun parse(content: String, name: String = "<document>"): GResult<GSchema> =
-			parse(GDocumentSource.of(content = content, name = name))
+		public fun parse(content: String, name: String = "<document>"): GResult<GSchema> = parse(GDocumentSource.of(content = content, name = name))
 	}
 }
-
 
 /**
  * Builds a [GSchema] from an already-parsed [GDocument].
@@ -397,24 +382,26 @@ public class GSchema internal constructor(
  *
  * Set [supportOptional] to `true` to also register the non-standard `@optional` directive.
  */
-public fun GSchema(
-	document: GDocument,
-	supportOptional: Boolean = false,
-): GSchema {
+public fun GSchema(document: GDocument, supportOptional: Boolean = false): GSchema {
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
-	if (directiveDefinitions.none { it.name == GLanguage.defaultDeprecatedDirective.description })
+	if (directiveDefinitions.none { it.name == GLanguage.defaultDeprecatedDirective.description }) {
 		directiveDefinitions += GLanguage.defaultDeprecatedDirective
-	if (directiveDefinitions.none { it.name == GLanguage.defaultIncludeDirective.name })
+	}
+	if (directiveDefinitions.none { it.name == GLanguage.defaultIncludeDirective.name }) {
 		directiveDefinitions += GLanguage.defaultIncludeDirective
-	if (directiveDefinitions.none { it.name == GLanguage.defaultSkipDirective.name })
+	}
+	if (directiveDefinitions.none { it.name == GLanguage.defaultSkipDirective.name }) {
 		directiveDefinitions += GLanguage.defaultSkipDirective
-	if (directiveDefinitions.none { it.name == GLanguage.defaultSpecifiedByDirective.name })
+	}
+	if (directiveDefinitions.none { it.name == GLanguage.defaultSpecifiedByDirective.name }) {
 		directiveDefinitions += GLanguage.defaultSpecifiedByDirective
+	}
 
-	if (supportOptional && directiveDefinitions.none { it.name == GLanguage.defaultOptionalDirective.name })
+	if (supportOptional && directiveDefinitions.none { it.name == GLanguage.defaultOptionalDirective.name }) {
 		directiveDefinitions += GLanguage.defaultOptionalDirective
+	}
 
 	val schemaDefinition = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()
 		.singleOrNull() // FIXME
@@ -428,8 +415,7 @@ public fun GSchema(
 		mutationTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.mutation)?.type
 		queryTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.query)?.type
 		subscriptionTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.subscription)?.type
-	}
-	else {
+	} else {
 		mutationTypeRef = GTypeRef(GLanguage.defaultMutationTypeName)
 		queryTypeRef = GTypeRef(GLanguage.defaultQueryTypeName)
 		subscriptionTypeRef = GTypeRef(GLanguage.defaultSubscriptionTypeName)
@@ -441,6 +427,6 @@ public fun GSchema(
 		mutationType = mutationTypeRef,
 		queryType = queryTypeRef,
 		subscriptionType = subscriptionTypeRef,
-		types = typeDefinitions
+		types = typeDefinitions,
 	)
 }

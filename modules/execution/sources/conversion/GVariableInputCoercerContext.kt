@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Context provided to a [GVariableInputCoercer] when coercing a variable input value.
  *
@@ -22,7 +21,6 @@ public interface GVariableInputCoercerContext : GInputCoercerContext {
 
 	/** The definition of the variable being coerced. */
 	public val variableDefinition: GVariableDefinition
-
 
 	/** Convenience extension to invoke another [GVariableInputCoercer] within this context. */
 	public fun <Input> GVariableInputCoercer<Input>.coerceVariableInput(input: Input): Any? =

@@ -1,8 +1,18 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §4.2 — Type Introspection
 class TypeIntrospectionTests {
@@ -15,21 +25,25 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Query") {
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "OBJECT", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testScalarTypeKind() = runTest {
@@ -39,21 +53,25 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "String") {
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "SCALAR", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testInterfaceTypeKind() = runTest {
@@ -67,21 +85,25 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyInterface") {
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "INTERFACE", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testUnionTypeKind() = runTest {
@@ -101,21 +123,25 @@ class TypeIntrospectionTests {
 			Union(MyUnion with TypeA or TypeB)
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyUnion") {
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "UNION", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testEnumTypeKind() = runTest {
@@ -130,21 +156,25 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyEnum") {
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "ENUM", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testInputObjectTypeKind() = runTest {
@@ -158,21 +188,25 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyInput") {
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "INPUT_OBJECT", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testListTypeKind() = runTest {
@@ -184,7 +218,9 @@ class TypeIntrospectionTests {
 		}
 		val executor = GExecutor.default(schema = schema)
 		// Query the type of the `items` field via __schema types; use __type on Query then fields
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Query") {
 			    fields {
@@ -196,15 +232,20 @@ class TypeIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val itemsField = fields.first { it["name"] == "items" }
+
 		@Suppress("UNCHECKED_CAST")
 		val fieldType = itemsField["type"] as Map<String, Any?>
 		assertEquals(expected = "LIST", actual = fieldType["kind"])
@@ -212,7 +253,6 @@ class TypeIntrospectionTests {
 		val ofType = fieldType["ofType"] as Map<String, Any?>
 		assertEquals(expected = "String", actual = ofType["name"])
 	}
-
 
 	@Test
 	fun testNonNullTypeKind() = runTest {
@@ -222,7 +262,9 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Query") {
 			    fields {
@@ -234,15 +276,20 @@ class TypeIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val requiredField = fields.first { it["name"] == "required" }
+
 		@Suppress("UNCHECKED_CAST")
 		val fieldType = requiredField["type"] as Map<String, Any?>
 		assertEquals(expected = "NON_NULL", actual = fieldType["kind"])
@@ -250,7 +297,6 @@ class TypeIntrospectionTests {
 		val ofType = fieldType["ofType"] as Map<String, Any?>
 		assertEquals(expected = "String", actual = ofType["name"])
 	}
-
 
 	@Test
 	fun testObjectTypeFields() = runTest {
@@ -265,7 +311,9 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields {
@@ -274,19 +322,22 @@ class TypeIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val fieldNames = fields.map { it["name"] }
 		assertTrue(fieldNames.contains("id"), "Expected 'id' field")
 		assertTrue(fieldNames.contains("name"), "Expected 'name' field")
 	}
-
 
 	@Test
 	fun testScalarTypeFieldsNull() = runTest {
@@ -296,21 +347,25 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "String") {
 			    fields { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertNull(type["fields"])
 	}
-
 
 	@Test
 	fun testObjectTypeInterfaces() = runTest {
@@ -328,24 +383,29 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    interfaces { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val interfaces = type["interfaces"] as List<Map<String, Any?>>
 		val interfaceNames = interfaces.map { it["name"] }
 		assertTrue(interfaceNames.contains("MyInterface"), "Expected 'MyInterface' in interfaces")
 	}
-
 
 	@Test
 	fun testInterfacePossibleTypes() = runTest {
@@ -367,25 +427,30 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyInterface") {
 			    possibleTypes { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val possibleTypes = type["possibleTypes"] as List<Map<String, Any?>>
 		val names = possibleTypes.map { it["name"] }
 		assertTrue(names.contains("ImplA"), "Expected 'ImplA' in possibleTypes")
 		assertTrue(names.contains("ImplB"), "Expected 'ImplB' in possibleTypes")
 	}
-
 
 	@Test
 	fun testUnionPossibleTypes() = runTest {
@@ -405,25 +470,30 @@ class TypeIntrospectionTests {
 			Union(MyUnion with TypeA or TypeB)
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyUnion") {
 			    possibleTypes { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val possibleTypes = type["possibleTypes"] as List<Map<String, Any?>>
 		val names = possibleTypes.map { it["name"] }
 		assertTrue(names.contains("TypeA"), "Expected 'TypeA' in possibleTypes")
 		assertTrue(names.contains("TypeB"), "Expected 'TypeB' in possibleTypes")
 	}
-
 
 	@Test
 	fun testEnumValues() = runTest {
@@ -438,25 +508,30 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Status") {
 			    enumValues { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val enumValues = type["enumValues"] as List<Map<String, Any?>>
 		val names = enumValues.map { it["name"] }
 		assertTrue(names.contains("ACTIVE"), "Expected 'ACTIVE' in enumValues")
 		assertTrue(names.contains("INACTIVE"), "Expected 'INACTIVE' in enumValues")
 	}
-
 
 	@Test
 	fun testInputObjectInputFields() = runTest {
@@ -471,25 +546,30 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyInput") {
 			    inputFields { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val inputFields = type["inputFields"] as List<Map<String, Any?>>
 		val names = inputFields.map { it["name"] }
 		assertTrue(names.contains("username"), "Expected 'username' in inputFields")
 		assertTrue(names.contains("email"), "Expected 'email' in inputFields")
 	}
-
 
 	@Test
 	fun testListTypeOfType() = runTest {
@@ -499,7 +579,9 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Query") {
 			    fields {
@@ -511,15 +593,20 @@ class TypeIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val itemsField = fields.first { it["name"] == "items" }
+
 		@Suppress("UNCHECKED_CAST")
 		val fieldType = itemsField["type"] as Map<String, Any?>
 		assertEquals(expected = "LIST", actual = fieldType["kind"])
@@ -527,7 +614,6 @@ class TypeIntrospectionTests {
 		val ofType = fieldType["ofType"] as Map<String, Any?>
 		assertEquals(expected = "String", actual = ofType["name"])
 	}
-
 
 	@Test
 	fun testNonNullTypeOfType() = runTest {
@@ -537,7 +623,9 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Query") {
 			    fields {
@@ -549,15 +637,20 @@ class TypeIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val requiredField = fields.first { it["name"] == "required" }
+
 		@Suppress("UNCHECKED_CAST")
 		val fieldType = requiredField["type"] as Map<String, Any?>
 		assertEquals(expected = "NON_NULL", actual = fieldType["kind"])
@@ -565,7 +658,6 @@ class TypeIntrospectionTests {
 		val ofType = fieldType["ofType"] as Map<String, Any?>
 		assertEquals(expected = "String", actual = ofType["name"])
 	}
-
 
 	@Test
 	fun testFieldsIncludeDeprecated() = runTest {
@@ -583,18 +675,24 @@ class TypeIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields(includeDeprecated: true) { name isDeprecated }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val fieldNames = fields.map { it["name"] }

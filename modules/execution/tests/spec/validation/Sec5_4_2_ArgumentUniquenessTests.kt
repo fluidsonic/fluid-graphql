@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ArgumentUniquenessRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.4.2 — Argument Uniqueness
 class Sec5_4_2_ArgumentUniquenessTests {
@@ -17,16 +18,16 @@ class Sec5_4_2_ArgumentUniquenessTests {
 			""",
 			schema = """
 				|type Query { field(a: Int, b: Int): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateArgs() {
 		assertValidationRule(
 			rule = ArgumentUniquenessRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Argument 'a' must not occur multiple times.
 
 				<document>:1:9
@@ -36,13 +37,14 @@ class Sec5_4_2_ArgumentUniquenessTests {
 				<document>:1:15
 				1 | { field(a: 1, a: 2) }
 				  |               ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field(a: 1, a: 2) }
 			""",
 			schema = """
 				|type Query { field(a: Int): String }
-			"""
+			""",
 		)
 	}
 }

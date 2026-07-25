@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 @InternalGraphqlApi
 public interface Visit {
 
@@ -11,7 +10,6 @@ public interface Visit {
 	public fun abort()
 	public fun skipChildren()
 	public fun visitChildren()
-
 
 	@Suppress("FunctionName")
 	public fun __unsafeVisitChildren(data: Any?) // FIXME How to make this generic with type projection issues in the Visitor?

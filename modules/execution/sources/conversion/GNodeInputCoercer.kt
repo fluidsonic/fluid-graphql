@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // FIXME call for List & null too
 /**
  * Converts an inline GraphQL input value (an AST [GValue] node) into a Kotlin value.

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A [RuntimeException] that carries one or more [GError]s.
  *
@@ -13,16 +12,12 @@ public class GErrorException(public val errors: List<GError>) : RuntimeException
 		require(errors.isNotEmpty()) { "'errors' must contain at least one error." }
 	}
 
-
 	public constructor(error: GError) :
 		this(listOf(error))
-
 
 	override val message: String
 		get() = errors.joinToString(separator = "\n\n---\n\n") { it.describe() }
 
-
 	/** Converts this exception into a [GResult.Failure] containing the same errors. */
-	public fun toFailure(): GResult<Nothing> =
-		GResult.failure(errors)
+	public fun toFailure(): GResult<Nothing> = GResult.failure(errors)
 }

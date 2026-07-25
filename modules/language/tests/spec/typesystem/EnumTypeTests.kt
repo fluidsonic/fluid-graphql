@@ -1,40 +1,47 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GEnumType
+import io.fluidsonic.graphql.GSchema
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §3.9 — Enums
 class EnumTypeTests {
 
 	@Test
 	fun testEnumDefinition() {
-		val result = GSchema.parse("""
+		val result = GSchema.parse(
+			"""
 			enum Direction { NORTH SOUTH EAST WEST }
 			type Query { direction: Direction }
-		""".trimIndent())
+			""".trimIndent(),
+		)
 		assertTrue(result.errors.isEmpty(), "Expected no parse errors but got: ${result.errors}")
 	}
 
-
 	@Test
 	fun testEnumHasValues() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			enum Direction { NORTH SOUTH EAST WEST }
 			type Query { direction: Direction }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val enumType = schema.resolveType("Direction") as? GEnumType
 		assertNotNull(enumType)
 		assertEquals(4, enumType.values.size)
 	}
 
-
 	@Test
 	fun testEnumValueNames() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			enum Direction { NORTH SOUTH EAST WEST }
 			type Query { direction: Direction }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val enumType = schema.resolveType("Direction") as? GEnumType
 		assertNotNull(enumType)
 		val valueNames = enumType.values.map { it.name }
@@ -44,25 +51,27 @@ class EnumTypeTests {
 		assertTrue("WEST" in valueNames)
 	}
 
-
 	@Test
 	fun testEnumIsEnumType() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			enum Direction { NORTH SOUTH }
 			type Query { direction: Direction }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val type = schema.resolveType("Direction")
 		assertNotNull(type)
 		assertIs<GEnumType>(type)
 	}
 
-
 	@Test
 	fun testEnumValueWithDeprecated() {
-		val result = GSchema.parse("""
+		val result = GSchema.parse(
+			"""
 			enum Status { ACTIVE INACTIVE @deprecated(reason: "Use ACTIVE instead") }
 			type Query { status: Status }
-		""".trimIndent())
+			""".trimIndent(),
+		)
 		assertTrue(result.errors.isEmpty(), "Expected no parse errors but got: ${result.errors}")
 		val schema = result.valueOrThrow()
 		val enumType = schema.resolveType("Status") as? GEnumType

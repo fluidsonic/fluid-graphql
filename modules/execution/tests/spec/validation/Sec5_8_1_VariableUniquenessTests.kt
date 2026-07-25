@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.VariableDefinitionNameExclusivityRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.8.1 — Variable Uniqueness
 class Sec5_8_1_VariableUniquenessTests {
@@ -17,16 +16,16 @@ class Sec5_8_1_VariableUniquenessTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateVariables() {
 		assertValidationRule(
 			rule = VariableDefinitionNameExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Operation 'Q' must not contain multiple variables with the same name '${'$'}a'.
 
 				<document>:1:10
@@ -36,16 +35,16 @@ class Sec5_8_1_VariableUniquenessTests {
 				<document>:1:19
 				1 | query Q(${'$'}a: Int, ${'$'}a: String) { id }
 				  |                   ^
-			"""),
+			""",
+			),
 			document = """
 				|query Q(${'$'}a: Int, ${'$'}a: String) { id }
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsUniqueAcrossOperations() {
@@ -58,7 +57,7 @@ class Sec5_8_1_VariableUniquenessTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
 }

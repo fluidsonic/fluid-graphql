@@ -1,8 +1,25 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GArgument
+import io.fluidsonic.graphql.GDirective
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GFragmentDefinition
+import io.fluidsonic.graphql.GIntTypeRef
+import io.fluidsonic.graphql.GIntValue
+import io.fluidsonic.graphql.GNode
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GOperationType
+import io.fluidsonic.graphql.GSelectionSet
+import io.fluidsonic.graphql.GTypeRef
+import io.fluidsonic.graphql.GVariableDefinition
+import io.fluidsonic.graphql.NodeWalker
+import io.fluidsonic.graphql.walk
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class NodeWalkerTest {
 
@@ -16,35 +33,35 @@ class NodeWalkerTest {
 
 		val fieldSelection = GFieldSelection(
 			name = "field",
-			arguments = listOf(argument)
+			arguments = listOf(argument),
 		)
 		val selectionSet = GSelectionSet(
-			selections = listOf(fieldSelection)
+			selections = listOf(fieldSelection),
 		)
 		val variableDefinition = GVariableDefinition(
 			name = "variable",
 			type = GIntTypeRef,
-			defaultValue = intValue
+			defaultValue = intValue,
 		)
 		val fragmentDefinition = GFragmentDefinition(
 			directives = listOf(directive),
 			name = "fragment",
 			typeCondition = queryTypeRef,
 			selectionSet = selectionSet,
-			variableDefinitions = listOf(variableDefinition)
+			variableDefinitions = listOf(variableDefinition),
 		)
 		val operationDefinition = GOperationDefinition(
 			directives = listOf(directive),
 			type = GOperationType.query,
 			name = "query",
 			selectionSet = selectionSet,
-			variableDefinitions = listOf(variableDefinition)
+			variableDefinitions = listOf(variableDefinition),
 		)
 		val document = GDocument(
 			definitions = listOf(
 				fragmentDefinition,
-				operationDefinition
-			)
+				operationDefinition,
+			),
 		)
 
 		val walker = document.walk()
@@ -107,7 +124,6 @@ class NodeWalkerTest {
 		assertSame(expected = walker.parent, actual = null)
 	}
 
-
 	private fun NodeWalker.assertAscend(toParent: GNode?, toChild: GNode, checkEndOfChildren: Boolean = true) {
 		if (checkEndOfChildren) {
 			assertNull(nextChild(), message = "walker.nextChild()")
@@ -120,13 +136,11 @@ class NodeWalkerTest {
 		assertSame(expected = this.child, actual = toChild, message = "walker.child")
 	}
 
-
 	private fun NodeWalker.assertDescend(toChild: GNode) {
 		assertTrue(descend(), message = "walker.descend()")
 		assertNull(this.child, message = "walker.child")
 		assertSame(expected = this.parent, actual = toChild, message = "walker.parent")
 	}
-
 
 	private fun NodeWalker.assertNextChild(parent: GNode, child: GNode?) {
 		assertSame(expected = child, actual = nextChild(), message = "walker.nextChild()")

@@ -1,5 +1,3 @@
 package io.fluidsonic.graphql
 
-
-internal fun UInt.toIntOrNull() =
-	if (this <= Int.MAX_VALUE.toUInt()) toInt() else null
+internal fun UInt.toIntOrNull() = if (this <= Int.MAX_VALUE.toUInt()) toInt() else null

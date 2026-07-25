@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A field selection in a GraphQL operation or fragment (`alias: fieldName(args) { ... }`).
  *
@@ -15,19 +14,17 @@ public class GFieldSelection(
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GFieldSelection> = GNodeExtensionSet.empty(),
-) :
-	GSelection(
-		directives = directives,
-		extensions = extensions,
-		origin = origin
-	),
+) : GSelection(
+	directives = directives,
+	extensions = extensions,
+	origin = origin,
+),
 	GNode.WithArguments {
 
 	public val alias: String? get() = aliasNode?.value
 	public val aliasNode: GName? = alias
 	public val name: String get() = nameNode.value
 	public val nameNode: GName = name
-
 
 	public constructor(
 		name: String,
@@ -42,12 +39,11 @@ public class GFieldSelection(
 		arguments = arguments,
 		alias = alias?.let(::GName),
 		directives = directives,
-		extensions = extensions
+		extensions = extensions,
 	)
 
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
+		(
 			other is GFieldSelection &&
 				aliasNode.equalsNode(other.aliasNode, includingOrigin = includingOrigin) &&
 				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
@@ -56,7 +52,6 @@ public class GFieldSelection(
 				selectionSet.equalsNode(other.selectionSet, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
 
 	public companion object
 }

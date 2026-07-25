@@ -1,8 +1,14 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.directives
+import io.fluidsonic.graphql.mutation
+import io.fluidsonic.graphql.obj
+import io.fluidsonic.graphql.query
+import io.fluidsonic.graphql.type
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class DocumentTests {
 

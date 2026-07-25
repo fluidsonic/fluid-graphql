@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentDefinitionNameExclusivityRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.5.1 — Fragment Name Uniqueness
 class Sec5_5_1_FragmentNameUniquenessTests {
@@ -20,16 +21,16 @@ class Sec5_5_1_FragmentNameUniquenessTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateFragmentNames() {
 		assertValidationRule(
 			rule = FragmentDefinitionNameExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain multiple fragments with the same name 'frag'.
 
 				<document>:2:10
@@ -42,7 +43,8 @@ class Sec5_5_1_FragmentNameUniquenessTests {
 				2 | fragment frag on Dog { name }
 				3 | fragment frag on Dog { name }
 				  |          ^
-			"""),
+			""",
+			),
 			document = """
 				|{ dog { ...frag } }
 				|fragment frag on Dog { name }
@@ -51,16 +53,16 @@ class Sec5_5_1_FragmentNameUniquenessTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsThreeFragmentsWithTwoSameNames() {
 		assertValidationRule(
 			rule = FragmentDefinitionNameExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain multiple fragments with the same name 'frag'.
 
 				<document>:2:10
@@ -73,7 +75,8 @@ class Sec5_5_1_FragmentNameUniquenessTests {
 				3 | fragment other on Dog { name }
 				4 | fragment frag on Dog { name }
 				  |          ^
-			"""),
+			""",
+			),
 			document = """
 				|{ dog { ...frag ...other } }
 				|fragment frag on Dog { name }
@@ -83,7 +86,7 @@ class Sec5_5_1_FragmentNameUniquenessTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
 }

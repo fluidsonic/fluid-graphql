@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentSelectionPossibilityRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.5.7 — Fragment Spread Is Possible
 class Sec5_5_7_FragmentSpreadIsPossibleTests {
@@ -19,10 +18,9 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsSpreadOnImplementedInterface() {
@@ -37,10 +35,9 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 				|type Query { pet: Pet }
 				|interface Pet { name: String }
 				|type Dog implements Pet { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsObjectSpreadOnUnion() {
@@ -56,16 +53,16 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsSpreadOnDifferentObject() {
 		assertValidationRule(
 			rule = FragmentSelectionPossibilityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Fragment 'catFrag' on 'Cat' will never match the unrelated type 'Dog'.
 
 				<document>:1:12
@@ -89,7 +86,8 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 				4 | type Dog { name: String }
 				  |      ^
 				5 | union CatOrDog = Cat | Dog
-			"""),
+			""",
+			),
 			document = """
 				|{ dog { ...catFrag } }
 				|fragment catFrag on Cat { name }
@@ -100,10 +98,9 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsInlineFragmentOnSameObject() {
@@ -116,7 +113,7 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
 }

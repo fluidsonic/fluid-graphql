@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A named fragment spread (`...FragmentName`) within a selection set.
  *
@@ -11,16 +10,14 @@ public class GFragmentSelection(
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GFragmentSelection> = GNodeExtensionSet.empty(),
-) :
-	GSelection(
-		directives = directives,
-		extensions = extensions,
-		origin = origin
-	) {
+) : GSelection(
+	directives = directives,
+	extensions = extensions,
+	origin = origin,
+) {
 
 	public val name: String get() = nameNode.value
 	public val nameNode: GName = name
-
 
 	public constructor(
 		name: String,
@@ -29,18 +26,16 @@ public class GFragmentSelection(
 	) : this(
 		name = GName(name),
 		directives = directives,
-		extensions = extensions
+		extensions = extensions,
 	)
 
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
+		(
 			other is GFragmentSelection &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
 
 	public companion object
 }

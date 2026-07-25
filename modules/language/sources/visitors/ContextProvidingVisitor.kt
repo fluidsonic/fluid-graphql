@@ -1,24 +1,18 @@
 package io.fluidsonic.graphql
 
+private class ContextProvidingVisitor<out Result, in Context : VisitorContext>(private val next: Visitor<Result, Context>) : Visitor<Result, Context>() {
 
-private class ContextProvidingVisitor<out Result, in Context : VisitorContext>(
-	private val next: Visitor<Result, Context>
-) : Visitor<Result, Context>() {
-
-	override fun onNode(node: GNode, data: Context, visit: Visit) =
-		data.with(node) {
-			next.onNode(node = node, data = data, visit = visit).also {
-				if (!visit.hasVisitedChildren)
-					visit.visitChildren()
+	override fun onNode(node: GNode, data: Context, visit: Visit) = data.with(node) {
+		next.onNode(node = node, data = data, visit = visit).also {
+			if (!visit.hasVisitedChildren) {
+				visit.visitChildren()
 			}
 		}
+	}
 }
 
-
 @InternalGraphqlApi
-public fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(): Visitor<Result, Context> =
-	ContextProvidingVisitor(next = this)
-
+public fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(): Visitor<Result, Context> = ContextProvidingVisitor(next = this)
 
 @InternalGraphqlApi
 public fun <Result, Context : VisitorContext> Visitor<Result, Context>.contextualize(context: Context): Visitor<Result, Any?> =

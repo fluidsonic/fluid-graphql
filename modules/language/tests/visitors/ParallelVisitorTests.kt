@@ -1,16 +1,23 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.Visitor
+import io.fluidsonic.graphql.accept
+import io.fluidsonic.graphql.parallelize
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ParallelVisitorTests {
 
 	@Test
 	fun emptyVisitorListProducesNoOp() {
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query { field }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		// An empty list of visitors should produce a noOp visitor that does nothing
 		val visitor = emptyList<Visitor<Unit, StackCollectingVisitor.Data>>().parallelize()
@@ -18,15 +25,16 @@ class ParallelVisitorTests {
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 	}
 
-
 	@Test
 	fun singleVisitorSeesAllNodes() {
 		val visitorTarget = StackCollectingVisitor.Target()
 		val singleVisitor = StackCollectingVisitor(target = visitorTarget)
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query { field }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(listOf(singleVisitor).parallelize(), data = StackCollectingVisitor.Data())
 
@@ -38,7 +46,6 @@ class ParallelVisitorTests {
 		assertTrue(nodeTypes.contains("FieldSelection"))
 	}
 
-
 	@Test
 	fun allVisitorsAbort() {
 		// When ALL visitors abort, the parallel visitor should stop traversal.
@@ -47,13 +54,15 @@ class ParallelVisitorTests {
 			StackCollectingVisitor(
 				suffix = ".${'A' + index}",
 				target = visitorTarget,
-				abortsInNode = { it is GDocument }
+				abortsInNode = { it is GDocument },
 			)
 		}
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query { field(arg: 1) { nested } }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
@@ -62,7 +71,6 @@ class ParallelVisitorTests {
 		assertTrue(nodeTypes.all { it.startsWith("Document") })
 		assertEquals(actual = visitorTarget.stacks.size, expected = 3)
 	}
-
 
 	@Test
 	fun eachVisitorSeesAllNodes() {
@@ -74,9 +82,11 @@ class ParallelVisitorTests {
 			)
 		}
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query { field }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
@@ -97,7 +107,6 @@ class ParallelVisitorTests {
 		assertEquals(actual = visitorANodeTypes, expected = visitorBNodeTypes)
 	}
 
-
 	@Test
 	fun skipChildrenInOneVisitorDoesNotAffectOthers() {
 		// Visitor A skips children at OperationDefinition, Visitor B does not.
@@ -108,13 +117,15 @@ class ParallelVisitorTests {
 				target = visitorTarget,
 				skipsChildrenInNode = {
 					index == 0 && it is GOperationDefinition
-				}
+				},
 			)
 		}
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query { field }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
@@ -127,7 +138,10 @@ class ParallelVisitorTests {
 		val visitorANodeTypes = visitorAEntries.map { it.substringBefore(".") }.distinct()
 		val visitorBNodeTypes = visitorBEntries.map { it.substringBefore(".") }.distinct()
 
-		assertTrue(visitorANodeTypes.contains("Document"), "Visitor A should see Document, got: $visitorANodeTypes from entries: $visitorAEntries (all: $allLastEntries)")
+		assertTrue(
+			visitorANodeTypes.contains("Document"),
+			"Visitor A should see Document, got: $visitorANodeTypes from entries: $visitorAEntries (all: $allLastEntries)",
+		)
 		assertTrue(visitorANodeTypes.contains("OperationDefinition"), "Visitor A should see OperationDefinition")
 		assertFalse(visitorANodeTypes.contains("SelectionSet"), "Visitor A should not see SelectionSet after skipChildren")
 		assertFalse(visitorANodeTypes.contains("FieldSelection"), "Visitor A should not see FieldSelection after skipChildren")
@@ -137,7 +151,6 @@ class ParallelVisitorTests {
 		assertTrue(visitorBNodeTypes.contains("SelectionSet"), "Visitor B should see SelectionSet")
 		assertTrue(visitorBNodeTypes.contains("FieldSelection"), "Visitor B should see FieldSelection")
 	}
-
 
 	@Test
 	fun abortInOneVisitorDoesNotAffectOthers() {
@@ -149,13 +162,15 @@ class ParallelVisitorTests {
 				target = visitorTarget,
 				abortsInNode = {
 					index == 0 && it is GDocument
-				}
+				},
 			)
 		}
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|query { field }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
@@ -181,7 +196,6 @@ class ParallelVisitorTests {
 		assertTrue(visitorBNodeTypes.contains("OperationDefinition"), "Visitor B should see OperationDefinition")
 	}
 
-
 	@Test
 	fun parallelVisitorsTraverseFragmentDefinitions() {
 		val visitorTarget = StackCollectingVisitor.Target()
@@ -192,10 +206,12 @@ class ParallelVisitorTests {
 			)
 		}
 
-		val document = GDocument.parse("""
+		val document = GDocument.parse(
+			"""
 			|fragment F on Query { field }
 			|query { ...F }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 

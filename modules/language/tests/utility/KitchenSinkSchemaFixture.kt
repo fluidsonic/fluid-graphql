@@ -1,6 +1,5 @@
 package testing
 
-
 // https://github.com/graphql/graphql-js/blob/master/src/__fixtures__/schema-kitchen-sink.graphql
 // Please vote and comment: https://youtrack.jetbrains.com/issue/KT-2425
 const val kitchenSinkSchema = """

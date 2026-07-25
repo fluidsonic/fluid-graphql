@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Declares a variable in a GraphQL operation (`$name: Type = defaultValue`).
  *
@@ -13,17 +12,15 @@ public class GVariableDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GVariableDefinition> = GNodeExtensionSet.empty(),
-) :
-	GNode(
-		extensions = extensions,
-		origin = origin
-	),
+) : GNode(
+	extensions = extensions,
+	origin = origin,
+),
 	GNode.WithDefaultValue,
 	GNode.WithDirectives,
 	GNode.WithName {
 
 	override val nameNode: GName = name
-
 
 	public constructor(
 		name: String,
@@ -36,12 +33,11 @@ public class GVariableDefinition(
 		type = type,
 		defaultValue = defaultValue,
 		directives = directives,
-		extensions = extensions
+		extensions = extensions,
 	)
 
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
+		(
 			other is GVariableDefinition &&
 				defaultValue.equalsNode(other.defaultValue, includingOrigin = includingOrigin) &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
@@ -49,7 +45,6 @@ public class GVariableDefinition(
 				type.equalsNode(other.type, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
 
 	public companion object
 }

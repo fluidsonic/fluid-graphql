@@ -1,12 +1,12 @@
 package io.fluidsonic.graphql
 
-
 internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 
 	override fun onArgument(argument: GArgument, data: ValidationContext, visit: Visit) {
 		val argumentDefinition = data.relatedArgumentDefinition
-		if (argumentDefinition !== null)
+		if (argumentDefinition !== null) {
 			return // Exists.
+		}
 
 		when (data.parentNode) {
 			is GDirective -> {
@@ -14,7 +14,7 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 
 				data.reportError(
 					message = "Unknown argument '${argument.name}' for directive '${directiveDefinition.name}'.",
-					nodes = listOf(argument.nameNode)
+					nodes = listOf(argument.nameNode),
 				)
 
 				return
@@ -26,7 +26,7 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 
 				data.reportError(
 					message = "Unknown argument '${argument.name}' for field '${parentType.name}.${fieldDefinition.name}'.",
-					nodes = listOf(argument.nameNode)
+					nodes = listOf(argument.nameNode),
 				)
 			}
 
@@ -35,7 +35,7 @@ internal object ArgumentExistenceRule : ValidationRule.Singleton() {
 
 				data.reportError(
 					message = "Field '${argument.name}' is not defined by type '${parentType.name}'.",
-					nodes = listOf(argument.nameNode)
+					nodes = listOf(argument.nameNode),
 				)
 			}
 

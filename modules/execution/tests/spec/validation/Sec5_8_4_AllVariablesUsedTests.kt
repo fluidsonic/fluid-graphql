@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.AllVariablesUsedRule
+import kotlin.test.Test
 
 // GraphQL Spec §5.8.4 — All Variables Used
 class Sec5_8_4_AllVariablesUsedTests {
@@ -17,31 +16,31 @@ class Sec5_8_4_AllVariablesUsedTests {
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsVariableNotUsed() {
 		assertValidationRule(
 			rule = AllVariablesUsedRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Variable '${'$'}x' is defined but never used.
 
 				<document>:1:10
 				1 | query Q(${'$'}x: String) { field }
 				  |          ^
-			"""),
+			""",
+			),
 			document = """
 				|query Q(${'$'}x: String) { field }
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsVariableUsedInFragment() {
@@ -54,7 +53,7 @@ class Sec5_8_4_AllVariablesUsedTests {
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
 }

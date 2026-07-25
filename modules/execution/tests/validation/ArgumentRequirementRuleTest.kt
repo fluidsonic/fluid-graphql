@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ArgumentRequirementRule
+import kotlin.test.Test
 
 class ArgumentRequirementRuleTest {
 
@@ -16,10 +15,9 @@ class ArgumentRequirementRuleTest {
 				|type Query {
 				|   id(arg1: String, arg2: String! = "default"): ID
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsAbsenceOfOptionalArguments() {
@@ -38,10 +36,9 @@ class ArgumentRequirementRuleTest {
 				|   id(string: String! @optional, input: Input! @optional): ID
 				|}
 				|directive @foo(string: String! @optional, input: Input! @optional) on FIELD
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsAbsenceOfRequiredArguments() {
@@ -72,7 +69,7 @@ class ArgumentRequirementRuleTest {
 					4 | 
 					5 | directive @foo(arg1: String!) on FIELD
 					  |                ^
-				"""
+				""",
 			),
 			document = """
 				|{ id @foo }
@@ -83,10 +80,9 @@ class ArgumentRequirementRuleTest {
 				|}
 				|
 				|directive @foo(arg1: String!) on FIELD
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsAbsenceOfMultipleRequiredArguments() {
@@ -128,7 +124,7 @@ class ArgumentRequirementRuleTest {
 					4 | 
 					5 | directive @foo(arg1: String!, arg2: String, arg3: Int!) on FIELD
 					  |                                             ^
-				"""
+				""",
 			),
 			document = """
 				|{ id @foo }
@@ -139,7 +135,7 @@ class ArgumentRequirementRuleTest {
 				|}
 				|
 				|directive @foo(arg1: String!, arg2: String, arg3: Int!) on FIELD
-			"""
+			""",
 		)
 	}
 }

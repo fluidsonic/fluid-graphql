@@ -1,9 +1,6 @@
 package io.fluidsonic.graphql
 
-
-internal class Lexer(
-	val source: GDocumentSource.Parsable
-) {
+internal class Lexer(val source: GDocumentSource.Parsable) {
 
 	private val content = source.content
 
@@ -13,7 +10,7 @@ internal class Lexer(
 		endPosition = 0,
 		lineNumber = 1,
 		linePosition = 0,
-		previousToken = null
+		previousToken = null,
 	)
 		private set
 
@@ -25,14 +22,12 @@ internal class Lexer(
 	private var lookaheadPosition = currentToken.endPosition
 	private var lookaheadToken = currentToken
 
-
 	fun advance(): Token {
 		previousToken = currentToken
 		currentToken = lookahead()
 
 		return currentToken
 	}
-
 
 	fun lookahead(): Token {
 		var token = currentToken
@@ -55,7 +50,6 @@ internal class Lexer(
 		return token
 	}
 
-
 	private fun readBlockString(): Token {
 		var position = lookaheadPosition + 3
 		var chunkStart = position
@@ -69,20 +63,20 @@ internal class Lexer(
 				return makeToken(
 					kind = Token.Kind.BLOCK_STRING,
 					endPosition = position + 3,
-					value = normalizeBlockString(rawValue)
+					value = normalizeBlockString(rawValue),
 				)
 			}
 
 			if (char eq '\n' || char eq '\r') {
 				++position
 
-				if (char eq '\r' && readChar(position) eq '\n')
+				if (char eq '\r' && readChar(position) eq '\n') {
 					++position
+				}
 
 				++lookaheadLineNumber
 				lookaheadLinePosition = position
-			}
-			else if (
+			} else if (
 				char eq '\\' &&
 				readChar(position + 1) eq '"' &&
 				readChar(position + 2) eq '"' &&
@@ -92,9 +86,9 @@ internal class Lexer(
 
 				position += 4
 				chunkStart = position
-			}
-			else
+			} else {
 				++position
+			}
 
 			char = readChar(position)
 		}
@@ -102,37 +96,36 @@ internal class Lexer(
 		syntaxError(description = "Unterminated string.", position = position)
 	}
 
-
-	private fun readChar(position: Int) =
-		if (position >= content.length)
-			SourceCharacter.endOfInput
-		else
-			SourceCharacter(content[position])
-
+	private fun readChar(position: Int) = if (position >= content.length) {
+		SourceCharacter.endOfInput
+	} else {
+		SourceCharacter(content[position])
+	}
 
 	private fun readComment(): Token {
 		var position = lookaheadPosition
 
 		var character: SourceCharacter
-		do character = readChar(++position)
-		while (character.isValid() && !character.isLineBreak())
+		do {
+			character = readChar(++position)
+		} while (character.isValid() && !character.isLineBreak())
 
 		return makeToken(
 			kind = Token.Kind.COMMENT,
 			endPosition = position,
-			value = content.substring(startIndex = lookaheadPosition + 1, endIndex = position)
+			value = content.substring(startIndex = lookaheadPosition + 1, endIndex = position),
 		)
 	}
-
 
 	private fun readDigits(position: Int): Int {
 		@Suppress("NAME_SHADOWING")
 		var position = position
 
 		var character = readChar(position)
-		if (character in '0' .. '9') {
-			do character = readChar(++position)
-			while (character in '0' .. '9')
+		if (character in '0'..'9') {
+			do {
+				character = readChar(++position)
+			} while (character in '0'..'9')
 
 			return position
 		}
@@ -140,37 +133,37 @@ internal class Lexer(
 		unexpectedCharacterError(character = character, position = position)
 	}
 
-
 	private fun readName(): Token {
 		var position = lookaheadPosition + 1
 
 		var character = readChar(position)
-		while (character.isValidForName())
+		while (character.isValidForName()) {
 			character = readChar(++position)
+		}
 
 		return makeToken(
 			kind = Token.Kind.NAME,
 			endPosition = position,
-			value = content.substring(startIndex = lookaheadPosition, endIndex = position)
+			value = content.substring(startIndex = lookaheadPosition, endIndex = position),
 		)
 	}
-
 
 	private fun readNumber(): Token {
 		var position = lookaheadPosition
 		var character = readChar(position)
 		var isFloat = false
 
-		if (character eq '-')
+		if (character eq '-') {
 			character = readChar(++position)
+		}
 
 		if (character eq '0') {
 			character = readChar(++position)
 
-			if (character in '0' .. '9')
+			if (character in '0'..'9') {
 				unexpectedCharacterError(character = character, position = position)
-		}
-		else {
+			}
+		} else {
 			position = readDigits(position = position)
 			character = readChar(position)
 		}
@@ -187,23 +180,24 @@ internal class Lexer(
 			isFloat = true
 
 			character = readChar(++position)
-			if (character eq '+' || character eq '-')
+			if (character eq '+' || character eq '-') {
 				++position
+			}
 
 			position = readDigits(position = position)
 			character = readChar(position)
 		}
 
-		if (character eq '.' || character.isValidForNameStart())
+		if (character eq '.' || character.isValidForNameStart()) {
 			unexpectedCharacterError(character = character, position = position)
+		}
 
 		return makeToken(
 			kind = if (isFloat) Token.Kind.FLOAT else Token.Kind.INT,
 			endPosition = position,
-			value = content.substring(startIndex = lookaheadPosition, endIndex = position)
+			value = content.substring(startIndex = lookaheadPosition, endIndex = position),
 		)
 	}
-
 
 	private fun readString(): Token {
 		var position = lookaheadPosition + 1
@@ -218,7 +212,7 @@ internal class Lexer(
 				return makeToken(
 					kind = Token.Kind.STRING,
 					endPosition = position + 1,
-					value = value
+					value = value,
 				)
 			}
 
@@ -243,15 +237,15 @@ internal class Lexer(
 							readChar(position + 1).toChar(),
 							readChar(position + 2).toChar(),
 							readChar(position + 3).toChar(),
-							readChar(position + 4).toChar()
+							readChar(position + 4).toChar(),
 						)
 
 						if (charCode < 0) {
 							val invalidSequence = content.substring(startIndex = position + 1, endIndex = position + 5)
 
 							syntaxError(
-								description = "Invalid character escape sequence: \\u${invalidSequence}.",
-								position = position
+								description = "Invalid character escape sequence: \\u$invalidSequence.",
+								position = position,
 							)
 						}
 
@@ -262,7 +256,7 @@ internal class Lexer(
 					else ->
 						syntaxError(
 							description = "Invalid character escape sequence: \\$char.",
-							position = position
+							position = position,
 						)
 				}
 
@@ -276,29 +270,23 @@ internal class Lexer(
 		syntaxError(description = "Unterminated string.", position = position)
 	}
 
-
-	private fun makeToken(
-		kind: Token.Kind,
-		startPosition: Int = this.lookaheadPosition,
-		endPosition: Int,
-		value: String? = null
-	) = Token(
+	private fun makeToken(kind: Token.Kind, startPosition: Int = this.lookaheadPosition, endPosition: Int, value: String? = null) = Token(
 		kind = kind,
 		startPosition = startPosition,
 		endPosition = endPosition,
 		lineNumber = lookaheadLineNumber,
 		linePosition = lookaheadLinePosition,
 		previousToken = lookaheadToken,
-		value = value
+		value = value,
 	)
-
 
 	private fun readToken(): Token {
 		skipIgnoredCharacters()
 
 		val character = readChar(lookaheadPosition)
-		if (character == SourceCharacter.endOfInput)
+		if (character == SourceCharacter.endOfInput) {
 			return makeToken(kind = Token.Kind.END_OF_INPUT, endPosition = lookaheadPosition)
+		}
 
 		return when (character.toChar()) {
 			'!' -> makeToken(kind = Token.Kind.BANG, endPosition = lookaheadPosition + 1)
@@ -316,34 +304,35 @@ internal class Lexer(
 			'}' -> makeToken(kind = Token.Kind.BRACE_R, endPosition = lookaheadPosition + 1)
 			'#' -> readComment()
 
-			'_', in 'A' .. 'Z', in 'a' .. 'z' ->
+			'_', in 'A'..'Z', in 'a'..'z' ->
 				readName()
 
-			'-', in '0' .. '9' ->
+			'-', in '0'..'9' ->
 				readNumber()
 
 			'.' ->
-				if (readChar(lookaheadPosition + 1) eq '.' && readChar(lookaheadPosition + 2) eq '.')
+				if (readChar(lookaheadPosition + 1) eq '.' && readChar(lookaheadPosition + 2) eq '.') {
 					makeToken(kind = Token.Kind.SPREAD, endPosition = lookaheadPosition + 3)
-				else
+				} else {
 					unexpectedCharacterError(character = character, position = lookaheadPosition)
+				}
 
 			'"' ->
-				if (readChar(lookaheadPosition + 1) eq '"' && readChar(lookaheadPosition + 2) eq '"')
+				if (readChar(lookaheadPosition + 1) eq '"' && readChar(lookaheadPosition + 2) eq '"') {
 					readBlockString()
-				else
+				} else {
 					readString()
+				}
 
 			else ->
 				unexpectedCharacterError(character = character, position = lookaheadPosition)
 		}
 	}
 
-
 	private fun skipIgnoredCharacters() {
 		var position = lookaheadPosition
 
-		loop@ while (true)
+		loop@ while (true) {
 			when (val sourceCharacter = readChar(position)) {
 				SourceCharacter.endOfInput ->
 					break@loop
@@ -356,8 +345,9 @@ internal class Lexer(
 						++position
 						++lookaheadLineNumber
 
-						if (char == '\r' && readChar(position) eq '\n')
+						if (char == '\r' && readChar(position) eq '\n') {
 							++position
+						}
 
 						lookaheadLinePosition = position
 					}
@@ -366,22 +356,20 @@ internal class Lexer(
 						break@loop
 				}
 			}
+		}
 
 		lookaheadPosition = position
 	}
 
-
-	private fun syntaxError(description: String, position: Int): Nothing =
-		GError.syntax(
-			details = description,
-			origin = DocumentPosition(
-				column = position - lookaheadLinePosition + 1,
-				line = lookaheadLineNumber,
-				position = position,
-				source = source
-			)
-		).throwException()
-
+	private fun syntaxError(description: String, position: Int): Nothing = GError.syntax(
+		details = description,
+		origin = DocumentPosition(
+			column = position - lookaheadLinePosition + 1,
+			line = lookaheadLineNumber,
+			position = position,
+			source = source,
+		),
+	).throwException()
 
 	private fun unexpectedCharacterError(character: SourceCharacter, position: Int): Nothing = // FIXME add expected
 		syntaxError(
@@ -389,20 +377,17 @@ internal class Lexer(
 				character.isValid() -> "Unexpected character $character."
 				else -> "Character $character is not allowed in a GraphQL document."
 			},
-			position = position
+			position = position,
 		)
-
 
 	companion object {
 
-		private fun Char.parseHex() =
-			when (this) {
-				in '0' .. '9' -> this - '0'
-				in 'a' .. 'f' -> this - 'a' + 10
-				in 'A' .. 'F' -> this - 'A' + 10
-				else -> -1
-			}
-
+		private fun Char.parseHex() = when (this) {
+			in '0'..'9' -> this - '0'
+			in 'a'..'f' -> this - 'a' + 10
+			in 'A'..'F' -> this - 'A' + 10
+			else -> -1
+		}
 
 		private fun computeBlockStringIndentation(lines: List<String>): Int {
 			var commonIndentation = -1
@@ -411,54 +396,52 @@ internal class Lexer(
 				val line = lines[index]
 
 				val indentation = line.indexOfFirst { it != ' ' && it != '\t' }
-				if (indentation < 0)
+				if (indentation < 0) {
 					continue
+				}
 
 				if (commonIndentation < 0 || indentation < commonIndentation) {
 					commonIndentation = indentation
 
-					if (commonIndentation == 0)
+					if (commonIndentation == 0) {
 						break
+					}
 				}
 			}
 
 			return commonIndentation.coerceAtLeast(0)
 		}
 
-
-		private fun makeCharacterFromHex(a: Char, b: Char, c: Char, d: Char) =
-			(a.parseHex() shl 12) or (b.parseHex() shl 8) or (c.parseHex() shl 4) or d.parseHex()
-
+		private fun makeCharacterFromHex(a: Char, b: Char, c: Char, d: Char) = (a.parseHex() shl 12) or (b.parseHex() shl 8) or (c.parseHex() shl 4) or d.parseHex()
 
 		private fun normalizeBlockString(value: String): String {
-			if (value.indexOfFirst { it == '\n' || it == '\r' } < 0)
+			if (value.indexOfFirst { it == '\n' || it == '\r' } < 0) {
 				return value.trimStart { it == ' ' || it == '\t' }
+			}
 
 			val lines = value.lineSequence().toMutableList()
 
 			val commonIndent = computeBlockStringIndentation(lines)
-			if (commonIndent != 0)
+			if (commonIndent != 0) {
 				lines.forEachIndexed { index, line ->
 					lines[index] = line.substring(startIndex = commonIndent.coerceAtMost(line.length))
 				}
+			}
 
-			while (lines.isNotEmpty() && lines.last().isBlank())
+			while (lines.isNotEmpty() && lines.last().isBlank()) {
 				lines.removeAt(lines.size - 1)
+			}
 
-			while (lines.isNotEmpty() && lines.first().isBlank())
+			while (lines.isNotEmpty() && lines.first().isBlank()) {
 				lines.removeAt(0)
+			}
 
 			return lines.joinToString("\n")
 		}
 	}
 
-
-	private class DocumentPosition(
-		override val column: Int,
-		override val line: Int,
-		val position: Int,
-		override val source: GDocumentSource.Parsable
-	) : GDocumentPosition {
+	private class DocumentPosition(override val column: Int, override val line: Int, val position: Int, override val source: GDocumentSource.Parsable) :
+		GDocumentPosition {
 
 		override val startPosition
 			get() = position

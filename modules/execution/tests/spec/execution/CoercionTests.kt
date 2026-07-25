@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // GraphQL Spec §6.4 — Input/Output Coercion
 class CoercionTests {
@@ -23,10 +31,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ echo(arg: 42) }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to 42)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testStringInputCoercion() = runTest {
@@ -42,10 +49,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("""{ echo(arg: "hello") }"""))
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to "hello")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testBooleanInputCoercion() = runTest {
@@ -61,10 +67,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ echo(arg: true) }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to true)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testNullInputCoercion() = runTest {
@@ -83,10 +88,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ echo(arg: null) }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to "was-null")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testListInputCoercion() = runTest {
@@ -105,10 +109,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ sum(nums: [1, 2, 3]) }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("sum" to 6)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testSingleValueCoercedToList() = runTest {
@@ -128,10 +131,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ first(nums: 1) }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("first" to 1)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testEnumInputCoercion() = runTest {
@@ -154,10 +156,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ echo(status: ACTIVE) }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to "ACTIVE")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	// --- Variable input coercion ---
 
@@ -175,15 +176,14 @@ class CoercionTests {
 		val result = executor.serializeResult(
 			executor.execute(
 				documentSource = "query(\$x: Int) { echo(x: \$x) }",
-				variableValues = mapOf("x" to 5)
-			)
+				variableValues = mapOf("x" to 5),
+			),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to 5)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testStringVariableCoercion() = runTest {
@@ -199,15 +199,14 @@ class CoercionTests {
 		val result = executor.serializeResult(
 			executor.execute(
 				documentSource = "query(\$s: String) { echo(s: \$s) }",
-				variableValues = mapOf("s" to "foo")
-			)
+				variableValues = mapOf("s" to "foo"),
+			),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to "foo")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	// --- Output coercion ---
 
@@ -222,10 +221,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ value }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("value" to "hello")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testIntOutput() = runTest {
@@ -238,10 +236,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ value }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("value" to 42)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testBooleanOutput() = runTest {
@@ -254,10 +251,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ value }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("value" to true)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testNullOutput() = runTest {
@@ -270,10 +266,9 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ value }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("value" to null)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testListOutput() = runTest {
@@ -286,7 +281,7 @@ class CoercionTests {
 		val result = executor.serializeResult(executor.execute("{ items }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("items" to listOf("a", "b"))),
-			actual = result
+			actual = result,
 		)
 	}
 }

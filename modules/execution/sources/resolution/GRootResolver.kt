@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Provides the root value passed to top-level field resolvers as their `parent` argument.
  *
@@ -13,23 +12,17 @@ public fun interface GRootResolver {
 	/** Produces the root value for the current operation. */
 	public suspend fun GRootResolverContext.resolveRoot(): Any
 
-
 	public companion object {
 
 		/** Returns a [GRootResolver] that always provides [root] as the root value. */
-		public fun constant(root: Any): GRootResolver =
-			Constant(root)
-
+		public fun constant(root: Any): GRootResolver = Constant(root)
 
 		/** Returns a [GRootResolver] that always provides [Unit] as the root value. */
-		public fun unit(): GRootResolver =
-			constant(Unit)
+		public fun unit(): GRootResolver = constant(Unit)
 	}
-
 
 	private class Constant(private val root: Any) : GRootResolver {
 
-		override suspend fun GRootResolverContext.resolveRoot() =
-			root
+		override suspend fun GRootResolverContext.resolveRoot() = root
 	}
 }

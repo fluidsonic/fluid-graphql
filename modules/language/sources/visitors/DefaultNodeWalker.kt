@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 private class DefaultNodeWalker(root: GNode) : NodeWalker {
 
 	private var childIndex = -1
@@ -8,18 +7,16 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 	private val childStack = mutableListOf<GNode?>()
 	private val parentStack = mutableListOf<GNode?>()
 
-
 	override var child: GNode? = root
 		private set
-
 
 	override var parent: GNode? = null
 		private set
 
-
 	override fun ascend(): Boolean {
-		if (parentStack.isEmpty())
+		if (parentStack.isEmpty()) {
 			return false
+		}
 
 		val stackIndex = parentStack.size - 1
 
@@ -30,11 +27,11 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 		return true
 	}
 
-
 	override fun descend(): Boolean {
 		val child = child
-		if (child === null || !child.hasChildren())
+		if (child === null || !child.hasChildren()) {
 			return false
+		}
 
 		parentStack += parent
 		childIndexStack += childIndex
@@ -47,12 +44,12 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 		return true
 	}
 
-
 	override fun nextChild(): GNode? {
 		val parent = parent ?: return null
 
-		if (childIndex >= 0 && child === null)
+		if (childIndex >= 0 && child === null) {
 			return null
+		}
 
 		childIndex += 1
 		child = parent.childAt(childIndex)
@@ -61,7 +58,5 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 	}
 }
 
-
 @InternalGraphqlApi
-public fun GNode.walk(): NodeWalker =
-	DefaultNodeWalker(root = this)
+public fun GNode.walk(): NodeWalker = DefaultNodeWalker(root = this)

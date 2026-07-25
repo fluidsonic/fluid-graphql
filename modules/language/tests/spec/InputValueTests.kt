@@ -1,8 +1,21 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GArgument
+import io.fluidsonic.graphql.GBooleanValue
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GEnumValue
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GFloatValue
+import io.fluidsonic.graphql.GIntValue
+import io.fluidsonic.graphql.GListValue
+import io.fluidsonic.graphql.GNullValue
+import io.fluidsonic.graphql.GObjectValue
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GStringValue
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 // GraphQL Spec §2.10 — Input Values
 class InputValueTests {
@@ -16,14 +29,12 @@ class InputValueTests {
 		assertEquals(0, intVal.value)
 	}
 
-
 	@Test
 	fun testIntValuePositive() {
 		val arg = parseArgument("{ f(a: 42) }")
 		val intVal = arg.value as GIntValue
 		assertEquals(42, intVal.value)
 	}
-
 
 	@Test
 	fun testIntValueNegative() {
@@ -32,13 +43,11 @@ class InputValueTests {
 		assertEquals(-1, intVal.value)
 	}
 
-
 	@Test
 	fun testInvalidIntLeadingZeros() {
 		val result = GDocument.parse("{ f(a: 00) }")
 		assertTrue(result.errors.isNotEmpty(), "Expected parse error for leading zeros in integer")
 	}
-
 
 	@Test
 	fun testInvalidIntWithDecimalIsFloat() {
@@ -46,7 +55,6 @@ class InputValueTests {
 		val arg = parseArgument("{ f(a: 1.0) }")
 		assertTrue(arg.value is GFloatValue, "Expected GFloatValue for '1.0'")
 	}
-
 
 	// -- Float values --
 
@@ -57,14 +65,12 @@ class InputValueTests {
 		assertEquals(1.0, floatVal.value)
 	}
 
-
 	@Test
 	fun testFloatWithExponent() {
 		val arg = parseArgument("{ f(a: 1e10) }")
 		val floatVal = arg.value as GFloatValue
 		assertEquals(1e10, floatVal.value)
 	}
-
 
 	@Test
 	fun testFloatNegative() {
@@ -73,13 +79,11 @@ class InputValueTests {
 		assertEquals(-1.5, floatVal.value)
 	}
 
-
 	@Test
 	fun testInvalidFloatLeadingDot() {
 		val result = GDocument.parse("{ f(a: .5) }")
 		assertTrue(result.errors.isNotEmpty(), "Expected parse error for float starting with dot")
 	}
-
 
 	// -- String values --
 
@@ -91,14 +95,12 @@ class InputValueTests {
 		assertFalse(strVal.isBlock)
 	}
 
-
 	@Test
 	fun testStringEscapeNewline() {
 		val arg = parseArgument("{ f(a: \"a\\nb\") }")
 		val strVal = arg.value as GStringValue
 		assertEquals("a\nb", strVal.value)
 	}
-
 
 	@Test
 	fun testStringEscapeTab() {
@@ -107,14 +109,12 @@ class InputValueTests {
 		assertEquals("a\tb", strVal.value)
 	}
 
-
 	@Test
 	fun testStringEscapeUnicode() {
 		val arg = parseArgument("{ f(a: \"a\\u0041b\") }")
 		val strVal = arg.value as GStringValue
 		assertEquals("aAb", strVal.value)
 	}
-
 
 	@Test
 	fun testBlockString() {
@@ -123,7 +123,6 @@ class InputValueTests {
 		assertEquals("hello", strVal.value)
 		assertTrue(strVal.isBlock)
 	}
-
 
 	// -- Boolean values --
 
@@ -134,14 +133,12 @@ class InputValueTests {
 		assertTrue(boolVal.value)
 	}
 
-
 	@Test
 	fun testBooleanFalse() {
 		val arg = parseArgument("{ f(a: false) }")
 		val boolVal = arg.value as GBooleanValue
 		assertFalse(boolVal.value)
 	}
-
 
 	// -- Null value --
 
@@ -150,7 +147,6 @@ class InputValueTests {
 		val arg = parseArgument("{ f(a: null) }")
 		assertTrue(arg.value is GNullValue)
 	}
-
 
 	// -- Enum value --
 
@@ -161,7 +157,6 @@ class InputValueTests {
 		assertEquals("ACTIVE", enumVal.name)
 	}
 
-
 	// -- List values --
 
 	@Test
@@ -170,7 +165,6 @@ class InputValueTests {
 		val listVal = arg.value as GListValue
 		assertEquals(0, listVal.elements.size)
 	}
-
 
 	@Test
 	fun testIntList() {
@@ -185,7 +179,6 @@ class InputValueTests {
 		assertEquals(3, (listVal.elements[2] as GIntValue).value)
 	}
 
-
 	@Test
 	fun testNestedList() {
 		val arg = parseArgument("{ f(a: [[1]]) }")
@@ -196,7 +189,6 @@ class InputValueTests {
 		assertEquals(1, (innerList.elements.single() as GIntValue).value)
 	}
 
-
 	// -- Input Object values --
 
 	@Test
@@ -205,7 +197,6 @@ class InputValueTests {
 		val objVal = arg.value as GObjectValue
 		assertEquals(0, objVal.arguments.size)
 	}
-
 
 	@Test
 	fun testObjectWithField() {
@@ -216,7 +207,6 @@ class InputValueTests {
 		assertEquals("key", field.name)
 		assertEquals(1, (field.value as GIntValue).value)
 	}
-
 
 	private fun parseArgument(source: String): GArgument {
 		val doc = GDocument.parse(source).valueWithoutErrorsOrThrow()

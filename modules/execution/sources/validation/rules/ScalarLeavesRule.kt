@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // http://spec.graphql.org/draft/#sec-Leaf-Field-Selections
 internal object ScalarLeavesRule : ValidationRule.Singleton() {
 
@@ -13,17 +12,18 @@ internal object ScalarLeavesRule : ValidationRule.Singleton() {
 				if (selectionSet != null) {
 					data.reportError(
 						message = "Field '${selection.name}' must not have a selection since ${type.kind} type '${type.name}' has no subfields.",
-						nodes = listOf(selectionSet)
+						nodes = listOf(selectionSet),
 					)
 				}
 
 			else -> {
-				if (selectionSet == null)
+				if (selectionSet == null) {
 					data.reportError(
 						message = "Field '${selection.name}' of ${type.kind} type '${type.name}' must have a selection of subfields. " +
 							"Did you mean '${selection.name} { … }'?",
-						nodes = listOf(selection)
+						nodes = listOf(selection),
 					)
+				}
 			}
 		}
 	}

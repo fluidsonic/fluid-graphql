@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 internal object DirectiveLocationValidityRule : ValidationRule.Singleton() {
 
 	override fun onDirective(directive: GDirective, data: ValidationContext, visit: Visit) {
@@ -8,14 +7,17 @@ internal object DirectiveLocationValidityRule : ValidationRule.Singleton() {
 			?: return // Unknown location.
 
 		val definition = data.relatedDirectiveDefinition
-		if (definition === null)
+		if (definition === null) {
 			return // Unknown directive.
+		}
 
-		if (definition.locations.isEmpty())
+		if (definition.locations.isEmpty()) {
 			return // Invalid directive definition.
+		}
 
-		if (definition.locations.contains(location))
+		if (definition.locations.contains(location)) {
 			return // Valid location.
+		}
 
 		val allowedLocationsText = definition.locations
 			.sortedBy { it.name }
@@ -23,7 +25,7 @@ internal object DirectiveLocationValidityRule : ValidationRule.Singleton() {
 
 		data.reportError(
 			message = "Directive '@${directive.name}' is not valid on $location but only on $allowedLocationsText.",
-			nodes = listOf(directive.nameNode, definition.locationNodes.first())
+			nodes = listOf(directive.nameNode, definition.locationNodes.first()),
 		)
 	}
 }

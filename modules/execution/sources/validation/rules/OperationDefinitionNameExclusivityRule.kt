@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Operation-Name-Uniqueness
 internal object OperationDefinitionNameExclusivityRule : ValidationRule.Singleton() {
 
@@ -13,7 +12,7 @@ internal object OperationDefinitionNameExclusivityRule : ValidationRule.Singleto
 			.forEach { (name, operations) ->
 				data.reportError(
 					message = "The document must not contain multiple operations with the same name '$name'.",
-					nodes = operations.map { it.nameNode!! }
+					nodes = operations.map { it.nameNode!! },
 				)
 			}
 	}

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 @InternalGraphqlApi
 public open class VisitorContext(
 	public val document: GDocument,
@@ -49,7 +48,6 @@ public open class VisitorContext(
 
 	public var relatedType: GType? = null
 		private set
-
 
 	internal inline fun <Result> with(node: GNode, block: () -> Result): Result {
 		val _parentNode = parentNode
@@ -165,8 +163,7 @@ public open class VisitorContext(
 
 		try {
 			return block()
-		}
-		finally {
+		} finally {
 			parentNode = _parentNode
 			visitingNode = _visitingNode
 

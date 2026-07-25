@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Context provided to a [GRootResolver] when producing the root value for an operation.
  *

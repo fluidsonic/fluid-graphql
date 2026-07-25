@@ -1,9 +1,18 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
-
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.isNotEmpty
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class VariableCoercionTests {
 
@@ -16,17 +25,15 @@ class VariableCoercionTests {
 		}
 	}
 
-
 	@Test
 	fun testVariableWithCorrectType_string() = runTest {
 		assertExecution(
 			schema = stringSchema,
 			document = """query(${'$'}v: String) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to "hello"),
-			expected = mapOf("data" to mapOf("echo" to "hello"))
+			expected = mapOf("data" to mapOf("echo" to "hello")),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithCorrectType_int() = runTest {
@@ -43,10 +50,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: Int) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to 42),
-			expected = mapOf("data" to mapOf("echo" to 42))
+			expected = mapOf("data" to mapOf("echo" to 42)),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithCorrectType_boolean() = runTest {
@@ -63,10 +69,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: Boolean) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to true),
-			expected = mapOf("data" to mapOf("echo" to true))
+			expected = mapOf("data" to mapOf("echo" to true)),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithCorrectType_float() = runTest {
@@ -83,10 +88,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: Float) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to 3.14),
-			expected = mapOf("data" to mapOf("echo" to 3.14))
+			expected = mapOf("data" to mapOf("echo" to 3.14)),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithCorrectType_floatFromInt() = runTest {
@@ -103,10 +107,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: Float) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to 5),
-			expected = mapOf("data" to mapOf("echo" to 5.0))
+			expected = mapOf("data" to mapOf("echo" to 5.0)),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithCorrectType_id_fromString() = runTest {
@@ -123,10 +126,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: ID) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to "abc"),
-			expected = mapOf("data" to mapOf("echo" to "abc"))
+			expected = mapOf("data" to mapOf("echo" to "abc")),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithCorrectType_id_fromInt() = runTest {
@@ -143,10 +145,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: ID) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to 123),
-			expected = mapOf("data" to mapOf("echo" to "123"))
+			expected = mapOf("data" to mapOf("echo" to "123")),
 		)
 	}
-
 
 	@Test
 	fun testVariableWithWrongType() = runTest {
@@ -162,11 +163,10 @@ class VariableCoercionTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.execute(
 			"""query(${'$'}v: Int) { echo(value: ${'$'}v) }""",
-			variableValues = mapOf("v" to "not-an-int")
+			variableValues = mapOf("v" to "not-an-int"),
 		)
 		assertTrue(result.errors.isNotEmpty(), "Expected errors for wrong variable type")
 	}
-
 
 	@Test
 	fun testMissingRequiredVariable() = runTest {
@@ -182,11 +182,10 @@ class VariableCoercionTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.execute(
 			"""query(${'$'}v: String!) { echo(value: ${'$'}v) }""",
-			variableValues = emptyMap()
+			variableValues = emptyMap(),
 		)
 		assertTrue(result.errors.isNotEmpty(), "Expected errors for missing required variable")
 	}
-
 
 	@Test
 	fun testDefaultValueForMissingOptionalVariable() = runTest {
@@ -194,10 +193,9 @@ class VariableCoercionTests {
 			schema = stringSchema,
 			document = """query(${'$'}v: String = "default") { echo(value: ${'$'}v) }""",
 			variableValues = emptyMap(),
-			expected = mapOf("data" to mapOf("echo" to "default"))
+			expected = mapOf("data" to mapOf("echo" to "default")),
 		)
 	}
-
 
 	@Test
 	fun testNullVariableForNullableParameter() = runTest {
@@ -205,10 +203,9 @@ class VariableCoercionTests {
 			schema = stringSchema,
 			document = """query(${'$'}v: String) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to null),
-			expected = mapOf("data" to mapOf("echo" to null))
+			expected = mapOf("data" to mapOf("echo" to null)),
 		)
 	}
-
 
 	@Test
 	fun testNullVariableForNonNullParameter() = runTest {
@@ -224,11 +221,10 @@ class VariableCoercionTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.execute(
 			"""query(${'$'}v: String!) { echo(value: ${'$'}v) }""",
-			variableValues = mapOf("v" to null)
+			variableValues = mapOf("v" to null),
 		)
 		assertTrue(result.errors.isNotEmpty(), "Expected errors for null in non-null variable")
 	}
-
 
 	@Test
 	fun testListVariableCoercion() = runTest {
@@ -249,10 +245,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: [Int]) { sum(values: ${'$'}v) }""",
 			variableValues = mapOf("v" to listOf(10, 20, 30)),
-			expected = mapOf("data" to mapOf("sum" to 60))
+			expected = mapOf("data" to mapOf("sum" to 60)),
 		)
 	}
-
 
 	@Test
 	fun testEnumVariableCoercion() = runTest {
@@ -277,10 +272,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}v: Color) { color(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to "GREEN"),
-			expected = mapOf("data" to mapOf("color" to "GREEN"))
+			expected = mapOf("data" to mapOf("color" to "GREEN")),
 		)
 	}
-
 
 	@Test
 	fun testEnumVariableCoercion_invalidValue() = runTest {
@@ -304,11 +298,10 @@ class VariableCoercionTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.execute(
 			"""query(${'$'}v: Color) { color(value: ${'$'}v) }""",
-			variableValues = mapOf("v" to "YELLOW")
+			variableValues = mapOf("v" to "YELLOW"),
 		)
 		assertTrue(result.errors.isNotEmpty(), "Expected errors for invalid enum variable value")
 	}
-
 
 	@Test
 	fun testInputObjectVariableCoercion() = runTest {
@@ -336,10 +329,9 @@ class VariableCoercionTests {
 			schema = schema,
 			document = """query(${'$'}p: Point) { sum(point: ${'$'}p) }""",
 			variableValues = mapOf("p" to mapOf("x" to 10, "y" to 20)),
-			expected = mapOf("data" to mapOf("sum" to 30))
+			expected = mapOf("data" to mapOf("sum" to 30)),
 		)
 	}
-
 
 	@Test
 	fun testInputObjectVariableCoercion_wrongType() = runTest {
@@ -366,11 +358,10 @@ class VariableCoercionTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.execute(
 			"""query(${'$'}p: Point) { sum(point: ${'$'}p) }""",
-			variableValues = mapOf("p" to "not-a-map")
+			variableValues = mapOf("p" to "not-a-map"),
 		)
 		assertTrue(result.errors.isNotEmpty(), "Expected errors for wrong input object variable type")
 	}
-
 
 	@Test
 	fun testVariableWithDefaultValue_overriddenByProvided() = runTest {
@@ -378,7 +369,7 @@ class VariableCoercionTests {
 			schema = stringSchema,
 			document = """query(${'$'}v: String = "default") { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to "provided"),
-			expected = mapOf("data" to mapOf("echo" to "provided"))
+			expected = mapOf("data" to mapOf("echo" to "provided")),
 		)
 	}
 }

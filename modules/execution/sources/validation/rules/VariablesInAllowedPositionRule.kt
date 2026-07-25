@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-All-Variable-Usages-Are-Allowed
 internal class VariablesInAllowedPositionRule : ValidationRule() {
 
@@ -23,17 +22,12 @@ internal class VariablesInAllowedPositionRule : ValidationRule() {
 		if (!allowedVariableUsage(varType, varDef.defaultValue, locationType, data.relatedArgumentDefinition?.defaultValue)) {
 			data.reportError(
 				message = "Variable '\$${ref.name}' of type '${varType.name}' cannot be used as an argument of type '${locationType.name}'.",
-				nodes = listOf(varDef, ref)
+				nodes = listOf(varDef, ref),
 			)
 		}
 	}
 
-	private fun allowedVariableUsage(
-		varType: GType,
-		varDefault: GValue?,
-		locationType: GType,
-		locationDefault: GValue?,
-	): Boolean {
+	private fun allowedVariableUsage(varType: GType, varDefault: GValue?, locationType: GType, locationDefault: GValue?): Boolean {
 		if (locationType is GNonNullType && varType !is GNonNullType) {
 			val hasNonNullVarDefault = varDefault != null && varDefault !is GNullValue
 			val hasLocationDefault = locationDefault != null

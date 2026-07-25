@@ -1,8 +1,11 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.validate
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class IntrospectionValidationTests {
 
@@ -52,7 +55,6 @@ class IntrospectionValidationTests {
 		val errors = GDocument.parse(document).valueOrThrow().validate(schema)
 		assertEquals(expected = emptyList(), actual = errors)
 	}
-
 
 	companion object {
 

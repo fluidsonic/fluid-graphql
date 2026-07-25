@@ -1,8 +1,17 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GRootResolver
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // https://github.com/graphql/graphql-js/blob/master/src/execution/__tests__/union-interface-test.js
 class UnionInterfaceExecutionTests {
@@ -54,10 +63,10 @@ class UnionInterfaceExecutionTests {
 						"possibleTypes" to listOf(
 							mapOf("name" to "Person"),
 							mapOf("name" to "Dog"),
-							mapOf("name" to "Cat")
+							mapOf("name" to "Cat"),
 						),
 						"enumValues" to null,
-						"inputFields" to null
+						"inputFields" to null,
 					),
 					"Mammal" to mapOf(
 						"kind" to "INTERFACE",
@@ -65,16 +74,16 @@ class UnionInterfaceExecutionTests {
 						"fields" to listOf(
 							mapOf("name" to "progeny"),
 							mapOf("name" to "mother"),
-							mapOf("name" to "father")
+							mapOf("name" to "father"),
 						),
 						"interfaces" to listOf(mapOf("name" to "Life")),
 						"possibleTypes" to listOf(
 							mapOf("name" to "Person"),
 							mapOf("name" to "Dog"),
-							mapOf("name" to "Cat")
+							mapOf("name" to "Cat"),
 						),
 						"enumValues" to null,
-						"inputFields" to null
+						"inputFields" to null,
 					),
 					"Pet" to mapOf(
 						"kind" to "UNION",
@@ -83,66 +92,64 @@ class UnionInterfaceExecutionTests {
 						"interfaces" to null,
 						"possibleTypes" to listOf(
 							mapOf("name" to "Dog"),
-							mapOf("name" to "Cat")
+							mapOf("name" to "Cat"),
 						),
 						"enumValues" to null,
-						"inputFields" to null
-					)
-				)
+						"inputFields" to null,
+					),
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
 
-
 	// FIXME If this query is invalid, then why does the JS lib unit-test it?!
-//	@Test
-//	fun `executes using union types`() {
-//		val document = GDocument.parse("""
-//			|{
-//			|  __typename
-//			|  name
-//			|  pets {
-//			|    __typename
-//			|    name
-//			|    barks
-//			|    meows
-//			|  }
-//			|}
-//		""".trimMargin())
+// 	@Test
+// 	fun `executes using union types`() {
+// 		val document = GDocument.parse("""
+// 			|{
+// 			|  __typename
+// 			|  name
+// 			|  pets {
+// 			|    __typename
+// 			|    name
+// 			|    barks
+// 			|    meows
+// 			|  }
+// 			|}
+// 		""".trimMargin())
 //
-//		// FIXME simplify
-//		val context = GExecutor.default.createContext(
-//			schema = schema,
-//			document = document,
-//			rootValue = john
-//		).value!!
+// 		// FIXME simplify
+// 		val context = GExecutor.default.createContext(
+// 			schema = schema,
+// 			document = document,
+// 			rootValue = john
+// 		).value!!
 //
-//		val result = GExecutor.default.executeRequest(context = context)
+// 		val result = GExecutor.default.executeRequest(context = context)
 //
-//		assertEquals(
-//			expected = mapOf(
-//				"data" to mapOf(
-//					"__typename" to "Person",
-//					"name" to "John",
-//					"pets" to listOf(
-//						mapOf(
-//							"__typename" to "Cat",
-//							"name" to "Garfield",
-//							"meows" to false
-//						),
-//						mapOf(
-//							"__typename" to "Dog",
-//							"name" to "Odie",
-//							"barks" to true
-//						)
-//					)
-//				)
-//			),
-//			actual = result
-//		)
-//	}
-
+// 		assertEquals(
+// 			expected = mapOf(
+// 				"data" to mapOf(
+// 					"__typename" to "Person",
+// 					"name" to "John",
+// 					"pets" to listOf(
+// 						mapOf(
+// 							"__typename" to "Cat",
+// 							"name" to "Garfield",
+// 							"meows" to false
+// 						),
+// 						mapOf(
+// 							"__typename" to "Dog",
+// 							"name" to "Odie",
+// 							"barks" to true
+// 						)
+// 					)
+// 				)
+// 			),
+// 			actual = result
+// 		)
+// 	}
 
 	@Test
 	fun testExecutesUsingUnionTypesWithInlineFragments() = runTest {
@@ -166,7 +173,7 @@ class UnionInterfaceExecutionTests {
 
 		val executor = GExecutor.default(
 			schema = schema,
-			rootResolver = GRootResolver.constant(john)
+			rootResolver = GRootResolver.constant(john),
 		)
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
@@ -178,20 +185,19 @@ class UnionInterfaceExecutionTests {
 						mapOf(
 							"__typename" to "Cat",
 							"name" to "Garfield",
-							"meows" to false
+							"meows" to false,
 						),
 						mapOf(
 							"__typename" to "Dog",
 							"name" to "Odie",
-							"barks" to true
-						)
-					)
-				)
+							"barks" to true,
+						),
+					),
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testExecutesUsingInterfaceTypesWithInlineFragments() = runTest {
@@ -227,7 +233,7 @@ class UnionInterfaceExecutionTests {
 
 		val executor = GExecutor.default(
 			schema = schema,
-			rootResolver = GRootResolver.constant(john)
+			rootResolver = GRootResolver.constant(john),
 		)
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
@@ -239,7 +245,7 @@ class UnionInterfaceExecutionTests {
 						mapOf(
 							"__typename" to "Person",
 							"name" to "Liz",
-							"mother" to null
+							"mother" to null,
 						),
 						mapOf(
 							"__typename" to "Dog",
@@ -248,16 +254,15 @@ class UnionInterfaceExecutionTests {
 							"mother" to mapOf(
 								"__typename" to "Dog",
 								"name" to "Odie's Mom",
-								"barks" to true
-							)
-						)
-					)
-				)
+								"barks" to true,
+							),
+						),
+					),
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testAcceptsFragmentConditionsOfAbstractTypes() = runTest {
@@ -308,7 +313,7 @@ class UnionInterfaceExecutionTests {
 
 		val executor = GExecutor.default(
 			schema = schema,
-			rootResolver = GRootResolver.constant(john)
+			rootResolver = GRootResolver.constant(john),
 		)
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
@@ -322,35 +327,34 @@ class UnionInterfaceExecutionTests {
 							"name" to "Garfield",
 							"meows" to false,
 							"mother" to mapOf(
-								"progeny" to listOf(mapOf("__typename" to "Cat"))
-							)
+								"progeny" to listOf(mapOf("__typename" to "Cat")),
+							),
 						),
 						mapOf(
 							"__typename" to "Dog",
 							"name" to "Odie",
 							"barks" to true,
 							"mother" to mapOf(
-								"progeny" to listOf(mapOf("__typename" to "Dog"))
-							)
-						)
+								"progeny" to listOf(mapOf("__typename" to "Dog")),
+							),
+						),
 					),
 					"friends" to listOf(
 						mapOf(
 							"__typename" to "Person",
-							"name" to "Liz"
+							"name" to "Liz",
 						),
 						mapOf(
 							"__typename" to "Dog",
 							"name" to "Odie",
-							"barks" to true
-						)
-					)
-				)
+							"barks" to true,
+						),
+					),
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	companion object {
 
@@ -359,8 +363,8 @@ class UnionInterfaceExecutionTests {
 			meows = false,
 			mother = Cat(
 				name = "Garfield's Mom",
-				meows = false
-			)
+				meows = false,
+			),
 		)
 
 		private val odie = Dog(
@@ -368,21 +372,19 @@ class UnionInterfaceExecutionTests {
 			barks = true,
 			mother = Dog(
 				name = "Odie's Mom",
-				barks = true
-			)
+				barks = true,
+			),
 		)
 
 		private val liz = Person(
-			name = "Liz"
+			name = "Liz",
 		)
-
 
 		private val john = Person(
 			name = "John",
 			pets = listOf(garfield, odie),
-			friends = listOf(liz, odie)
+			friends = listOf(liz, odie),
 		)
-
 
 		private val schema = GraphQL.schema {
 
@@ -471,44 +473,25 @@ class UnionInterfaceExecutionTests {
 		}
 	}
 
-
-	private class Cat(
-		var name: String,
-		var meows: Boolean,
-		var mother: Cat? = null,
-		var father: Cat? = null,
-		var progeny: List<Cat> = emptyList(),
-	) {
+	private class Cat(var name: String, var meows: Boolean, var mother: Cat? = null, var father: Cat? = null, var progeny: List<Cat> = emptyList()) {
 
 		init {
 			mother?.let { it.progeny += this }
 			father?.let { it.progeny += this }
 		}
 
-
-		override fun toString() =
-			"Cat($name)"
+		override fun toString() = "Cat($name)"
 	}
 
-
-	private class Dog(
-		var name: String,
-		var barks: Boolean,
-		var mother: Dog? = null,
-		var father: Dog? = null,
-		var progeny: List<Dog> = emptyList(),
-	) {
+	private class Dog(var name: String, var barks: Boolean, var mother: Dog? = null, var father: Dog? = null, var progeny: List<Dog> = emptyList()) {
 
 		init {
 			mother?.let { it.progeny += this }
 			father?.let { it.progeny += this }
 		}
 
-
-		override fun toString() =
-			"Dog($name)"
+		override fun toString() = "Dog($name)"
 	}
-
 
 	private class Person(
 		var name: String,
@@ -524,8 +507,6 @@ class UnionInterfaceExecutionTests {
 			father?.let { it.progeny += this }
 		}
 
-
-		override fun toString() =
-			"Person($name)"
+		override fun toString() = "Person($name)"
 	}
 }

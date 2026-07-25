@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Represents the source of a GraphQL document (SDL or query string).
  *
@@ -17,7 +16,6 @@ public interface GDocumentSource {
 	/** A human-readable name for this source, such as a file path or `"<document>"`. */
 	public val name: String
 
-
 	/**
 	 * A [GDocumentSource] that provides the full content string to the parser.
 	 *
@@ -28,24 +26,20 @@ public interface GDocumentSource {
 
 		override val content: String
 
-
 		/**
 		 * Creates a [GDocumentPosition] for a span in this source, or `null` to suppress
 		 * source context in error messages.
 		 */
-		public fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int): GDocumentPosition? =
-			null
+		public fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int): GDocumentPosition? = null
 	}
-
 
 	public companion object {
 
 		/** Creates a simple in-memory [Parsable] source from the given [content] string. */
-		public fun of(content: String, name: String = "<unknown>"): Parsable =
-			object : Parsable {
+		public fun of(content: String, name: String = "<unknown>"): Parsable = object : Parsable {
 
-				override val content = content
-				override val name = name
-			}
+			override val content = content
+			override val name = name
+		}
 	}
 }

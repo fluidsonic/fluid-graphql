@@ -1,9 +1,20 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
-
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GIntValue
+import io.fluidsonic.graphql.GStringValue
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.isNotEmpty
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class InputCoercionTests {
 
@@ -19,10 +30,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: "hello") }""",
-			expected = mapOf("data" to mapOf("echo" to "hello"))
+			expected = mapOf("data" to mapOf("echo" to "hello")),
 		)
 	}
-
 
 	@Test
 	fun testScalarCoercion_int() = runTest {
@@ -36,10 +46,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: 42) }""",
-			expected = mapOf("data" to mapOf("echo" to 42))
+			expected = mapOf("data" to mapOf("echo" to 42)),
 		)
 	}
-
 
 	@Test
 	fun testScalarCoercion_float() = runTest {
@@ -53,10 +62,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: 3.14) }""",
-			expected = mapOf("data" to mapOf("echo" to 3.14))
+			expected = mapOf("data" to mapOf("echo" to 3.14)),
 		)
 	}
-
 
 	@Test
 	fun testScalarCoercion_floatFromInt() = runTest {
@@ -70,10 +78,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: 5) }""",
-			expected = mapOf("data" to mapOf("echo" to 5.0))
+			expected = mapOf("data" to mapOf("echo" to 5.0)),
 		)
 	}
-
 
 	@Test
 	fun testScalarCoercion_boolean() = runTest {
@@ -87,10 +94,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: true) }""",
-			expected = mapOf("data" to mapOf("echo" to true))
+			expected = mapOf("data" to mapOf("echo" to true)),
 		)
 	}
-
 
 	@Test
 	fun testScalarCoercion_id_fromString() = runTest {
@@ -104,10 +110,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: "abc123") }""",
-			expected = mapOf("data" to mapOf("echo" to "abc123"))
+			expected = mapOf("data" to mapOf("echo" to "abc123")),
 		)
 	}
-
 
 	@Test
 	fun testScalarCoercion_id_fromInt() = runTest {
@@ -121,10 +126,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: 123) }""",
-			expected = mapOf("data" to mapOf("echo" to "123"))
+			expected = mapOf("data" to mapOf("echo" to "123")),
 		)
 	}
-
 
 	@Test
 	fun testEnumInputCoercion() = runTest {
@@ -146,10 +150,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ color(value: RED) }""",
-			expected = mapOf("data" to mapOf("color" to "RED"))
+			expected = mapOf("data" to mapOf("color" to "RED")),
 		)
 	}
-
 
 	@Test
 	fun testInputObjectCoercion() = runTest {
@@ -174,10 +177,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ sum(point: { x: 3, y: 4 }) }""",
-			expected = mapOf("data" to mapOf("sum" to 7))
+			expected = mapOf("data" to mapOf("sum" to 7)),
 		)
 	}
-
 
 	@Test
 	fun testListInputCoercion() = runTest {
@@ -195,10 +197,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ sum(values: [1, 2, 3]) }""",
-			expected = mapOf("data" to mapOf("sum" to 6))
+			expected = mapOf("data" to mapOf("sum" to 6)),
 		)
 	}
-
 
 	@Test
 	fun testListInputCoercion_singleValueCoercedToList() = runTest {
@@ -216,10 +217,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ count(values: 42) }""",
-			expected = mapOf("data" to mapOf("count" to 1))
+			expected = mapOf("data" to mapOf("count" to 1)),
 		)
 	}
-
 
 	@Test
 	fun testNullHandling_nullableArgumentWithNull() = runTest {
@@ -233,10 +233,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo(value: null) }""",
-			expected = mapOf("data" to mapOf("echo" to null))
+			expected = mapOf("data" to mapOf("echo" to null)),
 		)
 	}
-
 
 	@Test
 	fun testNullHandling_nonNullArgumentWithNull() = runTest {
@@ -254,7 +253,6 @@ class InputCoercionTests {
 		assertTrue(result.errors.isNotEmpty(), "Expected errors for null in non-null position")
 	}
 
-
 	@Test
 	fun testDefaultValueApplication() = runTest {
 		assertExecution(
@@ -267,10 +265,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo }""",
-			expected = mapOf("data" to mapOf("echo" to "fallback"))
+			expected = mapOf("data" to mapOf("echo" to "fallback")),
 		)
 	}
-
 
 	@Test
 	fun testDefaultValueApplication_intDefault() = runTest {
@@ -284,10 +281,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ echo }""",
-			expected = mapOf("data" to mapOf("echo" to 99))
+			expected = mapOf("data" to mapOf("echo" to 99)),
 		)
 	}
-
 
 	@Test
 	fun testNestedInputObjectCoercion() = runTest {
@@ -310,6 +306,7 @@ class InputCoercionTests {
 						resolve {
 							@Suppress("UNCHECKED_CAST")
 							val outer = arguments["input"] as Map<String, Any?>
+
 							@Suppress("UNCHECKED_CAST")
 							val inner = outer["inner"] as Map<String, Any?>
 							inner["value"] as Int
@@ -318,10 +315,9 @@ class InputCoercionTests {
 				}
 			},
 			document = """{ extract(input: { inner: { value: 42 } }) }""",
-			expected = mapOf("data" to mapOf("extract" to 42))
+			expected = mapOf("data" to mapOf("extract" to 42)),
 		)
 	}
-
 
 	@Test
 	fun testVariableReferenceInArgument() = runTest {
@@ -336,10 +332,9 @@ class InputCoercionTests {
 			},
 			document = """query(${'$'}v: String) { echo(value: ${'$'}v) }""",
 			variableValues = mapOf("v" to "from-variable"),
-			expected = mapOf("data" to mapOf("echo" to "from-variable"))
+			expected = mapOf("data" to mapOf("echo" to "from-variable")),
 		)
 	}
-
 
 	@Test
 	fun testVariableReference_missingOptionalVariable_usesArgumentDefault() = runTest {
@@ -354,10 +349,9 @@ class InputCoercionTests {
 			},
 			document = """query(${'$'}v: String) { echo(value: ${'$'}v) }""",
 			variableValues = emptyMap(),
-			expected = mapOf("data" to mapOf("echo" to "default-arg"))
+			expected = mapOf("data" to mapOf("echo" to "default-arg")),
 		)
 	}
-
 
 	@Test
 	fun testEnumInputCoercion_invalidValue() = runTest {

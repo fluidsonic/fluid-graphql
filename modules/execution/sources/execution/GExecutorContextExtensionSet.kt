@@ -1,8 +1,5 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GExecutorContextExtensionSet.*
-
-
 /**
  * An immutable set of typed extension values attached to a GraphQL execution context.
  *
@@ -26,19 +23,14 @@ public interface GExecutorContextExtensionSet {
 
 	override fun toString(): String
 
-
 	public companion object {
 
 		/** Creates a [GExecutorContextExtensionSet] by applying [action] to a [Builder]. */
-		public inline operator fun invoke(action: Builder.() -> Unit): GExecutorContextExtensionSet =
-			Builder.default().apply(action).build()
-
+		public inline operator fun invoke(action: Builder.() -> Unit): GExecutorContextExtensionSet = Builder.default().apply(action).build()
 
 		/** Returns an empty [GExecutorContextExtensionSet]. */
-		public fun empty(): GExecutorContextExtensionSet =
-			Empty
+		public fun empty(): GExecutorContextExtensionSet = Empty
 	}
-
 
 	/** Mutable builder for constructing a [GExecutorContextExtensionSet]. */
 	public interface Builder {
@@ -54,78 +46,55 @@ public interface GExecutorContextExtensionSet {
 
 		override fun toString(): String
 
-
 		public companion object {
 
 			/** Creates a new empty [Builder]. */
-			public fun default(): Builder =
-				Default()
+			public fun default(): Builder = Default()
 		}
-
 
 		private class Default : Builder {
 
 			private val values: MutableMap<GExecutorContextExtensionKey<*>, Any> = hashMapOf()
 
-
-			override fun build(): GExecutorContextExtensionSet =
-				when {
-					values.isNotEmpty() -> Default(values.toMap())
-					else -> empty()
-				}
-
-
-			@Suppress("UNCHECKED_CAST")
-			override fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Value? =
-				values[key] as Value?
-
-
-			override fun <Value : Any> set(key: GExecutorContextExtensionKey<in Value>, value: Value?) {
-				if (value != null)
-					values[key] = value
-				else
-					values.remove(key)
+			override fun build(): GExecutorContextExtensionSet = when {
+				values.isNotEmpty() -> Default(values.toMap())
+				else -> empty()
 			}
 
+			@Suppress("UNCHECKED_CAST")
+			override fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Value? = values[key] as Value?
 
-			override fun toString() =
-				values.toString()
+			override fun <Value : Any> set(key: GExecutorContextExtensionKey<in Value>, value: Value?) {
+				if (value != null) {
+					values[key] = value
+				} else {
+					values.remove(key)
+				}
+			}
+
+			override fun toString() = values.toString()
 		}
 	}
-
 
 	private class Default(private val values: Map<GExecutorContextExtensionKey<*>, Any>) : GExecutorContextExtensionSet {
 
 		@Suppress("UNCHECKED_CAST")
-		override fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Value? =
-			values[key] as Value?
+		override fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Value? = values[key] as Value?
 
+		override fun isEmpty() = values.isEmpty()
 
-		override fun isEmpty() =
-			values.isEmpty()
-
-
-		override fun toString() =
-			values.toString()
+		override fun toString() = values.toString()
 	}
-
 
 	private object Empty : GExecutorContextExtensionSet {
 
-		override fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Nothing? =
-			null
+		override fun <Value : Any> get(key: GExecutorContextExtensionKey<out Value>): Nothing? = null
 
+		override fun isEmpty() = true
 
-		override fun isEmpty() =
-			true
-
-
-		override fun toString() =
-			"{}"
+		override fun toString() = "{}"
 	}
 }
 
-
 /** Returns `true` if this set contains at least one extension. */
-public fun GExecutorContextExtensionSet.isNotEmpty(): Boolean =
-	!isEmpty()
+public fun GExecutorContextExtensionSet.isNotEmpty(): Boolean = !isEmpty()

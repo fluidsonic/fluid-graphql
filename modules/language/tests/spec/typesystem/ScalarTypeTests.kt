@@ -1,8 +1,11 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GScalarType
+import io.fluidsonic.graphql.GSchema
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §3.5 — Scalars
 class ScalarTypeTests {
@@ -16,7 +19,6 @@ class ScalarTypeTests {
 		assertEquals("Int", type.name)
 	}
 
-
 	@Test
 	fun testBuiltinFloatScalar() {
 		val schema = GSchema.parse("type Query { field: Float }").valueOrThrow()
@@ -25,7 +27,6 @@ class ScalarTypeTests {
 		assertIs<GScalarType>(type)
 		assertEquals("Float", type.name)
 	}
-
 
 	@Test
 	fun testBuiltinStringScalar() {
@@ -36,7 +37,6 @@ class ScalarTypeTests {
 		assertEquals("String", type.name)
 	}
 
-
 	@Test
 	fun testBuiltinBooleanScalar() {
 		val schema = GSchema.parse("type Query { field: Boolean }").valueOrThrow()
@@ -45,7 +45,6 @@ class ScalarTypeTests {
 		assertIs<GScalarType>(type)
 		assertEquals("Boolean", type.name)
 	}
-
 
 	@Test
 	fun testBuiltinIdScalar() {
@@ -56,37 +55,40 @@ class ScalarTypeTests {
 		assertEquals("ID", type.name)
 	}
 
-
 	@Test
 	fun testCustomScalarDefinition() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			scalar UUID
 			type Query { id: UUID }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val type = schema.resolveType("UUID")
 		assertNotNull(type)
 		assertEquals("UUID", type.name)
 	}
 
-
 	@Test
 	fun testCustomScalarIsScalarType() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			scalar UUID
 			type Query { id: UUID }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val type = schema.resolveType("UUID")
 		assertNotNull(type)
 		assertIs<GScalarType>(type)
 	}
 
-
 	@Test
 	fun testScalarWithSpecifiedByDirective() {
-		val result = GSchema.parse("""
+		val result = GSchema.parse(
+			"""
 			scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
 			type Query { id: UUID }
-		""".trimIndent())
+			""".trimIndent(),
+		)
 		assertTrue(result.errors.isEmpty(), "Expected no parse errors but got: ${result.errors}")
 		val schema = result.valueOrThrow()
 		assertNotNull(schema.resolveType("UUID"))

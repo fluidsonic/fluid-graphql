@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Mixin interface for builders that hold a list of [GSelection] instances.
  *
@@ -14,23 +13,19 @@ public sealed interface GraphQLSelectionsContainer : GraphQLSelectionsContainerS
 		selection(GraphQLFragmentSelectionBuilder(name = name.name).apply(configure).build())
 	}
 
-
 	// TODO Move to extension and inline.
 	public override fun on(type: GNamedTypeRef, configure: GraphQLInlineFragmentSelectionBuilder.() -> Unit) {
 		selection(GraphQLInlineFragmentSelectionBuilder(type = type).apply(configure).build())
 	}
 
-
 	/** Adds a pre-built [GSelection] to this selection set. */
 	public fun selection(selection: GSelection)
-
 
 	// TODO Move to extension and inline once we have context receivers.
 	public override operator fun String.invoke(alias: String?, configure: GraphQLFieldSelectionBuilder.() -> Unit) {
 		selection(GraphQLFieldSelectionBuilder(alias = alias, name = this).apply(configure).build())
 	}
 }
-
 
 /**
  * Scope interface for building a [GSelectionSet].
@@ -59,18 +54,15 @@ public sealed interface GraphQLSelectionsContainerScope {
 		fragment(name = name) {}
 	}
 
-
 	// TODO Move to extension and inline.
 	/** Adds a fragment spread by string name with optional directives. */
 	public fun fragment(name: String, configure: GraphQLFragmentSelectionBuilder.() -> Unit) {
 		fragment(name = GFragmentRef(name), configure = configure)
 	}
 
-
 	// TODO Move to extension and inline.
 	/** Adds a fragment spread with optional directives. */
 	public fun fragment(name: GFragmentRef, configure: GraphQLFragmentSelectionBuilder.() -> Unit)
-
 
 	/** Adds a `__typename` field selection. */
 	@Suppress("FunctionName")
@@ -79,12 +71,10 @@ public sealed interface GraphQLSelectionsContainerScope {
 		"__typename"()
 	}
 
-
 	/** Adds a fragment spread with no directives. */
 	public operator fun GFragmentRef.invoke() {
 		fragment(name = this) {}
 	}
-
 
 	// TODO Move to extension and inline.
 	/** Adds a fragment spread with optional directives. */
@@ -92,14 +82,10 @@ public sealed interface GraphQLSelectionsContainerScope {
 		fragment(name = this, configure = configure)
 	}
 
-
 	/** Adds a field selection with the given name, optional alias, and no sub-selections. */
-	public operator fun String.invoke(
-		alias: String? = null,
-	) {
+	public operator fun String.invoke(alias: String? = null) {
 		invoke(alias = alias) {}
 	}
-
 
 	// TODO Move to extension and inline.
 	/**
@@ -109,11 +95,9 @@ public sealed interface GraphQLSelectionsContainerScope {
 	public operator fun String.invoke(alias: String? = null, configure: GraphQLFieldSelectionBuilder.() -> Unit)
 }
 
-
 internal interface GraphQLSelectionsContainerInternal : GraphQLSelectionsContainer {
 
 	val selections: MutableList<GSelection>
-
 
 	override fun selection(selection: GSelection) {
 		selections += when (selection) {

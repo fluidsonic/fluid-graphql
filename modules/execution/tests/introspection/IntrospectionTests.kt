@@ -1,8 +1,13 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class IntrospectionTests {
 
@@ -52,64 +57,64 @@ class IntrospectionTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
-			expected = mapOf("data" to mapOf(
-				"__schema" to mapOf(
-					"directives" to listOf(
-						mapOf("name" to "deprecated"),
-						mapOf("name" to "include"),
-						mapOf("name" to "skip"),
-						mapOf("name" to "specifiedBy"),
+			expected = mapOf(
+				"data" to mapOf(
+					"__schema" to mapOf(
+						"directives" to listOf(
+							mapOf("name" to "deprecated"),
+							mapOf("name" to "include"),
+							mapOf("name" to "skip"),
+							mapOf("name" to "specifiedBy"),
+						),
+						"types" to listOf(
+							mapOf(
+								"enumValues" to null,
+								"fields" to emptyList<Map<String, Any?>>(),
+								"inputFields" to null,
+								"name" to "Query",
+							),
+							mapOf(
+								"enumValues" to null,
+								"fields" to null,
+								"inputFields" to null,
+								"name" to "Boolean",
+							),
+							mapOf(
+								"enumValues" to null,
+								"fields" to null,
+								"inputFields" to null,
+								"name" to "Float",
+							),
+							mapOf(
+								"enumValues" to null,
+								"fields" to null,
+								"inputFields" to null,
+								"name" to "ID",
+							),
+							mapOf(
+								"enumValues" to null,
+								"fields" to null,
+								"inputFields" to null,
+								"name" to "Int",
+							),
+							mapOf(
+								"enumValues" to null,
+								"fields" to null,
+								"inputFields" to null,
+								"name" to "String",
+							),
+						),
 					),
-					"types" to listOf(
-						mapOf(
-							"enumValues" to null,
-							"fields" to emptyList<Map<String, Any?>>(),
-							"inputFields" to null,
-							"name" to "Query",
-						),
-						mapOf(
-							"enumValues" to null,
-							"fields" to null,
-							"inputFields" to null,
-							"name" to "Boolean",
-						),
-						mapOf(
-							"enumValues" to null,
-							"fields" to null,
-							"inputFields" to null,
-							"name" to "Float",
-						),
-						mapOf(
-							"enumValues" to null,
-							"fields" to null,
-							"inputFields" to null,
-							"name" to "ID",
-						),
-						mapOf(
-							"enumValues" to null,
-							"fields" to null,
-							"inputFields" to null,
-							"name" to "Int",
-						),
-						mapOf(
-							"enumValues" to null,
-							"fields" to null,
-							"inputFields" to null,
-							"name" to "String",
-						),
-					)
 				),
-			)),
-			actual = result
+			),
+			actual = result,
 		)
 	}
-
 
 	companion object {
 
 		private val schema = GraphQL.schema {
 			Query {
-
 			}
 		}
 	}

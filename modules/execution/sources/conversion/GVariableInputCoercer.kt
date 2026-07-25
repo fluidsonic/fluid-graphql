@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // FIXME call for List & null too
 /**
  * Converts a GraphQL variable value (already parsed from JSON/map) into a Kotlin value.

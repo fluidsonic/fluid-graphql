@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentTypeConditionValidityRule
+import kotlin.test.Test
 
 class FragmentTypeConditionValidityRuleTest {
 
@@ -32,10 +31,9 @@ class FragmentTypeConditionValidityRuleTest {
 				|type Cat implements Pet { name: String }
 				|type Dog implements Pet { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsInlineFragmentOnNonexistentType() {
@@ -68,7 +66,7 @@ class FragmentTypeConditionValidityRuleTest {
 					5 | union CatOrDog = Cat | Dog
 					6 | scalar Date
 					  |        ^
-				"""
+				""",
 			),
 			document = """
 				|fragment fragOnScalar on Date {
@@ -88,7 +86,7 @@ class FragmentTypeConditionValidityRuleTest {
 				|type Dog implements Pet { name: String }
 				|union CatOrDog = Cat | Dog
 				|scalar Date
-			"""
+			""",
 		)
 	}
 }

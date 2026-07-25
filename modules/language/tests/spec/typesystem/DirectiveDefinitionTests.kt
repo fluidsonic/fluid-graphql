@@ -1,8 +1,11 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GNamedTypeRef
+import io.fluidsonic.graphql.GNonNullTypeRef
+import io.fluidsonic.graphql.GSchema
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 // GraphQL Spec §3.13 — Built-in Directives
 class DirectiveDefinitionTests {
@@ -14,7 +17,6 @@ class DirectiveDefinitionTests {
 		assertNotNull(skipDirective)
 	}
 
-
 	@Test
 	fun testIncludeDirectiveDefined() {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
@@ -22,14 +24,12 @@ class DirectiveDefinitionTests {
 		assertNotNull(includeDirective)
 	}
 
-
 	@Test
 	fun testDeprecatedDirectiveDefined() {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
 		val deprecatedDirective = schema.directiveDefinition("deprecated")
 		assertNotNull(deprecatedDirective)
 	}
-
 
 	@Test
 	fun testSkipDirectiveHasIfArg() {
@@ -45,7 +45,6 @@ class DirectiveDefinitionTests {
 		assertEquals("Boolean", innerType.name)
 	}
 
-
 	@Test
 	fun testIncludeDirectiveHasIfArg() {
 		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
@@ -55,7 +54,6 @@ class DirectiveDefinitionTests {
 		assertNotNull(ifArg)
 		assertEquals("if", ifArg.name)
 	}
-
 
 	@Test
 	fun testDeprecatedDirectiveHasReasonArg() {

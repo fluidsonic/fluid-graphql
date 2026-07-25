@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Context provided to a [GFieldResolver] when resolving a field.
  *

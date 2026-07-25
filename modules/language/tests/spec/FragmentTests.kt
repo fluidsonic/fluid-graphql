@@ -1,8 +1,15 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFragmentDefinition
+import io.fluidsonic.graphql.GFragmentSelection
+import io.fluidsonic.graphql.GInlineFragmentSelection
+import io.fluidsonic.graphql.GOperationDefinition
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §2.9 — Fragments
 class FragmentTests {
@@ -15,7 +22,6 @@ class FragmentTests {
 		assertEquals("F", frag.name)
 	}
 
-
 	@Test
 	fun testFragmentSpread() {
 		val doc = GDocument.parse("{ ...F } fragment F on Query { field }").valueWithoutErrorsOrThrow()
@@ -24,14 +30,12 @@ class FragmentTests {
 		assertEquals("F", spread.name)
 	}
 
-
 	@Test
 	fun testFragmentTypeCondition() {
 		val doc = GDocument.parse("fragment F on Query { field }").valueWithoutErrorsOrThrow()
 		val frag = doc.definitions.single() as GFragmentDefinition
 		assertEquals("Query", frag.typeCondition.name)
 	}
-
 
 	@Test
 	fun testInlineFragmentWithTypeCondition() {
@@ -42,7 +46,6 @@ class FragmentTests {
 		assertEquals("Query", inline.typeCondition.name)
 	}
 
-
 	@Test
 	fun testInlineFragmentWithoutTypeCondition() {
 		val doc = GDocument.parse("{ ... { field } }").valueWithoutErrorsOrThrow()
@@ -51,20 +54,17 @@ class FragmentTests {
 		assertNull(inline.typeCondition)
 	}
 
-
 	@Test
 	fun testFragmentNotNamedOn() {
 		val result = GDocument.parse("fragment on on on { on }")
 		assertTrue(result.errors.isNotEmpty(), "Expected parse error: fragment cannot be named 'on'")
 	}
 
-
 	@Test
 	fun testFragmentSpreadOfOn() {
 		val result = GDocument.parse("{ ...on }")
 		assertTrue(result.errors.isNotEmpty(), "Expected parse error for '{ ...on }'")
 	}
-
 
 	@Test
 	fun testInlineFragmentWithDirective() {

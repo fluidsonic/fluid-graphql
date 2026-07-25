@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ArgumentRequirementRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.4.3 — Required Arguments
 class Sec5_4_3_RequiredArgumentsTests {
@@ -17,10 +18,9 @@ class Sec5_4_3_RequiredArgumentsTests {
 			""",
 			schema = """
 				|type Query { field(arg: String!): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsOptionalArgOmitted() {
@@ -32,16 +32,16 @@ class Sec5_4_3_RequiredArgumentsTests {
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsMissingRequiredArg() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Selection of field 'field' is missing required argument 'arg'.
 
 				<document>:1:3
@@ -51,16 +51,16 @@ class Sec5_4_3_RequiredArgumentsTests {
 				<document>:1:20
 				1 | type Query { field(arg: String!): String }
 				  |                    ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field }
 			""",
 			schema = """
 				|type Query { field(arg: String!): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsNullableArgOmitted() {
@@ -72,10 +72,9 @@ class Sec5_4_3_RequiredArgumentsTests {
 			""",
 			schema = """
 				|type Query { field(arg: String): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsArgWithDefaultValueOmitted() {
@@ -87,7 +86,7 @@ class Sec5_4_3_RequiredArgumentsTests {
 			""",
 			schema = """
 				|type Query { field(arg: String! = "default"): String }
-			"""
+			""",
 		)
 	}
 }

@@ -1,8 +1,11 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SchemaTests {
 

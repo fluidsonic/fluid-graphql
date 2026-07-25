@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentDefinitionUsageRule
+import kotlin.test.Test
 
 class FragmentDefinitionUsageRuleTest {
 
@@ -29,10 +28,9 @@ class FragmentDefinitionUsageRuleTest {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testIgnoresRecursiveReferences() {
@@ -53,10 +51,9 @@ class FragmentDefinitionUsageRuleTest {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsUnreferencedFragments() {
@@ -80,7 +77,7 @@ class FragmentDefinitionUsageRuleTest {
 					11 | fragment nameFragment2 on Dog {
 					   |          ^
 					12 |   name
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -100,7 +97,7 @@ class FragmentDefinitionUsageRuleTest {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
 }

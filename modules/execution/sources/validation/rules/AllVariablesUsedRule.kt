@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-All-Variables-Used
 internal class AllVariablesUsedRule : ValidationRule() {
 
@@ -14,7 +13,7 @@ internal class AllVariablesUsedRule : ValidationRule() {
 			.forEach { varDef ->
 				data.reportError(
 					message = "Variable '\$${varDef.name}' is defined but never used.",
-					nodes = listOf(varDef.nameNode)
+					nodes = listOf(varDef.nameNode),
 				)
 			}
 	}

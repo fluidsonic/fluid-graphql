@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.OperationDefinitionNameExclusivityRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.2.2 — Operation Name Uniqueness
 class Sec5_2_2_OperationNameUniquenessTests {
@@ -18,10 +19,9 @@ class Sec5_2_2_OperationNameUniquenessTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsSingleAnonymousOperation() {
@@ -33,16 +33,16 @@ class Sec5_2_2_OperationNameUniquenessTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateNames() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain multiple operations with the same name 'q'.
 
 				<document>:1:7
@@ -54,23 +54,24 @@ class Sec5_2_2_OperationNameUniquenessTests {
 				1 | query q { id }
 				2 | query q { id }
 				  |       ^
-			"""),
+			""",
+			),
 			document = """
 				|query q { id }
 				|query q { id }
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsThreeSameNames() {
 		assertValidationRule(
 			rule = OperationDefinitionNameExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain multiple operations with the same name 'q'.
 
 				<document>:1:7
@@ -88,7 +89,8 @@ class Sec5_2_2_OperationNameUniquenessTests {
 				2 | query q { id }
 				3 | query q { id }
 				  |       ^
-			"""),
+			""",
+			),
 			document = """
 				|query q { id }
 				|query q { id }
@@ -96,10 +98,9 @@ class Sec5_2_2_OperationNameUniquenessTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsDifferentOperationTypes() {
@@ -113,7 +114,7 @@ class Sec5_2_2_OperationNameUniquenessTests {
 			schema = """
 				|type Query { id: ID }
 				|type Mutation { id: ID }
-			"""
+			""",
 		)
 	}
 }

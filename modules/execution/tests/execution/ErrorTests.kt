@@ -1,8 +1,13 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ErrorTests {
 
@@ -17,16 +22,20 @@ class ErrorTests {
 		assertEquals(
 			expected = mapOf(
 				"data" to null,
-				"errors" to listOf(mapOf(
-					"message" to "There is no field named 'foo' on type 'Query'.",
-					"locations" to listOf(mapOf(
-						"line" to 1,
-						"column" to 3
-					)),
-					"path" to listOf("foo")
-				))
+				"errors" to listOf(
+					mapOf(
+						"message" to "There is no field named 'foo' on type 'Query'.",
+						"locations" to listOf(
+							mapOf(
+								"line" to 1,
+								"column" to 3,
+							),
+						),
+						"path" to listOf("foo"),
+					),
+				),
 			),
-			actual = result
+			actual = result,
 		)
 	}
 }

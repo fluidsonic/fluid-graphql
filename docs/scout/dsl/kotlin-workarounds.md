@@ -2,7 +2,7 @@
 
 Four patterns a cleanup pass would be tempted to "fix", each breaking something real.
 
-**`@LowPriorityInOverloadResolution` from `kotlin.internal`.** `GraphQLArgumentsBuilder.kt`, `GraphQLValueListBuilder.kt`, and `GraphQLVariableBuilder.kt` import `kotlin.internal.*` and annotate nullable primitive overloads with it (inline comments cite KT-645, nullable-primitive overload ambiguity), requiring `@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")`. This is a version-fragile dependency on Kotlin-internal API: compiler upgrades that tighten internal-API access break these three files first.
+**`@kotlin.internal.LowPriorityInOverloadResolution`, always fully qualified.** `GraphQLArgumentsBuilder.kt`, `GraphQLValueListBuilder.kt`, and `GraphQLVariableBuilder.kt` annotate nullable primitive overloads with it (inline comments cite KT-645, nullable-primitive overload ambiguity), each paired with `@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")`. The annotation must be written fully qualified at the use site with **no import**: because the symbol is `internal`, an explicit `import kotlin.internal.LowPriorityInOverloadResolution` fails to compile ("it is internal in file"). A ktlint no-wildcard-imports pass deleted the old `import kotlin.internal.*`, so do not try to re-add a named import. This is also a version-fragile dependency on Kotlin-internal API: compiler upgrades that tighten internal-API access break these three files first.
 
 **Shared `noOp` default lambda.** `GSchemaBuilder.kt` defaults optional-configure parameters to a private top-level `val noOp: Any?.() -> Unit = {}` instead of `= {}`, with a comment linking KT-40083. Do not inline it back.
 

@@ -1,8 +1,13 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GIntValue
+import io.fluidsonic.graphql.GObjectType
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SchemaBuilderTests {
 
@@ -29,7 +34,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun scalarType_withDescription() {
@@ -58,7 +62,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun scalarType_withDirective() {
 		val schema = GraphQL.schema {
@@ -86,7 +89,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun enumType() {
@@ -119,7 +121,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun enumType_withDescriptionsAndDeprecation() {
@@ -163,7 +164,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun inputObjectType() {
 		val schema = GraphQL.schema {
@@ -195,7 +195,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun inputObjectType_withDefaultValues() {
@@ -229,7 +228,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun objectType() {
 		val schema = GraphQL.schema {
@@ -261,7 +259,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun objectType_withFieldArguments() {
@@ -307,7 +304,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun objectType_implementsInterface() {
 		val schema = GraphQL.schema {
@@ -346,7 +342,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun objectType_implementsMultipleInterfaces() {
@@ -398,7 +393,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun interfaceType() {
 		val schema = GraphQL.schema {
@@ -430,7 +424,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun unionType() {
@@ -478,7 +471,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun unionType_withDescriptionAndDirective() {
 		val schema = GraphQL.schema {
@@ -525,7 +517,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun directiveDefinition() {
 		val schema = GraphQL.schema {
@@ -551,7 +542,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun directiveDefinition_withArguments() {
@@ -579,7 +569,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun nonNullAndListTypeWrappers() {
@@ -612,7 +601,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun fieldDescriptions() {
@@ -659,7 +647,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun multipleTypesInOneSchema() {
@@ -744,7 +731,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun deprecatedFields() {
 		val schema = GraphQL.schema {
@@ -780,7 +766,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun subscriptionRootType() {
@@ -820,7 +805,6 @@ class SchemaBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun objectTypeWithDirective() {
 		// Note: The printer currently does not output directives on object types,
@@ -849,7 +833,6 @@ class SchemaBuilderTests {
 		assertEquals(actual = (userType.directives[0].arguments[0].value as GIntValue).value, expected = 300)
 	}
 
-
 	@Test
 	fun builtinScalarTypes() {
 		val schema = GraphQL.schema {
@@ -875,7 +858,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun inputObjectWithDirective() {
@@ -906,7 +888,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun interfaceWithDirectiveAndDescription() {
@@ -939,7 +920,6 @@ class SchemaBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun nestedListTypes() {

@@ -1,25 +1,15 @@
 package io.fluidsonic.graphql
 
+private class DefaultVisitCoordinator<Result, in Data>(private val visitor: Visitor<Result, Data>) : VisitCoordinator<Result, Data> {
 
-private class DefaultVisitCoordinator<Result, in Data>(
-	private val visitor: Visitor<Result, Data>,
-) : VisitCoordinator<Result, Data> {
-
-	override fun visit(node: GNode, data: Data) =
-		DefaultVisit(node = node, data = data, visitor = visitor).visit()
+	override fun visit(node: GNode, data: Data) = DefaultVisit(node = node, data = data, visitor = visitor).visit()
 }
 
-
-private class DefaultVisit<Result, Data>(
-	node: GNode,
-	private val data: Data,
-	private val visitor: Visitor<Result, Data>,
-) : Visit {
+private class DefaultVisit<Result, Data>(node: GNode, private val data: Data, private val visitor: Visitor<Result, Data>) : Visit {
 
 	private var result: Result? = null
 	private var state = State.initial
 	private var walker = node.walk()
-
 
 	override fun abort() {
 		when (state) {
@@ -39,10 +29,10 @@ private class DefaultVisit<Result, Data>(
 		}
 	}
 
-
 	private fun dispatchVisit(node: GNode, data: Data) {
-		if (isAborting)
+		if (isAborting) {
 			return
+		}
 
 		// We don't put `this.data` on the stack.
 		// It's only relevant in `visitChildren()`, which has already been called at this point, and it can only be called at most once per node.
@@ -54,46 +44,43 @@ private class DefaultVisit<Result, Data>(
 		try {
 			result = visitor.onNode(node = node, data = data, visit = this)
 
-			if (state === State.beforeVisitingChildren)
+			if (state === State.beforeVisitingChildren) {
 				visitChildren()
-		}
-		finally {
-			if (!isAborting)
+			}
+		} finally {
+			if (!isAborting) {
 				this.state = previousState
+			}
 		}
 	}
 
-
 	private fun dispatchChildVisits(data: Data) {
-		if (walker.descend())
+		if (walker.descend()) {
 			try {
 				var child = walker.nextChild()
 				while (child !== null) {
-					if (isAborting)
+					if (isAborting) {
 						break
+					}
 
 					dispatchVisit(node = child, data = data)
 
 					child = walker.nextChild()
 				}
-			}
-			finally {
+			} finally {
 				walker.ascend()
 			}
+		}
 	}
-
 
 	override val hasVisitedChildren
 		get() = state == State.afterVisitingChildren
 
-
 	override val isAborting
 		get() = state === State.aborted
 
-
 	override val isSkippingChildren
 		get() = isAborting || state === State.skippingChildren
-
 
 	override fun skipChildren() {
 		when (state) {
@@ -115,61 +102,51 @@ private class DefaultVisit<Result, Data>(
 		}
 	}
 
+	fun visit() = try {
+		dispatchVisit(
+			node = walker.child ?: error("Walker inconsistency."),
+			data = data,
+		)
 
-	fun visit() =
-		try {
-			dispatchVisit(
-				node = walker.child ?: error("Walker inconsistency."),
-				data = data
-			)
+		state = State.completed
 
-			state = State.completed
+		@Suppress("UNCHECKED_CAST")
+		result as Result
+	} catch (e: Throwable) {
+		state = State.aborted
 
-			@Suppress("UNCHECKED_CAST")
-			result as Result
-		}
-		catch (e: Throwable) {
-			state = State.aborted
+		throw e
+	}
 
-			throw e
-		}
+	override fun visitChildren() = visitChildren(data = data)
 
+	private fun visitChildren(data: Data) = when (state) {
+		State.aborted,
+		State.skippingChildren,
+		->
+			Unit
 
-	override fun visitChildren() =
-		visitChildren(data = data)
+		State.afterVisitingChildren ->
+			check(false) { "Cannot call .visitChildren() multiple times for the same node." }
 
-
-	private fun visitChildren(data: Data) =
-		when (state) {
-			State.aborted,
-			State.skippingChildren,
-			->
-				Unit
-
-			State.afterVisitingChildren ->
-				check(false) { "Cannot call .visitChildren() multiple times for the same node." }
-
-			State.beforeVisitingChildren -> {
-				try {
-					dispatchChildVisits(data = data)
-				}
-				finally {
-					if (!isAborting)
-						state = State.afterVisitingChildren
+		State.beforeVisitingChildren -> {
+			try {
+				dispatchChildVisits(data = data)
+			} finally {
+				if (!isAborting) {
+					state = State.afterVisitingChildren
 				}
 			}
-
-			State.completed,
-			State.initial,
-			->
-				check(false) { ".visitChildren() cannot be called here." }
 		}
 
+		State.completed,
+		State.initial,
+		->
+			check(false) { ".visitChildren() cannot be called here." }
+	}
 
 	@Suppress("UNCHECKED_CAST")
-	override fun __unsafeVisitChildren(data: Any?) =
-		visitChildren(data = data as Data)
-
+	override fun __unsafeVisitChildren(data: Any?) = visitChildren(data = data as Data)
 
 	private enum class State {
 
@@ -182,7 +159,5 @@ private class DefaultVisit<Result, Data>(
 	}
 }
 
-
 @InternalGraphqlApi
-public fun <Result, Data> VisitCoordinator.Companion.default(visitor: Visitor<Result, Data>): VisitCoordinator<Result, Data> =
-	DefaultVisitCoordinator(visitor)
+public fun <Result, Data> VisitCoordinator.Companion.default(visitor: Visitor<Result, Data>): VisitCoordinator<Result, Data> = DefaultVisitCoordinator(visitor)

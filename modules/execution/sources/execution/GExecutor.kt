@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // FIXME simplify API?
 /**
  * Executes GraphQL operations against a schema.
@@ -21,14 +20,12 @@ public interface GExecutor {
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
 		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty(),
-	): GResult<Map<String, Any?>> =
-		execute(
-			documentSource = GDocumentSource.of(documentSource),
-			extensions = extensions,
-			operationName = operationName,
-			variableValues = variableValues
-		)
-
+	): GResult<Map<String, Any?>> = execute(
+		documentSource = GDocumentSource.of(documentSource),
+		extensions = extensions,
+		operationName = operationName,
+		variableValues = variableValues,
+	)
 
 	/**
 	 * Parses [documentSource] as a GraphQL document and executes it.
@@ -40,16 +37,14 @@ public interface GExecutor {
 		operationName: String? = null,
 		variableValues: Map<String, Any?> = emptyMap(),
 		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty(),
-	): GResult<Map<String, Any?>> =
-		GDocument.parse(documentSource).flatMapValue { document ->
-			execute(
-				document = document,
-				extensions = extensions,
-				operationName = operationName,
-				variableValues = variableValues
-			)
-		}
-
+	): GResult<Map<String, Any?>> = GDocument.parse(documentSource).flatMapValue { document ->
+		execute(
+			document = document,
+			extensions = extensions,
+			operationName = operationName,
+			variableValues = variableValues,
+		)
+	}
 
 	/**
 	 * Validates and executes the given [document].
@@ -63,14 +58,12 @@ public interface GExecutor {
 		extensions: GExecutorContextExtensionSet = GExecutorContextExtensionSet.empty(),
 	): GResult<Map<String, Any?>>
 
-
 	/**
 	 * Converts an execution result into a plain `Map<String, Any?>` following the GraphQL response format.
 	 *
 	 * The returned map always contains a `"data"` key on success, and an `"errors"` key when there are errors.
 	 */
 	public fun serializeResult(result: GResult<Map<String, Any?>>): Map<String, Any?>
-
 
 	public companion object {
 
@@ -93,15 +86,14 @@ public interface GExecutor {
 			outputCoercer: GOutputCoercer<Any>? = null,
 			variableInputCoercer: GVariableInputCoercer<Any?>? = null,
 			rootResolver: GRootResolver = GRootResolver.unit(),
-		): GExecutor =
-			DefaultExecutor(
-				exceptionHandler = exceptionHandler,
-				fieldResolver = fieldResolver,
-				nodeInputCoercer = nodeInputCoercer,
-				outputCoercer = outputCoercer,
-				schema = schema,
-				rootResolver = rootResolver,
-				variableInputCoercer = variableInputCoercer
-			)
+		): GExecutor = DefaultExecutor(
+			exceptionHandler = exceptionHandler,
+			fieldResolver = fieldResolver,
+			nodeInputCoercer = nodeInputCoercer,
+			outputCoercer = outputCoercer,
+			schema = schema,
+			rootResolver = rootResolver,
+			variableInputCoercer = variableInputCoercer,
+		)
 	}
 }

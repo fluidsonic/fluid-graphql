@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GIntValue
+import io.fluidsonic.graphql.GNamedTypeRef
+import io.fluidsonic.graphql.GNonNullTypeRef
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GVariableRef
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 // GraphQL Spec §2.11 — Variables
 class VariableTests {
@@ -18,7 +26,6 @@ class VariableTests {
 		assertEquals("Int", namedType.name)
 	}
 
-
 	@Test
 	fun testVariableWithDefault() {
 		val doc = GDocument.parse("query Q(\$x: Int = 5) { f(a: \$x) }").valueWithoutErrorsOrThrow()
@@ -29,7 +36,6 @@ class VariableTests {
 		assertEquals(5, defaultVal.value)
 	}
 
-
 	@Test
 	fun testVariableNoDefault() {
 		val doc = GDocument.parse("query Q(\$x: String) { f }").valueWithoutErrorsOrThrow()
@@ -37,7 +43,6 @@ class VariableTests {
 		val varDef = op.variableDefinitions.single()
 		assertNull(varDef.defaultValue)
 	}
-
 
 	@Test
 	fun testVariableInArgument() {
@@ -48,7 +53,6 @@ class VariableTests {
 		val varRef = arg.value as GVariableRef
 		assertEquals("x", varRef.name)
 	}
-
 
 	@Test
 	fun testNonNullVariableType() {

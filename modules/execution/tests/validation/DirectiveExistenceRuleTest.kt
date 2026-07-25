@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DirectiveExistenceRule
+import kotlin.test.Test
 
 class DirectiveExistenceRuleTest {
 
@@ -22,10 +21,9 @@ class DirectiveExistenceRuleTest {
 				|}
 				|
 				|directive @foo on FIELD
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDirectiveThatDontExist() {
@@ -49,7 +47,7 @@ class DirectiveExistenceRuleTest {
 					2 |    id @bar @baz
 					  |             ^
 					3 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -62,7 +60,7 @@ class DirectiveExistenceRuleTest {
 				|}
 				|
 				|directive @foo on FIELD
-			"""
+			""",
 		)
 	}
 }

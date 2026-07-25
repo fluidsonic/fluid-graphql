@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ScalarLeavesRule
+import kotlin.test.Test
 
 class ScalarLeavesRuleTest {
 
@@ -23,10 +22,9 @@ class ScalarLeavesRuleTest {
 				|   enum: Enum!
 				|   scalar: String!
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsCompositeWithSelection() {
@@ -49,10 +47,9 @@ class ScalarLeavesRuleTest {
 				|   object: Object!
 				|   union: Union!
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectLeavesWithSelection() {
@@ -76,7 +73,7 @@ class ScalarLeavesRuleTest {
 					3 |    scalar { x }
 					  |           ^
 					4 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -90,10 +87,9 @@ class ScalarLeavesRuleTest {
 				|   enum: Enum
 				|   scalar: String
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectCompositeWithoutSelection() {
@@ -126,7 +122,7 @@ class ScalarLeavesRuleTest {
 					4 |    union
 					  |    ^
 					5 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -144,7 +140,7 @@ class ScalarLeavesRuleTest {
 				|   object: Object
 				|   union: Union
 				|}
-			"""
+			""",
 		)
 	}
 }

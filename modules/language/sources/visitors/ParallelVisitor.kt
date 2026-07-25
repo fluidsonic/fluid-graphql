@@ -1,27 +1,17 @@
 package io.fluidsonic.graphql
 
-
-private class ParallelVisitor<Data>(
-	private val children: List<Visitor<Unit, Data>>,
-) : Visitor<Unit, Data>() {
+private class ParallelVisitor<Data>(private val children: List<Visitor<Unit, Data>>) : Visitor<Unit, Data>() {
 
 	// FIXME We must use Visit to orchestrate node traversal rather than doing so by ourselves in ParallelVisit.
-	override fun onNode(node: GNode, data: Data, visit: Visit) =
-		ParallelVisit(node = node, data = data, children = children).run()
-			.also { visit.skipChildren() }
+	override fun onNode(node: GNode, data: Data, visit: Visit) = ParallelVisit(node = node, data = data, children = children).run()
+		.also { visit.skipChildren() }
 }
 
-
-private class ParallelVisit<in Data>(
-	node: GNode,
-	data: Data,
-	children: List<Visitor<Unit, Data>>,
-) {
+private class ParallelVisit<in Data>(node: GNode, data: Data, children: List<Visitor<Unit, Data>>) {
 
 	init {
 		require(children.isNotEmpty()) { "'children' must not be empty." }
 	}
-
 
 	private var childIndex = 0
 	private var state = State.initial
@@ -32,33 +22,30 @@ private class ParallelVisit<in Data>(
 			parent = this,
 			visitor = dispatcher,
 			index = index,
-			data = data
+			data = data,
 		)
 	}
-
 
 	private val isAborting
 		get() = state == State.aborted
 
-
 	private fun onChildAbort() {
-		if (children.all { it.state === ChildVisit.State.aborted })
+		if (children.all { it.state === ChildVisit.State.aborted }) {
 			state = State.aborted
-		else
+		} else {
 			runNext()
+		}
 	}
-
 
 	private fun onChildSkipChildren() {
-		if (children.any { it.state !== ChildVisit.State.skippingChildren })
+		if (children.any { it.state !== ChildVisit.State.skippingChildren }) {
 			runNext()
+		}
 	}
-
 
 	private fun onChildVisitChildren() {
 		runNext()
 	}
-
 
 	fun run() {
 		state = State.visiting
@@ -67,14 +54,12 @@ private class ParallelVisit<in Data>(
 			runNext()
 
 			state = State.completed
-		}
-		catch (e: Throwable) {
+		} catch (e: Throwable) {
 			state = State.aborted
 
 			throw e
 		}
 	}
-
 
 	private fun runChild(node: GNode) {
 		val index = childIndex
@@ -83,7 +68,6 @@ private class ParallelVisit<in Data>(
 		children[index].dispatchVisit(node = node)
 	}
 
-
 	private fun runChildren() {
 		check(childIndex == 0)
 
@@ -91,13 +75,13 @@ private class ParallelVisit<in Data>(
 		while (node !== null) {
 			childIndex = 0
 
-			do runChild(node = node)
-			while (childIndex < children.size)
+			do {
+				runChild(node = node)
+			} while (childIndex < children.size)
 
 			node = walker.nextChild()
 		}
 	}
-
 
 	private fun runDescendent() {
 		check(childIndex == children.size)
@@ -112,14 +96,13 @@ private class ParallelVisit<in Data>(
 		}
 	}
 
-
 	private fun runNext() {
-		if (childIndex == children.size)
+		if (childIndex == children.size) {
 			runDescendent()
-		else
+		} else {
 			runChild(node = checkNotNull(walker.child) { "Internal inconsistency." })
+		}
 	}
-
 
 	private class ChildVisit<in Data>(
 		private val parent: ParallelVisit<Data>,
@@ -131,7 +114,6 @@ private class ParallelVisit<in Data>(
 
 		var state = state
 			private set
-
 
 		override fun abort() {
 			when (state) {
@@ -154,10 +136,10 @@ private class ParallelVisit<in Data>(
 			}
 		}
 
-
 		fun dispatchVisit(node: GNode) {
-			if (isSkippingChildren)
+			if (isSkippingChildren) {
 				return
+			}
 
 			val previousState = state
 
@@ -166,27 +148,24 @@ private class ParallelVisit<in Data>(
 			try {
 				visitor.onNode(node, data = data, visit = this)
 
-				if (state === State.beforeVisitingChildren)
+				if (state === State.beforeVisitingChildren) {
 					visitChildren()
-			}
-			finally {
-				if (!isAborting)
+				}
+			} finally {
+				if (!isAborting) {
 					state = previousState
+				}
 			}
 		}
-
 
 		override val hasVisitedChildren
 			get() = state == State.afterVisitingChildren
 
-
 		override val isAborting
 			get() = state === State.aborted
 
-
 		override val isSkippingChildren
 			get() = isAborting || state === State.skippingChildren
-
 
 		override fun skipChildren() {
 			when (state) {
@@ -211,10 +190,7 @@ private class ParallelVisit<in Data>(
 			}
 		}
 
-
-		override fun visitChildren() =
-			visitChildren(data = data)
-
+		override fun visitChildren() = visitChildren(data = data)
 
 		private fun visitChildren(data: Data) {
 			when (state) {
@@ -233,12 +209,12 @@ private class ParallelVisit<in Data>(
 
 					try {
 						parent.onChildVisitChildren()
-					}
-					finally {
+					} finally {
 						this.data = previousData
 
-						if (!isAborting)
+						if (!isAborting) {
 							state = State.afterVisitingChildren
+						}
 					}
 
 					!isAborting
@@ -251,11 +227,8 @@ private class ParallelVisit<in Data>(
 			}
 		}
 
-
 		@Suppress("UNCHECKED_CAST")
-		override fun __unsafeVisitChildren(data: Any?) =
-			visitChildren(data as Data)
-
+		override fun __unsafeVisitChildren(data: Any?) = visitChildren(data as Data)
 
 		enum class State {
 
@@ -264,24 +237,21 @@ private class ParallelVisit<in Data>(
 			beforeVisitingChildren,
 			completed,
 			initial,
-			skippingChildren
+			skippingChildren,
 		}
 	}
-
 
 	private enum class State {
 
 		aborted,
 		completed,
 		initial,
-		visiting
+		visiting,
 	}
 }
 
-
 @InternalGraphqlApi
-public fun <Data> Iterable<Visitor<Unit, Data>>.parallelize(): Visitor<Unit, Data> =
-	toList()
-		.ifEmpty { null }
-		?.let(::ParallelVisitor)
-		?: Visitor.noOp()
+public fun <Data> Iterable<Visitor<Unit, Data>>.parallelize(): Visitor<Unit, Data> = toList()
+	.ifEmpty { null }
+	?.let(::ParallelVisitor)
+	?: Visitor.noOp()

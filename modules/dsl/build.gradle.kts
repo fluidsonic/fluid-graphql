@@ -1,4 +1,4 @@
-import io.fluidsonic.gradle.*
+import io.fluidsonic.gradle.fluidLibraryModule
 
 fluidLibraryModule(description = "Kotlin DSL for building GraphQL schemas and documents") {
 	targets {

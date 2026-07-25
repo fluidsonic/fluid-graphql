@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LargeClass:SchemaBuilderTests.kt:SchemaBuilderTests</ID>
+    <ID>LongMethod:DocumentTests.kt:DocumentTests$@Test fun testComplexDocument</ID>
+    <ID>LongMethod:SchemaBuilderTests.kt:SchemaBuilderTests$@Test fun multipleTypesInOneSchema</ID>
+    <ID>LongMethod:SchemaTests.kt:SchemaTests$@Test fun test</ID>
+    <ID>TooManyFunctions:DefaultSchemaBuilder.kt:DefaultSchemaBuilder : GSchemaBuilder</ID>
+    <ID>TooManyFunctions:DefaultSchemaBuilder.kt:DefaultSchemaBuilder$ContainerImpl&lt;Node : GNode> : ArgumentContainerDeprecationContainerDescriptionContainerDirectiveContainerNodeBuilderTypeRefContainerValueContainer</ID>
+    <ID>TooManyFunctions:GSchemaBuilder.kt:GSchemaBuilder</ID>
+    <ID>TooManyFunctions:GSchemaBuilder.kt:io.fluidsonic.graphql.GSchemaBuilder.kt</ID>
+    <ID>TooManyFunctions:GraphQLArgumentsBuilder.kt:GraphQLArgumentsBuilderScope : GraphQLValueContainerScope</ID>
+    <ID>TooManyFunctions:GraphQLValueListBuilder.kt:GraphQLValueListBuilderScope : GraphQLValueContainerScope</ID>
+    <ID>TooManyFunctions:GraphQLVariableBuilder.kt:GraphQLVariableBuilderScope : GraphQLValueContainerScopeGraphQLDirectivesContainerScope</ID>
+  </CurrentIssues>
+</SmellBaseline>

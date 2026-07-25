@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Converts a Kotlin value returned by a field resolver into a GraphQL-serializable value.
  *

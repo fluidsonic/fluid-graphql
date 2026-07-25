@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Typed key for storing and retrieving a value of type [Value] in a [GExecutorContextExtensionSet].
  *

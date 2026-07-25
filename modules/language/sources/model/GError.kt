@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A GraphQL error, matching the error format defined by the GraphQL specification.
  *
@@ -38,20 +37,13 @@ public data class GError(
 		}
 	}
 
-
 	/** Throws a [GErrorException] wrapping this error. */
-	public fun throwException(): Nothing {
-		throw GErrorException(this)
-	}
+	public fun throwException(): Nothing = throw GErrorException(this)
 
-
-	override fun toString(): String =
-		"GraphQL Error: ${describe()}"
-
+	override fun toString(): String = "GraphQL Error: ${describe()}"
 
 	public companion object {
 
-		internal fun syntax(details: String, origin: GDocumentPosition) =
-			GError(message = "Syntax Error: $details", origins = listOf(origin))
+		internal fun syntax(details: String, origin: GDocumentPosition) = GError(message = "Syntax Error: $details", origins = listOf(origin))
 	}
 }

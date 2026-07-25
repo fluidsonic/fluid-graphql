@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DirectiveExclusivityRule
+import kotlin.test.Test
 
 class DirectiveExclusivityRuleTest {
 
@@ -22,10 +21,9 @@ class DirectiveExclusivityRuleTest {
 				|directive @foo on FIELD
 				|directive @bar on FIELD
 				|directive @baz repeatable on FIELD
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsRepeatingDirectivesThatAreNotDefinedToBeRepeatable() {
@@ -67,7 +65,7 @@ class DirectiveExclusivityRuleTest {
 					2 |   field @foo @foo @bar @bar @bar @baz @baz
 					  |                              ^
 					3 | }
-				"""
+				""",
 			),
 			document = """
 				|query {
@@ -80,7 +78,7 @@ class DirectiveExclusivityRuleTest {
 				|directive @foo on FIELD
 				|directive @bar on FIELD
 				|directive @baz repeatable on FIELD
-			"""
+			""",
 		)
 	}
 }

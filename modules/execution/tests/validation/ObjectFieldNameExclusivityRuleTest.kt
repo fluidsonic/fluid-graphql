@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ObjectFieldNameExclusivityRule
+import kotlin.test.Test
 
 class ObjectFieldNameExclusivityRuleTest {
 
@@ -16,10 +15,9 @@ class ObjectFieldNameExclusivityRuleTest {
 				|  fun(input: { a:1 b:2 c:3 })
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateObjectFieldNames() {
@@ -61,14 +59,14 @@ class ObjectFieldNameExclusivityRuleTest {
 					2 |   fun(input: { a:1 a:1 a:2 b:1 b:2 c:3 })
 					  |                                ^
 					3 | }
-				"""
+				""",
 			),
 			document = """
 				|{
 				|  fun(input: { a:1 a:1 a:2 b:1 b:2 c:3 })
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
 }

@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // GraphQL Spec §4.3 — Field Introspection
 class FieldIntrospectionTests {
@@ -19,24 +27,29 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val fieldNames = fields.map { it["name"] }
 		assertTrue(fieldNames.contains("username"), "Expected 'username' in fields")
 	}
-
 
 	@Test
 	fun testFieldType() = runTest {
@@ -50,7 +63,9 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields {
@@ -59,21 +74,25 @@ class FieldIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val scoreField = fields.first { it["name"] == "score" }
+
 		@Suppress("UNCHECKED_CAST")
 		val fieldType = scoreField["type"] as Map<String, Any?>
 		assertEquals(expected = "Int", actual = fieldType["name"])
 		assertEquals(expected = "SCALAR", actual = fieldType["kind"])
 	}
-
 
 	@Test
 	fun testFieldIsDeprecatedFalseByDefault() = runTest {
@@ -87,24 +106,29 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields { name isDeprecated }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val activeField = fields.first { it["name"] == "active" }
 		assertEquals(expected = false, actual = activeField["isDeprecated"])
 	}
-
 
 	@Test
 	fun testFieldArgs() = runTest {
@@ -121,7 +145,9 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields {
@@ -133,15 +159,20 @@ class FieldIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val greetField = fields.first { it["name"] == "greet" }
+
 		@Suppress("UNCHECKED_CAST")
 		val args = greetField["args"] as List<Map<String, Any?>>
 		assertEquals(expected = 1, actual = args.size)
@@ -150,7 +181,6 @@ class FieldIntrospectionTests {
 		val argType = args[0]["type"] as Map<String, Any?>
 		assertEquals(expected = "String", actual = argType["name"])
 	}
-
 
 	@Test
 	fun testFieldDescription() = runTest {
@@ -167,24 +197,29 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields { name description }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val nameField = fields.first { it["name"] == "name" }
 		assertEquals(expected = "The name of the entity", actual = nameField["description"])
 	}
-
 
 	@Test
 	fun testDeprecatedFieldWithReason() = runTest {
@@ -204,7 +239,9 @@ class FieldIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "MyObject") {
 			    fields(includeDeprecated: true) {
@@ -214,12 +251,16 @@ class FieldIntrospectionTests {
 			    }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val fields = type["fields"] as List<Map<String, Any?>>
 		val oldField = fields.first { it["name"] == "oldField" }

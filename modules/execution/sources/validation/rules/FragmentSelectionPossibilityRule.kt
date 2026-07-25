@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Fragment-spread-target-defined
 internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 
@@ -17,15 +16,15 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 		val possibleParentTypes = data.schema.getPossibleTypes(parentType).toHashSet()
 		val possibleTypes = data.schema.getPossibleTypes(type)
 		val intersectionTypes = possibleTypes.intersect(possibleParentTypes)
-		if (intersectionTypes.isNotEmpty())
+		if (intersectionTypes.isNotEmpty()) {
 			return // Fragment type condition can match.
+		}
 
 		data.reportError(
 			message = "Fragment '${selection.name}' on '${type.name}' will never match the unrelated type '${parentType.name}'.",
-			nodes = listOf(selection.nameNode, definition.typeCondition, type.nameNode, parentType.nameNode)
+			nodes = listOf(selection.nameNode, definition.typeCondition, type.nameNode, parentType.nameNode),
 		)
 	}
-
 
 	override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: ValidationContext, visit: Visit) {
 		val typeCondition = selection.typeCondition
@@ -40,8 +39,9 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 		val possibleParentTypes = data.schema.getPossibleTypes(parentType).toHashSet()
 		val possibleTypes = data.schema.getPossibleTypes(type)
 		val intersectionTypes = possibleTypes.intersect(possibleParentTypes)
-		if (intersectionTypes.isNotEmpty())
+		if (intersectionTypes.isNotEmpty()) {
 			return // Fragment type condition can match.
+		}
 
 		val relatedNodes = mutableListOf<GNode>(typeCondition)
 
@@ -51,8 +51,7 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 		if (relatedFieldSelection !== null) {
 			relatedNodes += relatedFieldSelection.nameNode
 			data.relatedFieldDefinition?.let { relatedNodes += it.type }
-		}
-		else if (relatedFragmentDefinition !== null) {
+		} else if (relatedFragmentDefinition !== null) {
 			relatedNodes += relatedFragmentDefinition.typeCondition
 		}
 
@@ -61,7 +60,7 @@ internal object FragmentSelectionPossibilityRule : ValidationRule.Singleton() {
 
 		data.reportError(
 			message = "Inline fragment on '${type.name}' will never match the unrelated type '${parentType.name}'.",
-			nodes = relatedNodes
+			nodes = relatedNodes,
 		)
 	}
 }

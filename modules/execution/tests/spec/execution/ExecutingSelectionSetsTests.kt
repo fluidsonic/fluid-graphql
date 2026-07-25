@@ -1,8 +1,17 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // GraphQL Spec §6.3 — Executing Selection Sets
 class ExecutingSelectionSetsTests {
@@ -20,10 +29,9 @@ class ExecutingSelectionSetsTests {
 		val result = executor.serializeResult(executor.execute("{ a b c }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("a" to "aValue", "b" to "bValue", "c" to "cValue")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testFragmentSpreadMerging() = runTest {
@@ -41,10 +49,9 @@ class ExecutingSelectionSetsTests {
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf("data" to mapOf("foo" to "fooValue", "bar" to "barValue")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testInlineFragmentMerging() = runTest {
@@ -61,10 +68,9 @@ class ExecutingSelectionSetsTests {
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf("data" to mapOf("foo" to "fooValue", "bar" to "barValue")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testSameResponseNameMerging() = runTest {
@@ -81,7 +87,6 @@ class ExecutingSelectionSetsTests {
 		assertEquals(expected = "fooValue", actual = data["x"])
 	}
 
-
 	@Test
 	fun testSkipDirectiveExcludesField() = runTest {
 		val schema = GraphQL.schema {
@@ -97,7 +102,6 @@ class ExecutingSelectionSetsTests {
 		assertEquals(expected = "yes", actual = data["included"])
 	}
 
-
 	@Test
 	fun testSkipFalseIncludesField() = runTest {
 		val schema = GraphQL.schema {
@@ -111,7 +115,6 @@ class ExecutingSelectionSetsTests {
 		assertEquals(expected = "fooValue", actual = data["foo"])
 	}
 
-
 	@Test
 	fun testIncludeDirectiveIncludesField() = runTest {
 		val schema = GraphQL.schema {
@@ -124,7 +127,6 @@ class ExecutingSelectionSetsTests {
 		val data = result["data"] as Map<*, *>
 		assertEquals(expected = "fooValue", actual = data["foo"])
 	}
-
 
 	@Test
 	fun testIncludeFalseExcludesField() = runTest {
@@ -140,7 +142,6 @@ class ExecutingSelectionSetsTests {
 		assertTrue("foo" !in data)
 		assertEquals(expected = "barValue", actual = data["bar"])
 	}
-
 
 	@Test
 	fun testTypedInlineFragmentOnObject() = runTest {
@@ -165,10 +166,9 @@ class ExecutingSelectionSetsTests {
 		val result = executor.serializeResult(executor.execute(document))
 		assertEquals(
 			expected = mapOf("data" to mapOf("dog" to mapOf("name" to "Rex", "barks" to true))),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testTypedInlineFragmentOnWrongType() = runTest {
@@ -202,7 +202,6 @@ class ExecutingSelectionSetsTests {
 		assertTrue("meows" !in dogData)
 		assertEquals(expected = "Rex", actual = dogData["name"])
 	}
-
 
 	private data class DogData(val name: String, val barks: Boolean)
 	private data class CatData(val name: String, val meows: Boolean)

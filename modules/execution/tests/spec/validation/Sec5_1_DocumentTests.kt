@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DocumentExecutabilityRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.1 — Executable Definitions
 class Sec5_1_DocumentTests {
@@ -17,10 +18,9 @@ class Sec5_1_DocumentTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsFragmentAndOperation() {
@@ -33,56 +33,57 @@ class Sec5_1_DocumentTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsSchemaDefinitionInDocument() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				In order to be executable, the document must contain only executable definitions.
 
 				<document>:2:1
 				1 | { field }
 				2 | type Foo { id: ID }
 				  | ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field }
 				|type Foo { id: ID }
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsTypeExtensionInDocument() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				In order to be executable, the document must contain only executable definitions.
 
 				<document>:2:1
 				1 | { field }
 				2 | extend scalar S @foo
 				  | ^
-			"""),
+			""",
+			),
 			document = """
 				|{ field }
 				|extend scalar S @foo
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsOnlyFragments() {
@@ -94,7 +95,7 @@ class Sec5_1_DocumentTests {
 			""",
 			schema = """
 				|type Query { field: String }
-			"""
+			""",
 		)
 	}
 }

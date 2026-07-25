@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.AnonymousOperationExclusivityRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.2.3 — Lone Anonymous Operation
 class Sec5_2_3_LoneAnonymousOperationTests {
@@ -17,10 +18,9 @@ class Sec5_2_3_LoneAnonymousOperationTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsOneAnonymousOperation() {
@@ -32,10 +32,9 @@ class Sec5_2_3_LoneAnonymousOperationTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsTwoNamedOperations() {
@@ -48,39 +47,40 @@ class Sec5_2_3_LoneAnonymousOperationTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsAnonymousWithNamed() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain more than one operation if it contains an anonymous operation.
 
 				<document>:1:1
 				1 | { id }
 				  | ^
 				2 | query Q { id }
-			"""),
+			""",
+			),
 			document = """
 				|{ id }
 				|query Q { id }
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsTwoAnonymousOperations() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain more than one operation if it contains an anonymous operation.
 
 				<document>:1:1
@@ -92,30 +92,32 @@ class Sec5_2_3_LoneAnonymousOperationTests {
 				1 | { id }
 				2 | { id }
 				  | ^
-			"""),
+			""",
+			),
 			document = """
 				|{ id }
 				|{ id }
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsMixedAnonymousAndNamed() {
 		assertValidationRule(
 			rule = AnonymousOperationExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain more than one operation if it contains an anonymous operation.
 
 				<document>:1:1
 				1 | { id }
 				  | ^
 				2 | query q1 { id }
-			"""),
+			""",
+			),
 			document = """
 				|{ id }
 				|query q1 { id }
@@ -123,7 +125,7 @@ class Sec5_2_3_LoneAnonymousOperationTests {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
 }

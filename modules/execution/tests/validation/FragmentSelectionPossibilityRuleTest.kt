@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentSelectionPossibilityRule
+import kotlin.test.Test
 
 class FragmentSelectionPossibilityRuleTest {
 
@@ -78,10 +77,9 @@ class FragmentSelectionPossibilityRuleTest {
 				|interface Interface { value: String }
 				|type Object implements Interface { value: String }
 				|union Union = Object
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsSelectionsOfNonexistentFragments() {
@@ -621,7 +619,7 @@ class FragmentSelectionPossibilityRuleTest {
 					10 | union Union = Object
 					   |       ^
 					11 | union AnotherUnion = AnotherObject
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -693,7 +691,7 @@ class FragmentSelectionPossibilityRuleTest {
 				|type AnotherObject { value: String }
 				|union Union = Object
 				|union AnotherUnion = AnotherObject
-			"""
+			""",
 		)
 	}
 }

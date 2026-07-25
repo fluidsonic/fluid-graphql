@@ -1,4 +1,4 @@
-import io.fluidsonic.gradle.*
+import io.fluidsonic.gradle.fluidLibraryModule
 
 fluidLibraryModule(description = "GraphQL query execution engine with validation") {
 	targets {

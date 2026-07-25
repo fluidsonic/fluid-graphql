@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ObjectFieldExistenceRule
+import kotlin.test.Test
 
 class ObjectFieldExistenceRuleTest {
 
@@ -24,10 +23,9 @@ class ObjectFieldExistenceRuleTest {
 				|input Input {
 				|   exists: Boolean
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testIgnoresFieldOnNonInputTypeNestedInInputType() {
@@ -49,10 +47,9 @@ class ObjectFieldExistenceRuleTest {
 				|}
 				|
 				|scalar Scalar
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsFieldNamesThatDontExist() {
@@ -88,7 +85,7 @@ class ObjectFieldExistenceRuleTest {
 					10 | input OtherInput {
 					   |       ^
 					11 |    exists: Boolean
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -113,7 +110,7 @@ class ObjectFieldExistenceRuleTest {
 				|input OtherInput {
 				|   exists: Boolean
 				|}
-			"""
+			""",
 		)
 	}
 }

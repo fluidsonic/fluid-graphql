@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Builder for a list of directive applications.
  *
@@ -16,13 +15,11 @@ public sealed interface GraphQLDirectivesBuilder : GraphQLDirectivesBuilderScope
 	/** Adds a pre-built [GDirective]. */
 	public fun directive(directive: GDirective)
 
-
 	// TODO Move to extension and inline.
 	public override operator fun String.invoke(configure: GraphQLDirectiveBuilder.() -> Unit) {
 		directive(GraphQLDirectiveBuilder(name = this).apply(configure).build())
 	}
 }
-
 
 /**
  * Scope interface for [GraphQLDirectivesBuilder].
@@ -47,11 +44,9 @@ public sealed interface GraphQLDirectivesBuilderScope : GraphQLValueContainerSco
 	public operator fun String.invoke(configure: GraphQLDirectiveBuilder.() -> Unit)
 }
 
-
 private class GraphQLDirectivesBuilderImpl : GraphQLDirectivesBuilder {
 
 	private val directives = mutableListOf<GDirective>()
-
 
 	override fun directive(directive: GDirective) {
 		val name = directive.name
@@ -61,12 +56,8 @@ private class GraphQLDirectivesBuilderImpl : GraphQLDirectivesBuilder {
 		directives += directive
 	}
 
-
-	override fun build(): List<GDirective> =
-		directives.toList()
+	override fun build(): List<GDirective> = directives.toList()
 }
 
-
 /** Creates a new [GraphQLDirectivesBuilder]. */
-public fun GraphQLDirectivesBuilder(): GraphQLDirectivesBuilder =
-	GraphQLDirectivesBuilderImpl()
+public fun GraphQLDirectivesBuilder(): GraphQLDirectivesBuilder = GraphQLDirectivesBuilderImpl()

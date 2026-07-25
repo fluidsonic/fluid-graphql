@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 internal data class DefaultExecutorContext(
 	override val document: GDocument,
 	val exceptionHandler: GExceptionHandler?,
@@ -19,29 +18,29 @@ internal data class DefaultExecutorContext(
 	val variableInputCoercer: GVariableInputCoercer<Any?>?,
 	val variableInputConverter: VariableInputConverter,
 	override val variableValues: Map<String, Any?>,
-) : GExecutorContext, GRootResolverContext {
+) : GExecutorContext,
+	GRootResolverContext {
 
 	override val execution: GExecutorContext
 		get() = this
 
-
 	inline fun <Result> withExceptionHandler(origin: () -> GExceptionOrigin, action: () -> Result): Result {
 		try {
 			return action()
-		}
-		catch (exception: GErrorException) {
+		} catch (exception: GErrorException) {
 			val resolvedOrigin = origin()
 			if (resolvedOrigin is GExceptionOrigin.FieldResolver || resolvedOrigin is GExceptionOrigin.OutputCoercer) {
 				val path = resolvedOrigin.path
 				if (path != null && path.elements.isNotEmpty()) {
-					throw GErrorException(exception.errors.map { error ->
-						if (error.path == null) error.copy(path = path) else error
-					})
+					throw GErrorException(
+						exception.errors.map { error ->
+							if (error.path == null) error.copy(path = path) else error
+						},
+					)
 				}
 			}
 			throw exception
-		}
-		catch (exception: Throwable) {
+		} catch (exception: Throwable) {
 			with(exceptionHandler ?: throw exception) {
 				@Suppress("NAME_SHADOWING")
 				val origin = origin()

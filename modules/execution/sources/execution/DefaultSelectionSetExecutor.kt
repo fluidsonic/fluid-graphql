@@ -3,7 +3,6 @@ package io.fluidsonic.graphql
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
-
 internal object DefaultSelectionSetExecutor {
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
@@ -27,13 +26,12 @@ internal object DefaultSelectionSetExecutor {
 					fieldSelectionsByResponseKey = fieldSelectionsByResponseKey,
 					visitedFragmentNames = visitedFragments,
 					parentType = parentType,
-					context = context
+					context = context,
 				).ifErrors { return GResult.failure(it) }
 			}
 
 		return GResult.success(fieldSelectionsByResponseKey)
 	}
-
 
 	// https://graphql.github.io/graphql-spec/June2018/#CollectFields()
 	private fun collectFieldSelections(
@@ -54,8 +52,9 @@ internal object DefaultSelectionSetExecutor {
 
 			is GFragmentSelection -> {
 				val fragmentName = selection.name
-				if (!visitedFragmentNames.add(fragmentName))
+				if (!visitedFragmentNames.add(fragmentName)) {
 					return GResult.success()
+				}
 
 				val fragment = context.document.fragment(fragmentName)
 					?: error("A fragment with name '$fragmentName' is referenced but not defined.")
@@ -63,8 +62,9 @@ internal object DefaultSelectionSetExecutor {
 				val fragmentType = TypeResolver.resolveType(context.schema, fragment.typeCondition)
 					?: error("Cannot resolve type '${fragment.typeCondition}' in condition of fragment '$fragmentName'.")
 
-				if (!doesFragmentTypeApply(fragmentType, to = parentType))
+				if (!doesFragmentTypeApply(fragmentType, to = parentType)) {
 					return GResult.success()
+				}
 
 				return collectFieldSelections(
 					selectionSet = fragment.selectionSet,
@@ -72,7 +72,7 @@ internal object DefaultSelectionSetExecutor {
 					fieldSelectionsByResponseKey = fieldSelectionsByResponseKey,
 					visitedFragments = visitedFragmentNames,
 					parentType = parentType,
-					context = context
+					context = context,
 				).mapValue { null }
 			}
 
@@ -80,10 +80,11 @@ internal object DefaultSelectionSetExecutor {
 				val fragmentTypeCondition = selection.typeCondition
 				if (fragmentTypeCondition !== null) {
 					val fragmentType = TypeResolver.resolveType(context.schema, fragmentTypeCondition)
-						?: error("Cannot resolve type '${fragmentTypeCondition}' in condition of inline fragment.")
+						?: error("Cannot resolve type '$fragmentTypeCondition' in condition of inline fragment.")
 
-					if (!doesFragmentTypeApply(fragmentType, to = parentType))
+					if (!doesFragmentTypeApply(fragmentType, to = parentType)) {
 						return GResult.success()
+					}
 				}
 
 				return collectFieldSelections(
@@ -92,17 +93,14 @@ internal object DefaultSelectionSetExecutor {
 					fieldSelectionsByResponseKey = fieldSelectionsByResponseKey,
 					visitedFragments = visitedFragmentNames,
 					parentType = parentType,
-					context = context
+					context = context,
 				).mapValue { null }
 			}
 		}
 	}
 
-
 	// https://graphql.github.io/graphql-spec/June2018/#DoesFragmentTypeApply()
-	private fun doesFragmentTypeApply(fragmentType: GType, to: GObjectType) =
-		to.isSubtypeOf(fragmentType)
-
+	private fun doesFragmentTypeApply(fragmentType: GType, to: GObjectType) = to.isSubtypeOf(fragmentType)
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteSelectionSet()
 	suspend fun execute(
@@ -111,34 +109,32 @@ internal object DefaultSelectionSetExecutor {
 		parentType: GObjectType,
 		path: GPath,
 		context: DefaultExecutorContext,
-	): GResult<Map<String, Any?>> =
-		collectFieldSelections(
-			selectionSet = selectionSet,
-			parentType = parentType,
-			context = context,
-			path = path,
-			fieldSelectionsByResponseKey = mutableMapOf(),
-			visitedFragments = mutableSetOf()
-		).flatMapValue { fieldSelections ->
-			coroutineScope {
-				fieldSelections
-					.map { (key, selections) ->
-						key to async {
-							context.fieldSelectionExecutor.execute(
-								selections = selections,
-								parent = parent,
-								parentType = parentType,
-								path = path.addName(selections.first().name),
-								context = context
-							)
-						}
+	): GResult<Map<String, Any?>> = collectFieldSelections(
+		selectionSet = selectionSet,
+		parentType = parentType,
+		context = context,
+		path = path,
+		fieldSelectionsByResponseKey = mutableMapOf(),
+		visitedFragments = mutableSetOf(),
+	).flatMapValue { fieldSelections ->
+		coroutineScope {
+			fieldSelections
+				.map { (key, selections) ->
+					key to async {
+						context.fieldSelectionExecutor.execute(
+							selections = selections,
+							parent = parent,
+							parentType = parentType,
+							path = path.addName(selections.first().name),
+							context = context,
+						)
 					}
-					.map { (key, deferred) -> key to deferred.await() }
-					.toMap()
-					.flatten()
-			}
+				}
+				.map { (key, deferred) -> key to deferred.await() }
+				.toMap()
+				.flatten()
 		}
-
+	}
 
 	suspend fun executeSerially(
 		selectionSet: GSelectionSet,
@@ -146,59 +142,57 @@ internal object DefaultSelectionSetExecutor {
 		parentType: GObjectType,
 		path: GPath,
 		context: DefaultExecutorContext,
-	): GResult<Map<String, Any?>> =
-		collectFieldSelections(
-			selectionSet = selectionSet,
-			parentType = parentType,
-			context = context,
-			path = path,
-			fieldSelectionsByResponseKey = mutableMapOf(),
-			visitedFragments = mutableSetOf()
-		).flatMapValue { fieldSelections ->
-			fieldSelections
-				.mapValues { (_, fieldSelections) ->
-					context.fieldSelectionExecutor.execute(
-						selections = fieldSelections,
-						parent = parent,
-						parentType = parentType,
-						path = path.addName(fieldSelections.first().name),
-						context = context
-					)
-				}
-				.flatten()
-		}
-
+	): GResult<Map<String, Any?>> = collectFieldSelections(
+		selectionSet = selectionSet,
+		parentType = parentType,
+		context = context,
+		path = path,
+		fieldSelectionsByResponseKey = mutableMapOf(),
+		visitedFragments = mutableSetOf(),
+	).flatMapValue { fieldSelections ->
+		fieldSelections
+			.mapValues { (_, fieldSelections) ->
+				context.fieldSelectionExecutor.execute(
+					selections = fieldSelections,
+					parent = parent,
+					parentType = parentType,
+					path = path.addName(fieldSelections.first().name),
+					context = context,
+				)
+			}
+			.flatten()
+	}
 
 	private fun GNode.WithDirectives.getDirectiveValues(
 		definition: GDirectiveDefinition,
 		fieldSelectionPath: GPath,
 		context: DefaultExecutorContext,
-	): GResult<Map<String, Any?>?> =
-		directive(definition.name)
-			?.let { directive ->
-				context.nodeInputConverter.convertArguments(
-					node = directive,
-					definitions = definition.argumentDefinitions,
-					fieldSelectionPath = fieldSelectionPath,
-					context = context
-				)
-			}
-			?: GResult.success()
-
+	): GResult<Map<String, Any?>?> = directive(definition.name)
+		?.let { directive ->
+			context.nodeInputConverter.convertArguments(
+				node = directive,
+				definitions = definition.argumentDefinitions,
+				fieldSelectionPath = fieldSelectionPath,
+				context = context,
+			)
+		}
+		?: GResult.success()
 
 	// FIXME improve type casting
 	private fun GSelection.isIncluded(fieldSelectionPath: GPath, context: DefaultExecutorContext): GResult<Boolean> {
 		val skip = getDirectiveValues(GLanguage.defaultSkipDirective, fieldSelectionPath = fieldSelectionPath, context = context)
 			.ifErrors { return GResult.failure(it) }
 			.let { it?.get("if") as Boolean? ?: false }
-		if (skip)
+		if (skip) {
 			return GResult.success(false)
+		}
 
 		val include = getDirectiveValues(GLanguage.defaultIncludeDirective, fieldSelectionPath = fieldSelectionPath, context = context)
 			.ifErrors { return GResult.failure(it) }
 			.let { it?.get("if") as Boolean? ?: true }
-		if (!include)
+		if (!include) {
 			return GResult.success(false)
+		}
 
 		return GResult.success(true)
 	}

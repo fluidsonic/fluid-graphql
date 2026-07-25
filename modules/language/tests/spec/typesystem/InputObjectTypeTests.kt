@@ -1,40 +1,49 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GInputObjectType
+import io.fluidsonic.graphql.GNamedTypeRef
+import io.fluidsonic.graphql.GNonNullTypeRef
+import io.fluidsonic.graphql.GSchema
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §3.10 — Input Objects
 class InputObjectTypeTests {
 
 	@Test
 	fun testInputObjectDefinition() {
-		val result = GSchema.parse("""
+		val result = GSchema.parse(
+			"""
 			input CreatePersonInput { name: String! age: Int }
 			type Query { field: String }
-		""".trimIndent())
+			""".trimIndent(),
+		)
 		assertTrue(result.errors.isEmpty(), "Expected no parse errors but got: ${result.errors}")
 	}
 
-
 	@Test
 	fun testInputObjectHasFields() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			input CreatePersonInput { name: String! age: Int }
 			type Query { field: String }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
 		assertEquals(2, inputType.argumentDefinitions.size)
 	}
 
-
 	@Test
 	fun testInputObjectFieldTypes() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			input CreatePersonInput { name: String! age: Int }
 			type Query { field: String }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
 		val nameField = inputType.argumentDefinition("name")
@@ -45,13 +54,14 @@ class InputObjectTypeTests {
 		assertIs<GNamedTypeRef>(ageField.type)
 	}
 
-
 	@Test
 	fun testInputObjectRequiredField() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			input CreatePersonInput { name: String! age: Int }
 			type Query { field: String }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
 		val nameField = inputType.argumentDefinition("name")
@@ -59,13 +69,14 @@ class InputObjectTypeTests {
 		assertTrue(nameField.isRequired())
 	}
 
-
 	@Test
 	fun testInputObjectOptionalField() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			input CreatePersonInput { name: String! age: Int }
 			type Query { field: String }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val inputType = schema.resolveType("CreatePersonInput") as? GInputObjectType
 		assertNotNull(inputType)
 		val ageField = inputType.argumentDefinition("age")
@@ -73,13 +84,14 @@ class InputObjectTypeTests {
 		assertTrue(ageField.isOptional())
 	}
 
-
 	@Test
 	fun testInputObjectIsInputObjectType() {
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			input CreatePersonInput { name: String! }
 			type Query { field: String }
-		""".trimIndent()).valueOrThrow()
+			""".trimIndent(),
+		).valueOrThrow()
 		val type = schema.resolveType("CreatePersonInput")
 		assertNotNull(type)
 		assertIs<GInputObjectType>(type)

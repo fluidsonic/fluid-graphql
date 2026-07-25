@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A typed key for attaching arbitrary metadata to a [GNode] via [GNodeExtensionSet].
  *

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Values-of-Correct-Type
 internal object ValueValidityRule : ValidationRule.Singleton() {
 
@@ -15,7 +14,6 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		visit.skipChildren()
 	}
 
-
 	override fun onArgumentDefinition(definition: GArgumentDefinition, data: ValidationContext, visit: Visit) {
 		val defaultValue = definition.defaultValue
 			?: return // Nothing to validate.
@@ -29,7 +27,6 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 
 		visit.skipChildren()
 	}
-
 
 	override fun onVariableDefinition(definition: GVariableDefinition, data: ValidationContext, visit: Visit) {
 		val defaultValue = definition.defaultValue

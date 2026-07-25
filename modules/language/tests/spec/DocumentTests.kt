@@ -1,8 +1,13 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFragmentDefinition
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GOperationType
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §2.3 — Document
 class DocumentTests {
@@ -16,7 +21,6 @@ class DocumentTests {
 		assertEquals("Q", op.name)
 	}
 
-
 	@Test
 	fun testSingleAnonymousQuery() {
 		val doc = GDocument.parse("{ field }").valueWithoutErrorsOrThrow()
@@ -26,7 +30,6 @@ class DocumentTests {
 		assertNull(op.name)
 	}
 
-
 	@Test
 	fun testMultipleOperations() {
 		val doc = GDocument.parse("query Q1 { field } query Q2 { other }").valueWithoutErrorsOrThrow()
@@ -34,7 +37,6 @@ class DocumentTests {
 		assertTrue(doc.definitions[0] is GOperationDefinition)
 		assertTrue(doc.definitions[1] is GOperationDefinition)
 	}
-
 
 	@Test
 	fun testMixedOperationsAndFragments() {
@@ -44,13 +46,11 @@ class DocumentTests {
 		assertTrue(doc.definitions[1] is GFragmentDefinition)
 	}
 
-
 	@Test
 	fun testEmptyDocumentFails() {
 		val result = GDocument.parse("")
 		assertTrue(result.errors.isNotEmpty(), "Expected parse error for empty document")
 	}
-
 
 	@Test
 	fun testDocumentWithOnlyFragment() {
@@ -59,7 +59,6 @@ class DocumentTests {
 		assertTrue(doc.definitions.single() is GFragmentDefinition)
 	}
 
-
 	@Test
 	fun testOperationTypeQuery() {
 		val doc = GDocument.parse("query { field }").valueWithoutErrorsOrThrow()
@@ -67,14 +66,12 @@ class DocumentTests {
 		assertEquals(GOperationType.query, op.type)
 	}
 
-
 	@Test
 	fun testOperationTypeMutation() {
 		val doc = GDocument.parse("mutation { field }").valueWithoutErrorsOrThrow()
 		val op = doc.definitions.single() as GOperationDefinition
 		assertEquals(GOperationType.mutation, op.type)
 	}
-
 
 	@Test
 	fun testOperationTypeSubscription() {

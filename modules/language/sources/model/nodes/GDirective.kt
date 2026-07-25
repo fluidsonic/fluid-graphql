@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A GraphQL directive application (`@name(arg: value)`).
  *
@@ -11,16 +10,14 @@ public class GDirective(
 	override val arguments: List<GArgument> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GDirective> = GNodeExtensionSet.empty(),
-) :
-	GNode(
-		extensions = extensions,
-		origin = origin
-	),
+) : GNode(
+	extensions = extensions,
+	origin = origin,
+),
 	GNode.WithArguments,
 	GNode.WithName {
 
 	override val nameNode: GName = name
-
 
 	public constructor(
 		name: String,
@@ -29,18 +26,16 @@ public class GDirective(
 	) : this(
 		name = GName(name),
 		arguments = arguments,
-		extensions = extensions
+		extensions = extensions,
 	)
 
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
+		(
 			other is GDirective &&
 				arguments.equalsNode(other.arguments, includingOrigin = includingOrigin) &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
 
 	public companion object
 }

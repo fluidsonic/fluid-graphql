@@ -1,0 +1,39 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+
+[*.{kt,kts}]
+# The project uses literal TAB indentation and explicit API mode — ktlint must
+# preserve tabs and never rewrite them to spaces.
+indent_style = tab
+# IntelliJ-compatible code style matches the project's existing formatting most
+# closely and avoids the churn of ktlint_official's stricter conventions.
+ktlint_code_style = intellij_idea
+# Generous line-length cap; ktlint is the single owner of line length (detekt's
+# MaxLineLength is disabled to avoid double-reporting).
+max_line_length = 160
+# Naming enforcement is disabled: this library deliberately uses GraphQL-spec and
+# DSL names that violate Kotlin's default conventions — DSL factory functions that
+# mirror type constructors (List(), GValue()), PascalCase type-mimicking locals
+# (val Type), camelCase enum entries (directive locations), and spec-section test
+# classes (Sec5_1_DocumentTests). Renaming would break the DSL's intent and the
+# spec-section test mapping.
+ktlint_standard_property-naming = disabled
+ktlint_standard_function-naming = disabled
+ktlint_standard_class-naming = disabled
+ktlint_standard_enum-entry-name-case = disabled
+ktlint_standard_backing-property-naming = disabled
+
+# The root umbrella project must ship a source file for publishing to work, but it
+# has no real code — Dummy.kt is an intentional, self-documented placeholder.
+[**/Dummy.kt]
+ktlint_standard_no-empty-file = disabled
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2

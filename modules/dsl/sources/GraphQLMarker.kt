@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * DSL marker for the GraphQL document and operation builder DSL.
  *

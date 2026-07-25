@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A top-level GraphQL operation definition (`query`, `mutation`, or `subscription`).
  *
@@ -15,17 +14,15 @@ public class GOperationDefinition(
 	override val directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GOperationDefinition> = GNodeExtensionSet.empty(),
-) :
-	GExecutableDefinition(
-		extensions = extensions,
-		origin = origin
-	),
+) : GExecutableDefinition(
+	extensions = extensions,
+	origin = origin,
+),
 	GNode.WithDirectives,
 	GNode.WithOptionalName,
 	GNode.WithVariableDefinitions {
 
 	override val nameNode: GName? = name
-
 
 	public constructor(
 		type: GOperationType,
@@ -40,12 +37,11 @@ public class GOperationDefinition(
 		selectionSet = selectionSet,
 		variableDefinitions = variableDefinitions,
 		directives = directives,
-		extensions = extensions
+		extensions = extensions,
 	)
 
-
-	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean =
-		this === other || (
+	override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
+		(
 			other is GOperationDefinition &&
 				directives.equalsNode(other.directives, includingOrigin = includingOrigin) &&
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
@@ -54,7 +50,6 @@ public class GOperationDefinition(
 				variableDefinitions.equalsNode(other.variableDefinitions, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
-
 
 	public companion object
 }

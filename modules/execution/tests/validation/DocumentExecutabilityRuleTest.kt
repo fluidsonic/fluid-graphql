@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.DocumentExecutabilityRule
+import kotlin.test.Test
 
 class DocumentExecutabilityRuleTest {
 
@@ -12,10 +11,9 @@ class DocumentExecutabilityRuleTest {
 			rule = DocumentExecutabilityRule,
 			errors = emptyList(),
 			document = "{ id: ID }",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsZeroOperations() {
@@ -25,10 +23,9 @@ class DocumentExecutabilityRuleTest {
 			document = """
 				|fragment f on Query { id: ID }
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsTypeDefinitions() {
@@ -42,34 +39,35 @@ class DocumentExecutabilityRuleTest {
 					1 | { id: ID }
 					2 | scalar S
 					  | ^
-				"""
+				""",
 			),
 			document = """
 				|{ id: ID }
 				|scalar S
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsTypeExtensions() {
 		assertValidationRule(
 			rule = DocumentExecutabilityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				In order to be executable, the document must contain only executable definitions.
 
 				<document>:2:1
 				1 | { id: ID }
 				2 | extend scalar S @foo
 				  | ^
-			"""),
+			""",
+			),
 			document = """
 				|{ id: ID }
 				|extend scalar S @foo
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
 }

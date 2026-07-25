@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-Object-Spreads-In-Object-Scope
 internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 
@@ -8,15 +7,15 @@ internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 		val type = TypeResolver.resolveType(data.schema, definition.typeCondition)
 			?: return // Cannot validate type that doesn't exist.
 
-		if (type is GCompositeType)
+		if (type is GCompositeType) {
 			return // Type is valid.
+		}
 
 		data.reportError(
 			message = "Fragment '${definition.name}' is specified on ${type.kind} '${type.name}' but must be specified on an interface, object or union type.",
-			nodes = listOf(definition.typeCondition, type.nameNode)
+			nodes = listOf(definition.typeCondition, type.nameNode),
 		)
 	}
-
 
 	override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: ValidationContext, visit: Visit) {
 		val typeCondition = selection.typeCondition
@@ -25,12 +24,13 @@ internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 		val type = TypeResolver.resolveType(data.schema, typeCondition)
 			?: return // Cannot validate type that doesn't exist.
 
-		if (type is GCompositeType)
+		if (type is GCompositeType) {
 			return // Type is valid.
+		}
 
 		data.reportError(
 			message = "Inline fragment is specified on ${type.kind} '${type.name}' but must be specified on an interface, object or union type.",
-			nodes = listOf(typeCondition, type.nameNode)
+			nodes = listOf(typeCondition, type.nameNode),
 		)
 	}
 }

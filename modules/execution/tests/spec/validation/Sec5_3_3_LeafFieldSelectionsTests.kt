@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FieldSubselectionRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.3.3 — Leaf Field Selections
 class Sec5_3_3_LeafFieldSelectionsTests {
@@ -17,10 +18,9 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 			""",
 			schema = """
 				|type Query { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsEnumLeaf() {
@@ -33,10 +33,9 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 			schema = """
 				|type Query { status: Status }
 				|enum Status { ACTIVE INACTIVE }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsObjectWithSelection() {
@@ -49,10 +48,9 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsInterfaceWithSelection() {
@@ -66,10 +64,9 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 				|type Query { pet: Pet }
 				|interface Pet { name: String }
 				|type Dog implements Pet { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsUnionWithSelection() {
@@ -84,16 +81,16 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsScalarWithSelection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select children of 'String' field 'name'.
 
 				<document>:1:8
@@ -103,22 +100,23 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 				<document>:1:14
 				1 | type Query { name: String }
 				  |              ^
-			"""),
+			""",
+			),
 			document = """
 				|{ name { foo } }
 			""",
 			schema = """
 				|type Query { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsEnumWithSelection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select children of 'Status' field 'status'.
 
 				<document>:1:10
@@ -129,23 +127,24 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 				1 | type Query { status: Status }
 				  |              ^
 				2 | enum Status { ACTIVE INACTIVE }
-			"""),
+			""",
+			),
 			document = """
 				|{ status { foo } }
 			""",
 			schema = """
 				|type Query { status: Status }
 				|enum Status { ACTIVE INACTIVE }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsObjectWithoutSelection() {
 		assertValidationRule(
 			rule = FieldSubselectionRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Must select children of 'Dog' field 'dog'.
 
 				<document>:1:3
@@ -156,14 +155,15 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 				1 | type Query { dog: Dog }
 				  |              ^
 				2 | type Dog { name: String }
-			"""),
+			""",
+			),
 			document = """
 				|{ dog }
 			""",
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
 }

@@ -1,8 +1,18 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.directives
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §4.1 — The __schema Meta-Field
 class SchemaIntrospectionTests {
@@ -15,23 +25,28 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    queryType { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val queryType = schemaData["queryType"] as Map<String, Any?>
 		assertEquals(expected = "Query", actual = queryType["name"])
 	}
-
 
 	@Test
 	fun testSchemaMutationTypePresent() = runTest {
@@ -44,23 +59,28 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    mutationType { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val mutationType = schemaData["mutationType"] as Map<String, Any?>
 		assertEquals(expected = "Mutation", actual = mutationType["name"])
 	}
-
 
 	@Test
 	fun testSchemaMutationTypeAbsent() = runTest {
@@ -70,21 +90,25 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    mutationType { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
 		assertNull(schemaData["mutationType"])
 	}
-
 
 	@Test
 	fun testSchemaSubscriptionTypeAbsent() = runTest {
@@ -94,21 +118,25 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    subscriptionType { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
 		assertNull(schemaData["subscriptionType"])
 	}
-
 
 	@Test
 	fun testSchemaTypesIncludesUserTypes() = runTest {
@@ -122,25 +150,30 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    types { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val types = schemaData["types"] as List<Map<String, Any?>>
 		val typeNames = types.map { it["name"] }
 		assertTrue(typeNames.contains("Query"), "Expected 'Query' in types but got: $typeNames")
 		assertTrue(typeNames.contains("MyObject"), "Expected 'MyObject' in types but got: $typeNames")
 	}
-
 
 	@Test
 	fun testSchemaTypesIncludesBuiltinScalars() = runTest {
@@ -150,18 +183,24 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    types { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val types = schemaData["types"] as List<Map<String, Any?>>
 		val typeNames = types.map { it["name"] }
@@ -172,7 +211,6 @@ class SchemaIntrospectionTests {
 		assertTrue(typeNames.contains("ID"), "Expected 'ID' in types")
 	}
 
-
 	@Test
 	fun testSchemaDirectivesIncludesBuiltins() = runTest {
 		val schema = GraphQL.schema {
@@ -181,18 +219,24 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __schema {
 			    directives { name }
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val schemaData = data["__schema"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val directives = schemaData["directives"] as List<Map<String, Any?>>
 		val directiveNames = directives.map { it["name"] }
@@ -202,7 +246,6 @@ class SchemaIntrospectionTests {
 		assertTrue(directiveNames.contains("specifiedBy"), "Expected 'specifiedBy' in directives")
 	}
 
-
 	@Test
 	fun testTypeQueryByName() = runTest {
 		val schema = GraphQL.schema {
@@ -211,23 +254,27 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "Query") {
 			    name
 			    kind
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val type = data["__type"] as Map<String, Any?>
 		assertEquals(expected = "Query", actual = type["name"])
 		assertEquals(expected = "OBJECT", actual = type["kind"])
 	}
-
 
 	@Test
 	fun testTypeQueryNonexistentName() = runTest {
@@ -237,13 +284,17 @@ class SchemaIntrospectionTests {
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(executor.execute("""
+		val result = executor.serializeResult(
+			executor.execute(
+				"""
 			{
 			  __type(name: "DoesNotExist") {
 			    name
 			  }
 			}
-		""".trimIndent()))
+				""".trimIndent(),
+			),
+		)
 
 		@Suppress("UNCHECKED_CAST")
 		val data = result["data"] as Map<String, Any?>

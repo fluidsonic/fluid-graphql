@@ -1,8 +1,16 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 // GraphQL Spec §6.1 — Executing Requests
 class ExecutingRequestsTests {
@@ -20,7 +28,6 @@ class ExecutingRequestsTests {
 		assertNotNull(result["errors"])
 	}
 
-
 	@Test
 	fun testValidationErrorReturnsNullData() = runTest {
 		val schema = GraphQL.schema {
@@ -35,7 +42,6 @@ class ExecutingRequestsTests {
 		assertNotNull(result["errors"])
 	}
 
-
 	@Test
 	fun testSuccessfulExecution() = runTest {
 		val schema = GraphQL.schema {
@@ -47,10 +53,9 @@ class ExecutingRequestsTests {
 		val result = executor.serializeResult(executor.execute("{ hello }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("hello" to "world")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testSelectingByOperationName() = runTest {
@@ -68,10 +73,9 @@ class ExecutingRequestsTests {
 		val result = executor.serializeResult(executor.execute(document, operationName = "OpBar"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("bar" to "bar-value")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testErrorWhenNoOperationNameWithMultipleOps() = runTest {
@@ -89,7 +93,6 @@ class ExecutingRequestsTests {
 		assertNotNull(result["errors"])
 	}
 
-
 	@Test
 	fun testErrorWhenOperationNameDoesNotMatch() = runTest {
 		val schema = GraphQL.schema {
@@ -101,7 +104,6 @@ class ExecutingRequestsTests {
 		val result = executor.serializeResult(executor.execute("query MyOp { foo }", operationName = "WrongName"))
 		assertNotNull(result["errors"])
 	}
-
 
 	@Test
 	fun testNullOperationNameWithSingleOp() = runTest {
@@ -115,7 +117,7 @@ class ExecutingRequestsTests {
 		val result = executor.serializeResult(executor.execute("query MyOp { foo }", operationName = null))
 		assertEquals(
 			expected = mapOf("data" to mapOf("foo" to "foo-value")),
-			actual = result
+			actual = result,
 		)
 	}
 }

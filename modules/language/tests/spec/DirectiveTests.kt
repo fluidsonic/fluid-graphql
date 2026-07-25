@@ -1,8 +1,12 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GBooleanValue
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GOperationDefinition
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 // GraphQL Spec §2.13 — Directives
 class DirectiveTests {
@@ -15,7 +19,6 @@ class DirectiveTests {
 		assertEquals(1, field.directives.size)
 		assertEquals("skip", field.directives.single().name)
 	}
-
 
 	@Test
 	fun testDirectiveWithArgs() {
@@ -30,7 +33,6 @@ class DirectiveTests {
 		assertFalse(boolVal.value)
 	}
 
-
 	@Test
 	fun testMultipleDirectives() {
 		val doc = GDocument.parse("{ field @foo @bar }").valueWithoutErrorsOrThrow()
@@ -40,7 +42,6 @@ class DirectiveTests {
 		assertEquals("foo", field.directives[0].name)
 		assertEquals("bar", field.directives[1].name)
 	}
-
 
 	@Test
 	fun testDirectiveOrderPreserved() {

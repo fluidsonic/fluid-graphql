@@ -1,9 +1,18 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
-
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.coerceOutput
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import io.fluidsonic.graphql.value
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 class OutputCoercionTests {
 
@@ -18,10 +27,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to "hello"))
+			expected = mapOf("data" to mapOf("value" to "hello")),
 		)
 	}
-
 
 	@Test
 	fun testScalarOutputCoercion_int() = runTest {
@@ -34,10 +42,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to 42))
+			expected = mapOf("data" to mapOf("value" to 42)),
 		)
 	}
-
 
 	@Test
 	fun testScalarOutputCoercion_float() = runTest {
@@ -50,10 +57,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to 3.14))
+			expected = mapOf("data" to mapOf("value" to 3.14)),
 		)
 	}
-
 
 	@Test
 	fun testScalarOutputCoercion_floatFromInt() = runTest {
@@ -66,10 +72,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to 5.0))
+			expected = mapOf("data" to mapOf("value" to 5.0)),
 		)
 	}
-
 
 	@Test
 	fun testScalarOutputCoercion_boolean() = runTest {
@@ -82,10 +87,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to true))
+			expected = mapOf("data" to mapOf("value" to true)),
 		)
 	}
-
 
 	@Test
 	fun testScalarOutputCoercion_id_fromString() = runTest {
@@ -98,10 +102,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to "abc"))
+			expected = mapOf("data" to mapOf("value" to "abc")),
 		)
 	}
-
 
 	@Test
 	fun testScalarOutputCoercion_id_fromInt() = runTest {
@@ -114,10 +117,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to "123"))
+			expected = mapOf("data" to mapOf("value" to "123")),
 		)
 	}
-
 
 	@Test
 	fun testEnumOutputCoercion() = runTest {
@@ -137,10 +139,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ status }""",
-			expected = mapOf("data" to mapOf("status" to "ACTIVE"))
+			expected = mapOf("data" to mapOf("status" to "ACTIVE")),
 		)
 	}
-
 
 	@Test
 	fun testObjectOutputCoercion() = runTest {
@@ -164,10 +165,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ user { name age } }""",
-			expected = mapOf("data" to mapOf("user" to mapOf("name" to "Alice", "age" to 30)))
+			expected = mapOf("data" to mapOf("user" to mapOf("name" to "Alice", "age" to 30))),
 		)
 	}
-
 
 	@Test
 	fun testListOutputCoercion() = runTest {
@@ -180,10 +180,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ values }""",
-			expected = mapOf("data" to mapOf("values" to listOf(1, 2, 3)))
+			expected = mapOf("data" to mapOf("values" to listOf(1, 2, 3))),
 		)
 	}
-
 
 	@Test
 	fun testNonNullFieldReturningNull_producesError() = runTest {
@@ -201,7 +200,6 @@ class OutputCoercionTests {
 			executor.execute("""{ value }""")
 		}
 	}
-
 
 	@Test
 	fun testNestedObjectOutputCoercion() = runTest {
@@ -241,14 +239,13 @@ class OutputCoercionTests {
 						"name" to "Alice",
 						"address" to mapOf(
 							"city" to "Berlin",
-							"zip" to "10115"
-						)
-					)
-				)
-			)
+							"zip" to "10115",
+						),
+					),
+				),
+			),
 		)
 	}
-
 
 	@Test
 	fun testListOfObjectsOutputCoercion() = runTest {
@@ -276,13 +273,12 @@ class OutputCoercionTests {
 				"data" to mapOf(
 					"items" to listOf(
 						mapOf("id" to 1, "label" to "first"),
-						mapOf("id" to 2, "label" to "second")
-					)
-				)
-			)
+						mapOf("id" to 2, "label" to "second"),
+					),
+				),
+			),
 		)
 	}
-
 
 	@Test
 	fun testInterfaceTypeResolution() = runTest {
@@ -293,13 +289,12 @@ class OutputCoercionTests {
 				"data" to mapOf(
 					"animal" to mapOf(
 						"name" to "Rex",
-						"breed" to "Labrador"
-					)
-				)
-			)
+						"breed" to "Labrador",
+					),
+				),
+			),
 		)
 	}
-
 
 	@Test
 	fun testUnionTypeResolution() = runTest {
@@ -309,13 +304,12 @@ class OutputCoercionTests {
 			expected = mapOf(
 				"data" to mapOf(
 					"search" to mapOf(
-						"text" to "found it"
-					)
-				)
-			)
+						"text" to "found it",
+					),
+				),
+			),
 		)
 	}
-
 
 	@Test
 	fun testNullableFieldReturningNull() = runTest {
@@ -328,10 +322,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ value }""",
-			expected = mapOf("data" to mapOf("value" to null))
+			expected = mapOf("data" to mapOf("value" to null)),
 		)
 	}
-
 
 	@Test
 	fun testCustomScalarOutputCoercion() = runTest {
@@ -352,10 +345,9 @@ class OutputCoercionTests {
 				}
 			},
 			document = """{ date }""",
-			expected = mapOf("data" to mapOf("date" to "MARCH"))
+			expected = mapOf("data" to mapOf("date" to "MARCH")),
 		)
 	}
-
 
 	companion object {
 
@@ -393,7 +385,6 @@ class OutputCoercionTests {
 			}
 		}
 
-
 		private val unionSchema = GraphQL.schema {
 			val TextResult by type
 			val NumberResult by type
@@ -420,7 +411,6 @@ class OutputCoercionTests {
 			}
 		}
 	}
-
 
 	private data class Address(val city: String, val zip: String)
 	private data class Person(val name: String, val address: Address)

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Mixin interface for builders that accept a `directives { ... }` block.
  *
@@ -17,16 +16,13 @@ public sealed interface GraphQLDirectivesContainer : GraphQLDirectivesContainerS
 	public fun directives(directives: List<GDirective>)
 }
 
-
 /** Scope interface for [GraphQLDirectivesContainer]. */
 @GraphQLMarker
 public sealed interface GraphQLDirectivesContainerScope
 
-
 internal interface GraphQLDirectivesContainerInternal : GraphQLDirectivesContainer {
 
 	var directives: List<GDirective>?
-
 
 	override fun directives(directives: List<GDirective>) {
 		check(this.directives == null) { "Cannot specify multiple 'directives' blocks." }
@@ -34,7 +30,6 @@ internal interface GraphQLDirectivesContainerInternal : GraphQLDirectivesContain
 		this.directives = directives
 	}
 }
-
 
 /**
  * Applies a `directives { ... }` block to this element using the [GraphQLDirectivesBuilder] DSL.

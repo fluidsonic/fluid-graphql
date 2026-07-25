@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.SelectionUnambiguityRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.3.2 — Field Selection Merging
 class Sec5_3_2_FieldSelectionMergingTests {
@@ -17,10 +18,9 @@ class Sec5_3_2_FieldSelectionMergingTests {
 			""",
 			schema = """
 				|type Query { foo: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsIdenticalAliasedFields() {
@@ -32,16 +32,16 @@ class Sec5_3_2_FieldSelectionMergingTests {
 			""",
 			schema = """
 				|type Query { foo: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDifferentReturnTypeSameAlias() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'id' in 'Query' is selected in multiple locations but with incompatible types.
 
 				<document>:1:3
@@ -59,16 +59,16 @@ class Sec5_3_2_FieldSelectionMergingTests {
 				<document>:1:27
 				1 | type Query { id: ID, foo: Int }
 				  |                           ^
-			"""),
+			""",
+			),
 			document = """
 				|{ id id: foo }
 			""",
 			schema = """
 				|type Query { id: ID, foo: Int }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsSameAliasOnFragments() {
@@ -85,16 +85,16 @@ class Sec5_3_2_FieldSelectionMergingTests {
 			""",
 			schema = """
 				|type Query { foo: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsConflictingArgsSameAlias() {
 		assertValidationRule(
 			rule = SelectionUnambiguityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Field 'x' in 'Query' is selected in multiple locations but selects different fields or with different arguments.
 
 				<document>:1:13
@@ -104,16 +104,16 @@ class Sec5_3_2_FieldSelectionMergingTests {
 				<document>:1:26
 				1 | { x: foo(a: 1) x: foo(a: 2) }
 				  |                          ^
-			"""),
+			""",
+			),
 			document = """
 				|{ x: foo(a: 1) x: foo(a: 2) }
 			""",
 			schema = """
 				|type Query { foo(a: Int): String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsIdenticalFieldArgs() {
@@ -125,7 +125,7 @@ class Sec5_3_2_FieldSelectionMergingTests {
 			""",
 			schema = """
 				|type Query { foo(a: Int): String }
-			"""
+			""",
 		)
 	}
 }

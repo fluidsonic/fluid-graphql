@@ -1,8 +1,13 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GListTypeRef
+import io.fluidsonic.graphql.GNamedTypeRef
+import io.fluidsonic.graphql.GNonNullTypeRef
+import io.fluidsonic.graphql.GOperationDefinition
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // GraphQL Spec §2.12 — Type References
 class TypeReferenceTests {
@@ -16,7 +21,6 @@ class TypeReferenceTests {
 		assertEquals("String", namedType.name)
 	}
 
-
 	@Test
 	fun testListTypeRef() {
 		val doc = GDocument.parse("query Q(\$x: [String]) { f }").valueWithoutErrorsOrThrow()
@@ -27,7 +31,6 @@ class TypeReferenceTests {
 		assertEquals("String", innerType.name)
 	}
 
-
 	@Test
 	fun testNonNullTypeRef() {
 		val doc = GDocument.parse("query Q(\$x: String!) { f }").valueWithoutErrorsOrThrow()
@@ -37,7 +40,6 @@ class TypeReferenceTests {
 		val innerType = nonNullType.nullableRef as GNamedTypeRef
 		assertEquals("String", innerType.name)
 	}
-
 
 	@Test
 	fun testNonNullListTypeRef() {
@@ -53,7 +55,6 @@ class TypeReferenceTests {
 		val namedType = elementNonNull.nullableRef as GNamedTypeRef
 		assertEquals("String", namedType.name)
 	}
-
 
 	@Test
 	fun testDoubleNonNullFails() {

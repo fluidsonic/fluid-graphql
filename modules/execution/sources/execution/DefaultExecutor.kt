@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // FIXME exception handling
 internal class DefaultExecutor(
 	private val exceptionHandler: GExceptionHandler?,
@@ -18,62 +17,58 @@ internal class DefaultExecutor(
 		operationName: String?,
 		variableValues: Map<String, Any?>,
 		extensions: GExecutorContextExtensionSet,
-	): GResult<Map<String, Any?>> =
-		getOperation(document = document, name = operationName)
-			.flatMapValue { operation ->
-				makeContext(
-					document = document,
-					operation = operation,
-					variableValues = variableValues,
-					extensions = extensions
-				)
-			}
-			.flatMapValue { context ->
-				executeOperation(
-					strategy = when (context.operation.type) {
-						GOperationType.query -> Strategy.parallel
-						GOperationType.mutation -> Strategy.serial
-						GOperationType.subscription -> throw UnsupportedOperationException("Subscription operations are not yet supported.")
-					},
-					context = context
-				)
-			}
-
-
-	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
-	private suspend fun executeOperation(
-		strategy: Strategy,
-		context: DefaultExecutorContext,
-	): GResult<Map<String, Any?>> =
-		when (strategy) {
-			Strategy.parallel -> context.selectionSetExecutor.execute(
-				selectionSet = context.operation.selectionSet,
-				parent = context.root,
-				parentType = context.rootType,
-				path = GPath.root,
-				context = context,
+	): GResult<Map<String, Any?>> = getOperation(document = document, name = operationName)
+		.flatMapValue { operation ->
+			makeContext(
+				document = document,
+				operation = operation,
+				variableValues = variableValues,
+				extensions = extensions,
 			)
-			Strategy.serial -> context.selectionSetExecutor.executeSerially(
-				selectionSet = context.operation.selectionSet,
-				parent = context.root,
-				parentType = context.rootType,
-				path = GPath.root,
+		}
+		.flatMapValue { context ->
+			executeOperation(
+				strategy = when (context.operation.type) {
+					GOperationType.query -> Strategy.parallel
+					GOperationType.mutation -> Strategy.serial
+					GOperationType.subscription -> throw UnsupportedOperationException("Subscription operations are not yet supported.")
+				},
 				context = context,
 			)
 		}
 
+	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
+	private suspend fun executeOperation(strategy: Strategy, context: DefaultExecutorContext): GResult<Map<String, Any?>> = when (strategy) {
+		Strategy.parallel -> context.selectionSetExecutor.execute(
+			selectionSet = context.operation.selectionSet,
+			parent = context.root,
+			parentType = context.rootType,
+			path = GPath.root,
+			context = context,
+		)
+		Strategy.serial -> context.selectionSetExecutor.executeSerially(
+			selectionSet = context.operation.selectionSet,
+			parent = context.root,
+			parentType = context.rootType,
+			path = GPath.root,
+			context = context,
+		)
+	}
 
 	// https://graphql.github.io/graphql-spec/June2018/#GetOperation()
-	private fun getOperation(document: GDocument, name: String?) =
-		when (name) {
-			null -> document.definitions.filterIsInstance<GOperationDefinition>().singleOrNull()
-			else -> document.operation(name)
-		}?.let { GResult.success(it) }
-			?: GResult.failure(GError(
-				if (name != null) "There is no operation named '$name' in the document."
-				else "There is no anonymous operation in the document."
-			))
-
+	private fun getOperation(document: GDocument, name: String?) = when (name) {
+		null -> document.definitions.filterIsInstance<GOperationDefinition>().singleOrNull()
+		else -> document.operation(name)
+	}?.let { GResult.success(it) }
+		?: GResult.failure(
+			GError(
+				if (name != null) {
+					"There is no operation named '$name' in the document."
+				} else {
+					"There is no anonymous operation in the document."
+				},
+			),
+		)
 
 	private suspend fun makeContext(
 		document: GDocument,
@@ -99,73 +94,70 @@ internal class DefaultExecutor(
 			selectionSetExecutor = DefaultSelectionSetExecutor,
 			variableInputCoercer = variableInputCoercer,
 			variableInputConverter = VariableInputConverter,
-			variableValues = emptyMap()
+			variableValues = emptyMap(),
 		)
 
 		return context.variableInputConverter.convertValues(
 			values = variableValues,
 			operation = operation,
-			context = context
+			context = context,
 		).flatMapValue { coercedVariableValues ->
 			resolveRoot(context = context).mapValue { root ->
 				context.copy(
 					root = root,
-					variableValues = coercedVariableValues
+					variableValues = coercedVariableValues,
 				)
 			}
 		}
 	}
 
-
-	private suspend fun resolveRoot(context: DefaultExecutorContext): GResult<Any> =
-		GResult.catchErrors {
-			context.withExceptionHandler(origin = { GExceptionOrigin.RootResolver(resolver = rootResolver, context = context) }) {
-				with(rootResolver) { context.resolveRoot() }
-			}
+	private suspend fun resolveRoot(context: DefaultExecutorContext): GResult<Any> = GResult.catchErrors {
+		context.withExceptionHandler(origin = { GExceptionOrigin.RootResolver(resolver = rootResolver, context = context) }) {
+			with(rootResolver) { context.resolveRoot() }
 		}
+	}
 
+	private fun serializeError(error: GError): Map<String, Any?> = buildMap {
+		put("message", error.message)
 
-	private fun serializeError(error: GError): Map<String, Any?> =
-		buildMap {
-			put("message", error.message)
+		(error.nodes.mapNotNull { it.origin } + error.origins)
+			.filter { it.line > 0 && it.column > 0 }
+			.map { mapOf("line" to it.line, "column" to it.column) }
+			.ifEmpty { null }
+			?.let { locations ->
+				put("locations", locations)
+			}
 
-			(error.nodes.mapNotNull { it.origin } + error.origins)
-				.filter { it.line > 0 && it.column > 0 }
-				.map { mapOf("line" to it.line, "column" to it.column) }
-				.ifEmpty { null }
-				?.let { locations ->
-					put("locations", locations)
-				}
-
-			error.path?.let { path ->
-				put("path", path.elements.map { element ->
+		error.path?.let { path ->
+			put(
+				"path",
+				path.elements.map { element ->
 					when (element) {
 						is GPath.Element.Index -> element.value
 						is GPath.Element.Name -> element.value
 					}
-				})
+				},
+			)
+		}
+
+		error.extensions
+			.ifEmpty { null }
+			?.let { extensions ->
+				put("extensions", extensions)
 			}
+	}
 
-			error.extensions
-				.ifEmpty { null }
-				?.let { extensions ->
-					put("extensions", extensions)
-				}
+	override fun serializeResult(result: GResult<Map<String, Any?>>): Map<String, Any?> = buildMap {
+		put("data", result.valueOrNull())
+
+		if (result.errors.isNotEmpty()) {
+			put("errors", result.errors.map(::serializeError))
 		}
-
-
-	override fun serializeResult(result: GResult<Map<String, Any?>>): Map<String, Any?> =
-		buildMap {
-			put("data", result.valueOrNull())
-
-			if (result.errors.isNotEmpty())
-				put("errors", result.errors.map(::serializeError))
-		}
-
+	}
 
 	private enum class Strategy {
 
 		parallel,
-		serial
+		serial,
 	}
 }

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * A position (or range) within a [GDocumentSource], used to point to errors in source text.
  *
@@ -14,21 +13,16 @@ public interface GDocumentPosition {
 	public val column: Int
 		get() = -1
 
-
 	public val endPosition: Int
 		get() = startPosition
-
 
 	public val line: Int
 		get() = -1
 
-
 	public val source: GDocumentSource
-
 
 	public val startPosition: Int
 		get() = -1
-
 
 	/**
 	 * Returns a human-readable description of this position, including the [source] name,
@@ -70,21 +64,20 @@ public interface GDocumentPosition {
 								.map { "" to it }
 								.toTypedArray(),
 							"" to (" ".repeat(sublineColumnNumber - 1) + "^"), // FIXME account for leading tabs in previous line
-							"" to lines.getOrNull(sublineIndex + 1)
+							"" to lines.getOrNull(sublineIndex + 1),
 						)
 					}
-				}
-				else
+				} else {
 					appendPrefixedLines(
 						"${lineNumber - 1}" to lines.getOrNull(lineNumber - 2),
 						"$lineNumber" to relevantLine,
 						"" to (" ".repeat(columnNumber - 1) + "^"), // FIXME account for leading tabs in previous line
-						"${lineNumber + 1}" to lines.getOrNull(lineNumber)
+						"${lineNumber + 1}" to lines.getOrNull(lineNumber),
 					)
+				}
 			}
 		}
 	}
-
 
 	public companion object {
 

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Handles exceptions thrown during GraphQL execution (resolvers, coercers).
  *

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 internal object Introspection {
 
 	private val Directive = GTypeRef("__Directive")
@@ -12,14 +11,13 @@ internal object Introspection {
 	private val Type = GTypeRef("__Type")
 	private val TypeKind = GTypeRef("__TypeKind")
 
-
 	// https://graphql.github.io/graphql-spec/June2018/#sec-Schema-Introspection
 	@Suppress("RemoveExplicitTypeArguments")
 	val schema = GraphQL.schema {
 		Object<GSchema>(Schema) {
 			description(
 				"A GraphQL Schema defines the capabilities of a GraphQL server. " +
-					"It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations."
+					"It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
 			)
 
 			field("types" of !List(!Type)) {
@@ -56,7 +54,7 @@ internal object Introspection {
 					"Scalar types provide no information beyond a name and description, while Enum types provide their values. " +
 					"Object and Interface types provide the fields they describe. " +
 					"Abstract types, Union and Interface, provide the Object types possible at runtime. " +
-					"List and NonNull types compose other types."
+					"List and NonNull types compose other types.",
 			)
 
 			field("kind" of !TypeKind) {
@@ -86,12 +84,14 @@ internal object Introspection {
 				argument("includeDeprecated" of Boolean default value(false))
 
 				resolve<List<GFieldDefinition>?> { type ->
-					if (type !is GNode.WithFieldDefinitions)
+					if (type !is GNode.WithFieldDefinitions) {
 						return@resolve null
+					}
 
 					var fieldDefinitions = type.fieldDefinitions
-					if (!(arguments["includeDeprecated"] as Boolean))
+					if (!(arguments["includeDeprecated"] as Boolean)) {
 						fieldDefinitions = fieldDefinitions.filter { it.deprecation === null }
+					}
 
 					return@resolve fieldDefinitions
 				}
@@ -119,12 +119,14 @@ internal object Introspection {
 				argument("includeDeprecated" of Boolean default value(false))
 
 				resolve<List<GEnumValueDefinition>?> { type ->
-					if (type !is GEnumType)
+					if (type !is GEnumType) {
 						return@resolve null
+					}
 
 					var values = type.values
-					if (!(arguments["includeDeprecated"] as Boolean))
+					if (!(arguments["includeDeprecated"] as Boolean)) {
 						values = values.filter { it.deprecation === null }
+					}
 
 					return@resolve values
 				}
@@ -142,7 +144,7 @@ internal object Introspection {
 		Object<GFieldDefinition>(Field) {
 			description(
 				"Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, " +
-					"and a return type."
+					"and a return type.",
 			)
 
 			field("name" of !String) {
@@ -176,7 +178,7 @@ internal object Introspection {
 		Object<GArgumentDefinition>(InputValue) {
 			description(
 				"Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their " +
-					"type and optionally a default value."
+					"type and optionally a default value.",
 			)
 
 			field("name" of !String) {
@@ -212,7 +214,7 @@ internal object Introspection {
 		Object<GEnumValueDefinition>(EnumValue) {
 			description(
 				"One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. " +
-					"However an Enum value is returned in a JSON response as a string."
+					"However an Enum value is returned in a JSON response as a string.",
 			)
 
 			field("name" of !String) {
@@ -263,7 +265,7 @@ internal object Introspection {
 			description(
 				"A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\n" +
 					"In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, " +
-					"such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor."
+					"such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
 			)
 
 			field("name" of !String) {
@@ -346,7 +348,6 @@ internal object Introspection {
 		}
 	}
 
-
 	val directiveType: GObjectType = TypeResolver.resolveTypeAs(schema, Directive)!!
 	val directiveLocationType: GEnumType = TypeResolver.resolveTypeAs(schema, DirectiveLocation)!!
 	val enumValueType: GObjectType = TypeResolver.resolveTypeAs(schema, EnumValue)!!
@@ -362,7 +363,7 @@ internal object Introspection {
 		description = "Access the current type schema of this server.",
 		extensions = GNodeExtensionSet {
 			resolver = GFieldResolver<GSchema> { it }
-		}
+		},
 	)
 
 	val typeField = GFieldDefinition(
@@ -372,12 +373,12 @@ internal object Introspection {
 		argumentDefinitions = listOf(
 			GFieldArgumentDefinition(
 				name = "name",
-				type = GStringTypeRef.nonNullableRef
-			)
+				type = GStringTypeRef.nonNullableRef,
+			),
 		),
 		extensions = GNodeExtensionSet {
 			resolver = GFieldResolver<GSchema> { TypeResolver.resolveType(it, arguments["name"] as String) }
-		}
+		},
 	)
 
 	val typenameField = GFieldDefinition(
@@ -386,9 +387,8 @@ internal object Introspection {
 		description = "The name of the current Object type at runtime.",
 		extensions = GNodeExtensionSet {
 			resolver = GFieldResolver<GObjectType> { it.name }
-		}
+		},
 	)
-
 
 	private val GFieldResolverContext.introspectedSchema: GSchema
 		get() = execution.root as GSchema

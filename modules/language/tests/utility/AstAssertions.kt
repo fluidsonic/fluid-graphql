@@ -1,14 +1,24 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
+import io.fluidsonic.graphql.GDefinition
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GDocumentSource
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GNamedType
+import io.fluidsonic.graphql.GNode
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GSelection
+import io.fluidsonic.graphql.GStringValue
+import io.fluidsonic.graphql.GValue
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // FIXME cleanup
 
 // expected to not throw
-fun assertAst(actual: String) =
-	GDocument.parse(makeSource(actual.trimMargin())).valueWithoutErrorsOrThrow()
-
+fun assertAst(actual: String) = GDocument.parse(makeSource(actual.trimMargin())).valueWithoutErrorsOrThrow()
 
 // Note that "start .. end" origin notations use an exclusive end rather than an inclusive for sake of readability
 @Suppress("NAME_SHADOWING")
@@ -18,10 +28,9 @@ fun assertAst(actual: String, expected: AstBuilder.() -> GNode) {
 
 	assertTrue(
 		actual = actual.equalsNode(expected, includingOrigin = true),
-		message = "Expected <$expected>, actual <$actual>."
+		message = "Expected <$expected>, actual <$actual>.",
 	)
 }
-
 
 inline fun <T : GNode> List<T>.assertMany(count: Int, block: List<T>.() -> Unit) {
 	assertEquals(expected = count, actual = size)
@@ -29,12 +38,9 @@ inline fun <T : GNode> List<T>.assertMany(count: Int, block: List<T>.() -> Unit)
 	block()
 }
 
-
-inline fun <T : GNode> List<T>.assertOne(block: T.() -> Unit) =
-	assertMany(1) {
-		single().apply(block)
-	}
-
+inline fun <T : GNode> List<T>.assertOne(block: T.() -> Unit) = assertMany(1) {
+	single().apply(block)
+}
 
 inline fun <reified T : GNode> GNode.assertClass(block: T.() -> Unit) {
 	assertTrue(this is T, "Expected '$this' to be of ${T::class}")
@@ -42,19 +48,12 @@ inline fun <reified T : GNode> GNode.assertClass(block: T.() -> Unit) {
 	block(this)
 }
 
-
 fun GNamedType.assertName(name: String, range: IntRange) {
 	assertEquals(expected = name, actual = this.name)
 	nameNode.assertAt(range)
 }
 
-
-fun assertSyntaxError(
-	content: String,
-	message: String,
-	line: Int,
-	column: Int,
-) {
+fun assertSyntaxError(content: String, message: String, line: Int, column: Int) {
 	val result = GDocument.parse(content.trimMargin())
 	assertNull(result.valueOrNull())
 	assertEquals(expected = 1, actual = result.errors.size)
@@ -65,37 +64,29 @@ fun assertSyntaxError(
 	assertEquals(expected = column, actual = error.origins.first().column, message = "incorrect column")
 }
 
+private fun makeSource(content: String) = object : GDocumentSource.Parsable {
 
-private fun makeSource(content: String) =
-	object : GDocumentSource.Parsable {
+	override val content = content
+	override val name = "<test>"
 
-		override val content = content
-		override val name = "<test>"
+	override fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int) = AstBuilder.DocumentPosition(
+		startPosition = startPosition,
+		endPosition = endPosition,
+		line = line,
+		column = column,
+	)
+}
 
-
-		override fun makeOrigin(startPosition: Int, endPosition: Int, column: Int, line: Int) =
-			AstBuilder.DocumentPosition(
-				startPosition = startPosition,
-				endPosition = endPosition,
-				line = line,
-				column = column
-			)
-	}
-
-
-////////////
+// //////////
 
 fun GNode.assertAt(range: IntRange) {
 	val origin = origin
 
 	assertNotNull(origin) { ".origin" }
-	assertEquals(expected = origin.startPosition .. origin.endPosition, actual = range)
+	assertEquals(expected = origin.startPosition..origin.endPosition, actual = range)
 }
 
-
-fun GDefinition.asOperation() =
-	this as GOperationDefinition
-
+fun GDefinition.asOperation() = this as GOperationDefinition
 
 inline fun <T : GNode> T?.assert(block: T.() -> Unit) {
 	assertNotNull(this)
@@ -103,14 +94,12 @@ inline fun <T : GNode> T?.assert(block: T.() -> Unit) {
 	block()
 }
 
-
 inline fun <reified T : GNode> GNode?.assertOf(block: T.() -> Unit) {
 	assertNotNull(this)
 	assertTrue { this is T }
 
 	(this as T).block()
 }
-
 
 inline fun <reified T : GNode> List<*>.assertOneOf(block: T.() -> Unit) {
 	assertEquals(expected = 1, actual = size)
@@ -121,10 +110,6 @@ inline fun <reified T : GNode> List<*>.assertOneOf(block: T.() -> Unit) {
 	(single as T).block()
 }
 
+fun GSelection.asFieldSelection() = this as GFieldSelection
 
-fun GSelection.asFieldSelection() =
-	this as GFieldSelection
-
-
-fun GValue.asString() =
-	this as GStringValue
+fun GValue.asString() = this as GStringValue

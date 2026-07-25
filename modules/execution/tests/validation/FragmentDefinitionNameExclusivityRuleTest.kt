@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentDefinitionNameExclusivityRule
+import kotlin.test.Test
 
 class FragmentDefinitionNameExclusivityRuleTest {
 
@@ -29,16 +28,16 @@ class FragmentDefinitionNameExclusivityRuleTest {
 				|  }
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateFragmentNames() {
 		assertValidationRule(
 			rule = FragmentDefinitionNameExclusivityRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				The document must not contain multiple fragments with the same name 'fragmentOne'.
 
 				<document>:7:10
@@ -52,7 +51,8 @@ class FragmentDefinitionNameExclusivityRuleTest {
 				11 | fragment fragmentOne on Dog {
 				   |          ^
 				12 |   owner {
-			"""),
+			""",
+			),
 			document = """
 				|{
 				|  dog {
@@ -70,10 +70,9 @@ class FragmentDefinitionNameExclusivityRuleTest {
 				|  }
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
-
 
 	@Test
 	fun testReportsAllProblematicFragments() {
@@ -109,7 +108,7 @@ class FragmentDefinitionNameExclusivityRuleTest {
 					21 | fragment fragmentTwo on Dog {
 					   |          ^
 					22 |   owner {
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -138,7 +137,7 @@ class FragmentDefinitionNameExclusivityRuleTest {
 				|  }
 				|}
 			""",
-			schema = "type Query { id: ID }"
+			schema = "type Query { id: ID }",
 		)
 	}
 }

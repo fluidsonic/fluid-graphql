@@ -1,7 +1,7 @@
 package io.fluidsonic.graphql
 
-import kotlin.jvm.*
-import kotlin.reflect.*
+import kotlin.jvm.JvmName
+import kotlin.reflect.KProperty
 
 // TODO Rework this into GraphQL* types.
 
@@ -31,7 +31,6 @@ public annotation class SchemaBuilderType
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS)
 public annotation class SchemaBuilderDsl
-
 
 /**
  * DSL builder for constructing a [GSchema].
@@ -68,8 +67,7 @@ public interface GSchemaBuilder {
 		get() = NamedTypeRefFactory
 
 	/** Creates a named type reference by string name. */
-	public fun type(name: String): GNamedTypeRef =
-		GTypeRef(name)
+	public fun type(name: String): GNamedTypeRef = GTypeRef(name)
 
 	/** Defines a custom directive with the given [name]. */
 	public fun Directive(name: String, configure: DirectiveDefinitionBuilder.() -> Unit = noOp)
@@ -167,14 +165,12 @@ public interface GSchemaBuilder {
 	 */
 	public infix fun GNamedTypeRef.with(possibleType: GNamedTypeRef): PossibleTypes
 
-
 	public companion object {
 
 		private val defaultDeprecatedReason = GLanguage.defaultDeprecatedDirective.argumentDefinition("reason")!!
 			.defaultValue.let { it as GStringValue }
 			.value
 	}
-
 
 	/** Builder scope for providing argument values inside a directive application. */
 	@SchemaBuilderDsl
@@ -186,16 +182,17 @@ public interface GSchemaBuilder {
 		/** Creates a name/value pair for use with [argument]. */
 		public infix fun String.with(value: Value): NameAndValue
 
-
 		/** Represents a name/value pair for use with [argument]. */
 		public interface NameAndValue
 	}
 
-
 	/** Builder for a single input argument definition on a field or directive. */
 	@SchemaBuilderDsl
-	public interface ArgumentDefinitionBuilder : NodeBuilder, DeprecationContainer, DescriptionContainer, DirectiveContainer
-
+	public interface ArgumentDefinitionBuilder :
+		NodeBuilder,
+		DeprecationContainer,
+		DescriptionContainer,
+		DirectiveContainer
 
 	/**
 	 * DSL scope for declaring argument definitions on a field or directive.
@@ -209,7 +206,9 @@ public interface GSchemaBuilder {
 	 * ```
 	 */
 	@SchemaBuilderDsl
-	public interface ArgumentDefinitionContainer : TypeRefContainer, ValueContainer {
+	public interface ArgumentDefinitionContainer :
+		TypeRefContainer,
+		ValueContainer {
 
 		/** Declares an argument with a name and type. */
 		public fun argument(name: NameAndType, configure: ArgumentDefinitionBuilder.() -> Unit = noOp)
@@ -219,7 +218,6 @@ public interface GSchemaBuilder {
 
 		/** Creates a name/type pair for use with [argument]. */
 		public infix fun String.of(type: GTypeRef): NameAndType
-
 
 		/** Represents a name/type pair for use with [argument]. */
 		public interface NameAndType {
@@ -231,7 +229,6 @@ public interface GSchemaBuilder {
 		/** Represents a name/type/default triple for use with [argument]. */
 		public interface NameAndTypeAndDefault
 	}
-
 
 	/** DSL scope for marking a schema element as deprecated. */
 	@SchemaBuilderDsl
@@ -246,7 +243,6 @@ public interface GSchemaBuilder {
 		public fun deprecated(reason: String? = defaultDeprecatedReason)
 	}
 
-
 	/** DSL scope for adding a description to a schema element. */
 	@SchemaBuilderDsl
 	public interface DescriptionContainer {
@@ -255,11 +251,12 @@ public interface GSchemaBuilder {
 		public fun description(text: String)
 	}
 
-
 	/** Builder for a single directive application, allowing argument values to be set. */
 	@SchemaBuilderDsl
-	public interface DirectiveBuilder : NodeBuilder, ArgumentContainer, ValueContainer
-
+	public interface DirectiveBuilder :
+		NodeBuilder,
+		ArgumentContainer,
+		ValueContainer
 
 	/**
 	 * Builder for a custom directive definition.
@@ -274,7 +271,10 @@ public interface GSchemaBuilder {
 	 * ```
 	 */
 	@SchemaBuilderDsl
-	public interface DirectiveDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer {
+	public interface DirectiveDefinitionBuilder :
+		NodeBuilder,
+		ArgumentDefinitionContainer,
+		DescriptionContainer {
 
 		/** Directive location: argument definition. */
 		public val ARGUMENT_DEFINITION: DirectiveLocation
@@ -333,13 +333,11 @@ public interface GSchemaBuilder {
 		/** Directive location: variable definition. */
 		public val VARIABLE_DEFINITION: DirectiveLocation
 
-
 		/** Declares that the directive may appear at the given [DirectiveLocation]. */
 		public fun on(any: DirectiveLocation)
 
 		/** Declares that the directive may appear at any of the given locations. */
 		public fun on(any: DirectiveLocationSet)
-
 
 		/** A single valid location for a directive definition. */
 		public interface DirectiveLocation {
@@ -347,7 +345,6 @@ public interface GSchemaBuilder {
 			/** Combines this location with [other] into a [DirectiveLocationSet]. */
 			public infix fun or(other: DirectiveLocation): DirectiveLocationSet
 		}
-
 
 		/** A set of valid locations for a directive definition. */
 		public interface DirectiveLocationSet {
@@ -357,7 +354,6 @@ public interface GSchemaBuilder {
 		}
 	}
 
-
 	/** DSL scope for applying directives to a schema element. */
 	@SchemaBuilderDsl
 	public interface DirectiveContainer {
@@ -366,20 +362,23 @@ public interface GSchemaBuilder {
 		public fun directive(name: String, configure: DirectiveBuilder.() -> Unit = noOp)
 	}
 
-
 	/** Builder for an enum type definition. */
 	@SchemaBuilderDsl
-	public interface EnumTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer {
+	public interface EnumTypeDefinitionBuilder :
+		NodeBuilder,
+		DescriptionContainer,
+		DirectiveContainer {
 
 		/** Declares an enum value with the given [name]. */
 		public fun value(name: String, configure: ValueBuilder.() -> Unit = noOp)
 
-
 		/** Builder for a single enum value. */
 		@SchemaBuilderDsl
-		public interface ValueBuilder : DeprecationContainer, DescriptionContainer, DirectiveContainer
+		public interface ValueBuilder :
+			DeprecationContainer,
+			DescriptionContainer,
+			DirectiveContainer
 	}
-
 
 	/** Builder for a field definition on an object or interface type. */
 	@SchemaBuilderDsl
@@ -389,7 +388,6 @@ public interface GSchemaBuilder {
 		DeprecationContainer,
 		DescriptionContainer,
 		DirectiveContainer
-
 
 	/**
 	 * DSL scope for declaring fields on an object or interface type.
@@ -412,16 +410,17 @@ public interface GSchemaBuilder {
 		/** Creates a name/type pair for use with [field]. */
 		public infix fun String.of(type: GTypeRef): NameAndType
 
-
 		/** Represents a name/type pair for use with [field]. */
 		public interface NameAndType
 	}
 
-
 	/** Builder for an input object type definition. Fields are declared via [ArgumentDefinitionContainer]. */
 	@SchemaBuilderDsl
-	public interface InputObjectTypeDefinitionBuilder : NodeBuilder, ArgumentDefinitionContainer, DescriptionContainer, DirectiveContainer
-
+	public interface InputObjectTypeDefinitionBuilder :
+		NodeBuilder,
+		ArgumentDefinitionContainer,
+		DescriptionContainer,
+		DirectiveContainer
 
 	/** Builder for an interface type definition. */
 	@SchemaBuilderDsl
@@ -431,7 +430,6 @@ public interface GSchemaBuilder {
 		DescriptionContainer,
 		DirectiveContainer,
 		FieldDefinitionContainer
-
 
 	/**
 	 * Represents a type and one or more interfaces it implements.
@@ -445,7 +443,6 @@ public interface GSchemaBuilder {
 		public infix fun and(type: GNamedTypeRef): Interfaces
 	}
 
-
 	/**
 	 * Delegate provider that derives a [GNamedTypeRef] from the delegating property's name.
 	 *
@@ -454,10 +451,8 @@ public interface GSchemaBuilder {
 	public object NamedTypeRefFactory {
 
 		/** Returns a [GNamedTypeRef] whose name is the delegating property's name. */
-		public operator fun getValue(thisRef: Any?, property: KProperty<*>): GNamedTypeRef =
-			GTypeRef(property.name)
+		public operator fun getValue(thisRef: Any?, property: KProperty<*>): GNamedTypeRef = GTypeRef(property.name)
 	}
-
 
 	/** Provides access to AST node extension data during schema construction. */
 	@SchemaBuilderDsl
@@ -470,7 +465,6 @@ public interface GSchemaBuilder {
 		public fun <Value : Any> extension(key: GNodeExtensionKey<in Value>, value: Value)
 	}
 
-
 	/** Builder for an object type definition. */
 	@SchemaBuilderDsl
 	public interface ObjectTypeDefinitionBuilder :
@@ -479,7 +473,6 @@ public interface GSchemaBuilder {
 		DescriptionContainer,
 		DirectiveContainer,
 		FieldDefinitionContainer
-
 
 	/**
 	 * Represents a union name and its possible member types.
@@ -493,11 +486,12 @@ public interface GSchemaBuilder {
 		public infix fun or(type: GNamedTypeRef): PossibleTypes
 	}
 
-
 	/** Builder for a scalar type definition. */
 	@SchemaBuilderDsl
-	public interface ScalarTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
-
+	public interface ScalarTypeDefinitionBuilder :
+		NodeBuilder,
+		DescriptionContainer,
+		DirectiveContainer
 
 	/**
 	 * Provides built-in GraphQL scalar type references and list/non-null constructors.
@@ -536,24 +530,24 @@ public interface GSchemaBuilder {
 		/** Wraps [type] in a [GListTypeRef]. */
 		public fun List(type: GTypeRef): GTypeRef
 
-
 		/**
 		 * Wraps a type reference as non-null.
 		 *
 		 * Throws if already non-null.
 		 */
-		public operator fun GTypeRef.not(): GNonNullTypeRef =
-			if (this is GNonNullTypeRef)
-				error("Cannot use '!' on a type that's already non-null.")
-			else
-				GNonNullTypeRef(this)
+		public operator fun GTypeRef.not(): GNonNullTypeRef = if (this is GNonNullTypeRef) {
+			error("Cannot use '!' on a type that's already non-null.")
+		} else {
+			GNonNullTypeRef(this)
+		}
 	}
-
 
 	/** Builder for a union type definition. */
 	@SchemaBuilderDsl
-	public interface UnionTypeDefinitionBuilder : NodeBuilder, DescriptionContainer, DirectiveContainer
-
+	public interface UnionTypeDefinitionBuilder :
+		NodeBuilder,
+		DescriptionContainer,
+		DirectiveContainer
 
 	/** A wrapped [GValue] for use as an argument or default value in the schema DSL. */
 	@SchemaBuilderDsl
@@ -562,7 +556,6 @@ public interface GSchemaBuilder {
 		/** Returns the underlying [GValue]. */
 		public fun toGValue(): GValue
 	}
-
 
 	/** DSL scope for producing [Value] wrappers from raw [GValue] nodes. */
 	@SchemaBuilderDsl
@@ -573,105 +566,82 @@ public interface GSchemaBuilder {
 	}
 }
 
-
 // FIXME add DSL for object values
 
 /** Creates a [GSchemaBuilder.Value] for the given enum value name, or null. */
 @JvmName("floatValue")
-public fun GSchemaBuilder.ValueContainer.enum(value: String?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GEnumValue(value))
-	}
-
+public fun GSchemaBuilder.ValueContainer.enum(value: String?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GEnumValue(value))
+}
 
 /** Creates a [GSchemaBuilder.Value] wrapping a null [GValue]. */
 @JvmName("nullValue")
 @Suppress("DEPRECATION_ERROR", "UNUSED_PARAMETER")
-public fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value =
-	value(GNullValue())
-
+public fun GSchemaBuilder.ValueContainer.value(value: Nothing?): GSchemaBuilder.Value = value(GNullValue())
 
 /** Creates a [GSchemaBuilder.Value] from a nullable [Boolean]. */
 @JvmName("booleanValue")
-public fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GBooleanValue(value))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: Boolean?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GBooleanValue(value))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable [Double]. */
 @JvmName("floatValue")
-public fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GFloatValue(value))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: Double?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GFloatValue(value))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable [Int]. */
 @JvmName("intValue")
-public fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GIntValue(value))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: Int?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GIntValue(value))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable [String]. */
 @JvmName("stringValue")
-public fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GStringValue(value))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: String?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GStringValue(value))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable list of null values. */
 @JvmName("nullListValue")
-public fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GListValue(value.map { GNullValue() }))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: List<Nothing>?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GListValue(value.map { GNullValue() }))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable list of [Boolean] values. */
 @JvmName("booleanListValue")
-public fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GListValue(value.map(::GBooleanValue)))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: List<Boolean>?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GListValue(value.map(::GBooleanValue)))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable list of [Double] values. */
 @JvmName("floatListValue")
-public fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GListValue(value.map(::GFloatValue)))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: List<Double>?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GListValue(value.map(::GFloatValue)))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable list of [Int] values. */
 @JvmName("intListValue")
-public fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GListValue(value.map(::GIntValue)))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: List<Int>?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GListValue(value.map(::GIntValue)))
+}
 
 /** Creates a [GSchemaBuilder.Value] from a nullable list of [String] values. */
 @JvmName("stringListValue")
-public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBuilder.Value =
-	when (value) {
-		null -> value(value)
-		else -> value(GListValue(value.map(::GStringValue)))
-	}
-
+public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBuilder.Value = when (value) {
+	null -> value(value)
+	else -> value(GListValue(value.map(::GStringValue)))
+}
 
 /**
  * Builds a [GSchema] using the [GSchemaBuilder] DSL.
@@ -685,9 +655,7 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBui
  * ```
  */
 @Suppress("UnusedReceiverParameter")
-public fun GraphQL.schema(configure: GSchemaBuilder.() -> Unit): GSchema =
-	DefaultSchemaBuilder().apply(configure).build()
-
+public fun GraphQL.schema(configure: GSchemaBuilder.() -> Unit): GSchema = DefaultSchemaBuilder().apply(configure).build()
 
 // https://youtrack.jetbrains.com/issue/KT-40083
 private val noOp: Any?.() -> Unit = {}

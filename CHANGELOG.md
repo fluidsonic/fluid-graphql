@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 
 - Migrated to fluid-gradle 4.0.0 (Kotlin 2.4.10, Gradle 9.6.1, JDK 21+).
+- Adopted ktlint and detekt for formatting and static analysis (enforced via `./gradlew check` in CI) and reformatted the codebase to match. No public API or behavior changes.
 
 ### Fixed
 

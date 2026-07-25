@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Entry point for the fluid-graphql DSL.
  *

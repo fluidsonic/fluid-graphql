@@ -1,8 +1,14 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // GraphQL Spec §6.2 — Executing Operations
 class ExecutingOperationsTests {
@@ -20,10 +26,9 @@ class ExecutingOperationsTests {
 		val result = executor.serializeResult(executor.execute("{ a b c }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("a" to "aValue", "b" to "bValue", "c" to "cValue")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testMutationFieldsExecuteSerially() = runTest {
@@ -49,7 +54,6 @@ class ExecutingOperationsTests {
 		assertEquals(expected = listOf("first", "second"), actual = executionOrder)
 	}
 
-
 	@Test
 	fun testAnonymousQueryExecution() = runTest {
 		val schema = GraphQL.schema {
@@ -62,10 +66,9 @@ class ExecutingOperationsTests {
 		val result = executor.serializeResult(executor.execute("{ hello }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("hello" to "world")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testNamedQueryExecution() = runTest {
@@ -78,10 +81,9 @@ class ExecutingOperationsTests {
 		val result = executor.serializeResult(executor.execute("query MyQuery { hello }"))
 		assertEquals(
 			expected = mapOf("data" to mapOf("hello" to "world")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testQueryWithVariables() = runTest {
@@ -97,15 +99,14 @@ class ExecutingOperationsTests {
 		val result = executor.serializeResult(
 			executor.execute(
 				documentSource = "query(\$name: String) { greet(name: \$name) }",
-				variableValues = mapOf("name" to "Alice")
-			)
+				variableValues = mapOf("name" to "Alice"),
+			),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("greet" to "Hello, Alice!")),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testQueryWithDefaultVariable() = runTest {
@@ -122,15 +123,14 @@ class ExecutingOperationsTests {
 		val result = executor.serializeResult(
 			executor.execute(
 				documentSource = "query(\$enabled: Boolean = true) { flag(enabled: \$enabled) }",
-				variableValues = emptyMap()
-			)
+				variableValues = emptyMap(),
+			),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("flag" to true)),
-			actual = result
+			actual = result,
 		)
 	}
-
 
 	@Test
 	fun testNullVariableValueVsOmittedVariable() = runTest {
@@ -151,24 +151,24 @@ class ExecutingOperationsTests {
 		val resultWithValue = executor.serializeResult(
 			executor.execute(
 				documentSource = "query(\$value: String) { echo(value: \$value) }",
-				variableValues = mapOf("value" to "hello")
-			)
+				variableValues = mapOf("value" to "hello"),
+			),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to "was-hello")),
-			actual = resultWithValue
+			actual = resultWithValue,
 		)
 
 		// Omitting the variable — no default, so argument is null
 		val resultOmitted = executor.serializeResult(
 			executor.execute(
 				documentSource = "query(\$value: String) { echo(value: \$value) }",
-				variableValues = emptyMap()
-			)
+				variableValues = emptyMap(),
+			),
 		)
 		assertEquals(
 			expected = mapOf("data" to mapOf("echo" to "was-null")),
-			actual = resultOmitted
+			actual = resultOmitted,
 		)
 	}
 }

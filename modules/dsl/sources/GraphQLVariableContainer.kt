@@ -1,9 +1,9 @@
 package io.fluidsonic.graphql
 
-import io.fluidsonic.graphql.GraphQLVariableContainer.*
-import kotlin.properties.*
-import kotlin.reflect.*
-
+import io.fluidsonic.graphql.GraphQLVariableContainer.RefFactory
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 /**
  * Container that accepts variable definitions and tracks references to them.
@@ -17,7 +17,6 @@ public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope
 	/** Adds a pre-built [GVariableDefinition] and returns a reference to it. */
 	public fun variable(definition: GVariableDefinition): GVariableRef
 
-
 	/**
 	 * A property delegate provider that registers a variable definition using the delegating
 	 * property's name as the variable name.
@@ -29,17 +28,12 @@ public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope
 	 * Must be used with `by` delegation — calling the result without delegation will throw.
 	 */
 	@GraphQLMarker
-	public class RefFactory internal constructor(
-		private val register: (factory: RefFactory, name: String) -> GVariableRef,
-	) : PropertyDelegateProvider<Nothing?, ReadOnlyProperty<Nothing?, GVariableRef>> {
+	public class RefFactory internal constructor(private val register: (factory: RefFactory, name: String) -> GVariableRef) :
+		PropertyDelegateProvider<Nothing?, ReadOnlyProperty<Nothing?, GVariableRef>> {
 
 		private val notDelegatedError: Throwable = IllegalStateException("This variable() overload must be delegated to using 'by'.")
 
-
-		internal fun throwNotDelegatedError(): Nothing {
-			throw notDelegatedError
-		}
-
+		internal fun throwNotDelegatedError(): Nothing = throw notDelegatedError
 
 		override fun provideDelegate(thisRef: Nothing?, property: KProperty<*>): ReadOnlyProperty<Nothing?, GVariableRef> {
 			val ref = register(this, property.name)
@@ -48,7 +42,6 @@ public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope
 		}
 	}
 }
-
 
 /**
  * Scope interface for declaring variables in an operation or fragment builder.
@@ -61,47 +54,39 @@ public sealed interface GraphQLVariableContainer : GraphQLVariableContainerScope
 public sealed interface GraphQLVariableContainerScope : GraphQLTypeContainerScope {
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	public fun variable(type: String): RefFactory =
-		variable(type(type))
+	public fun variable(type: String): RefFactory = variable(type(type))
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	public fun variable(type: String, configure: GraphQLVariableBuilder.() -> Unit): RefFactory =
-		variable(type(type), configure = configure)
+	public fun variable(type: String, configure: GraphQLVariableBuilder.() -> Unit): RefFactory = variable(type(type), configure = configure)
 
 	/** Declares a variable with an explicit [name] and a type given by its string name. */
-	public fun variable(name: String, type: String): GVariableRef =
-		variable(name = name, type = type(type))
+	public fun variable(name: String, type: String): GVariableRef = variable(name = name, type = type(type))
 
 	/** Declares a variable with an explicit [name] and a type given by its string name. */
 	public fun variable(name: String, type: String, configure: GraphQLVariableBuilder.() -> Unit): GVariableRef =
 		variable(name = name, type = type(type), configure = configure)
 
 	/** Declares a variable with an explicit [name] and [type]. */
-	public fun variable(name: String, type: GTypeRef): GVariableRef =
-		variable(name = name, type = type) {}
+	public fun variable(name: String, type: GTypeRef): GVariableRef = variable(name = name, type = type) {}
 
 	/** Declares a variable with an explicit [name] and [type]. */
 	public fun variable(name: String, type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): GVariableRef
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
-	public fun variable(type: GTypeRef): RefFactory =
-		variable(type = type) {}
+	public fun variable(type: GTypeRef): RefFactory = variable(type = type) {}
 
 	/** Declares a variable whose name is derived from a `by`-delegated property. */
 	public fun variable(type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): RefFactory
 }
-
 
 internal interface GraphQLVariableContainerInternal : GraphQLVariableContainer {
 
 	val unusedVariableRefFactories: MutableList<RefFactory>
 	val variableDefinitions: MutableList<GVariableDefinition>
 
-
 	fun finalize() {
 		unusedVariableRefFactories.firstOrNull()?.throwNotDelegatedError()
 	}
-
 
 	override fun variable(definition: GVariableDefinition): GVariableRef {
 		val name = definition.name
@@ -113,16 +98,13 @@ internal interface GraphQLVariableContainerInternal : GraphQLVariableContainer {
 		return GVariableRef(name)
 	}
 
-
 	// TODO Move to extension and inline once we have context receivers.
 	override fun variable(name: String, type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): GVariableRef =
 		variable(GraphQLVariableBuilder(name = name, type = type).apply(configure).build())
 
+	override fun variable(type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): RefFactory = RefFactory { factory, name ->
+		unusedVariableRefFactories -= factory
 
-	override fun variable(type: GTypeRef, configure: GraphQLVariableBuilder.() -> Unit): RefFactory =
-		RefFactory { factory, name ->
-			unusedVariableRefFactories -= factory
-
-			variable(name = name, type = type, configure = configure)
-		}.also { unusedVariableRefFactories += it }
+		variable(name = name, type = type, configure = configure)
+	}.also { unusedVariableRefFactories += it }
 }

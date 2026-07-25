@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Base scope for DSL contexts that can produce GraphQL values.
  *
@@ -16,7 +15,6 @@ public sealed interface GraphQLValueContainerScope {
 		return GEnumValue(name)
 	}
 
-
 	/**
 	 * Creates a [GVariableRef] referencing a variable with the given [name].
 	 *
@@ -30,12 +28,10 @@ public sealed interface GraphQLValueContainerScope {
 	}
 }
 
-
 /** Builds a [GListValue] using the [GraphQLValueListBuilder] DSL. */
 @Suppress("UnusedReceiverParameter")
 public inline fun GraphQLValueContainerScope.list(configure: GraphQLValueListBuilder.() -> Unit): GListValue =
 	GraphQLValueListBuilder().apply(configure).build()
-
 
 /** Builds a [GObjectValue] using the [GraphQLArgumentsBuilder] DSL. */
 @Suppress("UnusedReceiverParameter")

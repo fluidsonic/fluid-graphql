@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Context provided to a [GExceptionHandler] when an exception occurs during execution.
  */

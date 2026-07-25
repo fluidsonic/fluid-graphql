@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ArgumentExistenceRule
+import kotlin.test.Test
 
 class ArgumentExistenceRuleTest {
 
@@ -20,10 +19,9 @@ class ArgumentExistenceRuleTest {
 				|type Query {
 				|   id(argument: String): ID
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsKnownInputField() {
@@ -40,10 +38,9 @@ class ArgumentExistenceRuleTest {
 				|type Query {
 				|   id(input: Input): ID
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testIgnoresObjectValueFieldsOfScalar() {
@@ -61,10 +58,9 @@ class ArgumentExistenceRuleTest {
 				|type Query {
 				|   id(input: Input): ID
 				|}
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsUnknownArgument() {
@@ -97,7 +93,7 @@ class ArgumentExistenceRuleTest {
 					2 |    id(noSuchArgument: "value") @include(unless: false) @foo(bar: 2)
 					  |                                                             ^
 					3 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -110,10 +106,9 @@ class ArgumentExistenceRuleTest {
 				|}
 				|
 				|directive @foo(value: Int) on FIELD
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsUnknownInputField() {
@@ -137,7 +132,7 @@ class ArgumentExistenceRuleTest {
 					2 |    id(input: { noSuchArgument: "value" }) @foo(input: { bar: 2 })
 					  |                                                         ^
 					3 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -151,7 +146,7 @@ class ArgumentExistenceRuleTest {
 				|}
 				|
 				|directive @foo(input: Input) on FIELD
-			"""
+			""",
 		)
 	}
 }

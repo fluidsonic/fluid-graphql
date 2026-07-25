@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 internal class Token(
 	val kind: Kind,
 	val startPosition: Int,
@@ -9,13 +8,14 @@ internal class Token(
 	val linePosition: Int,
 	val previousToken: Token?,
 	val value: String? = null,
-	var nextToken: Token? = null
+	var nextToken: Token? = null,
 ) {
 
-	override fun toString() =
-		if (value != null) "$kind \"$value\""
-		else kind.toString()
-
+	override fun toString() = if (value != null) {
+		"$kind \"$value\""
+	} else {
+		kind.toString()
+	}
 
 	enum class Kind(private val label: String) {
 
@@ -40,10 +40,9 @@ internal class Token(
 		PIPE("\"|\""),
 		START_OF_INPUT("<start of input>"),
 		SPREAD("\"...\""),
-		STRING("String");
+		STRING("String"),
+		;
 
-
-		override fun toString() =
-			label
+		override fun toString() = label
 	}
 }

@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // FIXME add (default)outputCoercer
 /**
  * Context available throughout a single GraphQL operation execution.
@@ -30,7 +29,6 @@ public interface GExecutorContext {
 
 	/** Coerced variable values for the current operation. */
 	public val variableValues: Map<String, Any?>
-
 
 	/**
 	 * Implemented by resolver and coercer contexts that are nested within an [GExecutorContext].

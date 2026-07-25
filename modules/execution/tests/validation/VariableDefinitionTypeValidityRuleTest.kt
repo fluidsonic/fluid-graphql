@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.VariableDefinitionTypeValidityRule
+import kotlin.test.Test
 
 class VariableDefinitionTypeValidityRuleTest {
 
@@ -23,10 +22,9 @@ class VariableDefinitionTypeValidityRuleTest {
 			schema = """
 				|type Query { id: ID }
 				|input Input { id: ID }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsDuplicateVariableNames() {
@@ -117,7 +115,7 @@ class VariableDefinitionTypeValidityRuleTest {
 					3 | type Object { id: ID }
 					4 | type Union { id: ID }
 					  |      ^
-				"""
+				""",
 			),
 			document = """
 				|query someQuery(${'$'}a: Interface, ${'$'}b: Object, ${'$'}c: Union) {
@@ -133,7 +131,7 @@ class VariableDefinitionTypeValidityRuleTest {
 				|interface Interface { id: ID }
 				|type Object { id: ID }
 				|type Union { id: ID }
-			"""
+			""",
 		)
 	}
 }

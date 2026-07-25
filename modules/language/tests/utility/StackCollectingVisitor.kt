@@ -1,13 +1,56 @@
 package testing
 
-import io.fluidsonic.graphql.*
-
+import io.fluidsonic.graphql.GArgument
+import io.fluidsonic.graphql.GArgumentDefinition
+import io.fluidsonic.graphql.GBooleanValue
+import io.fluidsonic.graphql.GDirective
+import io.fluidsonic.graphql.GDirectiveDefinition
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GEnumType
+import io.fluidsonic.graphql.GEnumTypeExtension
+import io.fluidsonic.graphql.GEnumValue
+import io.fluidsonic.graphql.GEnumValueDefinition
+import io.fluidsonic.graphql.GFieldDefinition
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GFloatValue
+import io.fluidsonic.graphql.GFragmentDefinition
+import io.fluidsonic.graphql.GFragmentSelection
+import io.fluidsonic.graphql.GInlineFragmentSelection
+import io.fluidsonic.graphql.GInputObjectType
+import io.fluidsonic.graphql.GInputObjectTypeExtension
+import io.fluidsonic.graphql.GIntValue
+import io.fluidsonic.graphql.GInterfaceType
+import io.fluidsonic.graphql.GInterfaceTypeExtension
+import io.fluidsonic.graphql.GListTypeRef
+import io.fluidsonic.graphql.GListValue
+import io.fluidsonic.graphql.GName
+import io.fluidsonic.graphql.GNamedTypeRef
+import io.fluidsonic.graphql.GNode
+import io.fluidsonic.graphql.GNonNullTypeRef
+import io.fluidsonic.graphql.GNullValue
+import io.fluidsonic.graphql.GObjectType
+import io.fluidsonic.graphql.GObjectTypeExtension
+import io.fluidsonic.graphql.GObjectValue
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GOperationTypeDefinition
+import io.fluidsonic.graphql.GScalarType
+import io.fluidsonic.graphql.GScalarTypeExtension
+import io.fluidsonic.graphql.GSchemaDefinition
+import io.fluidsonic.graphql.GSchemaExtension
+import io.fluidsonic.graphql.GSelectionSet
+import io.fluidsonic.graphql.GStringValue
+import io.fluidsonic.graphql.GUnionType
+import io.fluidsonic.graphql.GUnionTypeExtension
+import io.fluidsonic.graphql.GVariableDefinition
+import io.fluidsonic.graphql.GVariableRef
+import io.fluidsonic.graphql.Visit
+import io.fluidsonic.graphql.Visitor
 
 internal class StackCollectingVisitor(
 	private val suffix: String = "",
 	val target: Target = Target(),
 	val skipsChildrenInNode: (node: GNode) -> Boolean = { false },
-	val abortsInNode: (node: GNode) -> Boolean = { false }
+	val abortsInNode: (node: GNode) -> Boolean = { false },
 ) : Visitor.Typed<Unit, StackCollectingVisitor.Data>() {
 
 	private fun on(node: GNode, name: String, data: Data, visit: Visit) {
@@ -22,7 +65,6 @@ internal class StackCollectingVisitor(
 
 		target.currentStack.removeAt(target.currentStack.size - 1)
 	}
-
 
 	override fun onArgument(argument: GArgument, data: Data, visit: Visit) = on(argument, "Argument", data, visit)
 	override fun onArgumentDefinition(definition: GArgumentDefinition, data: Data, visit: Visit) = on(definition, "ArgumentDefinition", data, visit)
@@ -41,7 +83,8 @@ internal class StackCollectingVisitor(
 	override fun onFragmentSelection(selection: GFragmentSelection, data: Data, visit: Visit) = on(selection, "FragmentSelection", data, visit)
 	override fun onInlineFragmentSelection(selection: GInlineFragmentSelection, data: Data, visit: Visit) = on(selection, "InlineFragmentSelection", data, visit)
 	override fun onInputObjectType(type: GInputObjectType, data: Data, visit: Visit) = on(type, "InputObjectType", data, visit)
-	override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data, visit: Visit) = on(extension, "InputObjectTypeExtension", data, visit)
+	override fun onInputObjectTypeExtension(extension: GInputObjectTypeExtension, data: Data, visit: Visit) =
+		on(extension, "InputObjectTypeExtension", data, visit)
 	override fun onIntValue(value: GIntValue, data: Data, visit: Visit) = on(value, "IntValue", data, visit)
 	override fun onInterfaceType(type: GInterfaceType, data: Data, visit: Visit) = on(type, "InterfaceType", data, visit)
 	override fun onInterfaceTypeExtension(extension: GInterfaceTypeExtension, data: Data, visit: Visit) = on(extension, "InterfaceTypeExtension", data, visit)
@@ -68,15 +111,10 @@ internal class StackCollectingVisitor(
 	override fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit) = on(definition, "VariableDefinition", data, visit)
 	override fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit) = on(ref, "VariableRef", data, visit)
 
-
-	class Data(
-		val value: Int = 0,
-		val suffix: String = ""
-	) {
+	class Data(val value: Int = 0, val suffix: String = "") {
 
 		override fun toString() = "$value$suffix"
 	}
-
 
 	class Target {
 

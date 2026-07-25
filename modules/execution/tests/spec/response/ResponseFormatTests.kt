@@ -1,9 +1,22 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-import kotlinx.coroutines.test.*
-
+import io.fluidsonic.graphql.GError
+import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.Object
+import io.fluidsonic.graphql.default
+import io.fluidsonic.graphql.isNotEmpty
+import io.fluidsonic.graphql.path
+import io.fluidsonic.graphql.resolve
+import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.type
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §7.1-7.2 — Response Format
 class ResponseFormatTests {
@@ -23,7 +36,6 @@ class ResponseFormatTests {
 		assertEquals(mapOf("hello" to "world"), result["data"])
 	}
 
-
 	@Test
 	fun testRequestErrorHasErrorsNoData() = runTest {
 		val schema = GraphQL.schema {
@@ -38,7 +50,6 @@ class ResponseFormatTests {
 		assertTrue(result.containsKey("errors"))
 		assertNull(result["data"])
 	}
-
 
 	@Test
 	fun testPartialSuccessHasDataAndErrors() = runTest {
@@ -60,7 +71,6 @@ class ResponseFormatTests {
 		assertNull(data["bad"])
 	}
 
-
 	@Test
 	fun testErrorObjectHasMessage() = runTest {
 		val schema = GraphQL.schema {
@@ -80,7 +90,6 @@ class ResponseFormatTests {
 		val message = firstError["message"] as String
 		assertTrue(message.isNotEmpty())
 	}
-
 
 	@Test
 	fun testErrorObjectHasLocations() = runTest {
@@ -104,7 +113,6 @@ class ResponseFormatTests {
 		assertTrue(firstLocation.containsKey("column"))
 	}
 
-
 	@Test
 	fun testErrorObjectHasPath() = runTest {
 		val schema = GraphQL.schema {
@@ -124,7 +132,6 @@ class ResponseFormatTests {
 		val path = firstError["path"] as List<*>
 		assertTrue(path.isNotEmpty())
 	}
-
 
 	@Test
 	fun testPathForNestedField() = runTest {
@@ -153,7 +160,6 @@ class ResponseFormatTests {
 		assertEquals(listOf("parent", "child"), path)
 	}
 
-
 	@Test
 	fun testPathForListElement() = runTest {
 		val schema = GraphQL.schema {
@@ -162,10 +168,11 @@ class ResponseFormatTests {
 			Object<ItemData>(Item) {
 				field("value" of String) {
 					resolve {
-						if (it.shouldFail)
+						if (it.shouldFail) {
 							GError(message = "list element error").throwException()
-						else
+						} else {
 							"ok"
+						}
 					}
 				}
 			}
@@ -189,7 +196,6 @@ class ResponseFormatTests {
 		assertTrue(path.contains("value"), "Expected path to contain 'value', got: $path")
 	}
 
-
 	@Test
 	fun testNullDataWhenRootNonNullFails() = runTest {
 		val schema = GraphQL.schema {
@@ -206,7 +212,6 @@ class ResponseFormatTests {
 		assertNull(result["data"])
 		assertNotNull(result["errors"])
 	}
-
 
 	@Test
 	fun testMultipleErrors() = runTest {
@@ -226,7 +231,6 @@ class ResponseFormatTests {
 		val errors = result["errors"] as List<*>
 		assertTrue(errors.size >= 2, "Expected at least 2 errors but got ${errors.size}")
 	}
-
 
 	private data class ParentData(val dummy: String = "")
 	private data class ItemData(val shouldFail: Boolean)

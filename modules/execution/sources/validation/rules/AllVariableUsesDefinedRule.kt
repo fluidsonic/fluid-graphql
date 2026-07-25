@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 // https://graphql.github.io/graphql-spec/draft/#sec-All-Variable-Uses-Defined
 internal class AllVariableUsesDefinedRule : ValidationRule() {
 
@@ -11,11 +10,12 @@ internal class AllVariableUsesDefinedRule : ValidationRule() {
 		visit.visitChildren()
 		val usages = collectVariableRefs(definition.selectionSet, data.document)
 		for ((name, node) in usages) {
-			if (name !in definedVarNames)
+			if (name !in definedVarNames) {
 				data.reportError(
 					message = "Variable '\$$name' is not defined.",
-					nodes = listOf(node)
+					nodes = listOf(node),
 				)
+			}
 		}
 	}
 

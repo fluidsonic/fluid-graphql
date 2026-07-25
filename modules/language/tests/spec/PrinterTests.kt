@@ -1,8 +1,11 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GNode
+import io.fluidsonic.graphql.GOperationDefinition
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // GraphQL Spec §2 — Printer (roundtrip and output)
 class PrinterTests {
@@ -17,7 +20,6 @@ class PrinterTests {
 		assertTrue(printed.contains("}"), "Printed output should contain '}'")
 	}
 
-
 	@Test
 	fun testPrintQueryWithArgs() {
 		val doc = GDocument.parse("{ foo(bar: 42) }").valueWithoutErrorsOrThrow()
@@ -26,7 +28,6 @@ class PrinterTests {
 		assertTrue(printed.contains("bar"), "Printed output should contain argument name")
 		assertTrue(printed.contains("42"), "Printed output should contain argument value")
 	}
-
 
 	@Test
 	fun testPrintFragment() {
@@ -38,7 +39,6 @@ class PrinterTests {
 		assertTrue(printed.contains("Query"), "Printed output should contain type condition")
 	}
 
-
 	@Test
 	fun testPrintMutation() {
 		val doc = GDocument.parse("mutation M { field }").valueWithoutErrorsOrThrow()
@@ -47,7 +47,6 @@ class PrinterTests {
 		assertTrue(printed.contains("M"), "Printed output should contain operation name")
 	}
 
-
 	@Test
 	fun testPrintSubscription() {
 		val doc = GDocument.parse("subscription S { field }").valueWithoutErrorsOrThrow()
@@ -55,7 +54,6 @@ class PrinterTests {
 		assertTrue(printed.contains("subscription"), "Printed output should contain 'subscription'")
 		assertTrue(printed.contains("S"), "Printed output should contain operation name")
 	}
-
 
 	@Test
 	fun testRoundtripSimple() {
@@ -72,14 +70,12 @@ class PrinterTests {
 		assertEquals(op1.selectionSet.selections.size, op2.selectionSet.selections.size)
 	}
 
-
 	@Test
 	fun testPrintNullValue() {
 		val doc = GDocument.parse("{ f(a: null) }").valueWithoutErrorsOrThrow()
 		val printed = GNode.print(doc)
 		assertTrue(printed.contains("null"), "Printed output should contain 'null'")
 	}
-
 
 	@Test
 	fun testPrintListValue() {
@@ -92,7 +88,6 @@ class PrinterTests {
 		assertTrue(printed.contains("3"), "Printed output should contain '3'")
 	}
 
-
 	@Test
 	fun testPrintObjectValue() {
 		val doc = GDocument.parse("{ f(a: {key: 1}) }").valueWithoutErrorsOrThrow()
@@ -101,14 +96,12 @@ class PrinterTests {
 		assertTrue(printed.contains("1"), "Printed output should contain object field value")
 	}
 
-
 	@Test
 	fun testPrintBooleanTrue() {
 		val doc = GDocument.parse("{ f(a: true) }").valueWithoutErrorsOrThrow()
 		val printed = GNode.print(doc)
 		assertTrue(printed.contains("true"), "Printed output should contain 'true'")
 	}
-
 
 	@Test
 	fun testPrintBooleanFalse() {
@@ -117,7 +110,6 @@ class PrinterTests {
 		assertTrue(printed.contains("false"), "Printed output should contain 'false'")
 	}
 
-
 	@Test
 	fun testPrintNonNullType() {
 		val doc = GDocument.parse("query Q(\$x: String!) { f }").valueWithoutErrorsOrThrow()
@@ -125,14 +117,12 @@ class PrinterTests {
 		assertTrue(printed.contains("String!"), "Printed output should contain 'String!'")
 	}
 
-
 	@Test
 	fun testPrintListType() {
 		val doc = GDocument.parse("query Q(\$x: [String]) { f }").valueWithoutErrorsOrThrow()
 		val printed = GNode.print(doc)
 		assertTrue(printed.contains("[String]"), "Printed output should contain '[String]'")
 	}
-
 
 	@Test
 	fun testPrintDirective() {
@@ -143,7 +133,6 @@ class PrinterTests {
 		assertTrue(printed.contains("false"), "Printed output should contain directive argument value")
 	}
 
-
 	@Test
 	fun testPrintVariableDefinition() {
 		val doc = GDocument.parse("query Q(\$x: Int = 5) { f }").valueWithoutErrorsOrThrow()
@@ -152,7 +141,6 @@ class PrinterTests {
 		assertTrue(printed.contains("Int"), "Printed output should contain variable type")
 		assertTrue(printed.contains("= 5"), "Printed output should contain default value")
 	}
-
 
 	@Test
 	fun testToStringDelegatesToPrint() {

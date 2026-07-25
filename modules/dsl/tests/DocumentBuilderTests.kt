@@ -1,8 +1,17 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.arguments
+import io.fluidsonic.graphql.directives
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.list
+import io.fluidsonic.graphql.mutation
+import io.fluidsonic.graphql.obj
+import io.fluidsonic.graphql.query
+import io.fluidsonic.graphql.subscription
+import io.fluidsonic.graphql.type
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class DocumentBuilderTests {
 
@@ -33,7 +42,6 @@ class DocumentBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun mutationOperation() {
 		assertEquals(
@@ -61,7 +69,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun fragmentDefinitionAndSpread() {
@@ -98,7 +105,6 @@ class DocumentBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun inlineFragment() {
 		assertEquals(
@@ -133,7 +139,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun nestedFieldSelections() {
@@ -172,7 +177,6 @@ class DocumentBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun directiveOnField() {
 		assertEquals(
@@ -201,7 +205,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun fieldAlias() {
@@ -234,7 +237,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun fragmentSpreadWithDirective() {
@@ -271,7 +273,6 @@ class DocumentBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun inlineFragmentWithDirective() {
 		assertEquals(
@@ -298,7 +299,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun subscriptionOperation() {
@@ -328,7 +328,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun multipleOperationsInDocument() {
@@ -366,7 +365,6 @@ class DocumentBuilderTests {
 		)
 	}
 
-
 	@Test
 	fun variableWithDefault() {
 		assertEquals(
@@ -392,7 +390,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun objectArgumentValues() {
@@ -425,7 +422,6 @@ class DocumentBuilderTests {
 			""".trimIndent(),
 		)
 	}
-
 
 	@Test
 	fun listArgumentValues() {

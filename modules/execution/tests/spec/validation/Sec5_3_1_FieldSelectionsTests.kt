@@ -1,8 +1,9 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FieldSelectionExistenceRule
+import io.fluidsonic.graphql.document
+import io.fluidsonic.graphql.schema
+import kotlin.test.Test
 
 // GraphQL Spec §5.3.1 — Field Selections
 class Sec5_3_1_FieldSelectionsTests {
@@ -17,10 +18,9 @@ class Sec5_3_1_FieldSelectionsTests {
 			""",
 			schema = """
 				|type Query { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsFieldOnInterface() {
@@ -34,10 +34,9 @@ class Sec5_3_1_FieldSelectionsTests {
 				|type Query { pet: Pet }
 				|interface Pet { name: String }
 				|type Dog implements Pet { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsTypenameOnObject() {
@@ -49,10 +48,9 @@ class Sec5_3_1_FieldSelectionsTests {
 			""",
 			schema = """
 				|type Query { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsTypenameOnInterface() {
@@ -66,10 +64,9 @@ class Sec5_3_1_FieldSelectionsTests {
 				|type Query { pet: Pet }
 				|interface Pet { name: String }
 				|type Dog implements Pet { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsTypenameOnUnion() {
@@ -84,43 +81,45 @@ class Sec5_3_1_FieldSelectionsTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsFieldOnObject() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field 'unknownField' on type 'Query'.
 
 				<document>:1:3
 				1 | { unknownField }
 				  |   ^
-			"""),
+			""",
+			),
 			document = """
 				|{ unknownField }
 			""",
 			schema = """
 				|type Query { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsFieldOnInterface() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field 'unknownField' on type 'Pet'.
 
 				<document>:1:9
 				1 | { pet { unknownField } }
 				  |         ^
-			"""),
+			""",
+			),
 			document = """
 				|{ pet { unknownField } }
 			""",
@@ -128,10 +127,9 @@ class Sec5_3_1_FieldSelectionsTests {
 				|type Query { pet: Pet }
 				|interface Pet { name: String }
 				|type Dog implements Pet { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsInlineFragmentField() {
@@ -146,22 +144,23 @@ class Sec5_3_1_FieldSelectionsTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsInlineFragmentUnknownField() {
 		assertValidationRule(
 			rule = FieldSelectionExistenceRule,
-			errors = listOf("""
+			errors = listOf(
+				"""
 				Cannot select nonexistent field 'unknown' on type 'Dog'.
 
 				<document>:1:27
 				1 | { catOrDog { ... on Dog { unknown } } }
 				  |                           ^
-			"""),
+			""",
+			),
 			document = """
 				|{ catOrDog { ... on Dog { unknown } } }
 			""",
@@ -170,7 +169,7 @@ class Sec5_3_1_FieldSelectionsTests {
 				|type Cat { name: String }
 				|type Dog { name: String }
 				|union CatOrDog = Cat | Dog
-			"""
+			""",
 		)
 	}
 }

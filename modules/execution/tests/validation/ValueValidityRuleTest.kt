@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.ValueValidityRule
+import kotlin.test.Test
 
 class ValueValidityRuleTest {
 
@@ -91,7 +90,7 @@ class ValueValidityRuleTest {
 				|}
 				|
 				|scalar Scalar
-			"""
+			""",
 		)
 	}
 
@@ -365,10 +364,9 @@ class ValueValidityRuleTest {
 				|
 				|enum Enum { VALUE }
 				|scalar Scalar
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testAcceptsValuesOfCorrectTypeInSchema() {
@@ -470,10 +468,9 @@ class ValueValidityRuleTest {
 				|
 				|enum Enum { VALUE }
 				|scalar Scalar
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsValuesOfIncorrectTypeInDocument() {
@@ -4862,7 +4859,7 @@ class ValueValidityRuleTest {
 					243 |    field118: String! = []
 					    |              ^
 					244 |    field119: String!
-				"""
+				""",
 			),
 			document = """
 				|query someQuery(
@@ -5476,10 +5473,9 @@ class ValueValidityRuleTest {
 				|
 				|enum Enum { VALUE }
 				|scalar Scalar
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsValuesOfIncorrectTypeInSchema() {
@@ -7501,7 +7497,7 @@ class ValueValidityRuleTest {
 					243 |    field118: String! = []
 					    |                        ^
 					244 | }
-				"""
+				""",
 			),
 			document = """
 				|type Query {
@@ -7751,7 +7747,7 @@ class ValueValidityRuleTest {
 				|
 				|enum Enum { VALUE }
 				|scalar Scalar
-			"""
+			""",
 		)
 	}
 }

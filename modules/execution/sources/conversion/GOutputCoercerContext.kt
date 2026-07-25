@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-
 /**
  * Context provided to a [GOutputCoercer] when serializing a field resolver's return value.
  *
@@ -31,8 +30,6 @@ public interface GOutputCoercerContext : GExecutorContext.Child {
 	/** Delegates to the next output coercer in the chain. */
 	public fun next(): Any // TODO Should this be nullable?
 
-
 	/** Convenience extension to invoke another [GOutputCoercer] within this context. */
-	public fun <Output : Any> GOutputCoercer<Output>.coerceOutput(output: Output): Any? =
-		with(this@GOutputCoercerContext) { coerceOutput(output) }
+	public fun <Output : Any> GOutputCoercer<Output>.coerceOutput(output: Output): Any? = with(this@GOutputCoercerContext) { coerceOutput(output) }
 }

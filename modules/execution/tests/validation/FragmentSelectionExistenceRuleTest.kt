@@ -1,8 +1,7 @@
 package testing
 
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.FragmentSelectionExistenceRule
+import kotlin.test.Test
 
 class FragmentSelectionExistenceRuleTest {
 
@@ -25,10 +24,9 @@ class FragmentSelectionExistenceRuleTest {
 			schema = """
 				|type Query { dog: Dog }
 				|type Dog { name: String }
-			"""
+			""",
 		)
 	}
-
 
 	@Test
 	fun testRejectsSelectionsOfNonexistentFragments() {
@@ -43,7 +41,7 @@ class FragmentSelectionExistenceRuleTest {
 					2 |   ...undefined
 					  |      ^
 					3 | }
-				"""
+				""",
 			),
 			document = """
 				|{
@@ -52,7 +50,7 @@ class FragmentSelectionExistenceRuleTest {
 			""",
 			schema = """
 				|type Query { id: ID }
-			"""
+			""",
 		)
 	}
 }

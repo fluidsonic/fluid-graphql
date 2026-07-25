@@ -1,8 +1,19 @@
 package testing
-
-import io.fluidsonic.graphql.*
-import kotlin.test.*
-
+import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFieldSelection
+import io.fluidsonic.graphql.GNode
+import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GOperationType
+import io.fluidsonic.graphql.GSchema
+import io.fluidsonic.graphql.GSelectionSet
+import io.fluidsonic.graphql.Visit
+import io.fluidsonic.graphql.Visitor
+import io.fluidsonic.graphql.VisitorContext
+import io.fluidsonic.graphql.accept
+import io.fluidsonic.graphql.contextualize
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ContextProvidingVisitorTests {
 
@@ -14,16 +25,18 @@ class ContextProvidingVisitorTests {
 					type = GOperationType.query,
 					selectionSet = GSelectionSet(
 						selections = listOf(
-							GFieldSelection(name = "field")
-						)
-					)
-				)
-			)
+							GFieldSelection(name = "field"),
+						),
+					),
+				),
+			),
 		)
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|type Query { field: String }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		val visitedNodes = mutableListOf<String>()
 		val parentNodes = mutableListOf<String?>()
@@ -48,7 +61,6 @@ class ContextProvidingVisitorTests {
 		assertEquals(actual = parentNodes[operationIndex], expected = "GDocument")
 	}
 
-
 	@Test
 	fun visitChildrenCalledAutomatically() {
 		// ContextProvidingVisitor calls visitChildren() if the inner visitor doesn't.
@@ -58,16 +70,18 @@ class ContextProvidingVisitorTests {
 					type = GOperationType.query,
 					selectionSet = GSelectionSet(
 						selections = listOf(
-							GFieldSelection(name = "field")
-						)
-					)
-				)
-			)
+							GFieldSelection(name = "field"),
+						),
+					),
+				),
+			),
 		)
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|type Query { field: String }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		val visitedNodeTypes = mutableListOf<String>()
 
@@ -91,7 +105,6 @@ class ContextProvidingVisitorTests {
 		assertTrue(visitedNodeTypes.contains("GFieldSelection"))
 	}
 
-
 	@Test
 	fun skipChildrenPreventsAutomaticVisitChildren() {
 		val document = GDocument(
@@ -100,16 +113,18 @@ class ContextProvidingVisitorTests {
 					type = GOperationType.query,
 					selectionSet = GSelectionSet(
 						selections = listOf(
-							GFieldSelection(name = "field")
-						)
-					)
-				)
-			)
+							GFieldSelection(name = "field"),
+						),
+					),
+				),
+			),
 		)
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|type Query { field: String }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		val visitedNodeTypes = mutableListOf<String>()
 
@@ -131,7 +146,6 @@ class ContextProvidingVisitorTests {
 		assertEquals(actual = visitedNodeTypes, expected = listOf("GDocument"))
 	}
 
-
 	@Test
 	fun contextScopedToSubtree() {
 		// Verify that context (parent node, related operation, etc.) is correctly
@@ -144,15 +158,17 @@ class ContextProvidingVisitorTests {
 				GOperationDefinition(
 					type = GOperationType.query,
 					selectionSet = GSelectionSet(
-						selections = listOf(field1, field2)
-					)
-				)
-			)
+						selections = listOf(field1, field2),
+					),
+				),
+			),
 		)
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|type Query { field1: String, field2: String }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		val fieldParents = mutableMapOf<String, String?>()
 
@@ -172,7 +188,6 @@ class ContextProvidingVisitorTests {
 		assertEquals(actual = fieldParents["field2"], expected = "GSelectionSet")
 	}
 
-
 	@Test
 	fun explicitVisitChildrenNotCalledTwice() {
 		// If the inner visitor calls visitChildren() explicitly, the ContextProvidingVisitor
@@ -183,16 +198,18 @@ class ContextProvidingVisitorTests {
 					type = GOperationType.query,
 					selectionSet = GSelectionSet(
 						selections = listOf(
-							GFieldSelection(name = "field")
-						)
-					)
-				)
-			)
+							GFieldSelection(name = "field"),
+						),
+					),
+				),
+			),
 		)
 
-		val schema = GSchema.parse("""
+		val schema = GSchema.parse(
+			"""
 			|type Query { field: String }
-		""".trimMargin()).valueWithoutErrorsOrThrow()
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
 
 		var visitCount = 0
 
@@ -212,7 +229,6 @@ class ContextProvidingVisitorTests {
 		// The field should be visited exactly once -- explicit visitChildren should not cause double visits
 		assertEquals(actual = visitCount, expected = 1)
 	}
-
 
 	private class CapturingVisitorContext(document: GDocument, schema: GSchema) : VisitorContext(document, schema)
 }
