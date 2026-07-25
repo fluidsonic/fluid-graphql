@@ -44,7 +44,7 @@ language  <--  dsl  <--  execution
 - Depends on `language`
 
 ### `modules/execution` — Query execution engine
-- **Executor** (`sources/execution/`): `GExecutor` interface with `GExecutor.default()` factory. Parses, validates, and executes queries against a schema
+- **Executor** (`sources/execution/`): `GExecutor` interface with `GExecutor.default()` factory
 - **Validation** (`sources/validation/`): Rule-based validation (e.g., `ScalarLeavesRule`, `FragmentCycleDetectionRule`). Each rule is a `Visitor`
 - **Resolution** (`sources/resolution/`): `GFieldResolver`, `GRootResolver` for resolving fields to values
 - **Conversion** (`sources/conversion/`): Input/output coercers for type conversion between GraphQL and Kotlin values
@@ -61,5 +61,4 @@ language  <--  dsl  <--  execution
 - Internal API is annotated with `@InternalGraphqlApi`
 - Source directories use flat `sources/` instead of the standard `src/main/kotlin/` layout
 - Tab indentation
-- Spec test helpers: `assertValidationRule(rule, errors, document, schema?)` and `assertExecution(schema, document, ..., expected)` in `modules/execution/tests/utility/`
 - Tags have no `v` prefix (e.g., `0.15.0`, not `v0.15.0`)
