@@ -10,11 +10,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 ./gradlew build              # Build all modules and run tests
-./gradlew check              # Run all tests
+./gradlew check              # Run tests + ktlintCheck + detekt (lint runs alongside tests)
 ./gradlew jvmTest            # Run all tests
 ./gradlew :fluid-graphql-language:jvmTest   # Run tests for a single module
 ./gradlew :fluid-graphql-execution:jvmTest  # Run execution module tests
+./gradlew ktlintFormat       # Auto-format all Kotlin sources (import order, trailing commas, etc.)
+./gradlew ktlintCheck detekt # Lint + static analysis without running tests
 ```
+
+Linting: ktlint owns formatting/style (configured via `.editorconfig`), detekt owns
+complexity/smell/bug rules (`config/detekt/detekt.yml`, with per-module
+`detekt-baseline.xml`). Both hook into `check` and CI runs `./gradlew check`.
 
 Uses the `io.fluidsonic.gradle` plugin (v3.0.0) for build configuration. Gradle 9.4.1. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
 Requires JDK 21+.
