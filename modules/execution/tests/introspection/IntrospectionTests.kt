@@ -63,6 +63,7 @@ class IntrospectionTests {
 						"directives" to listOf(
 							mapOf("name" to "deprecated"),
 							mapOf("name" to "include"),
+							mapOf("name" to "oneOf"),
 							mapOf("name" to "skip"),
 							mapOf("name" to "specifiedBy"),
 						),

@@ -31,6 +31,7 @@ public class GVariableRef(name: GName, origin: GDocumentPosition? = null, extens
 
 	override fun hashCode(): Int = name.hashCode()
 
+	/** Always throws: a variable has no value at the AST level, so unwrapping one is a programming error. */
 	override fun unwrap(): Nothing = error("Cannot unwrap a GraphQL variable: $name")
 
 	public companion object

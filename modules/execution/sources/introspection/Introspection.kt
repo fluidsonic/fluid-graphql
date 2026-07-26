@@ -80,6 +80,15 @@ internal object Introspection {
 				}
 			}
 
+			// `null` for anything that is not an input object, mirroring graphql-js.
+			// https://spec.graphql.org/draft/#sec-OneOf-Input-Objects
+			field("isOneOf" of Boolean) {
+				resolve<Boolean?> { type ->
+					(type as? GInputObjectType)
+						?.let { it.directive(GLanguage.defaultOneOfDirective.name) !== null }
+				}
+			}
+
 			field("fields" of List(!Field)) {
 				argument("includeDeprecated" of Boolean default value(false))
 
@@ -276,6 +285,10 @@ internal object Introspection {
 				resolve<String?> { it.description }
 			}
 
+			field("isRepeatable" of !Boolean) {
+				resolve<Boolean> { it.isRepeatable }
+			}
+
 			field("locations" of !List(!DirectiveLocation)) {
 				resolve<List<String>> { definition ->
 					definition.locations.map { it.name }.sorted()
@@ -344,6 +357,9 @@ internal object Introspection {
 			}
 			value("INPUT_FIELD_DEFINITION") {
 				description("Location adjacent to an input object field definition.")
+			}
+			value("DIRECTIVE_DEFINITION") {
+				description("Location adjacent to a directive definition.")
 			}
 		}
 	}

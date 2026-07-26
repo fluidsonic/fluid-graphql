@@ -108,6 +108,7 @@ internal object OutputConverter {
 			context = context,
 		)
 
+		// A broken schema, not something a client can provoke.
 		else -> error("Output conversion only supports leaf and object types but ${type.kind} type '${type.toRef()}' was encountered.")
 	}
 
@@ -126,8 +127,8 @@ internal object OutputConverter {
 		val value: Any,
 	) : GOutputCoercerContext {
 
-		override fun invalid(details: String?): Nothing = error(
-			buildString {
+		override fun invalid(details: String?): Nothing = GError(
+			message = buildString {
 				append("Output coercion encountered an invalid resolved value for field '")
 				append(fieldDefinition.name)
 				append("' of type '")
@@ -147,7 +148,8 @@ internal object OutputConverter {
 				append(": ")
 				append(value)
 			},
-		)
+			path = path,
+		).throwException()
 
 		override fun next(): Any = coerceValue(context = this)
 	}

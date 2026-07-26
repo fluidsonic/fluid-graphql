@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-// GraphQL Spec §2 — Printer (roundtrip and output)
+// Printer (roundtrip and output) — https://spec.graphql.org/draft/#sec-Language
 class PrinterTests {
 
 	@Test
@@ -148,5 +148,122 @@ class PrinterTests {
 		val printed = GNode.print(doc)
 		val toStringResult = doc.toString()
 		assertEquals(printed, toStringResult, "toString() should produce the same output as GNode.print()")
+	}
+
+	// https://spec.graphql.org/draft/#sec-Objects
+	@Test
+	fun testPrintObjectType_keepsDirectives() {
+		val document = GDocument.parse("type AnnotatedObject @onObject(arg: \"value\") { field: Type }").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertTrue(
+			printed.contains("@onObject(arg: \"value\")"),
+			"Printed object type definition must keep its directives, got:\n$printed",
+		)
+	}
+
+	// https://spec.graphql.org/draft/#sec-Object-Extensions
+	@Test
+	fun testPrintObjectTypeExtension_keepsDirectives() {
+		val document = GDocument.parse("extend type Foo @onType").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertTrue(
+			printed.contains("@onType"),
+			"Printed object type extension must keep its directives, got:\n$printed",
+		)
+	}
+
+	// https://spec.graphql.org/draft/#sec-Union-Extensions
+	@Test
+	fun testPrintUnionTypeExtension_keepsExtendKeyword() {
+		val document = GDocument.parse("extend union Feed = Photo | Video").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertTrue(
+			printed.trimStart().startsWith("extend union "),
+			"Printed union type extension must start with 'extend union ', got:\n$printed",
+		)
+	}
+
+	// https://spec.graphql.org/draft/#sec-Type-System.Directives
+	@Test
+	fun testPrintDirectiveDefinition_keepsRepeatable() {
+		val document = GDocument.parse("directive @myRepeatableDir(name: String!) repeatable on OBJECT | INTERFACE").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertEquals(
+			actual = printed,
+			expected = "directive @myRepeatableDir(name: String!) repeatable on OBJECT | INTERFACE",
+			message = "Printed directive definition must keep the 'repeatable' keyword.",
+		)
+	}
+
+	// https://spec.graphql.org/draft/#sec-Schema
+	// Whitespace-exact on purpose: GraphQL is whitespace-insensitive, so a stray space survives a parse/print roundtrip.
+	@Test
+	fun testPrintSchemaDefinition_spacesDirectivesCorrectly() {
+		val document = GDocument.parse("schema @onSchema { query: QueryType }").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertEquals(
+			actual = printed,
+			expected = "schema @onSchema {\n\tquery: QueryType\n}",
+			message = "Printed schema definition must have exactly one space around its directives.",
+		)
+	}
+
+	// https://spec.graphql.org/draft/#sec-Schema-Extension
+	@Test
+	fun testPrintSchemaExtension_spacesDirectivesCorrectly() {
+		val document = GDocument.parse("extend schema @onSchema").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertEquals(
+			actual = printed,
+			expected = "extend schema @onSchema",
+			message = "Printed schema extension must have exactly one space before its directives.",
+		)
+	}
+
+	// https://spec.graphql.org/draft/#sec-Schema-Extension
+	@Test
+	fun testPrintSchemaExtension_spacesOperationTypeDefinitions() {
+		val document = GDocument.parse("extend schema @onSchema { subscription: SubscriptionType }").valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+
+		assertEquals(
+			actual = printed,
+			expected = "extend schema @onSchema {\n\tsubscription: SubscriptionType\n}",
+			message = "Printed schema extension must separate its operation type definitions from what precedes them.",
+		)
+	}
+
+	// Gate F: parse -> print -> parse must produce a structurally equal AST.
+	@Test
+	fun testRoundtripKitchenSinkSchema() {
+		val document = GDocument.parse(kitchenSinkSchema.trimMargin()).valueWithoutErrorsOrThrow()
+		val printed = GNode.print(document)
+		val reparsedDocument = GDocument.parse(printed).valueWithoutErrorsOrThrow()
+
+		assertEquals(
+			actual = reparsedDocument.definitions.size,
+			expected = document.definitions.size,
+			message = "Re-parsing the printed kitchen sink schema must yield the same number of definitions.\nPrinted:\n$printed",
+		)
+
+		document.definitions.forEachIndexed { index, definition ->
+			val reparsedDefinition = reparsedDocument.definitions[index]
+
+			assertTrue(
+				reparsedDefinition.equalsNode(definition),
+				"Definition #$index must survive a print/parse roundtrip.\nOriginal:\n$definition\nRoundtripped:\n$reparsedDefinition",
+			)
+		}
+
+		assertTrue(
+			reparsedDocument.equalsNode(document),
+			"Re-parsing the printed kitchen sink schema must yield a structurally equal AST.\nPrinted:\n$printed",
+		)
 	}
 }

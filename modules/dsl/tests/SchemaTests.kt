@@ -161,7 +161,7 @@ class SchemaTests {
 				starships: [Starship]
 			}
 
-			type Droid implements Character {
+			type Droid implements Character @hello {
 				id: ID!
 				name: String!
 				friends: [Character] @deprecated(reason: null)

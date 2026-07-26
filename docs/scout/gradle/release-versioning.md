@@ -10,6 +10,8 @@ The authoritative version lives in the root `build.gradle.kts` (`fluidLibrary(na
 
 A version bump that only touches `build.gradle.kts` silently leaves the README telling users to install the previous version. Nothing links these occurrences; the full set is only discoverable by grepping for the version string.
 
-Release tags carry no `v` prefix (`0.16.0`, not `v0.16.0`) — this is also stated in `CLAUDE.md`.
+Release tags carry no `v` prefix (`0.17.0`, not `v0.17.0`) — this is also stated in `CLAUDE.md`.
+
+The committed API dumps under `api/` and `modules/*/api/` are not version-stamped, but a release whose public API changed needs `./gradlew apiDump` re-run and committed or `check` fails — see binary-compatibility-validator.md.
 
 Related: module-wiring.md, fluid-gradle-plugin.md.

@@ -48,7 +48,8 @@ class ResponseFormatTests {
 		val result = executor.serializeResult(executor.execute("{ { }"))
 
 		assertTrue(result.containsKey("errors"))
-		assertNull(result["data"])
+		// A request error must omit the "data" key entirely — asserting it is null would pass either way.
+		assertFalse(result.containsKey("data"), "expected the 'data' key to be absent but got: $result")
 	}
 
 	@Test
@@ -208,7 +209,8 @@ class ResponseFormatTests {
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.serializeResult(executor.execute("{ required }"))
 
-		// Non-null root field error propagates to data becoming null
+		// A field error nullifying the root keeps the "data" key, set to null.
+		assertTrue(result.containsKey("data"), "expected the 'data' key to be present but got: $result")
 		assertNull(result["data"])
 		assertNotNull(result["errors"])
 	}

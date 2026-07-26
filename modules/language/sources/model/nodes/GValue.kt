@@ -22,7 +22,7 @@ public sealed class GValue(extensions: GNodeExtensionSet<GValue>, origin: GDocum
 	 * Converts this value to a plain Kotlin value: `Boolean`, `Double`, `Int`, `String`,
 	 * `List<Any?>`, `Map<String, Any?>`, or `null` for [GNullValue].
 	 *
-	 * Throws for [GVariableRef] since variables cannot be resolved at the AST level.
+	 * Throws [IllegalStateException] for [GVariableRef] since variables cannot be resolved at the AST level.
 	 */
 	public abstract fun unwrap(): Any? // FIXME not language module
 

@@ -5,5 +5,6 @@ public interface VisitCoordinator<out Result, in Data> {
 
 	public fun visit(node: GNode, data: Data): Result
 
+	@InternalGraphqlApi
 	public companion object
 }

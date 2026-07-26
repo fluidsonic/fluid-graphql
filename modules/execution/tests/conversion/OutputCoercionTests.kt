@@ -12,7 +12,9 @@ import io.fluidsonic.graphql.type
 import io.fluidsonic.graphql.value
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class OutputCoercionTests {
 
@@ -195,10 +197,20 @@ class OutputCoercionTests {
 		}
 
 		val executor = GExecutor.default(schema = schema)
-		// Non-null field returning null throws IllegalStateException
-		assertFailsWith<IllegalStateException> {
-			executor.execute("""{ value }""")
-		}
+		val result = executor.serializeResult(executor.execute("""{ value }"""))
+
+		// A non-null field resolving to null is a field error that nullifies the root: the "data" key
+		// stays present and is null. https://spec.graphql.org/draft/#sec-Handling-Field-Errors
+		assertTrue(result.containsKey("data"), "expected the 'data' key to be present but got: $result")
+		assertNull(result["data"])
+
+		val errors = result["errors"] as List<*>
+		val firstError = errors.first() as Map<*, *>
+		assertEquals(
+			actual = firstError["message"],
+			expected = "Field 'Query.value' of type 'String!' resolved to null.",
+		)
+		assertEquals(actual = firstError["path"], expected = listOf("value"))
 	}
 
 	@Test

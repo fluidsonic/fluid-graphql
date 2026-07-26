@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.16.0.
+**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.17.0.
 
 ## Build Commands
 
@@ -22,7 +22,7 @@ Linting: ktlint owns formatting/style (configured via `.editorconfig`), detekt o
 complexity/smell/bug rules (`config/detekt/detekt.yml`, with per-module
 `detekt-baseline.xml`). Both hook into `check` and CI runs `./gradlew check`.
 
-Uses the `io.fluidsonic.gradle` plugin (v3.0.0) for build configuration. Gradle 9.4.1. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
+Uses the `io.fluidsonic.gradle` plugin (4.0.0) for build configuration. Gradle 9.6.1. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
 Requires JDK 21+.
 kotlinx-coroutines: 1.10.2.
 

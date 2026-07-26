@@ -228,6 +228,16 @@ public class GSchema internal constructor(
 			is GInputObjectType ->
 				when (value) {
 					is GObjectValue -> {
+						// Only syntactic fields can be counted here. The runtime value of a variable is unknown at
+						// validation time and is therefore checked again during coercion.
+						// https://spec.graphql.org/draft/#sec-OneOf-Input-Objects.Input-Coercion
+						if (namedType.directive(GLanguage.defaultOneOfDirective.name) !== null) {
+							val field = value.arguments.distinctBy { it.name }.singleOrNull()
+							if (field === null || field.value is GNullValue) {
+								reportError(message = oneOfViolationMessage(typeName = namedType.name))
+							}
+						}
+
 						for (argumentDefinition in namedType.argumentDefinitions) {
 							if (argumentDefinition.isRequired()) {
 								if (value.argument(argumentDefinition.name) === null) {
@@ -386,21 +396,22 @@ public fun GSchema(document: GDocument, supportOptional: Boolean = false): GSche
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
-	if (directiveDefinitions.none { it.name == GLanguage.defaultDeprecatedDirective.description }) {
-		directiveDefinitions += GLanguage.defaultDeprecatedDirective
-	}
-	if (directiveDefinitions.none { it.name == GLanguage.defaultIncludeDirective.name }) {
-		directiveDefinitions += GLanguage.defaultIncludeDirective
-	}
-	if (directiveDefinitions.none { it.name == GLanguage.defaultSkipDirective.name }) {
-		directiveDefinitions += GLanguage.defaultSkipDirective
-	}
-	if (directiveDefinitions.none { it.name == GLanguage.defaultSpecifiedByDirective.name }) {
-		directiveDefinitions += GLanguage.defaultSpecifiedByDirective
-	}
 
-	if (supportOptional && directiveDefinitions.none { it.name == GLanguage.defaultOptionalDirective.name }) {
-		directiveDefinitions += GLanguage.defaultOptionalDirective
+	// Specified directives are added only when the document does not declare one of the same name.
+	// https://spec.graphql.org/draft/#sec-Type-System.Directives.Built-in-Directives
+	val defaultDirectiveDefinitions = listOfNotNull(
+		GLanguage.defaultDeprecatedDirective,
+		GLanguage.defaultIncludeDirective,
+		GLanguage.defaultOneOfDirective,
+		GLanguage.defaultSkipDirective,
+		GLanguage.defaultSpecifiedByDirective,
+		GLanguage.defaultOptionalDirective.takeIf { supportOptional },
+	)
+
+	for (defaultDirectiveDefinition in defaultDirectiveDefinitions) {
+		if (directiveDefinitions.none { it.name == defaultDirectiveDefinition.name }) {
+			directiveDefinitions += defaultDirectiveDefinition
+		}
 	}
 
 	val schemaDefinition = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()

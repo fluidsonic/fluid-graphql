@@ -4,9 +4,9 @@ package io.fluidsonic.graphql
  * Constants, built-in directive definitions, and validation utilities for the GraphQL language.
  *
  * The default directive definitions ([defaultDeprecatedDirective], [defaultIncludeDirective],
- * [defaultSkipDirective], [defaultSpecifiedByDirective]) are automatically added to every schema
- * built with the [GSchema] factory. The non-standard [defaultOptionalDirective] is added only
- * when `supportOptional = true` is passed.
+ * [defaultOneOfDirective], [defaultSkipDirective], [defaultSpecifiedByDirective]) are automatically
+ * added to every schema built with the [GSchema] factory. The non-standard [defaultOptionalDirective]
+ * is added only when `supportOptional = true` is passed.
  *
  * Name validation functions follow the GraphQL October 2021 specification.
  */
@@ -39,9 +39,15 @@ public object GLanguage {
 			),
 		),
 		description = "Marks an element of a GraphQL schema as no longer supported.",
+		// https://spec.graphql.org/draft/#sec--deprecated
+		// Note that DIRECTIVE_DEFINITION is unreachable through SDL because the grammar has no
+		// directives slot on a directive definition. It is still part of the specified locations.
 		locations = setOf(
-			GDirectiveLocation.ENUM_VALUE,
 			GDirectiveLocation.FIELD_DEFINITION,
+			GDirectiveLocation.ARGUMENT_DEFINITION,
+			GDirectiveLocation.INPUT_FIELD_DEFINITION,
+			GDirectiveLocation.ENUM_VALUE,
+			GDirectiveLocation.DIRECTIVE_DEFINITION,
 		),
 	)
 
@@ -77,6 +83,22 @@ public object GLanguage {
 		locations = setOf(
 			GDirectiveLocation.ARGUMENT_DEFINITION,
 			GDirectiveLocation.INPUT_FIELD_DEFINITION,
+		),
+	)
+
+	/**
+	 * The built-in `@oneOf` directive that marks an input object as a OneOf Input Object.
+	 *
+	 * Exactly one field of such an input object must be specified, and its value must not be `null`.
+	 *
+	 * @see <a href="https://spec.graphql.org/draft/#sec-OneOf-Input-Objects">GraphQL specification: OneOf Input Objects</a>
+	 */
+	// https://spec.graphql.org/draft/#sec--oneOf
+	public val defaultOneOfDirective: GDirectiveDefinition = GDirectiveDefinition(
+		name = "oneOf",
+		description = "Indicates exactly one field must be supplied and this field must not be `null`.",
+		locations = setOf(
+			GDirectiveLocation.INPUT_OBJECT,
 		),
 	)
 
@@ -187,3 +209,15 @@ public object GLanguage {
 	public fun isValidTypeName(name: String): Boolean = !name.startsWith(introspectionNamePrefix) &&
 		isValidName(name)
 }
+
+/**
+ * The error message reported when a value for the OneOf Input Object type [typeName] does not specify
+ * exactly one non-null field.
+ *
+ * Shared by validation and by both input coercion paths so that all of them report the same message.
+ *
+ * @see <a href="https://spec.graphql.org/draft/#sec-OneOf-Input-Objects.Input-Coercion">GraphQL specification: OneOf Input Objects</a>
+ */
+@InternalGraphqlApi
+public fun oneOfViolationMessage(typeName: String): String =
+	"Within OneOf Input Object type \"$typeName\", exactly one field must be specified, and the value for that field must be non-null."

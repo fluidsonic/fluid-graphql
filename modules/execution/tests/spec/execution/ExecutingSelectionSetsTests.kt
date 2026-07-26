@@ -170,24 +170,35 @@ class ExecutingSelectionSetsTests {
 		)
 	}
 
+	// The field is typed as the `Pet` interface rather than as `Dog` on purpose: spreading `... on Cat`
+	// directly inside a selection on `Dog` is not a valid document at all, because the two object types
+	// are disjoint. Verified against graphql@17.0.2 — for `type Dog`/`type Cat` and `type Query { dog: Dog }`,
+	// `validate(schema, parse('{ dog { name ... on Cat { meows } } }'))` reports:
+	//   Fragment cannot be spread here as objects of type "Dog" can never be of type "Cat".
+	// Spreading it through a shared interface is valid and still exercises the behaviour under test.
 	@Test
 	fun testTypedInlineFragmentOnWrongType() = runTest {
 		val schema = GraphQL.schema {
+			val Pet by type
 			val Dog by type
 			val Cat by type
 
-			Object<DogData>(Dog) {
+			Interface(Pet) {
+				field("name" of String)
+			}
+
+			Object<DogData>(Dog implements Pet) {
 				field("name" of String) { resolve { it.name } }
 				field("barks" of Boolean) { resolve { it.barks } }
 			}
 
-			Object<CatData>(Cat) {
+			Object<CatData>(Cat implements Pet) {
 				field("name" of String) { resolve { it.name } }
 				field("meows" of Boolean) { resolve { it.meows } }
 			}
 
 			Query {
-				field("dog" of Dog) {
+				field("dog" of Pet) {
 					resolve { DogData("Rex", barks = true) }
 				}
 			}

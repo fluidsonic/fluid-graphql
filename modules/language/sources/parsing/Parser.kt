@@ -2,9 +2,9 @@ package io.fluidsonic.graphql
 
 import io.fluidsonic.graphql.Token.Kind as TokenKind
 
-internal class Parser private constructor(source: GDocumentSource.Parsable) {
+internal class Parser private constructor(source: GDocumentSource.Parsable, maxTokens: Int? = null) {
 
-	private val lexer = Lexer(source = source)
+	private val lexer = Lexer(source = source, maxTokens = maxTokens)
 
 	private inline fun <T> any(openKind: TokenKind, parse: () -> T, closeKind: TokenKind): List<T> {
 		expectToken(openKind)
@@ -911,14 +911,15 @@ internal class Parser private constructor(source: GDocumentSource.Parsable) {
 
 			TokenKind.FLOAT -> {
 				val stringValue = startToken.value!!
-				val floatValue = try {
-					stringValue.toDouble()
-				} catch (e: NumberFormatException) {
-					GError.syntax(
-						details = "Invalid Float value '$stringValue'",
+
+				// A syntactically valid *FloatValue* may still exceed the range of a double-precision number — e.g.
+				// `1e400` rounds to infinity, which `GFloatValue` cannot represent. Reject it here so that untrusted
+				// input surfaces as a syntax error rather than crashing the parser.
+				val floatValue = stringValue.toDoubleOrNull()?.takeIf { it.isFinite() }
+					?: GError.syntax(
+						details = "Invalid Float value '$stringValue'.",
 						origin = makeOrigin(startToken = startToken, endToken = startToken),
 					).throwException()
-				}
 
 				lexer.advance()
 
@@ -930,14 +931,11 @@ internal class Parser private constructor(source: GDocumentSource.Parsable) {
 
 			TokenKind.INT -> {
 				val stringValue = startToken.value!!
-				val intValue = try {
-					stringValue.toInt()
-				} catch (e: NumberFormatException) {
-					GError.syntax(
-						details = "Invalid Int value '$stringValue'",
+				val intValue = stringValue.toIntOrNull()
+					?: GError.syntax(
+						details = "Invalid Int value '$stringValue'.",
 						origin = makeOrigin(startToken = startToken, endToken = startToken),
 					).throwException()
-				}
 
 				lexer.advance()
 
@@ -1036,8 +1034,8 @@ internal class Parser private constructor(source: GDocumentSource.Parsable) {
 
 	companion object {
 
-		fun parseDocument(source: GDocumentSource.Parsable): GResult<GDocument> = GResult.catchErrors {
-			Parser(source = source).parseDocument()
+		fun parseDocument(source: GDocumentSource.Parsable, maxTokens: Int? = null): GResult<GDocument> = GResult.catchErrors {
+			Parser(source = source, maxTokens = maxTokens).parseDocument()
 		}
 
 		fun parseTypeReference(source: GDocumentSource.Parsable): GResult<GTypeRef> = GResult.catchErrors {

@@ -9,6 +9,7 @@ package io.fluidsonic.graphql
 public enum class GDirectiveLocation {
 
 	ARGUMENT_DEFINITION,
+	DIRECTIVE_DEFINITION,
 	ENUM,
 	ENUM_VALUE,
 	FIELD,

@@ -1,10 +1,16 @@
 package io.fluidsonic.graphql
 
+// Every nested class below repeats `@InternalGraphqlApi` even though Kotlin already requires an opt-in to reach
+// them through the outer class. The marker has BINARY retention and lands on one class file only, and
+// binary-compatibility-validator matches `nonPublicMarkers` per class file — so without the repetition the nested
+// types leak into the published API dump and freeze a surface that carries no compatibility promise.
+// `checkApiDumpExcludesInternalApi` in the root build script guards this.
 @InternalGraphqlApi
 public abstract class Visitor<out Result, in Data> {
 
 	public abstract fun onNode(node: GNode, data: Data, visit: Visit): Result
 
+	@InternalGraphqlApi
 	public companion object {
 
 		// FIXME rename
@@ -14,6 +20,7 @@ public abstract class Visitor<out Result, in Data> {
 		}
 	}
 
+	@InternalGraphqlApi
 	public abstract class Hierarchical<out Result, in Data> : Typed<Result, Data>() {
 
 		protected abstract fun onAny(node: GNode, data: Data, visit: Visit): Result
@@ -76,6 +83,7 @@ public abstract class Visitor<out Result, in Data> {
 		override fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit): Result = onAny(definition, data, visit)
 		override fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit): Result = onValue(ref, data, visit)
 
+		@InternalGraphqlApi
 		public abstract class WithoutData<out Result> : Hierarchical<Result, Nothing?>() {
 
 			protected abstract fun onAny(node: GNode, visit: Visit): Result
@@ -315,6 +323,7 @@ public abstract class Visitor<out Result, in Data> {
 		}
 	}
 
+	@InternalGraphqlApi
 	public abstract class Typed<out Result, in Data> : Visitor<Result, Data>() {
 
 		@Deprecated(message = "Don't call this.", level = DeprecationLevel.HIDDEN)
@@ -409,6 +418,7 @@ public abstract class Visitor<out Result, in Data> {
 		protected abstract fun onVariableDefinition(definition: GVariableDefinition, data: Data, visit: Visit): Result
 		protected abstract fun onVariableRef(ref: GVariableRef, data: Data, visit: Visit): Result
 
+		@InternalGraphqlApi
 		public abstract class WithoutData<out Result> : Typed<Result, Nothing?>() {
 
 			protected abstract fun onArgument(argument: GArgument, visit: Visit): Result
@@ -591,6 +601,7 @@ public abstract class Visitor<out Result, in Data> {
 		}
 	}
 
+	@InternalGraphqlApi
 	public abstract class WithoutData<out Result> : Visitor<Result, Nothing?>() {
 
 		public abstract fun onNode(node: GNode, visit: Visit): Result

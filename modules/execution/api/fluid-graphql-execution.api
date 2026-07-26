@@ -1,0 +1,318 @@
+public final class io/fluidsonic/graphql/FieldDefinitionResolverExtensionKeyKt {
+	public static final fun getResolver (Lio/fluidsonic/graphql/GFieldDefinition;)Lio/fluidsonic/graphql/GFieldResolver;
+	public static final fun getResolver (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GFieldResolver;
+	public static final fun setResolver (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GFieldResolver;)V
+}
+
+public final class io/fluidsonic/graphql/GDocument_executionKt {
+	public static final fun validate (Lio/fluidsonic/graphql/GDocument;Lio/fluidsonic/graphql/GSchema;)Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GDslForExecution {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GDslForExecution;
+}
+
+public final class io/fluidsonic/graphql/GDslForExecution$FieldDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder {
+	public fun List (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public fun argument (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;)V
+	public fun argument (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndTypeAndDefault;Lkotlin/jvm/functions/Function1;)V
+	public fun deprecated (Ljava/lang/String;)V
+	public fun description (Ljava/lang/String;)V
+	public fun directive (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun extension (Lio/fluidsonic/graphql/GNodeExtensionKey;)Ljava/lang/Object;
+	public fun extension (Lio/fluidsonic/graphql/GNodeExtensionKey;Ljava/lang/Object;)V
+	public fun getBoolean ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getFloat ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getID ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getInt ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getString ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun not (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public fun of (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType;
+	public final fun resolve (Lkotlin/jvm/functions/Function3;)V
+	public fun value (Lio/fluidsonic/graphql/GValue;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+}
+
+public final class io/fluidsonic/graphql/GDslForExecution$ObjectTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder {
+	public fun List (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public fun deprecated (Ljava/lang/String;)V
+	public fun description (Ljava/lang/String;)V
+	public fun directive (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun extension (Lio/fluidsonic/graphql/GNodeExtensionKey;)Ljava/lang/Object;
+	public fun extension (Lio/fluidsonic/graphql/GNodeExtensionKey;Ljava/lang/Object;)V
+	public synthetic fun field (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;)V
+	public final fun fieldWithType (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;)V
+	public fun getBoolean ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getFloat ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getID ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getInt ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getString ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun not (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public fun of (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;
+}
+
+public final class io/fluidsonic/graphql/GDslForExecutionKt {
+	public static final fun Object (Lio/fluidsonic/graphql/GSchemaBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public static final fun Object (Lio/fluidsonic/graphql/GSchemaBuilder;Lio/fluidsonic/graphql/GSchemaBuilder$Interfaces;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public static final fun coerceNodeInput (Lio/fluidsonic/graphql/GSchemaBuilder$ScalarTypeDefinitionBuilder;Lkotlin/jvm/functions/Function2;)V
+	public static final fun coerceOutput (Lio/fluidsonic/graphql/GSchemaBuilder$ScalarTypeDefinitionBuilder;Lkotlin/jvm/functions/Function2;)V
+	public static final fun coerceVariableInput (Lio/fluidsonic/graphql/GSchemaBuilder$ScalarTypeDefinitionBuilder;Lkotlin/jvm/functions/Function2;)V
+	public static final fun resolve (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;Lkotlin/jvm/functions/Function3;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GExceptionHandler {
+	public abstract fun handleException (Lio/fluidsonic/graphql/GExceptionHandlerContext;Ljava/lang/Throwable;)Lio/fluidsonic/graphql/GError;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExceptionHandlerContext {
+	public abstract fun getOrigin ()Lio/fluidsonic/graphql/GExceptionOrigin;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExceptionOrigin {
+	public abstract fun getContext ()Lio/fluidsonic/graphql/GExecutorContext$Child;
+}
+
+public final class io/fluidsonic/graphql/GExceptionOrigin$FieldResolver : io/fluidsonic/graphql/GExceptionOrigin {
+	public fun <init> (Lio/fluidsonic/graphql/GFieldResolverContext;Lio/fluidsonic/graphql/GFieldResolver;)V
+	public synthetic fun getContext ()Lio/fluidsonic/graphql/GExecutorContext$Child;
+	public fun getContext ()Lio/fluidsonic/graphql/GFieldResolverContext;
+	public final fun getResolver ()Lio/fluidsonic/graphql/GFieldResolver;
+}
+
+public final class io/fluidsonic/graphql/GExceptionOrigin$NodeInputCoercer : io/fluidsonic/graphql/GExceptionOrigin {
+	public fun <init> (Lio/fluidsonic/graphql/GNodeInputCoercer;Lio/fluidsonic/graphql/GNodeInputCoercerContext;)V
+	public final fun getCoercer ()Lio/fluidsonic/graphql/GNodeInputCoercer;
+	public synthetic fun getContext ()Lio/fluidsonic/graphql/GExecutorContext$Child;
+	public fun getContext ()Lio/fluidsonic/graphql/GNodeInputCoercerContext;
+}
+
+public final class io/fluidsonic/graphql/GExceptionOrigin$OutputCoercer : io/fluidsonic/graphql/GExceptionOrigin {
+	public fun <init> (Lio/fluidsonic/graphql/GOutputCoercer;Lio/fluidsonic/graphql/GOutputCoercerContext;)V
+	public final fun getCoercer ()Lio/fluidsonic/graphql/GOutputCoercer;
+	public synthetic fun getContext ()Lio/fluidsonic/graphql/GExecutorContext$Child;
+	public fun getContext ()Lio/fluidsonic/graphql/GOutputCoercerContext;
+}
+
+public final class io/fluidsonic/graphql/GExceptionOrigin$RootResolver : io/fluidsonic/graphql/GExceptionOrigin {
+	public fun <init> (Lio/fluidsonic/graphql/GRootResolverContext;Lio/fluidsonic/graphql/GRootResolver;)V
+	public synthetic fun getContext ()Lio/fluidsonic/graphql/GExecutorContext$Child;
+	public fun getContext ()Lio/fluidsonic/graphql/GRootResolverContext;
+	public final fun getResolver ()Lio/fluidsonic/graphql/GRootResolver;
+}
+
+public final class io/fluidsonic/graphql/GExceptionOrigin$VariableInputCoercer : io/fluidsonic/graphql/GExceptionOrigin {
+	public fun <init> (Lio/fluidsonic/graphql/GVariableInputCoercer;Lio/fluidsonic/graphql/GVariableInputCoercerContext;)V
+	public final fun getCoercer ()Lio/fluidsonic/graphql/GVariableInputCoercer;
+	public synthetic fun getContext ()Lio/fluidsonic/graphql/GExecutorContext$Child;
+	public fun getContext ()Lio/fluidsonic/graphql/GVariableInputCoercerContext;
+}
+
+public final class io/fluidsonic/graphql/GExceptionOriginKt {
+	public static final fun getPath (Lio/fluidsonic/graphql/GExceptionOrigin;)Lio/fluidsonic/graphql/GPath;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExecutor {
+	public static final field Companion Lio/fluidsonic/graphql/GExecutor$Companion;
+	public abstract fun execute (Lio/fluidsonic/graphql/GDocument;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun execute (Lio/fluidsonic/graphql/GDocumentSource$Parsable;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun execute (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun execute$default (Lio/fluidsonic/graphql/GExecutor;Lio/fluidsonic/graphql/GDocument;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun execute$default (Lio/fluidsonic/graphql/GExecutor;Lio/fluidsonic/graphql/GDocumentSource$Parsable;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun execute$default (Lio/fluidsonic/graphql/GExecutor;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun serializeResult (Lio/fluidsonic/graphql/GResult;)Ljava/util/Map;
+}
+
+public final class io/fluidsonic/graphql/GExecutor$Companion {
+	public final fun default (Lio/fluidsonic/graphql/GSchema;Lio/fluidsonic/graphql/GExceptionHandler;Lio/fluidsonic/graphql/GFieldResolver;Lio/fluidsonic/graphql/GNodeInputCoercer;Lio/fluidsonic/graphql/GOutputCoercer;Lio/fluidsonic/graphql/GVariableInputCoercer;Lio/fluidsonic/graphql/GRootResolver;)Lio/fluidsonic/graphql/GExecutor;
+	public static synthetic fun default$default (Lio/fluidsonic/graphql/GExecutor$Companion;Lio/fluidsonic/graphql/GSchema;Lio/fluidsonic/graphql/GExceptionHandler;Lio/fluidsonic/graphql/GFieldResolver;Lio/fluidsonic/graphql/GNodeInputCoercer;Lio/fluidsonic/graphql/GOutputCoercer;Lio/fluidsonic/graphql/GVariableInputCoercer;Lio/fluidsonic/graphql/GRootResolver;ILjava/lang/Object;)Lio/fluidsonic/graphql/GExecutor;
+}
+
+public final class io/fluidsonic/graphql/GExecutor$DefaultImpls {
+	public static synthetic fun execute$default (Lio/fluidsonic/graphql/GExecutor;Lio/fluidsonic/graphql/GDocument;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun execute$default (Lio/fluidsonic/graphql/GExecutor;Lio/fluidsonic/graphql/GDocumentSource$Parsable;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun execute$default (Lio/fluidsonic/graphql/GExecutor;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Lio/fluidsonic/graphql/GExecutorContextExtensionSet;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExecutorContext {
+	public abstract fun getDocument ()Lio/fluidsonic/graphql/GDocument;
+	public abstract fun getExtensions ()Lio/fluidsonic/graphql/GExecutorContextExtensionSet;
+	public abstract fun getOperation ()Lio/fluidsonic/graphql/GOperationDefinition;
+	public abstract fun getRoot ()Ljava/lang/Object;
+	public abstract fun getRootType ()Lio/fluidsonic/graphql/GObjectType;
+	public abstract fun getSchema ()Lio/fluidsonic/graphql/GSchema;
+	public abstract fun getVariableValues ()Ljava/util/Map;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExecutorContext$Child {
+	public abstract fun getExecution ()Lio/fluidsonic/graphql/GExecutorContext;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExecutorContextExtensionKey {
+	public static final field Companion Lio/fluidsonic/graphql/GExecutorContextExtensionKey$Companion;
+}
+
+public final class io/fluidsonic/graphql/GExecutorContextExtensionKey$Companion {
+}
+
+public abstract interface class io/fluidsonic/graphql/GExecutorContextExtensionSet {
+	public static final field Companion Lio/fluidsonic/graphql/GExecutorContextExtensionSet$Companion;
+	public abstract fun get (Lio/fluidsonic/graphql/GExecutorContextExtensionKey;)Ljava/lang/Object;
+	public abstract fun isEmpty ()Z
+	public abstract fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GExecutorContextExtensionSet$Builder {
+	public static final field Companion Lio/fluidsonic/graphql/GExecutorContextExtensionSet$Builder$Companion;
+	public abstract fun build ()Lio/fluidsonic/graphql/GExecutorContextExtensionSet;
+	public abstract fun get (Lio/fluidsonic/graphql/GExecutorContextExtensionKey;)Ljava/lang/Object;
+	public abstract fun set (Lio/fluidsonic/graphql/GExecutorContextExtensionKey;Ljava/lang/Object;)V
+	public abstract fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GExecutorContextExtensionSet$Builder$Companion {
+	public final fun default ()Lio/fluidsonic/graphql/GExecutorContextExtensionSet$Builder;
+}
+
+public final class io/fluidsonic/graphql/GExecutorContextExtensionSet$Companion {
+	public final fun empty ()Lio/fluidsonic/graphql/GExecutorContextExtensionSet;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GExecutorContextExtensionSet;
+}
+
+public final class io/fluidsonic/graphql/GExecutorContextExtensionSetKt {
+	public static final fun isNotEmpty (Lio/fluidsonic/graphql/GExecutorContextExtensionSet;)Z
+}
+
+public abstract interface class io/fluidsonic/graphql/GFieldResolver {
+	public abstract fun resolveField (Lio/fluidsonic/graphql/GFieldResolverContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GFieldResolverContext : io/fluidsonic/graphql/GExecutorContext$Child {
+	public abstract fun getArguments ()Ljava/util/Map;
+	public abstract fun getFieldDefinition ()Lio/fluidsonic/graphql/GFieldDefinition;
+	public abstract fun getParentType ()Lio/fluidsonic/graphql/GObjectType;
+	public abstract fun getPath ()Lio/fluidsonic/graphql/GPath;
+	public abstract fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GFieldResolverKt {
+	public static final fun resolveField (Lio/fluidsonic/graphql/GFieldResolver;Ljava/lang/Object;Lio/fluidsonic/graphql/GFieldResolverContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GInputCoercerContext : io/fluidsonic/graphql/GExecutorContext$Child {
+	public abstract fun getArgumentDefinition ()Lio/fluidsonic/graphql/GArgumentDefinition;
+	public abstract fun getType ()Lio/fluidsonic/graphql/GType;
+	public abstract fun invalid (Ljava/lang/String;)Ljava/lang/Void;
+	public static synthetic fun invalid$default (Lio/fluidsonic/graphql/GInputCoercerContext;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Void;
+	public abstract fun next ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GInputCoercerContext$DefaultImpls {
+	public static synthetic fun invalid$default (Lio/fluidsonic/graphql/GInputCoercerContext;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Void;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNodeInputCoercer {
+	public abstract fun coerceNodeInput (Lio/fluidsonic/graphql/GNodeInputCoercerContext;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNodeInputCoercerContext : io/fluidsonic/graphql/GInputCoercerContext {
+	public fun coerceNodeInput (Lio/fluidsonic/graphql/GNodeInputCoercer;Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getFieldSelectionPath ()Lio/fluidsonic/graphql/GPath;
+}
+
+public final class io/fluidsonic/graphql/GNodeInputCoercerContext$DefaultImpls {
+	public static fun coerceNodeInput (Lio/fluidsonic/graphql/GNodeInputCoercerContext;Lio/fluidsonic/graphql/GNodeInputCoercer;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GOutputCoercer {
+	public abstract fun coerceOutput (Lio/fluidsonic/graphql/GOutputCoercerContext;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GOutputCoercerContext : io/fluidsonic/graphql/GExecutorContext$Child {
+	public fun coerceOutput (Lio/fluidsonic/graphql/GOutputCoercer;Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getFieldDefinition ()Lio/fluidsonic/graphql/GFieldDefinition;
+	public abstract fun getParentType ()Lio/fluidsonic/graphql/GObjectType;
+	public abstract fun getPath ()Lio/fluidsonic/graphql/GPath;
+	public abstract fun getType ()Lio/fluidsonic/graphql/GType;
+	public abstract fun invalid (Ljava/lang/String;)Ljava/lang/Void;
+	public static synthetic fun invalid$default (Lio/fluidsonic/graphql/GOutputCoercerContext;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Void;
+	public abstract fun next ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GOutputCoercerContext$DefaultImpls {
+	public static fun coerceOutput (Lio/fluidsonic/graphql/GOutputCoercerContext;Lio/fluidsonic/graphql/GOutputCoercer;Ljava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun invalid$default (Lio/fluidsonic/graphql/GOutputCoercerContext;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/Void;
+}
+
+public abstract interface class io/fluidsonic/graphql/GRootResolver {
+	public static final field Companion Lio/fluidsonic/graphql/GRootResolver$Companion;
+	public abstract fun resolveRoot (Lio/fluidsonic/graphql/GRootResolverContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GRootResolver$Companion {
+	public final fun constant (Ljava/lang/Object;)Lio/fluidsonic/graphql/GRootResolver;
+	public final fun unit ()Lio/fluidsonic/graphql/GRootResolver;
+}
+
+public abstract interface class io/fluidsonic/graphql/GRootResolverContext : io/fluidsonic/graphql/GExecutorContext$Child {
+}
+
+public final class io/fluidsonic/graphql/GSchema_executionKt {
+	public static final fun fieldDefinition (Lio/fluidsonic/graphql/GSchema;Ljava/lang/String;Lio/fluidsonic/graphql/GNamedType;)Lio/fluidsonic/graphql/GFieldDefinition;
+}
+
+public abstract interface class io/fluidsonic/graphql/GVariableInputCoercer {
+	public abstract fun coerceVariableInput (Lio/fluidsonic/graphql/GVariableInputCoercerContext;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/fluidsonic/graphql/GVariableInputCoercerContext : io/fluidsonic/graphql/GInputCoercerContext {
+	public fun coerceVariableInput (Lio/fluidsonic/graphql/GVariableInputCoercer;Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getHasValue ()Z
+	public abstract fun getPath ()Lio/fluidsonic/graphql/GPath;
+	public abstract fun getVariableDefinition ()Lio/fluidsonic/graphql/GVariableDefinition;
+}
+
+public final class io/fluidsonic/graphql/GVariableInputCoercerContext$DefaultImpls {
+	public static fun coerceVariableInput (Lio/fluidsonic/graphql/GVariableInputCoercerContext;Lio/fluidsonic/graphql/GVariableInputCoercer;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/InputObjectNodeInputCoercerExtensionKeyKt {
+	public static final fun getNodeInputCoercer (Lio/fluidsonic/graphql/GInputObjectType;)Lio/fluidsonic/graphql/GNodeInputCoercer;
+	public static final fun getNodeInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GNodeInputCoercer;
+	public static final fun setNodeInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GNodeInputCoercer;)V
+}
+
+public final class io/fluidsonic/graphql/InputObjectVariableInputCoercerExtensionKeyKt {
+	public static final fun getVariableInputCoercer (Lio/fluidsonic/graphql/GInputObjectType;)Lio/fluidsonic/graphql/GVariableInputCoercer;
+	public static final fun getVariableInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GVariableInputCoercer;
+	public static final fun setVariableInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GVariableInputCoercer;)V
+}
+
+public final class io/fluidsonic/graphql/LeafTypeNodeInputCoercerExtensionKeyKt {
+	public static final fun getNodeInputCoercer (Lio/fluidsonic/graphql/GLeafType;)Lio/fluidsonic/graphql/GNodeInputCoercer;
+	public static final fun getNodeInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GNodeInputCoercer;
+	public static final fun setNodeInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GNodeInputCoercer;)V
+}
+
+public final class io/fluidsonic/graphql/LeafTypeOutputCoercerExtensionKeyKt {
+	public static final fun getOutputCoercer (Lio/fluidsonic/graphql/GLeafType;)Lio/fluidsonic/graphql/GOutputCoercer;
+	public static final fun getOutputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GOutputCoercer;
+	public static final fun setOutputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GOutputCoercer;)V
+}
+
+public final class io/fluidsonic/graphql/LeafTypeVariableInputCoercerExtensionKeyKt {
+	public static final fun getVariableInputCoercer (Lio/fluidsonic/graphql/GLeafType;)Lio/fluidsonic/graphql/GVariableInputCoercer;
+	public static final fun getVariableInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GVariableInputCoercer;
+	public static final fun setVariableInputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GVariableInputCoercer;)V
+}
+
+public final class io/fluidsonic/graphql/ObjectTypeKotlinTypeExtensionKeyKt {
+	public static final fun getKotlinType (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lkotlin/reflect/KClass;
+	public static final fun getKotlinType (Lio/fluidsonic/graphql/GObjectType;)Lkotlin/reflect/KClass;
+	public static final fun setKotlinType (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lkotlin/reflect/KClass;)V
+}
+
+public final class io/fluidsonic/graphql/ObjectTypeOutputCoercerExtensionKeyKt {
+	public static final fun getOutputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;)Lio/fluidsonic/graphql/GOutputCoercer;
+	public static final fun getOutputCoercer (Lio/fluidsonic/graphql/GObjectType;)Lio/fluidsonic/graphql/GOutputCoercer;
+	public static final fun setOutputCoercer (Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;Lio/fluidsonic/graphql/GOutputCoercer;)V
+}
+

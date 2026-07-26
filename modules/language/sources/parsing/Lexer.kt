@@ -1,8 +1,9 @@
 package io.fluidsonic.graphql
 
-internal class Lexer(val source: GDocumentSource.Parsable) {
+internal class Lexer(val source: GDocumentSource.Parsable, private val maxTokens: Int? = null) {
 
 	private val content = source.content
+	private var tokenCount = 0
 
 	var currentToken = Token(
 		kind = Token.Kind.START_OF_INPUT,
@@ -39,7 +40,7 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 					lookaheadPosition = token.endPosition
 					lookaheadToken = token
 
-					readToken().also { nextToken ->
+					readCountedToken().also { nextToken ->
 						token.nextToken = nextToken
 					}
 				}
@@ -53,17 +54,17 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 	private fun readBlockString(): Token {
 		var position = lookaheadPosition + 3
 		var chunkStart = position
-		var rawValue = ""
+		val rawValue = StringBuilder()
 
 		var char = readChar(position)
 		while (char.isValid()) { // FIXME handle invalid chars
 			if (char eq '"' && readChar(position + 1) eq '"' && readChar(position + 2) eq '"') {
-				rawValue += content.substring(startIndex = chunkStart, endIndex = position)
+				rawValue.appendRange(content, startIndex = chunkStart, endIndex = position)
 
 				return makeToken(
 					kind = Token.Kind.BLOCK_STRING,
 					endPosition = position + 3,
-					value = normalizeBlockString(rawValue),
+					value = normalizeBlockString(rawValue.toString()),
 				)
 			}
 
@@ -82,7 +83,7 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 				readChar(position + 2) eq '"' &&
 				readChar(position + 3) eq '"'
 			) {
-				rawValue += content.substring(startIndex = chunkStart, endIndex = position) + "\"\"\""
+				rawValue.appendRange(content, startIndex = chunkStart, endIndex = position).append("\"\"\"")
 
 				position += 4
 				chunkStart = position
@@ -202,66 +203,27 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 	private fun readString(): Token {
 		var position = lookaheadPosition + 1
 		var chunkStart = position
-		var value = ""
+		val value = StringBuilder()
 
 		var char = readChar(position)
 		while (char.isValid() && !char.isLineBreak()) { // FIXME throw if invalid char
 			if (char eq '"') {
-				value += content.substring(startIndex = chunkStart, endIndex = position)
+				value.appendRange(content, startIndex = chunkStart, endIndex = position)
 
 				return makeToken(
 					kind = Token.Kind.STRING,
 					endPosition = position + 1,
-					value = value,
+					value = value.toString(),
 				)
 			}
 
-			++position
-
 			if (char eq '\\') {
-				value += content.substring(startIndex = chunkStart, endIndex = position - 1)
+				value.appendRange(content, startIndex = chunkStart, endIndex = position)
 
-				char = readChar(position)
-				when (char.toChar()) { // FIXME throw proper error if EOI
-					'"' -> value += "\""
-					'/' -> value += "/"
-					'\\' -> value += "\\"
-					'b' -> value += "\b"
-					'f' -> value += "\u000C"
-					'n' -> value += "\n"
-					'r' -> value += "\r"
-					't' -> value += "\t"
-					'u' -> {
-						// FIXME throw proper error if EOI
-						val charCode = makeCharacterFromHex(
-							readChar(position + 1).toChar(),
-							readChar(position + 2).toChar(),
-							readChar(position + 3).toChar(),
-							readChar(position + 4).toChar(),
-						)
-
-						if (charCode < 0) {
-							val invalidSequence = content.substring(startIndex = position + 1, endIndex = position + 5)
-
-							syntaxError(
-								description = "Invalid character escape sequence: \\u$invalidSequence.",
-								position = position,
-							)
-						}
-
-						value += charCode.toChar()
-						position += 4
-					}
-
-					else ->
-						syntaxError(
-							description = "Invalid character escape sequence: \\$char.",
-							position = position,
-						)
-				}
-
-				++position
+				position = readEscapeSequence(position = position, value = value)
 				chunkStart = position
+			} else {
+				++position
 			}
 
 			char = readChar(position)
@@ -269,6 +231,142 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 
 		syntaxError(description = "Unterminated string.", position = position)
 	}
+
+	/**
+	 * Reads the *EscapedCharacter* or *EscapedUnicode* sequence whose backslash sits at [position], appends the
+	 * character it denotes to [value] and returns the position just past the sequence.
+	 *
+	 * Fails with a syntax error if the sequence is unknown or truncated by the end of input.
+	 *
+	 * https://spec.graphql.org/draft/#sec-String-Value
+	 */
+	private fun readEscapeSequence(position: Int, value: StringBuilder): Int {
+		val escaped = readChar(position + 1)
+		if (escaped == SourceCharacter.endOfInput) {
+			invalidCharacterEscapeError(position = position, size = 1)
+		}
+
+		val unescaped = when (escaped.toChar()) {
+			'"' -> '"'
+			'\\' -> '\\'
+			'/' -> '/'
+			'b' -> '\b'
+			'f' -> '\u000C'
+			'n' -> '\n'
+			'r' -> '\r'
+			't' -> '\t'
+			'u' -> return readEscapedUnicode(position = position, value = value)
+			else -> invalidCharacterEscapeError(position = position, size = 2)
+		}
+
+		value.append(unescaped)
+
+		return position + 2
+	}
+
+	/**
+	 * Reads the *EscapedUnicode* sequence whose backslash sits at [position], dispatching between the braced
+	 * variable-width form `\u{…}` and the fixed-width form `\uXXXX`.
+	 */
+	private fun readEscapedUnicode(position: Int, value: StringBuilder): Int = if (readChar(position + 2) eq '{') {
+		readEscapedUnicodeVariableWidth(position = position, value = value)
+	} else {
+		readEscapedUnicodeFixedWidth(position = position, value = value)
+	}
+
+	/**
+	 * Reads the braced *EscapedUnicode* form `\u{…}` whose backslash sits at [position].
+	 *
+	 * The braced form denotes a single *Unicode scalar value* directly, so — unlike the fixed-width form — it can
+	 * never take part in a *SurrogatePair*: a braced escape denoting a lone surrogate is always a syntax error.
+	 *
+	 * https://spec.graphql.org/draft/#sec-String-Value
+	 */
+	private fun readEscapedUnicodeVariableWidth(position: Int, value: StringBuilder): Int {
+		var codePoint = 0
+		var size = bracedEscapePrefixLength
+
+		while (size < bracedEscapeMaximumLength) {
+			val char = readChar(position + size++)
+			if (char eq '}') {
+				if (size >= bracedEscapeMinimumLength && isUnicodeScalarValue(codePoint)) {
+					value.appendCodePoint(codePoint)
+
+					return position + size
+				}
+
+				break
+			}
+
+			// A non-hex digit — including the end of input — yields -1 and therefore a negative accumulator, as does
+			// an accumulator overflowing 32 bits.
+			codePoint = (codePoint shl 4) or char.parseHexDigit()
+			if (codePoint < 0) {
+				break
+			}
+		}
+
+		invalidUnicodeEscapeError(position = position, size = size)
+	}
+
+	/**
+	 * Reads the fixed-width *EscapedUnicode* form `\uXXXX` whose backslash sits at [position], including the
+	 * *SurrogatePair* production that joins a leading and a trailing surrogate escape into one code point.
+	 *
+	 * Both halves of a pair must use the fixed-width form; a braced escape is never accepted as either half.
+	 *
+	 * https://spec.graphql.org/draft/#sec-String-Value
+	 */
+	private fun readEscapedUnicodeFixedWidth(position: Int, value: StringBuilder): Int {
+		val code = read16BitHexCode(position + 2)
+
+		if (isUnicodeScalarValue(code)) {
+			value.append(code.toChar())
+
+			return position + fixedWidthEscapeLength
+		}
+
+		val secondEscapePosition = position + fixedWidthEscapeLength
+		if (isLeadingSurrogate(code) && readChar(secondEscapePosition) eq '\\' && readChar(secondEscapePosition + 1) eq 'u') {
+			val trailingCode = read16BitHexCode(secondEscapePosition + 2)
+			if (isTrailingSurrogate(trailingCode)) {
+				value.append(code.toChar()).append(trailingCode.toChar())
+
+				return position + surrogatePairEscapeLength
+			}
+		}
+
+		invalidUnicodeEscapeError(position = position, size = fixedWidthEscapeLength)
+	}
+
+	/** Reads exactly four hex digits starting at [position], or returns `-1` if any of them is not a hex digit. */
+	private fun read16BitHexCode(position: Int): Int {
+		var code = 0
+
+		for (offset in 0 until fixedWidthHexDigitCount) {
+			val digit = readChar(position + offset).parseHexDigit()
+			if (digit < 0) {
+				return -1
+			}
+
+			code = (code shl hexDigitBits) or digit
+		}
+
+		return code
+	}
+
+	private fun invalidCharacterEscapeError(position: Int, size: Int): Nothing = syntaxError(
+		description = "Invalid character escape sequence: \"${escapeSequenceText(position = position, size = size)}\".",
+		position = position,
+	)
+
+	private fun invalidUnicodeEscapeError(position: Int, size: Int): Nothing = syntaxError(
+		description = "Invalid Unicode escape sequence: \"${escapeSequenceText(position = position, size = size)}\".",
+		position = position,
+	)
+
+	/** Returns the up to [size] source characters starting at [position], clamped to the end of the document. */
+	private fun escapeSequenceText(position: Int, size: Int) = content.substring(startIndex = position, endIndex = (position + size).coerceAtMost(content.length))
 
 	private fun makeToken(kind: Token.Kind, startPosition: Int = this.lookaheadPosition, endPosition: Int, value: String? = null) = Token(
 		kind = kind,
@@ -279,6 +377,30 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 		previousToken = lookaheadToken,
 		value = value,
 	)
+
+	/**
+	 * Reads the next token and charges it against [maxTokens].
+	 *
+	 * Ignored characters — whitespace, commas and comments — never reach the counter because they either produce no
+	 * token at all or produce a [Token.Kind.COMMENT] that [lookahead] skips. The end of input is not counted either,
+	 * so a document of exactly `maxTokens` tokens still parses.
+	 */
+	private fun readCountedToken(): Token {
+		val token = readToken()
+
+		if (maxTokens != null && token.kind !== Token.Kind.COMMENT && token.kind !== Token.Kind.END_OF_INPUT) {
+			tokenCount += 1
+
+			if (tokenCount > maxTokens) {
+				syntaxError(
+					description = "Document contains more than $maxTokens tokens. Parsing aborted.",
+					position = token.startPosition,
+				)
+			}
+		}
+
+		return token
+	}
 
 	private fun readToken(): Token {
 		skipIgnoredCharacters()
@@ -382,11 +504,59 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 
 	companion object {
 
-		private fun Char.parseHex() = when (this) {
-			in '0'..'9' -> this - '0'
-			in 'a'..'f' -> this - 'a' + 10
-			in 'A'..'F' -> this - 'A' + 10
+		private const val maximumCodePoint = 0x10FFFF
+		private const val maximumBasicPlaneCodePoint = 0xFFFF
+		private const val supplementaryPlaneStart = 0x10000
+		private const val leadingSurrogateStart = 0xD800
+		private const val leadingSurrogateEnd = 0xDBFF
+		private const val trailingSurrogateStart = 0xDC00
+		private const val trailingSurrogateEnd = 0xDFFF
+		private const val surrogateHalfBits = 10
+		private const val surrogateHalfMask = 0x3FF
+		private const val hexDigitBits = 4
+
+		/** Number of hex digits in the fixed-width `\uXXXX` form. */
+		private const val fixedWidthHexDigitCount = 4
+
+		/** Length of `\uXXXX`. */
+		private const val fixedWidthEscapeLength = 6
+
+		/** Length of `\uXXXX\uXXXX`. */
+		private const val surrogatePairEscapeLength = 12
+
+		/** Length of the `\u{` prefix. */
+		private const val bracedEscapePrefixLength = 3
+
+		/** Length of the shortest well-formed braced escape, `\u{0}`. */
+		private const val bracedEscapeMinimumLength = 5
+
+		/** Length of the longest braced escape worth reading, `\u{00000000}`. */
+		private const val bracedEscapeMaximumLength = 12
+
+		private fun SourceCharacter.parseHexDigit() = when {
+			this in '0'..'9' -> value - '0'.code
+			this in 'a'..'f' -> value - 'a'.code + 10
+			this in 'A'..'F' -> value - 'A'.code + 10
 			else -> -1
+		}
+
+		/** Whether [codePoint] is a *Unicode scalar value*, i.e. in range but not one half of a surrogate pair. */
+		private fun isUnicodeScalarValue(codePoint: Int) = codePoint in 0 until leadingSurrogateStart || codePoint in (trailingSurrogateEnd + 1)..maximumCodePoint
+
+		private fun isLeadingSurrogate(codePoint: Int) = codePoint in leadingSurrogateStart..leadingSurrogateEnd
+
+		private fun isTrailingSurrogate(codePoint: Int) = codePoint in trailingSurrogateStart..trailingSurrogateEnd
+
+		/** Appends [codePoint] to this builder, encoding it as a surrogate pair if it lies outside the basic plane. */
+		private fun StringBuilder.appendCodePoint(codePoint: Int) {
+			if (codePoint <= maximumBasicPlaneCodePoint) {
+				append(codePoint.toChar())
+			} else {
+				val offset = codePoint - supplementaryPlaneStart
+
+				append((leadingSurrogateStart + (offset shr surrogateHalfBits)).toChar())
+				append((trailingSurrogateStart + (offset and surrogateHalfMask)).toChar())
+			}
 		}
 
 		private fun computeBlockStringIndentation(lines: List<String>): Int {
@@ -411,8 +581,6 @@ internal class Lexer(val source: GDocumentSource.Parsable) {
 
 			return commonIndentation.coerceAtLeast(0)
 		}
-
-		private fun makeCharacterFromHex(a: Char, b: Char, c: Char, d: Char) = (a.parseHex() shl 12) or (b.parseHex() shl 8) or (c.parseHex() shl 4) or d.parseHex()
 
 		private fun normalizeBlockString(value: String): String {
 			if (value.indexOfFirst { it == '\n' || it == '\r' } < 0) {

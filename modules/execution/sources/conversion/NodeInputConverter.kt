@@ -58,7 +58,11 @@ internal object NodeInputConverter {
 	// http://spec.graphql.org/draft/#sec-Input-Objects.Input-Coercion
 	@Suppress("UNCHECKED_CAST")
 	private fun coerceValueForInputObject(value: GValue, type: GInputObjectType, context: Context): Any? = when (value) {
-		is GObjectValue ->
+		is GObjectValue -> {
+			if (type.directive(GLanguage.defaultOneOfDirective.name) !== null) {
+				coerceOneOfValue(value = value, type = type, context = context)
+			}
+
 			type.argumentDefinitions
 				.associate { argumentDefinition ->
 					val argumentType = TypeResolver.resolveType(context.execution.schema, argumentDefinition.type) ?: validationError(
@@ -90,9 +94,45 @@ internal object NodeInputConverter {
 						)
 					}
 				}
+		}
 
 		else -> context.invalid()
 	}
+
+	// https://spec.graphql.org/draft/#sec-OneOf-Input-Objects.Input-Coercion
+	private fun coerceOneOfValue(value: GObjectValue, type: GInputObjectType, context: Context) {
+		val field = value.arguments.distinctBy { it.name }.singleOrNull()
+			?: oneOfViolation(message = oneOfViolationMessage(typeName = type.name), value = value, context = context)
+
+		when (val fieldValue = field.value) {
+			// A variable is not a literal value, so its runtime value decides whether the constraint holds.
+			is GVariableRef -> when {
+				!context.execution.variableValues.containsKey(fieldValue.name) -> oneOfViolation(
+					message = "Expected variable \"$${fieldValue.name}\" provided to field \"${field.name}\" " +
+						"for OneOf Input Object type \"${type.name}\" to provide a runtime value.",
+					value = value,
+					context = context,
+				)
+
+				context.execution.variableValues[fieldValue.name] === null -> oneOfViolation(
+					message = "Expected variable \"$${fieldValue.name}\" provided to field \"${field.name}\" " +
+						"for OneOf Input Object type \"${type.name}\" not to be null.",
+					value = value,
+					context = context,
+				)
+			}
+
+			is GNullValue -> oneOfViolation(message = oneOfViolationMessage(typeName = type.name), value = value, context = context)
+
+			else -> Unit
+		}
+	}
+
+	private fun oneOfViolation(message: String, value: GValue, context: Context): Nothing = GError(
+		message = message,
+		path = context.fieldSelectionPath,
+		nodes = listOf(value),
+	).throwException()
 
 	// http://spec.graphql.org/draft/#sec-Type-System.List.Input-Coercion
 	private fun coerceValueForList(value: GValue, type: GListType, context: Context): List<Any?> = when (value) {
@@ -230,6 +270,8 @@ internal object NodeInputConverter {
 			null
 	}
 
+	// The schema or document is broken in a way no client can provoke, so this fails loudly instead of
+	// becoming a GraphQL error in the response.
 	private fun validationError(message: String, argumentDefinition: GArgumentDefinition?): Nothing = error(
 		buildString {
 			append("There is an error in the document. It should be validated before use:\n")

@@ -56,11 +56,16 @@ internal object DefaultSelectionSetExecutor {
 					return GResult.success()
 				}
 
+				// A spread of an undefined fragment is skipped, mirroring graphql-js `collectFields`,
+				// which continues when `exeContext.fragments[fragName]` is absent.
 				val fragment = context.document.fragment(fragmentName)
-					?: error("A fragment with name '$fragmentName' is referenced but not defined.")
+					?: return GResult.success()
 
+				// An unresolvable type condition never applies, so the fragment is skipped — exactly as for an
+				// inline fragment below. graphql-js routes both through `doesFragmentConditionMatch`, which
+				// returns false when `typeFromAST` yields no type, and draws no distinction between the two.
 				val fragmentType = TypeResolver.resolveType(context.schema, fragment.typeCondition)
-					?: error("Cannot resolve type '${fragment.typeCondition}' in condition of fragment '$fragmentName'.")
+					?: return GResult.success()
 
 				if (!doesFragmentTypeApply(fragmentType, to = parentType)) {
 					return GResult.success()
@@ -79,8 +84,10 @@ internal object DefaultSelectionSetExecutor {
 			is GInlineFragmentSelection -> {
 				val fragmentTypeCondition = selection.typeCondition
 				if (fragmentTypeCondition !== null) {
+					// An unresolvable type condition never applies, so the fragment is skipped. graphql-js
+					// `doesFragmentConditionMatch` returns false when `typeFromAST` yields no type.
 					val fragmentType = TypeResolver.resolveType(context.schema, fragmentTypeCondition)
-						?: error("Cannot resolve type '$fragmentTypeCondition' in condition of inline fragment.")
+						?: return GResult.success()
 
 					if (!doesFragmentTypeApply(fragmentType, to = parentType)) {
 						return GResult.success()
@@ -109,6 +116,18 @@ internal object DefaultSelectionSetExecutor {
 		parentType: GObjectType,
 		path: GPath,
 		context: DefaultExecutorContext,
+	): GResult<Map<String, Any?>> = try {
+		executeInParallel(selectionSet = selectionSet, parent = parent, parentType = parentType, path = path, context = context)
+	} catch (exception: GErrorException) {
+		GResult.failure(exception.errors)
+	}
+
+	private suspend fun executeInParallel(
+		selectionSet: GSelectionSet,
+		parent: Any,
+		parentType: GObjectType,
+		path: GPath,
+		context: DefaultExecutorContext,
 	): GResult<Map<String, Any?>> = collectFieldSelections(
 		selectionSet = selectionSet,
 		parentType = parentType,
@@ -132,11 +151,24 @@ internal object DefaultSelectionSetExecutor {
 				}
 				.map { (key, deferred) -> key to deferred.await() }
 				.toMap()
+				.filterValues { result -> !result.isAbsent() }
 				.flatten()
 		}
 	}
 
 	suspend fun executeSerially(
+		selectionSet: GSelectionSet,
+		parent: Any,
+		parentType: GObjectType,
+		path: GPath,
+		context: DefaultExecutorContext,
+	): GResult<Map<String, Any?>> = try {
+		executeInSeries(selectionSet = selectionSet, parent = parent, parentType = parentType, path = path, context = context)
+	} catch (exception: GErrorException) {
+		GResult.failure(exception.errors)
+	}
+
+	private suspend fun executeInSeries(
 		selectionSet: GSelectionSet,
 		parent: Any,
 		parentType: GObjectType,
@@ -160,8 +192,12 @@ internal object DefaultSelectionSetExecutor {
 					context = context,
 				)
 			}
+			.filterValues { result -> !result.isAbsent() }
 			.flatten()
 	}
+
+	/** Whether the field was skipped entirely and so must not appear in the response at all. */
+	private fun GResult<Any?>.isAbsent() = valueOrNull() === NoValue
 
 	private fun GNode.WithDirectives.getDirectiveValues(
 		definition: GDirectiveDefinition,

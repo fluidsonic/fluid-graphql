@@ -1,9 +1,13 @@
 package io.fluidsonic.graphql
 
+// `children` is snapshotted once per `descend()` rather than re-derived per child. `GNode.childAt()` rescans from
+// index 0 through `forEachChild` on every call, so indexing it would make walking n siblings cost O(n²).
 private class DefaultNodeWalker(root: GNode) : NodeWalker {
 
 	private var childIndex = -1
 	private val childIndexStack = mutableListOf<Int>()
+	private var childList: List<GNode> = emptyList()
+	private val childListStack = mutableListOf<List<GNode>>()
 	private val childStack = mutableListOf<GNode?>()
 	private val parentStack = mutableListOf<GNode?>()
 
@@ -22,6 +26,7 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 
 		child = childStack.removeAt(stackIndex)
 		childIndex = childIndexStack.removeAt(stackIndex)
+		childList = childListStack.removeAt(stackIndex)
 		parent = parentStack.removeAt(stackIndex)
 
 		return true
@@ -29,30 +34,31 @@ private class DefaultNodeWalker(root: GNode) : NodeWalker {
 
 	override fun descend(): Boolean {
 		val child = child
-		if (child === null || !child.hasChildren()) {
+		val childList = child?.children().orEmpty()
+		if (childList.isEmpty()) {
 			return false
 		}
 
 		parentStack += parent
 		childIndexStack += childIndex
+		childListStack += this.childList
 		childStack += child
 
 		this.parent = child
 		this.child = null
 		this.childIndex = -1
+		this.childList = childList
 
 		return true
 	}
 
 	override fun nextChild(): GNode? {
-		val parent = parent ?: return null
-
-		if (childIndex >= 0 && child === null) {
+		if (parent === null || (childIndex >= 0 && child === null)) {
 			return null
 		}
 
 		childIndex += 1
-		child = parent.childAt(childIndex)
+		child = childList.getOrNull(childIndex)
 
 		return child
 	}

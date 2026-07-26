@@ -1,0 +1,1459 @@
+public abstract class io/fluidsonic/graphql/GAbstractType : io/fluidsonic/graphql/GCompositeType {
+	public static final field Companion Lio/fluidsonic/graphql/GAbstractType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GAbstractType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GArgument : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithName {
+	public static final field Companion Lio/fluidsonic/graphql/GArgument$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun getValue ()Lio/fluidsonic/graphql/GValue;
+}
+
+public final class io/fluidsonic/graphql/GArgument$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GArgumentDefinition : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithDefaultValue, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithName, io/fluidsonic/graphql/GNode$WithOptionalDeprecation, io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public static final field Companion Lio/fluidsonic/graphql/GArgumentDefinition$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GTypeRef;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDefaultValue ()Lio/fluidsonic/graphql/GValue;
+	public fun getDeprecation ()Lio/fluidsonic/graphql/GDirective;
+	public fun getDeprecationReason ()Ljava/lang/String;
+	public fun getDescription ()Ljava/lang/String;
+	public fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public fun getType ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun isOptional ()Z
+	public fun isRequired ()Z
+}
+
+public final class io/fluidsonic/graphql/GArgumentDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GBooleanType : io/fluidsonic/graphql/GScalarType {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GBooleanType;
+}
+
+public final class io/fluidsonic/graphql/GBooleanValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GBooleanValue$Companion;
+	public fun <init> (ZLio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (ZLio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public final fun getValue ()Z
+	public fun hashCode ()I
+	public fun unwrap ()Ljava/lang/Boolean;
+	public synthetic fun unwrap ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GBooleanValue$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GCompositeType : io/fluidsonic/graphql/GNamedType {
+	public static final field Companion Lio/fluidsonic/graphql/GCompositeType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GCompositeType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GCustomScalarType : io/fluidsonic/graphql/GScalarType {
+	public static final field Companion Lio/fluidsonic/graphql/GCustomScalarType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GCustomScalarType$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GDefinition : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GDefinition$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GDirective : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithArguments, io/fluidsonic/graphql/GNode$WithName {
+	public static final field Companion Lio/fluidsonic/graphql/GDirective$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun argument (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgument;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getArguments ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+}
+
+public final class io/fluidsonic/graphql/GDirective$Companion {
+}
+
+public final class io/fluidsonic/graphql/GDirectiveArgumentDefinition : io/fluidsonic/graphql/GArgumentDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GDirectiveArgumentDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GDirectiveArgumentDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GDirectiveDefinition : io/fluidsonic/graphql/GTypeSystemDefinition, io/fluidsonic/graphql/GNode$WithArgumentDefinitions, io/fluidsonic/graphql/GNode$WithName, io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public static final field Companion Lio/fluidsonic/graphql/GDirectiveDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;ZLjava/util/List;Lio/fluidsonic/graphql/GStringValue;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;ZLjava/util/List;Lio/fluidsonic/graphql/GStringValue;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Set;ZLjava/util/List;Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Set;ZLjava/util/List;Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgumentDefinition;
+	public fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirectiveArgumentDefinition;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getArgumentDefinitions ()Ljava/util/List;
+	public fun getDescription ()Ljava/lang/String;
+	public fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+	public final fun getLocationNodes ()Ljava/util/List;
+	public final fun getLocations ()Ljava/util/Set;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun isRepeatable ()Z
+}
+
+public final class io/fluidsonic/graphql/GDirectiveDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GDirectiveLocation : java/lang/Enum {
+	public static final field ARGUMENT_DEFINITION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field Companion Lio/fluidsonic/graphql/GDirectiveLocation$Companion;
+	public static final field DIRECTIVE_DEFINITION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field ENUM Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field ENUM_VALUE Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field FIELD Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field FIELD_DEFINITION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field FRAGMENT_DEFINITION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field FRAGMENT_SPREAD Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field INLINE_FRAGMENT Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field INPUT_FIELD_DEFINITION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field INPUT_OBJECT Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field INTERFACE Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field MUTATION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field OBJECT Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field QUERY Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field SCALAR Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field SCHEMA Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field SUBSCRIPTION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field UNION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static final field VARIABLE_DEFINITION Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirectiveLocation;
+	public static fun values ()[Lio/fluidsonic/graphql/GDirectiveLocation;
+}
+
+public final class io/fluidsonic/graphql/GDirectiveLocation$Companion {
+	public final fun forNode (Lio/fluidsonic/graphql/GNode;)Lio/fluidsonic/graphql/GDirectiveLocation;
+}
+
+public final class io/fluidsonic/graphql/GDocument : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GDocument$Companion;
+	public fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun fragment (Ljava/lang/String;)Lio/fluidsonic/graphql/GFragmentDefinition;
+	public final fun getDefinitions ()Ljava/util/List;
+	public final fun operation (Ljava/lang/String;)Lio/fluidsonic/graphql/GOperationDefinition;
+}
+
+public final class io/fluidsonic/graphql/GDocument$Companion {
+	public final fun parse (Lio/fluidsonic/graphql/GDocumentSource$Parsable;Ljava/lang/Integer;)Lio/fluidsonic/graphql/GResult;
+	public final fun parse (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)Lio/fluidsonic/graphql/GResult;
+	public static synthetic fun parse$default (Lio/fluidsonic/graphql/GDocument$Companion;Lio/fluidsonic/graphql/GDocumentSource$Parsable;Ljava/lang/Integer;ILjava/lang/Object;)Lio/fluidsonic/graphql/GResult;
+	public static synthetic fun parse$default (Lio/fluidsonic/graphql/GDocument$Companion;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Lio/fluidsonic/graphql/GResult;
+}
+
+public abstract interface class io/fluidsonic/graphql/GDocumentPosition {
+	public static final field Companion Lio/fluidsonic/graphql/GDocumentPosition$Companion;
+	public fun describe ()Ljava/lang/String;
+	public fun getColumn ()I
+	public fun getEndPosition ()I
+	public fun getLine ()I
+	public abstract fun getSource ()Lio/fluidsonic/graphql/GDocumentSource;
+	public fun getStartPosition ()I
+}
+
+public final class io/fluidsonic/graphql/GDocumentPosition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GDocumentPosition$DefaultImpls {
+	public static fun describe (Lio/fluidsonic/graphql/GDocumentPosition;)Ljava/lang/String;
+	public static fun getColumn (Lio/fluidsonic/graphql/GDocumentPosition;)I
+	public static fun getEndPosition (Lio/fluidsonic/graphql/GDocumentPosition;)I
+	public static fun getLine (Lio/fluidsonic/graphql/GDocumentPosition;)I
+	public static fun getStartPosition (Lio/fluidsonic/graphql/GDocumentPosition;)I
+}
+
+public abstract interface class io/fluidsonic/graphql/GDocumentSource {
+	public static final field Companion Lio/fluidsonic/graphql/GDocumentSource$Companion;
+	public abstract fun getContent ()Ljava/lang/String;
+	public abstract fun getName ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GDocumentSource$Companion {
+	public final fun of (Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GDocumentSource$Parsable;
+	public static synthetic fun of$default (Lio/fluidsonic/graphql/GDocumentSource$Companion;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/fluidsonic/graphql/GDocumentSource$Parsable;
+}
+
+public abstract interface class io/fluidsonic/graphql/GDocumentSource$Parsable : io/fluidsonic/graphql/GDocumentSource {
+	public abstract fun getContent ()Ljava/lang/String;
+	public fun makeOrigin (IIII)Lio/fluidsonic/graphql/GDocumentPosition;
+}
+
+public final class io/fluidsonic/graphql/GDocumentSource$Parsable$DefaultImpls {
+	public static fun makeOrigin (Lio/fluidsonic/graphql/GDocumentSource$Parsable;IIII)Lio/fluidsonic/graphql/GDocumentPosition;
+}
+
+public final class io/fluidsonic/graphql/GEnumType : io/fluidsonic/graphql/GLeafType {
+	public static final field Companion Lio/fluidsonic/graphql/GEnumType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getValues ()Ljava/util/List;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+	public final fun value (Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValueDefinition;
+}
+
+public final class io/fluidsonic/graphql/GEnumType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GEnumTypeExtension : io/fluidsonic/graphql/GTypeExtension {
+	public static final field Companion Lio/fluidsonic/graphql/GEnumTypeExtension$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getValues ()Ljava/util/List;
+	public final fun value (Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValueDefinition;
+}
+
+public final class io/fluidsonic/graphql/GEnumTypeExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GEnumValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GEnumValue$Companion;
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public synthetic fun unwrap ()Ljava/lang/Object;
+	public fun unwrap ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GEnumValue$Companion {
+}
+
+public final class io/fluidsonic/graphql/GEnumValueDefinition : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithOptionalDeprecation, io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public static final field Companion Lio/fluidsonic/graphql/GEnumValueDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDeprecation ()Lio/fluidsonic/graphql/GDirective;
+	public fun getDeprecationReason ()Ljava/lang/String;
+	public fun getDescription ()Ljava/lang/String;
+	public fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+}
+
+public final class io/fluidsonic/graphql/GEnumValueDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GError {
+	public static final field Companion Lio/fluidsonic/graphql/GError$Companion;
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GPath;Ljava/util/List;Ljava/util/List;Ljava/util/Map;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GPath;Ljava/util/List;Ljava/util/List;Ljava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/fluidsonic/graphql/GPath;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Ljava/util/Map;
+	public final fun component6 ()Z
+	public final fun copy (Ljava/lang/String;Lio/fluidsonic/graphql/GPath;Ljava/util/List;Ljava/util/List;Ljava/util/Map;Z)Lio/fluidsonic/graphql/GError;
+	public static synthetic fun copy$default (Lio/fluidsonic/graphql/GError;Ljava/lang/String;Lio/fluidsonic/graphql/GPath;Ljava/util/List;Ljava/util/List;Ljava/util/Map;ZILjava/lang/Object;)Lio/fluidsonic/graphql/GError;
+	public final fun describe ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExtensions ()Ljava/util/Map;
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getNodes ()Ljava/util/List;
+	public final fun getOrigins ()Ljava/util/List;
+	public final fun getPath ()Lio/fluidsonic/graphql/GPath;
+	public fun hashCode ()I
+	public final fun isRequestError ()Z
+	public final fun throwException ()Ljava/lang/Void;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GError$Companion {
+}
+
+public final class io/fluidsonic/graphql/GErrorException : java/lang/RuntimeException {
+	public fun <init> (Lio/fluidsonic/graphql/GError;)V
+	public fun <init> (Ljava/util/List;)V
+	public final fun getErrors ()Ljava/util/List;
+	public fun getMessage ()Ljava/lang/String;
+	public final fun toFailure ()Lio/fluidsonic/graphql/GResult;
+}
+
+public abstract class io/fluidsonic/graphql/GExecutableDefinition : io/fluidsonic/graphql/GDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GExecutableDefinition$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GExecutableDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GFieldArgumentDefinition : io/fluidsonic/graphql/GArgumentDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GFieldArgumentDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GFieldArgumentDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GFieldDefinition : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithArgumentDefinitions, io/fluidsonic/graphql/GNode$WithOptionalDeprecation, io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public static final field Companion Lio/fluidsonic/graphql/GFieldDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgumentDefinition;
+	public fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldArgumentDefinition;
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getArgumentDefinitions ()Ljava/util/List;
+	public fun getDeprecation ()Lio/fluidsonic/graphql/GDirective;
+	public fun getDeprecationReason ()Ljava/lang/String;
+	public fun getDescription ()Ljava/lang/String;
+	public fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun getType ()Lio/fluidsonic/graphql/GTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GFieldDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GFieldSelection : io/fluidsonic/graphql/GSelection, io/fluidsonic/graphql/GNode$WithArguments {
+	public static final field Companion Lio/fluidsonic/graphql/GFieldSelection$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun argument (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgument;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getAlias ()Ljava/lang/String;
+	public final fun getAliasNode ()Lio/fluidsonic/graphql/GName;
+	public fun getArguments ()Ljava/util/List;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun getSelectionSet ()Lio/fluidsonic/graphql/GSelectionSet;
+}
+
+public final class io/fluidsonic/graphql/GFieldSelection$Companion {
+}
+
+public final class io/fluidsonic/graphql/GFloatType : io/fluidsonic/graphql/GScalarType {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GFloatType;
+}
+
+public final class io/fluidsonic/graphql/GFloatValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GFloatValue$Companion;
+	public fun <init> (DLio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (DLio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public final fun getValue ()D
+	public fun hashCode ()I
+	public fun unwrap ()Ljava/lang/Double;
+	public synthetic fun unwrap ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GFloatValue$Companion {
+}
+
+public final class io/fluidsonic/graphql/GFragmentDefinition : io/fluidsonic/graphql/GExecutableDefinition, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithName, io/fluidsonic/graphql/GNode$WithVariableDefinitions {
+	public static final field Companion Lio/fluidsonic/graphql/GFragmentDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun getSelectionSet ()Lio/fluidsonic/graphql/GSelectionSet;
+	public final fun getTypeCondition ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public fun getVariableDefinitions ()Ljava/util/List;
+	public fun variableDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableDefinition;
+}
+
+public final class io/fluidsonic/graphql/GFragmentDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GFragmentRef {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GFragmentSelection : io/fluidsonic/graphql/GSelection {
+	public static final field Companion Lio/fluidsonic/graphql/GFragmentSelection$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNameNode ()Lio/fluidsonic/graphql/GName;
+}
+
+public final class io/fluidsonic/graphql/GFragmentSelection$Companion {
+}
+
+public final class io/fluidsonic/graphql/GIdType : io/fluidsonic/graphql/GScalarType {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GIdType;
+}
+
+public final class io/fluidsonic/graphql/GInlineFragmentSelection : io/fluidsonic/graphql/GSelection {
+	public static final field Companion Lio/fluidsonic/graphql/GInlineFragmentSelection$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GSelectionSet;Lio/fluidsonic/graphql/GNamedTypeRef;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GSelectionSet;Lio/fluidsonic/graphql/GNamedTypeRef;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getSelectionSet ()Lio/fluidsonic/graphql/GSelectionSet;
+	public final fun getTypeCondition ()Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GInlineFragmentSelection$Companion {
+}
+
+public final class io/fluidsonic/graphql/GInputObjectArgumentDefinition : io/fluidsonic/graphql/GArgumentDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GInputObjectArgumentDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GInputObjectArgumentDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GInputObjectType : io/fluidsonic/graphql/GCompositeType, io/fluidsonic/graphql/GNode$WithArgumentDefinitions {
+	public static final field Companion Lio/fluidsonic/graphql/GInputObjectType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgumentDefinition;
+	public fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GInputObjectArgumentDefinition;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getArgumentDefinitions ()Ljava/util/List;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+}
+
+public final class io/fluidsonic/graphql/GInputObjectType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GInputObjectTypeExtension : io/fluidsonic/graphql/GTypeExtension, io/fluidsonic/graphql/GNode$WithArgumentDefinitions {
+	public static final field Companion Lio/fluidsonic/graphql/GInputObjectTypeExtension$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgumentDefinition;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getArgumentDefinitions ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GInputObjectTypeExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GIntType : io/fluidsonic/graphql/GScalarType {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GIntType;
+}
+
+public final class io/fluidsonic/graphql/GIntValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GIntValue$Companion;
+	public fun <init> (ILio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (ILio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public final fun getValue ()I
+	public fun hashCode ()I
+	public fun unwrap ()Ljava/lang/Integer;
+	public synthetic fun unwrap ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GIntValue$Companion {
+}
+
+public final class io/fluidsonic/graphql/GIntValueKt {
+	public static final fun GIntValue (B)Lio/fluidsonic/graphql/GIntValue;
+	public static final fun GIntValue (I)Lio/fluidsonic/graphql/GIntValue;
+	public static final fun GIntValue (S)Lio/fluidsonic/graphql/GIntValue;
+	public static final fun GIntValue-7apg3OU (B)Lio/fluidsonic/graphql/GIntValue;
+	public static final fun GIntValue-xj2QHRw (S)Lio/fluidsonic/graphql/GIntValue;
+}
+
+public final class io/fluidsonic/graphql/GInterfaceType : io/fluidsonic/graphql/GAbstractType, io/fluidsonic/graphql/GNode$WithFieldDefinitions, io/fluidsonic/graphql/GNode$WithInterfaces {
+	public static final field Companion Lio/fluidsonic/graphql/GInterfaceType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun fieldDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldDefinition;
+	public fun getFieldDefinitions ()Ljava/util/List;
+	public fun getInterfaces ()Ljava/util/List;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+}
+
+public final class io/fluidsonic/graphql/GInterfaceType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GInterfaceTypeExtension : io/fluidsonic/graphql/GTypeExtension, io/fluidsonic/graphql/GNode$WithFieldDefinitions, io/fluidsonic/graphql/GNode$WithInterfaces {
+	public static final field Companion Lio/fluidsonic/graphql/GInterfaceTypeExtension$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun fieldDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldDefinition;
+	public fun getFieldDefinitions ()Ljava/util/List;
+	public fun getInterfaces ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GInterfaceTypeExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GLanguage {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GLanguage;
+	public static final field defaultMutationTypeName Ljava/lang/String;
+	public static final field defaultQueryTypeName Ljava/lang/String;
+	public static final field defaultSubscriptionTypeName Ljava/lang/String;
+	public final fun getDefaultDeprecatedDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDefaultIncludeDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDefaultOneOfDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDefaultOptionalDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDefaultSkipDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDefaultSpecifiedByDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun isValidEnumValue (Ljava/lang/String;)Z
+	public final fun isValidFieldName (Ljava/lang/String;)Z
+	public final fun isValidFragmentName (Ljava/lang/String;)Z
+	public final fun isValidInputValueName (Ljava/lang/String;)Z
+	public final fun isValidIntrospectionName (Ljava/lang/String;)Z
+	public final fun isValidName (Ljava/lang/String;)Z
+	public final fun isValidTypeName (Ljava/lang/String;)Z
+}
+
+public abstract class io/fluidsonic/graphql/GLeafType : io/fluidsonic/graphql/GNamedType {
+	public static final field Companion Lio/fluidsonic/graphql/GLeafType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GDocumentPosition;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GLeafType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GListType : io/fluidsonic/graphql/GWrappingType {
+	public static final field Companion Lio/fluidsonic/graphql/GListType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GType;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GType;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getElementType ()Lio/fluidsonic/graphql/GType;
+	public fun getName ()Ljava/lang/String;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+	public fun toRef ()Lio/fluidsonic/graphql/GListTypeRef;
+	public synthetic fun toRef ()Lio/fluidsonic/graphql/GTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GListType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GListTypeRef : io/fluidsonic/graphql/GTypeRef {
+	public static final field Companion Lio/fluidsonic/graphql/GListTypeRef$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getElementType ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getUnderlyingName ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class io/fluidsonic/graphql/GListTypeRef$Companion {
+}
+
+public final class io/fluidsonic/graphql/GListValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GListValue$Companion;
+	public fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getElements ()Ljava/util/List;
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public fun hashCode ()I
+	public synthetic fun unwrap ()Ljava/lang/Object;
+	public fun unwrap ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GListValue$Companion {
+}
+
+public final class io/fluidsonic/graphql/GName : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GName$Companion;
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class io/fluidsonic/graphql/GName$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GNamedType : io/fluidsonic/graphql/GType, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithName, io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public static final field Companion Lio/fluidsonic/graphql/GNamedType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public final fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun getUnderlyingNamedType ()Lio/fluidsonic/graphql/GNamedType;
+	public fun toRef ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public synthetic fun toRef ()Lio/fluidsonic/graphql/GTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GNamedType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GNamedTypeRef : io/fluidsonic/graphql/GTypeRef {
+	public static final field Companion Lio/fluidsonic/graphql/GNamedTypeRef$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public fun getUnderlyingName ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class io/fluidsonic/graphql/GNamedTypeRef$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GNode$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun childAt (I)Lio/fluidsonic/graphql/GNode;
+	public final fun children ()Ljava/util/List;
+	public final fun countChildren ()I
+	public abstract fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public static synthetic fun equalsNode$default (Lio/fluidsonic/graphql/GNode;Lio/fluidsonic/graphql/GNode;ZILjava/lang/Object;)Z
+	public final fun get (Lio/fluidsonic/graphql/GNodeExtensionKey;)Ljava/lang/Object;
+	public final fun getExtensions ()Lio/fluidsonic/graphql/GNodeExtensionSet;
+	public final fun getOrigin ()Lio/fluidsonic/graphql/GDocumentPosition;
+	public final fun hasChildren ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GNode$Companion {
+	public final fun print (Lio/fluidsonic/graphql/GNode;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun print$default (Lio/fluidsonic/graphql/GNode$Companion;Lio/fluidsonic/graphql/GNode;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithArgumentDefinitions {
+	public fun argumentDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgumentDefinition;
+	public abstract fun getArgumentDefinitions ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithArgumentDefinitions$DefaultImpls {
+	public static fun argumentDefinition (Lio/fluidsonic/graphql/GNode$WithArgumentDefinitions;Ljava/lang/String;)Lio/fluidsonic/graphql/GArgumentDefinition;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithArguments {
+	public fun argument (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgument;
+	public abstract fun getArguments ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithArguments$DefaultImpls {
+	public static fun argument (Lio/fluidsonic/graphql/GNode$WithArguments;Ljava/lang/String;)Lio/fluidsonic/graphql/GArgument;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithDefaultValue : io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithType {
+	public abstract fun getDefaultValue ()Lio/fluidsonic/graphql/GValue;
+	public fun isOptional ()Z
+	public fun isRequired ()Z
+}
+
+public final class io/fluidsonic/graphql/GNode$WithDefaultValue$DefaultImpls {
+	public static fun directive (Lio/fluidsonic/graphql/GNode$WithDefaultValue;Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public static fun directives (Lio/fluidsonic/graphql/GNode$WithDefaultValue;Ljava/lang/String;)Ljava/util/List;
+	public static fun isOptional (Lio/fluidsonic/graphql/GNode$WithDefaultValue;)Z
+	public static fun isRequired (Lio/fluidsonic/graphql/GNode$WithDefaultValue;)Z
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithDirectives {
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public abstract fun getDirectives ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithDirectives$DefaultImpls {
+	public static fun directive (Lio/fluidsonic/graphql/GNode$WithDirectives;Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public static fun directives (Lio/fluidsonic/graphql/GNode$WithDirectives;Ljava/lang/String;)Ljava/util/List;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithFieldDefinitions {
+	public fun fieldDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldDefinition;
+	public abstract fun getFieldDefinitions ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithFieldDefinitions$DefaultImpls {
+	public static fun fieldDefinition (Lio/fluidsonic/graphql/GNode$WithFieldDefinitions;Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldDefinition;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithInterfaces {
+	public abstract fun getInterfaces ()Ljava/util/List;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithName : io/fluidsonic/graphql/GNode$WithOptionalName {
+	public fun getName ()Ljava/lang/String;
+	public abstract fun getNameNode ()Lio/fluidsonic/graphql/GName;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithName$DefaultImpls {
+	public static fun getName (Lio/fluidsonic/graphql/GNode$WithName;)Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithOperationTypeDefinitions {
+	public abstract fun getOperationTypeDefinitions ()Ljava/util/List;
+	public fun operationTypeDefinition (Lio/fluidsonic/graphql/GOperationType;)Lio/fluidsonic/graphql/GOperationTypeDefinition;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithOperationTypeDefinitions$DefaultImpls {
+	public static fun operationTypeDefinition (Lio/fluidsonic/graphql/GNode$WithOperationTypeDefinitions;Lio/fluidsonic/graphql/GOperationType;)Lio/fluidsonic/graphql/GOperationTypeDefinition;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithOptionalDeprecation : io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithName {
+	public fun getDeprecation ()Lio/fluidsonic/graphql/GDirective;
+	public fun getDeprecationReason ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithOptionalDeprecation$DefaultImpls {
+	public static fun directive (Lio/fluidsonic/graphql/GNode$WithOptionalDeprecation;Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public static fun directives (Lio/fluidsonic/graphql/GNode$WithOptionalDeprecation;Ljava/lang/String;)Ljava/util/List;
+	public static fun getDeprecation (Lio/fluidsonic/graphql/GNode$WithOptionalDeprecation;)Lio/fluidsonic/graphql/GDirective;
+	public static fun getDeprecationReason (Lio/fluidsonic/graphql/GNode$WithOptionalDeprecation;)Ljava/lang/String;
+	public static fun getName (Lio/fluidsonic/graphql/GNode$WithOptionalDeprecation;)Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public fun getDescription ()Ljava/lang/String;
+	public abstract fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithOptionalDescription$DefaultImpls {
+	public static fun getDescription (Lio/fluidsonic/graphql/GNode$WithOptionalDescription;)Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithOptionalName {
+	public fun getName ()Ljava/lang/String;
+	public abstract fun getNameNode ()Lio/fluidsonic/graphql/GName;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithOptionalName$DefaultImpls {
+	public static fun getName (Lio/fluidsonic/graphql/GNode$WithOptionalName;)Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithType {
+	public abstract fun getType ()Lio/fluidsonic/graphql/GTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNode$WithVariableDefinitions {
+	public abstract fun getVariableDefinitions ()Ljava/util/List;
+	public fun variableDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableDefinition;
+}
+
+public final class io/fluidsonic/graphql/GNode$WithVariableDefinitions$DefaultImpls {
+	public static fun variableDefinition (Lio/fluidsonic/graphql/GNode$WithVariableDefinitions;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableDefinition;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNodeExtensionKey {
+	public static final field Companion Lio/fluidsonic/graphql/GNodeExtensionKey$Companion;
+}
+
+public final class io/fluidsonic/graphql/GNodeExtensionKey$Companion {
+}
+
+public abstract interface class io/fluidsonic/graphql/GNodeExtensionSet {
+	public static final field Companion Lio/fluidsonic/graphql/GNodeExtensionSet$Companion;
+	public abstract fun get (Lio/fluidsonic/graphql/GNodeExtensionKey;)Ljava/lang/Object;
+	public abstract fun isEmpty ()Z
+	public abstract fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class io/fluidsonic/graphql/GNodeExtensionSet$Builder {
+	public static final field Companion Lio/fluidsonic/graphql/GNodeExtensionSet$Builder$Companion;
+	public abstract fun build ()Lio/fluidsonic/graphql/GNodeExtensionSet;
+	public abstract fun get (Lio/fluidsonic/graphql/GNodeExtensionKey;)Ljava/lang/Object;
+	public abstract fun set (Lio/fluidsonic/graphql/GNodeExtensionKey;Ljava/lang/Object;)V
+	public abstract fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GNodeExtensionSet$Builder$Companion {
+	public final fun default ()Lio/fluidsonic/graphql/GNodeExtensionSet$Builder;
+}
+
+public final class io/fluidsonic/graphql/GNodeExtensionSet$Companion {
+	public final fun empty ()Lio/fluidsonic/graphql/GNodeExtensionSet;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GNodeExtensionSet;
+}
+
+public final class io/fluidsonic/graphql/GNodeExtensionSetKt {
+	public static final fun isNotEmpty (Lio/fluidsonic/graphql/GNodeExtensionSet;)Z
+}
+
+public final class io/fluidsonic/graphql/GNodeKt {
+	public static final fun GBooleanValue (Z)Lio/fluidsonic/graphql/GBooleanValue;
+	public static final fun GEnumValue (Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static final fun GFloatValue (D)Lio/fluidsonic/graphql/GFloatValue;
+	public static final fun GFloatValue (F)Lio/fluidsonic/graphql/GFloatValue;
+	public static final fun GFloatValue (I)Lio/fluidsonic/graphql/GFloatValue;
+	public static final fun GListTypeRef (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;)Lio/fluidsonic/graphql/GListTypeRef;
+	public static synthetic fun GListTypeRef$default (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;ILjava/lang/Object;)Lio/fluidsonic/graphql/GListTypeRef;
+	public static final fun GListValue (Ljava/util/List;)Lio/fluidsonic/graphql/GListValue;
+	public static final fun GName (Ljava/lang/String;)Lio/fluidsonic/graphql/GName;
+	public static final fun GNonNullTypeRef (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static synthetic fun GNonNullTypeRef$default (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;ILjava/lang/Object;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static final fun GStringValue (Ljava/lang/String;)Lio/fluidsonic/graphql/GStringValue;
+	public static final fun GTypeRef (Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static final fun equalsNode (Lio/fluidsonic/graphql/GNode;Lio/fluidsonic/graphql/GNode;Z)Z
+	public static final fun equalsNode (Ljava/util/List;Ljava/util/List;Z)Z
+	public static synthetic fun equalsNode$default (Lio/fluidsonic/graphql/GNode;Lio/fluidsonic/graphql/GNode;ZILjava/lang/Object;)Z
+	public static final fun getGBooleanTypeRef ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static final fun getGFloatTypeRef ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static final fun getGIdTypeRef ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static final fun getGIntTypeRef ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static final fun getGStringTypeRef ()Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GNonNullType : io/fluidsonic/graphql/GWrappingType {
+	public static final field Companion Lio/fluidsonic/graphql/GNonNullType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GType;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GType;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getName ()Ljava/lang/String;
+	public fun getNonNullable ()Lio/fluidsonic/graphql/GNonNullType;
+	public fun getNullableType ()Lio/fluidsonic/graphql/GType;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+	public fun toRef ()Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public synthetic fun toRef ()Lio/fluidsonic/graphql/GTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GNonNullType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GNonNullTypeRef : io/fluidsonic/graphql/GTypeRef {
+	public static final field Companion Lio/fluidsonic/graphql/GNonNullTypeRef$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getNonNullableRef ()Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public fun getNullableRef ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getUnderlyingName ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class io/fluidsonic/graphql/GNonNullTypeRef$Companion {
+}
+
+public final class io/fluidsonic/graphql/GNullValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GNullValue$Companion;
+	public fun <init> ()V
+	public fun <init> (Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public fun hashCode ()I
+	public synthetic fun unwrap ()Ljava/lang/Object;
+	public fun unwrap ()Ljava/lang/Void;
+}
+
+public final class io/fluidsonic/graphql/GNullValue$Companion {
+	public final fun getWithoutOrigin ()Lio/fluidsonic/graphql/GNullValue;
+}
+
+public final class io/fluidsonic/graphql/GNullValueKt {
+	public static final fun GNullValue ()Lio/fluidsonic/graphql/GNullValue;
+}
+
+public final class io/fluidsonic/graphql/GObjectType : io/fluidsonic/graphql/GCompositeType, io/fluidsonic/graphql/GNode$WithFieldDefinitions, io/fluidsonic/graphql/GNode$WithInterfaces {
+	public static final field Companion Lio/fluidsonic/graphql/GObjectType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun fieldDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldDefinition;
+	public fun getFieldDefinitions ()Ljava/util/List;
+	public fun getInterfaces ()Ljava/util/List;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+}
+
+public final class io/fluidsonic/graphql/GObjectType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GObjectTypeExtension : io/fluidsonic/graphql/GTypeExtension, io/fluidsonic/graphql/GNode$WithFieldDefinitions, io/fluidsonic/graphql/GNode$WithInterfaces {
+	public static final field Companion Lio/fluidsonic/graphql/GObjectTypeExtension$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun fieldDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GFieldDefinition;
+	public fun getFieldDefinitions ()Ljava/util/List;
+	public fun getInterfaces ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GObjectTypeExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GObjectValue : io/fluidsonic/graphql/GValue, io/fluidsonic/graphql/GNode$WithArguments {
+	public static final field Companion Lio/fluidsonic/graphql/GObjectValue$Companion;
+	public fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun argument (Ljava/lang/String;)Lio/fluidsonic/graphql/GArgument;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getArguments ()Ljava/util/List;
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public fun hashCode ()I
+	public synthetic fun unwrap ()Ljava/lang/Object;
+	public fun unwrap ()Ljava/util/Map;
+}
+
+public final class io/fluidsonic/graphql/GObjectValue$Companion {
+}
+
+public final class io/fluidsonic/graphql/GOperationDefinition : io/fluidsonic/graphql/GExecutableDefinition, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithOptionalName, io/fluidsonic/graphql/GNode$WithVariableDefinitions {
+	public static final field Companion Lio/fluidsonic/graphql/GOperationDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GOperationType;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GOperationType;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/fluidsonic/graphql/GOperationType;Ljava/lang/String;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GOperationType;Ljava/lang/String;Lio/fluidsonic/graphql/GSelectionSet;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public final fun getSelectionSet ()Lio/fluidsonic/graphql/GSelectionSet;
+	public final fun getType ()Lio/fluidsonic/graphql/GOperationType;
+	public fun getVariableDefinitions ()Ljava/util/List;
+	public fun variableDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableDefinition;
+}
+
+public final class io/fluidsonic/graphql/GOperationDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GOperationType : java/lang/Enum {
+	public static final field mutation Lio/fluidsonic/graphql/GOperationType;
+	public static final field query Lio/fluidsonic/graphql/GOperationType;
+	public static final field subscription Lio/fluidsonic/graphql/GOperationType;
+	public final fun getDefaultObjectTypeName ()Ljava/lang/String;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/fluidsonic/graphql/GOperationType;
+	public static fun values ()[Lio/fluidsonic/graphql/GOperationType;
+}
+
+public final class io/fluidsonic/graphql/GOperationTypeDefinition : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GOperationTypeDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GOperationType;Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GOperationType;Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getOperationType ()Lio/fluidsonic/graphql/GOperationType;
+	public final fun getType ()Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GOperationTypeDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GPath {
+	public static final field Companion Lio/fluidsonic/graphql/GPath$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addIndex (I)Lio/fluidsonic/graphql/GPath;
+	public final fun addName (Ljava/lang/String;)Lio/fluidsonic/graphql/GPath;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getElements ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GPath$Builder {
+	public fun <init> ()V
+	public final fun getStack ()Ljava/util/List;
+	public final fun snapshot ()Lio/fluidsonic/graphql/GPath;
+	public fun toString ()Ljava/lang/String;
+	public final fun withIndex (ILkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public final fun withName (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GPath$Companion {
+	public final fun getRoot ()Lio/fluidsonic/graphql/GPath;
+	public final fun ofName (Ljava/lang/String;)Lio/fluidsonic/graphql/GPath;
+}
+
+public abstract class io/fluidsonic/graphql/GPath$Element {
+}
+
+public final class io/fluidsonic/graphql/GPath$Element$Index : io/fluidsonic/graphql/GPath$Element {
+	public fun <init> (I)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GPath$Element$Name : io/fluidsonic/graphql/GPath$Element {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class io/fluidsonic/graphql/GResult {
+	public static final field Companion Lio/fluidsonic/graphql/GResult$Companion;
+	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public abstract fun equals (Ljava/lang/Object;)Z
+	public final fun getErrors ()Ljava/util/List;
+	public abstract fun hashCode ()I
+	public abstract fun toString ()Ljava/lang/String;
+	public final fun valueOrNull ()Ljava/lang/Object;
+	public final fun valueOrThrow ()Ljava/lang/Object;
+	public final fun valueWithoutErrorsOrNull ()Ljava/lang/Object;
+	public final fun valueWithoutErrorsOrThrow ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GResult$Companion {
+	public final fun catchErrors (Lkotlin/jvm/functions/Function0;)Lio/fluidsonic/graphql/GResult;
+	public final fun failure (Lio/fluidsonic/graphql/GError;)Lio/fluidsonic/graphql/GResult;
+	public final fun failure (Ljava/util/List;)Lio/fluidsonic/graphql/GResult;
+	public final fun success ()Lio/fluidsonic/graphql/GResult;
+	public final fun success (Ljava/lang/Object;Ljava/util/List;)Lio/fluidsonic/graphql/GResult;
+	public static synthetic fun success$default (Lio/fluidsonic/graphql/GResult$Companion;Ljava/lang/Object;Ljava/util/List;ILjava/lang/Object;)Lio/fluidsonic/graphql/GResult;
+}
+
+public final class io/fluidsonic/graphql/GResult$Failure : io/fluidsonic/graphql/GResult {
+	public fun <init> (Lio/fluidsonic/graphql/GError;)V
+	public fun <init> (Ljava/util/List;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GResult$Success : io/fluidsonic/graphql/GResult {
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GResultKt {
+	public static final fun flatMapErrors (Lio/fluidsonic/graphql/GResult;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GResult;
+	public static final fun flatMapValue (Lio/fluidsonic/graphql/GResult;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GResult;
+	public static final fun flatten (Ljava/lang/Iterable;)Lio/fluidsonic/graphql/GResult;
+	public static final fun flatten (Ljava/util/Map;)Lio/fluidsonic/graphql/GResult;
+	public static final fun ifErrors (Lio/fluidsonic/graphql/GResult;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun mapErrors (Lio/fluidsonic/graphql/GResult;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GResult;
+	public static final fun mapValue (Lio/fluidsonic/graphql/GResult;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GResult;
+}
+
+public abstract class io/fluidsonic/graphql/GScalarType : io/fluidsonic/graphql/GLeafType {
+	public static final field Companion Lio/fluidsonic/graphql/GScalarType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+}
+
+public final class io/fluidsonic/graphql/GScalarType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GScalarTypeExtension : io/fluidsonic/graphql/GTypeExtension {
+	public static final field Companion Lio/fluidsonic/graphql/GScalarTypeExtension$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+}
+
+public final class io/fluidsonic/graphql/GScalarTypeExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GSchema {
+	public static final field Companion Lio/fluidsonic/graphql/GSchema$Companion;
+	public final fun directiveDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDirectiveDefinitions ()Ljava/util/List;
+	public final fun getDocument ()Lio/fluidsonic/graphql/GDocument;
+	public final fun getMutationType ()Lio/fluidsonic/graphql/GObjectType;
+	public final fun getPossibleTypes (Lio/fluidsonic/graphql/GCompositeType;)Ljava/util/List;
+	public final fun getQueryType ()Lio/fluidsonic/graphql/GObjectType;
+	public final fun getSubscriptionType ()Lio/fluidsonic/graphql/GObjectType;
+	public final fun getTypes ()Ljava/util/List;
+	public final fun resolveType (Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GNamedType;
+	public final fun resolveType (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GType;
+	public final fun resolveType (Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedType;
+	public final fun rootTypeForOperationType (Lio/fluidsonic/graphql/GOperationType;)Lio/fluidsonic/graphql/GObjectType;
+	public fun toString ()Ljava/lang/String;
+	public final fun validateValue (Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GType;)Ljava/util/List;
+	public final fun validateValue (Lio/fluidsonic/graphql/GValue;Lio/fluidsonic/graphql/GTypeRef;)Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GSchema$Companion {
+	public final fun parse (Lio/fluidsonic/graphql/GDocumentSource$Parsable;)Lio/fluidsonic/graphql/GResult;
+	public final fun parse (Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GResult;
+	public static synthetic fun parse$default (Lio/fluidsonic/graphql/GSchema$Companion;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/fluidsonic/graphql/GResult;
+}
+
+public final class io/fluidsonic/graphql/GSchemaDefinition : io/fluidsonic/graphql/GTypeSystemDefinition, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithOperationTypeDefinitions, io/fluidsonic/graphql/GNode$WithOptionalDescription {
+	public static final field Companion Lio/fluidsonic/graphql/GSchemaDefinition$Companion;
+	public fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDescription ()Ljava/lang/String;
+	public fun getDescriptionNode ()Lio/fluidsonic/graphql/GStringValue;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getOperationTypeDefinitions ()Ljava/util/List;
+	public fun operationTypeDefinition (Lio/fluidsonic/graphql/GOperationType;)Lio/fluidsonic/graphql/GOperationTypeDefinition;
+}
+
+public final class io/fluidsonic/graphql/GSchemaDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GSchemaExtension : io/fluidsonic/graphql/GTypeSystemExtension, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithOperationTypeDefinitions {
+	public static final field Companion Lio/fluidsonic/graphql/GSchemaExtension$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDirectives ()Ljava/util/List;
+	public fun getOperationTypeDefinitions ()Ljava/util/List;
+	public fun operationTypeDefinition (Lio/fluidsonic/graphql/GOperationType;)Lio/fluidsonic/graphql/GOperationTypeDefinition;
+}
+
+public final class io/fluidsonic/graphql/GSchemaExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GSchemaKt {
+	public static final fun GSchema (Lio/fluidsonic/graphql/GDocument;Z)Lio/fluidsonic/graphql/GSchema;
+	public static synthetic fun GSchema$default (Lio/fluidsonic/graphql/GDocument;ZILjava/lang/Object;)Lio/fluidsonic/graphql/GSchema;
+}
+
+public abstract class io/fluidsonic/graphql/GSelection : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithDirectives {
+	public static final field Companion Lio/fluidsonic/graphql/GSelection$Companion;
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun getDirectives ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GSelection$Companion {
+}
+
+public final class io/fluidsonic/graphql/GSelectionSet : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GSelectionSet$Companion;
+	public fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getSelections ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GSelectionSet$Companion {
+}
+
+public final class io/fluidsonic/graphql/GStringType : io/fluidsonic/graphql/GScalarType {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GStringType;
+}
+
+public final class io/fluidsonic/graphql/GStringValue : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GStringValue$Companion;
+	public fun <init> (Ljava/lang/String;ZLio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;ZLio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isBlock ()Z
+	public synthetic fun unwrap ()Ljava/lang/Object;
+	public fun unwrap ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GStringValue$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GType : io/fluidsonic/graphql/GTypeSystemDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getKind ()Lio/fluidsonic/graphql/GType$Kind;
+	public abstract fun getName ()Ljava/lang/String;
+	public fun getNonNullable ()Lio/fluidsonic/graphql/GNonNullType;
+	public fun getNullableType ()Lio/fluidsonic/graphql/GType;
+	public abstract fun getUnderlyingNamedType ()Lio/fluidsonic/graphql/GNamedType;
+	public final fun isInputType ()Z
+	public final fun isOutputType ()Z
+	public final fun isSubtypeOf (Lio/fluidsonic/graphql/GType;)Z
+	public abstract fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+	public abstract fun toRef ()Lio/fluidsonic/graphql/GTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GType$Companion {
+	public final fun getDefaultTypes ()Ljava/util/Set;
+}
+
+public final class io/fluidsonic/graphql/GType$Kind : java/lang/Enum {
+	public static final field Companion Lio/fluidsonic/graphql/GType$Kind$Companion;
+	public static final field ENUM Lio/fluidsonic/graphql/GType$Kind;
+	public static final field INPUT_OBJECT Lio/fluidsonic/graphql/GType$Kind;
+	public static final field INTERFACE Lio/fluidsonic/graphql/GType$Kind;
+	public static final field LIST Lio/fluidsonic/graphql/GType$Kind;
+	public static final field NON_NULL Lio/fluidsonic/graphql/GType$Kind;
+	public static final field OBJECT Lio/fluidsonic/graphql/GType$Kind;
+	public static final field SCALAR Lio/fluidsonic/graphql/GType$Kind;
+	public static final field UNION Lio/fluidsonic/graphql/GType$Kind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public fun toString ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lio/fluidsonic/graphql/GType$Kind;
+	public static fun values ()[Lio/fluidsonic/graphql/GType$Kind;
+}
+
+public final class io/fluidsonic/graphql/GType$Kind$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GTypeExtension : io/fluidsonic/graphql/GTypeSystemExtension, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithName {
+	public static final field Companion Lio/fluidsonic/graphql/GTypeExtension$Companion;
+	public synthetic fun <init> (Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+}
+
+public final class io/fluidsonic/graphql/GTypeExtension$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GTypeRef : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GTypeRef$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public abstract fun equals (Ljava/lang/Object;)Z
+	public fun getNonNullableRef ()Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public fun getNullableRef ()Lio/fluidsonic/graphql/GTypeRef;
+	public abstract fun getUnderlyingName ()Ljava/lang/String;
+	public abstract fun hashCode ()I
+}
+
+public final class io/fluidsonic/graphql/GTypeRef$Companion {
+	public final fun parse (Lio/fluidsonic/graphql/GDocumentSource$Parsable;)Lio/fluidsonic/graphql/GResult;
+	public final fun parse (Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GResult;
+	public static synthetic fun parse$default (Lio/fluidsonic/graphql/GTypeRef$Companion;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/fluidsonic/graphql/GResult;
+}
+
+public abstract class io/fluidsonic/graphql/GTypeSystemDefinition : io/fluidsonic/graphql/GDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GTypeSystemDefinition$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GTypeSystemDefinition$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GTypeSystemExtension : io/fluidsonic/graphql/GDefinition {
+	public static final field Companion Lio/fluidsonic/graphql/GTypeSystemExtension$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/fluidsonic/graphql/GTypeSystemExtension$Companion {
+}
+
+public final class io/fluidsonic/graphql/GUnionType : io/fluidsonic/graphql/GAbstractType {
+	public static final field Companion Lio/fluidsonic/graphql/GUnionType$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getPossibleTypes ()Ljava/util/List;
+	public fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+}
+
+public final class io/fluidsonic/graphql/GUnionType$Companion {
+}
+
+public final class io/fluidsonic/graphql/GUnionTypeExtension : io/fluidsonic/graphql/GTypeExtension {
+	public static final field Companion Lio/fluidsonic/graphql/GUnionTypeExtension$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public final fun getPossibleTypes ()Ljava/util/List;
+}
+
+public final class io/fluidsonic/graphql/GUnionTypeExtension$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GValue : io/fluidsonic/graphql/GNode {
+	public static final field Companion Lio/fluidsonic/graphql/GValue$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;Lio/fluidsonic/graphql/GDocumentPosition;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public abstract fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public abstract fun unwrap ()Ljava/lang/Object;
+}
+
+public final class io/fluidsonic/graphql/GValue$Companion {
+	public final fun parse (Lio/fluidsonic/graphql/GDocumentSource$Parsable;)Lio/fluidsonic/graphql/GResult;
+	public final fun parse (Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GResult;
+	public static synthetic fun parse$default (Lio/fluidsonic/graphql/GValue$Companion;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/fluidsonic/graphql/GResult;
+}
+
+public final class io/fluidsonic/graphql/GValue$Kind : java/lang/Enum {
+	public static final field BOOLEAN Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field Companion Lio/fluidsonic/graphql/GValue$Kind$Companion;
+	public static final field ENUM Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field FLOAT Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field INT Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field LIST Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field NULL Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field OBJECT Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field STRING Lio/fluidsonic/graphql/GValue$Kind;
+	public static final field VARIABLE Lio/fluidsonic/graphql/GValue$Kind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public fun toString ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lio/fluidsonic/graphql/GValue$Kind;
+	public static fun values ()[Lio/fluidsonic/graphql/GValue$Kind;
+}
+
+public final class io/fluidsonic/graphql/GValue$Kind$Companion {
+}
+
+public final class io/fluidsonic/graphql/GVariableDefinition : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithDefaultValue, io/fluidsonic/graphql/GNode$WithDirectives, io/fluidsonic/graphql/GNode$WithName {
+	public static final field Companion Lio/fluidsonic/graphql/GVariableDefinition$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lio/fluidsonic/graphql/GValue;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun directive (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirective;
+	public fun directives (Ljava/lang/String;)Ljava/util/List;
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getDefaultValue ()Lio/fluidsonic/graphql/GValue;
+	public fun getDirectives ()Ljava/util/List;
+	public fun getName ()Ljava/lang/String;
+	public fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public fun getType ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun isOptional ()Z
+	public fun isRequired ()Z
+}
+
+public final class io/fluidsonic/graphql/GVariableDefinition$Companion {
+}
+
+public final class io/fluidsonic/graphql/GVariableRef : io/fluidsonic/graphql/GValue {
+	public static final field Companion Lio/fluidsonic/graphql/GVariableRef$Companion;
+	public fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getKind ()Lio/fluidsonic/graphql/GValue$Kind;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNameNode ()Lio/fluidsonic/graphql/GName;
+	public fun hashCode ()I
+	public synthetic fun unwrap ()Ljava/lang/Object;
+	public fun unwrap ()Ljava/lang/Void;
+}
+
+public final class io/fluidsonic/graphql/GVariableRef$Companion {
+}
+
+public abstract class io/fluidsonic/graphql/GWrappingType : io/fluidsonic/graphql/GType {
+	public static final field Companion Lio/fluidsonic/graphql/GWrappingType$Companion;
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GType$Kind;Lio/fluidsonic/graphql/GType;Lio/fluidsonic/graphql/GNodeExtensionSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getUnderlyingNamedType ()Lio/fluidsonic/graphql/GNamedType;
+	public final fun getWrappedType ()Lio/fluidsonic/graphql/GType;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/GWrappingType$Companion {
+}
+
+public abstract interface annotation class io/fluidsonic/graphql/InternalGraphqlApi : java/lang/annotation/Annotation {
+}
+

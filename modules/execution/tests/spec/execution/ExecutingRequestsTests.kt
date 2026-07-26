@@ -1,16 +1,20 @@
 package testing
 
+import io.fluidsonic.graphql.GDocument
 import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GResult
 import io.fluidsonic.graphql.GraphQL
 import io.fluidsonic.graphql.default
 import io.fluidsonic.graphql.document
 import io.fluidsonic.graphql.resolve
 import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.validate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 // GraphQL Spec §6.1 — Executing Requests
 class ExecutingRequestsTests {
@@ -24,21 +28,27 @@ class ExecutingRequestsTests {
 		}
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.serializeResult(executor.execute("{ {"))
-		assertNull(result["data"])
+		// A parse failure is a request error, so the "data" key is absent entirely.
+		assertFalse(result.containsKey("data"), "expected the 'data' key to be absent but got: $result")
 		assertNotNull(result["errors"])
 	}
 
 	@Test
-	fun testValidationErrorReturnsNullData() = runTest {
+	fun testValidationErrorOmitsData() = runTest {
 		val schema = GraphQL.schema {
 			Query {
 				field("foo" of String) { resolve { "bar" } }
 			}
 		}
 		val executor = GExecutor.default(schema = schema)
-		// unknownField does not exist on Query — causes a runtime field error
-		val result = executor.serializeResult(executor.execute("{ unknownField }"))
-		assertNull(result["data"])
+		val document = GDocument.parse("{ unknownField }").valueOrThrow()
+
+		val errors = document.validate(schema)
+		assertTrue(errors.isNotEmpty(), "expected validation to report errors")
+
+		// A validation failure is a request error, so the "data" key is absent entirely.
+		val result = executor.serializeResult(GResult.failure(errors))
+		assertFalse(result.containsKey("data"), "expected the 'data' key to be absent but got: $result")
 		assertNotNull(result["errors"])
 	}
 

@@ -1,0 +1,1105 @@
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder {
+	public static final field Companion Lio/fluidsonic/graphql/GSchemaBuilder$Companion;
+	public abstract fun Directive (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun Directive$default (Lio/fluidsonic/graphql/GSchemaBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public abstract fun Enum (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun InputObject (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Interface (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Interface (Lio/fluidsonic/graphql/GSchemaBuilder$Interfaces;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Mutation (Lio/fluidsonic/graphql/GNamedTypeRef;)V
+	public abstract fun Mutation (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public fun Mutation (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Object (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Object (Lio/fluidsonic/graphql/GSchemaBuilder$Interfaces;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Query (Lio/fluidsonic/graphql/GNamedTypeRef;)V
+	public abstract fun Query (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public fun Query (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Scalar (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun Scalar$default (Lio/fluidsonic/graphql/GSchemaBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public abstract fun Subscription (Lio/fluidsonic/graphql/GNamedTypeRef;)V
+	public abstract fun Subscription (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public fun Subscription (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun Union (Lio/fluidsonic/graphql/GSchemaBuilder$PossibleTypes;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun Union$default (Lio/fluidsonic/graphql/GSchemaBuilder;Lio/fluidsonic/graphql/GSchemaBuilder$PossibleTypes;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public fun getType ()Lio/fluidsonic/graphql/GSchemaBuilder$NamedTypeRefFactory;
+	public abstract fun implements (Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$Interfaces;
+	public fun type (Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public abstract fun with (Lio/fluidsonic/graphql/GNamedTypeRef;Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$PossibleTypes;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ArgumentContainer {
+	public abstract fun argument (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentContainer$NameAndValue;)V
+	public abstract fun with (Ljava/lang/String;Lio/fluidsonic/graphql/GSchemaBuilder$Value;)Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentContainer$NameAndValue;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ArgumentContainer$NameAndValue {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer : io/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer, io/fluidsonic/graphql/GSchemaBuilder$ValueContainer {
+	public abstract fun argument (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun argument (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndTypeAndDefault;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun argument$default (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun argument$default (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndTypeAndDefault;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public abstract fun of (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType;
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$DefaultImpls {
+	public static synthetic fun argument$default (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun argument$default (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndTypeAndDefault;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndType {
+	public abstract fun default (Lio/fluidsonic/graphql/GSchemaBuilder$Value;)Lio/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndTypeAndDefault;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer$NameAndTypeAndDefault {
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$Companion {
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$DefaultImpls {
+	public static synthetic fun Directive$default (Lio/fluidsonic/graphql/GSchemaBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun Mutation (Lio/fluidsonic/graphql/GSchemaBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static fun Query (Lio/fluidsonic/graphql/GSchemaBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun Scalar$default (Lio/fluidsonic/graphql/GSchemaBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun Subscription (Lio/fluidsonic/graphql/GSchemaBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun Union$default (Lio/fluidsonic/graphql/GSchemaBuilder;Lio/fluidsonic/graphql/GSchemaBuilder$PossibleTypes;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun getType (Lio/fluidsonic/graphql/GSchemaBuilder;)Lio/fluidsonic/graphql/GSchemaBuilder$NamedTypeRefFactory;
+	public static fun type (Lio/fluidsonic/graphql/GSchemaBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer {
+	public abstract fun deprecated (Ljava/lang/String;)V
+	public static synthetic fun deprecated$default (Lio/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer;Ljava/lang/String;ILjava/lang/Object;)V
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer$DefaultImpls {
+	public static synthetic fun deprecated$default (Lio/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer;Ljava/lang/String;ILjava/lang/Object;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer {
+	public abstract fun description (Ljava/lang/String;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DirectiveBuilder : io/fluidsonic/graphql/GSchemaBuilder$ArgumentContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder, io/fluidsonic/graphql/GSchemaBuilder$ValueContainer {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer {
+	public abstract fun directive (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun directive$default (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer$DefaultImpls {
+	public static synthetic fun directive$default (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+	public abstract fun getARGUMENT_DEFINITION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getENUM ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getENUM_VALUE ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getFIELD ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getFIELD_DEFINITION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getFRAGMENT_DEFINITION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getFRAGMENT_SPREAD ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getINLINE_FRAGMENT ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getINPUT_FIELD_DEFINITION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getINPUT_OBJECT ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getINTERFACE ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getMUTATION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getOBJECT ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getQUERY ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getSCALAR ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getSCHEMA ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getSUBSCRIPTION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getUNION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun getVARIABLE_DEFINITION ()Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;
+	public abstract fun on (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;)V
+	public abstract fun on (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocationSet;)V
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DefaultImpls {
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation {
+	public abstract fun or (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;)Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocationSet;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocationSet {
+	public abstract fun or (Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocation;)Lio/fluidsonic/graphql/GSchemaBuilder$DirectiveDefinitionBuilder$DirectiveLocationSet;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$EnumTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+	public abstract fun value (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun value$default (Lio/fluidsonic/graphql/GSchemaBuilder$EnumTypeDefinitionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$EnumTypeDefinitionBuilder$DefaultImpls {
+	public static synthetic fun value$default (Lio/fluidsonic/graphql/GSchemaBuilder$EnumTypeDefinitionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$EnumTypeDefinitionBuilder$ValueBuilder : io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer, io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder$DefaultImpls {
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer : io/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer {
+	public abstract fun field (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun field$default (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public abstract fun of (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$DefaultImpls {
+	public static synthetic fun field$default (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer$NameAndType {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$ArgumentDefinitionContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder$DefaultImpls {
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$InputObjectTypeDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder$DefaultImpls {
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$InterfaceTypeDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$Interfaces {
+	public abstract fun and (Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$Interfaces;
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$NamedTypeRefFactory {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GSchemaBuilder$NamedTypeRefFactory;
+	public final fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+	public abstract fun extension (Lio/fluidsonic/graphql/GNodeExtensionKey;)Ljava/lang/Object;
+	public abstract fun extension (Lio/fluidsonic/graphql/GNodeExtensionKey;Ljava/lang/Object;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$DeprecationContainer, io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$FieldDefinitionContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder$DefaultImpls {
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$ObjectTypeDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$PossibleTypes {
+	public abstract fun or (Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GSchemaBuilder$PossibleTypes;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ScalarTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer {
+	public abstract fun List (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public fun getBoolean ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getFloat ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getID ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getInt ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun getString ()Lio/fluidsonic/graphql/GTypeRef;
+	public fun not (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer$DefaultImpls {
+	public static fun getBoolean (Lio/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GSchemaBuilder$TypeRefContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$UnionTypeDefinitionBuilder : io/fluidsonic/graphql/GSchemaBuilder$DescriptionContainer, io/fluidsonic/graphql/GSchemaBuilder$DirectiveContainer, io/fluidsonic/graphql/GSchemaBuilder$NodeBuilder {
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$Value {
+	public abstract fun toGValue ()Lio/fluidsonic/graphql/GValue;
+}
+
+public abstract interface class io/fluidsonic/graphql/GSchemaBuilder$ValueContainer {
+	public abstract fun value (Lio/fluidsonic/graphql/GValue;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+}
+
+public final class io/fluidsonic/graphql/GSchemaBuilderKt {
+	public static final fun booleanListValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/util/List;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun booleanValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/lang/Boolean;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun floatListValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/util/List;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun floatValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/lang/Double;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun floatValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun intListValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/util/List;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun intValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/lang/Integer;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun nullListValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/util/List;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun nullValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/lang/Void;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun schema (Lio/fluidsonic/graphql/GraphQL;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GSchema;
+	public static final fun stringListValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/util/List;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+	public static final fun stringValue (Lio/fluidsonic/graphql/GSchemaBuilder$ValueContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GSchemaBuilder$Value;
+}
+
+public final class io/fluidsonic/graphql/GraphQL {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GraphQL;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLArgumentsBuilder : io/fluidsonic/graphql/GraphQLArgumentsBuilderScope {
+	public abstract fun argument (Lio/fluidsonic/graphql/GArgument;)V
+	public abstract fun build ()Ljava/util/List;
+	public fun to (Ljava/lang/String;Lio/fluidsonic/graphql/GValue;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLArgumentsBuilder$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/Object;Ljava/lang/Object;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;B)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;D)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;F)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;I)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Lio/fluidsonic/graphql/GValue;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Boolean;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Byte;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Double;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Float;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Integer;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Short;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Ljava/lang/Void;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;S)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Z)V
+	public static fun to-EK-6454 (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;B)V
+	public static fun to-X7ZSXPM (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Lkotlin/UShort;)V
+	public static fun to-i8woANY (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;S)V
+	public static fun to-tA8902A (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;Lkotlin/UByte;)V
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLArgumentsBuilderKt {
+	public static final fun GraphQLArgumentsBuilder ()Lio/fluidsonic/graphql/GraphQLArgumentsBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLArgumentsBuilderScope : io/fluidsonic/graphql/GraphQLValueContainerScope {
+	public fun to (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun to (Ljava/lang/String;B)V
+	public fun to (Ljava/lang/String;D)V
+	public fun to (Ljava/lang/String;F)V
+	public fun to (Ljava/lang/String;I)V
+	public abstract fun to (Ljava/lang/String;Lio/fluidsonic/graphql/GValue;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Boolean;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Byte;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Double;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Float;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Integer;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Short;)V
+	public fun to (Ljava/lang/String;Ljava/lang/String;)V
+	public fun to (Ljava/lang/String;Ljava/lang/Void;)V
+	public fun to (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun to (Ljava/lang/String;S)V
+	public fun to (Ljava/lang/String;Z)V
+	public fun to-EK-6454 (Ljava/lang/String;B)V
+	public fun to-X7ZSXPM (Ljava/lang/String;Lkotlin/UShort;)V
+	public fun to-i8woANY (Ljava/lang/String;S)V
+	public fun to-tA8902A (Ljava/lang/String;Lkotlin/UByte;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLArgumentsBuilderScope$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/Object;Ljava/lang/Object;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;B)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;D)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;F)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;I)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Boolean;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Byte;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Double;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Float;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Integer;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Short;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Ljava/lang/Void;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;S)V
+	public static fun to (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Z)V
+	public static fun to-EK-6454 (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;B)V
+	public static fun to-X7ZSXPM (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Lkotlin/UShort;)V
+	public static fun to-i8woANY (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;S)V
+	public static fun to-tA8902A (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;Lkotlin/UByte;)V
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLArgumentsBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLArgumentsContainer : io/fluidsonic/graphql/GraphQLArgumentsContainerScope {
+	public abstract fun arguments (Ljava/util/List;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLArgumentsContainerKt {
+	public static final fun arguments (Lio/fluidsonic/graphql/GraphQLArgumentsContainerScope;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLArgumentsContainerScope {
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDirectiveBuilder : io/fluidsonic/graphql/GraphQLArgumentsContainer, io/fluidsonic/graphql/GraphQLDirectiveBuilderScope {
+	public abstract fun build ()Lio/fluidsonic/graphql/GDirective;
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectiveBuilder$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLDirectiveBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLDirectiveBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectiveBuilderKt {
+	public static final fun GraphQLDirectiveBuilder (Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLDirectiveBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDirectiveBuilderScope : io/fluidsonic/graphql/GraphQLArgumentsContainerScope, io/fluidsonic/graphql/GraphQLValueContainerScope {
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectiveBuilderScope$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLDirectiveBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLDirectiveBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDirectivesBuilder : io/fluidsonic/graphql/GraphQLDirectivesBuilderScope {
+	public abstract fun build ()Ljava/util/List;
+	public abstract fun directive (Lio/fluidsonic/graphql/GDirective;)V
+	public fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectivesBuilder$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLDirectivesBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLDirectivesBuilder;Ljava/lang/String;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLDirectivesBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLDirectivesBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectivesBuilderKt {
+	public static final fun GraphQLDirectivesBuilder ()Lio/fluidsonic/graphql/GraphQLDirectivesBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDirectivesBuilderScope : io/fluidsonic/graphql/GraphQLValueContainerScope {
+	public fun invoke (Ljava/lang/String;)V
+	public abstract fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectivesBuilderScope$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLDirectivesBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLDirectivesBuilderScope;Ljava/lang/String;)V
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLDirectivesBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDirectivesContainer : io/fluidsonic/graphql/GraphQLDirectivesContainerScope {
+	public abstract fun directives (Ljava/util/List;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLDirectivesContainerKt {
+	public static final fun directives (Lio/fluidsonic/graphql/GraphQLDirectivesContainerScope;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDirectivesContainerScope {
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDocumentBuilder : io/fluidsonic/graphql/GraphQLDocumentBuilderScope, io/fluidsonic/graphql/GraphQLFragmentDefinitionContainer {
+	public abstract fun build ()Lio/fluidsonic/graphql/GDocument;
+	public abstract fun operation (Lio/fluidsonic/graphql/GOperationDefinition;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLDocumentBuilder$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GFragmentRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLDocumentBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLDocumentBuilderKt {
+	public static final fun GraphQL (Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GDocument;
+	public static final fun GraphQLDocumentBuilder ()Lio/fluidsonic/graphql/GraphQLDocumentBuilder;
+	public static final fun document (Lio/fluidsonic/graphql/GraphQL;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GDocument;
+	public static final fun mutation (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun mutation$default (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun query (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun query$default (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun subscription (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun subscription$default (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLDocumentBuilderScope : io/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope {
+}
+
+public final class io/fluidsonic/graphql/GraphQLDocumentBuilderScope$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GFragmentRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLDocumentBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFieldSelectionBuilder : io/fluidsonic/graphql/GraphQLArgumentsContainer, io/fluidsonic/graphql/GraphQLDirectivesContainer, io/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope, io/fluidsonic/graphql/GraphQLSelectionsContainer {
+	public abstract fun build ()Lio/fluidsonic/graphql/GFieldSelection;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFieldSelectionBuilder$DefaultImpls {
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLFieldSelectionBuilderKt {
+	public static final fun GraphQLFieldSelectionBuilder (Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;
+	public static synthetic fun GraphQLFieldSelectionBuilder$default (Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope : io/fluidsonic/graphql/GraphQLArgumentsContainerScope, io/fluidsonic/graphql/GraphQLDirectivesContainerScope, io/fluidsonic/graphql/GraphQLSelectionsContainerScope {
+}
+
+public final class io/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope$DefaultImpls {
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLFieldSelectionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder : io/fluidsonic/graphql/GraphQLDirectivesContainer, io/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope, io/fluidsonic/graphql/GraphQLSelectionsContainer, io/fluidsonic/graphql/GraphQLVariableContainer {
+	public abstract fun build ()Lio/fluidsonic/graphql/GFragmentDefinition;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun on (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun type (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderKt {
+	public static final fun GraphQLFragmentDefinitionBuilder (Ljava/lang/String;Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope : io/fluidsonic/graphql/GraphQLDirectivesContainerScope, io/fluidsonic/graphql/GraphQLSelectionsContainerScope, io/fluidsonic/graphql/GraphQLVariableContainerScope {
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun on (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun type (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFragmentDefinitionContainer : io/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope {
+	public abstract fun fragment (Lio/fluidsonic/graphql/GFragmentDefinition;)Lio/fluidsonic/graphql/GFragmentRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GFragmentRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory : kotlin/properties/PropertyDelegateProvider {
+	public synthetic fun provideDelegate (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun provideDelegate (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope : io/fluidsonic/graphql/GraphQLTypeContainerScope {
+	public abstract fun fragment (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory;
+	public abstract fun fragment (Ljava/lang/String;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GFragmentRef;
+	public fun fragment (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GFragmentRef;
+	public fun fragment (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GFragmentRef;
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainer$RefFactory;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLFragmentDefinitionContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFragmentSelectionBuilder : io/fluidsonic/graphql/GraphQLDirectivesContainer, io/fluidsonic/graphql/GraphQLFragmentSelectionBuilderScope {
+	public abstract fun build ()Lio/fluidsonic/graphql/GFragmentSelection;
+}
+
+public final class io/fluidsonic/graphql/GraphQLFragmentSelectionBuilderKt {
+	public static final fun GraphQLFragmentSelectionBuilder (Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLFragmentSelectionBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLFragmentSelectionBuilderScope : io/fluidsonic/graphql/GraphQLDirectivesContainerScope {
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder : io/fluidsonic/graphql/GraphQLDirectivesContainer, io/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope, io/fluidsonic/graphql/GraphQLSelectionsContainer {
+	public abstract fun build ()Lio/fluidsonic/graphql/GInlineFragmentSelection;
+}
+
+public final class io/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder$DefaultImpls {
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderKt {
+	public static final fun GraphQLInlineFragmentSelectionBuilder (Lio/fluidsonic/graphql/GNamedTypeRef;)Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope : io/fluidsonic/graphql/GraphQLDirectivesContainerScope, io/fluidsonic/graphql/GraphQLSelectionsContainerScope {
+}
+
+public final class io/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope$DefaultImpls {
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLInlineFragmentSelectionBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface annotation class io/fluidsonic/graphql/GraphQLMarker : java/lang/annotation/Annotation {
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLOperationBuilder : io/fluidsonic/graphql/GraphQLDirectivesContainer, io/fluidsonic/graphql/GraphQLOperationBuilderScope, io/fluidsonic/graphql/GraphQLSelectionsContainer, io/fluidsonic/graphql/GraphQLVariableContainer {
+	public abstract fun build ()Lio/fluidsonic/graphql/GOperationDefinition;
+}
+
+public final class io/fluidsonic/graphql/GraphQLOperationBuilder$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLOperationBuilder;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLOperationBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLOperationBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLOperationBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLOperationBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLOperationBuilder;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun not (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun on (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun type (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public final class io/fluidsonic/graphql/GraphQLOperationBuilderKt {
+	public static final fun GraphQLOperationBuilder (Ljava/lang/String;Lio/fluidsonic/graphql/GOperationType;)Lio/fluidsonic/graphql/GraphQLOperationBuilder;
+	public static synthetic fun GraphQLOperationBuilder$default (Ljava/lang/String;Lio/fluidsonic/graphql/GOperationType;ILjava/lang/Object;)Lio/fluidsonic/graphql/GraphQLOperationBuilder;
+	public static final fun mutation (Lio/fluidsonic/graphql/GraphQL;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GOperationDefinition;
+	public static synthetic fun mutation$default (Lio/fluidsonic/graphql/GraphQL;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/fluidsonic/graphql/GOperationDefinition;
+	public static final fun query (Lio/fluidsonic/graphql/GraphQL;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GOperationDefinition;
+	public static synthetic fun query$default (Lio/fluidsonic/graphql/GraphQL;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/fluidsonic/graphql/GOperationDefinition;
+	public static final fun subscription (Lio/fluidsonic/graphql/GraphQL;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GOperationDefinition;
+	public static synthetic fun subscription$default (Lio/fluidsonic/graphql/GraphQL;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/fluidsonic/graphql/GOperationDefinition;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLOperationBuilderScope : io/fluidsonic/graphql/GraphQLDirectivesContainerScope, io/fluidsonic/graphql/GraphQLSelectionsContainerScope, io/fluidsonic/graphql/GraphQLVariableContainerScope {
+}
+
+public final class io/fluidsonic/graphql/GraphQLOperationBuilderScope$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun not (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun on (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun type (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLOperationBuilderScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLSelectionsContainer : io/fluidsonic/graphql/GraphQLSelectionsContainerScope {
+	public fun fragment (Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public fun invoke (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun on (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun selection (Lio/fluidsonic/graphql/GSelection;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLSelectionsContainer$DefaultImpls {
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Ljava/lang/String;Ljava/lang/String;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLSelectionsContainer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLSelectionsContainerScope {
+	public fun __typename ()V
+	public fun fragment (Lio/fluidsonic/graphql/GFragmentRef;)V
+	public abstract fun fragment (Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public fun fragment (Ljava/lang/String;)V
+	public fun fragment (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun invoke (Lio/fluidsonic/graphql/GFragmentRef;)V
+	public fun invoke (Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public fun invoke (Ljava/lang/String;Ljava/lang/String;)V
+	public abstract fun invoke (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun invoke$default (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun invoke$default (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public abstract fun on (Lio/fluidsonic/graphql/GNamedTypeRef;Lkotlin/jvm/functions/Function1;)V
+	public fun on (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLSelectionsContainerScope$DefaultImpls {
+	public static fun __typename (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;)V
+	public static fun fragment (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Lio/fluidsonic/graphql/GFragmentRef;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Lio/fluidsonic/graphql/GFragmentRef;Lkotlin/jvm/functions/Function1;)V
+	public static fun invoke (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun invoke$default (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun invoke$default (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static fun on (Lio/fluidsonic/graphql/GraphQLSelectionsContainerScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLTypeContainerScope {
+	public fun List (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public fun List (Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public fun getBoolean ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public fun getFloat ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public fun getID ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public fun getInt ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public fun getString ()Lio/fluidsonic/graphql/GNamedTypeRef;
+	public fun not (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public fun not (Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public fun type (Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLTypeContainerScope$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLTypeContainerScope$RefFactory : kotlin/properties/PropertyDelegateProvider {
+	public static final field INSTANCE Lio/fluidsonic/graphql/GraphQLTypeContainerScope$RefFactory;
+	public synthetic fun provideDelegate (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun provideDelegate (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class io/fluidsonic/graphql/GraphQLTypeContainerScopeKt {
+	public static final fun getType (Lio/fluidsonic/graphql/GraphQLTypeContainerScope;)Lio/fluidsonic/graphql/GraphQLTypeContainerScope$RefFactory;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLValueContainerScope {
+	public fun enum (Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public fun variable (Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLValueContainerScope$DefaultImpls {
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLValueContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLValueContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLValueContainerScopeKt {
+	public static final fun list (Lio/fluidsonic/graphql/GraphQLValueContainerScope;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GListValue;
+	public static final fun obj (Lio/fluidsonic/graphql/GraphQLValueContainerScope;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GObjectValue;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLValueListBuilder : io/fluidsonic/graphql/GraphQLValueListBuilderScope {
+	public abstract fun build ()Lio/fluidsonic/graphql/GListValue;
+}
+
+public final class io/fluidsonic/graphql/GraphQLValueListBuilder$DefaultImpls {
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;B)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;D)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;F)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;I)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Boolean;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Byte;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Double;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Float;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Integer;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Short;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/String;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/Void;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;S)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Z)V
+	public static fun add-3swpYEE (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Lkotlin/UByte;)V
+	public static fun add-7apg3OU (Lio/fluidsonic/graphql/GraphQLValueListBuilder;B)V
+	public static fun add-ffyZV3s (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Lkotlin/UShort;)V
+	public static fun add-xj2QHRw (Lio/fluidsonic/graphql/GraphQLValueListBuilder;S)V
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLValueListBuilderKt {
+	public static final fun GraphQLValueListBuilder ()Lio/fluidsonic/graphql/GraphQLValueListBuilder;
+	public static final fun list (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GListValue;
+	public static final fun obj (Lio/fluidsonic/graphql/GraphQLValueListBuilder;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GObjectValue;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLValueListBuilderScope : io/fluidsonic/graphql/GraphQLValueContainerScope {
+	public fun add (B)V
+	public fun add (D)V
+	public fun add (F)V
+	public fun add (I)V
+	public abstract fun add (Lio/fluidsonic/graphql/GValue;)V
+	public fun add (Ljava/lang/Boolean;)V
+	public fun add (Ljava/lang/Byte;)V
+	public fun add (Ljava/lang/Double;)V
+	public fun add (Ljava/lang/Float;)V
+	public fun add (Ljava/lang/Integer;)V
+	public fun add (Ljava/lang/Short;)V
+	public fun add (Ljava/lang/String;)V
+	public fun add (Ljava/lang/Void;)V
+	public fun add (S)V
+	public fun add (Z)V
+	public fun add-3swpYEE (Lkotlin/UByte;)V
+	public fun add-7apg3OU (B)V
+	public fun add-ffyZV3s (Lkotlin/UShort;)V
+	public fun add-xj2QHRw (S)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLValueListBuilderScope$DefaultImpls {
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;B)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;D)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;F)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;I)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Boolean;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Byte;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Double;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Float;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Integer;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Short;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/String;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/Void;)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;S)V
+	public static fun add (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Z)V
+	public static fun add-3swpYEE (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Lkotlin/UByte;)V
+	public static fun add-7apg3OU (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;B)V
+	public static fun add-ffyZV3s (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Lkotlin/UShort;)V
+	public static fun add-xj2QHRw (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;S)V
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLValueListBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLVariableBuilder : io/fluidsonic/graphql/GraphQLDirectivesContainer, io/fluidsonic/graphql/GraphQLVariableBuilderScope {
+	public abstract fun build ()Lio/fluidsonic/graphql/GVariableDefinition;
+}
+
+public final class io/fluidsonic/graphql/GraphQLVariableBuilder$DefaultImpls {
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;B)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;D)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;F)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;I)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Boolean;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Byte;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Double;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Float;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Integer;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Short;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/String;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/Void;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;S)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Z)V
+	public static fun default-3swpYEE (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Lkotlin/UByte;)V
+	public static fun default-7apg3OU (Lio/fluidsonic/graphql/GraphQLVariableBuilder;B)V
+	public static fun default-ffyZV3s (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Lkotlin/UShort;)V
+	public static fun default-xj2QHRw (Lio/fluidsonic/graphql/GraphQLVariableBuilder;S)V
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableBuilder;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLVariableBuilderKt {
+	public static final fun GraphQLVariableBuilder (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableBuilder;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLVariableBuilderScope : io/fluidsonic/graphql/GraphQLDirectivesContainerScope, io/fluidsonic/graphql/GraphQLValueContainerScope {
+	public fun default (B)V
+	public fun default (D)V
+	public fun default (F)V
+	public fun default (I)V
+	public abstract fun default (Lio/fluidsonic/graphql/GValue;)V
+	public fun default (Ljava/lang/Boolean;)V
+	public fun default (Ljava/lang/Byte;)V
+	public fun default (Ljava/lang/Double;)V
+	public fun default (Ljava/lang/Float;)V
+	public fun default (Ljava/lang/Integer;)V
+	public fun default (Ljava/lang/Short;)V
+	public fun default (Ljava/lang/String;)V
+	public fun default (Ljava/lang/Void;)V
+	public fun default (Lkotlin/jvm/functions/Function1;)V
+	public fun default (S)V
+	public fun default (Z)V
+	public fun default-3swpYEE (Lkotlin/UByte;)V
+	public fun default-7apg3OU (B)V
+	public fun default-ffyZV3s (Lkotlin/UShort;)V
+	public fun default-xj2QHRw (S)V
+}
+
+public final class io/fluidsonic/graphql/GraphQLVariableBuilderScope$DefaultImpls {
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;B)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;D)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;F)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;I)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Boolean;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Byte;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Double;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Float;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Integer;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Short;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/String;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/Void;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Lkotlin/jvm/functions/Function1;)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;S)V
+	public static fun default (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Z)V
+	public static fun default-3swpYEE (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Lkotlin/UByte;)V
+	public static fun default-7apg3OU (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;B)V
+	public static fun default-ffyZV3s (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Lkotlin/UShort;)V
+	public static fun default-xj2QHRw (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;S)V
+	public static fun enum (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GEnumValue;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableBuilderScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLVariableContainer : io/fluidsonic/graphql/GraphQLVariableContainerScope {
+	public abstract fun variable (Lio/fluidsonic/graphql/GVariableDefinition;)Lio/fluidsonic/graphql/GVariableRef;
+}
+
+public final class io/fluidsonic/graphql/GraphQLVariableContainer$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLVariableContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLVariableContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLVariableContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLVariableContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLVariableContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLVariableContainer;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLVariableContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainer;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public final class io/fluidsonic/graphql/GraphQLVariableContainer$RefFactory : kotlin/properties/PropertyDelegateProvider {
+	public synthetic fun provideDelegate (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun provideDelegate (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public abstract interface class io/fluidsonic/graphql/GraphQLVariableContainerScope : io/fluidsonic/graphql/GraphQLTypeContainerScope {
+	public fun variable (Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public abstract fun variable (Lio/fluidsonic/graphql/GTypeRef;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public fun variable (Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public fun variable (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public abstract fun variable (Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public fun variable (Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public fun variable (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public fun variable (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public final class io/fluidsonic/graphql/GraphQLVariableContainerScope$DefaultImpls {
+	public static fun List (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun List (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GTypeRef;
+	public static fun getBoolean (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getFloat (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getID (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getInt (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun getString (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun not (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNonNullTypeRef;
+	public static fun type (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GNamedTypeRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;Lio/fluidsonic/graphql/GTypeRef;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;Ljava/lang/String;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GVariableRef;
+	public static fun variable (Lio/fluidsonic/graphql/GraphQLVariableContainerScope;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lio/fluidsonic/graphql/GraphQLVariableContainer$RefFactory;
+}
+
+public abstract interface annotation class io/fluidsonic/graphql/SchemaBuilderBuiltinTypeA : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class io/fluidsonic/graphql/SchemaBuilderDsl : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class io/fluidsonic/graphql/SchemaBuilderKeywordB : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class io/fluidsonic/graphql/SchemaBuilderType : java/lang/annotation/Annotation {
+}
+

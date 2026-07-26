@@ -18,7 +18,12 @@ package io.fluidsonic.graphql
  */
 public sealed class GNode(public val extensions: GNodeExtensionSet<GNode>, public val origin: GDocumentPosition?) {
 
-	/** Returns the child node at the given [index], or `null` if the index is out of range. */
+	/**
+	 * Returns the child node at the given [index], or `null` if the index is out of range.
+	 *
+	 * Each call rescans this node's children from the beginning, so it costs O([index]). Use [children] to visit
+	 * more than one child — indexing in a loop is quadratic in the number of children.
+	 */
 	public fun childAt(index: Int): GNode? {
 		var childIndex = 0
 
@@ -33,7 +38,12 @@ public sealed class GNode(public val extensions: GNodeExtensionSet<GNode>, publi
 		return null
 	}
 
-	/** Returns all direct children of this node as a list. */
+	/**
+	 * Returns all direct children of this node as a list.
+	 *
+	 * The list is computed and allocated on every call; it is not cached. Keep the returned list around instead of
+	 * calling this repeatedly for the same node.
+	 */
 	public fun children(): List<GNode> {
 		var list: MutableList<GNode>? = null
 

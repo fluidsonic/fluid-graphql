@@ -11,8 +11,53 @@ internal class DefaultExecutor(
 	private val variableInputCoercer: GVariableInputCoercer<Any?>?,
 ) : GExecutor {
 
+	override suspend fun execute(
+		documentSource: String,
+		operationName: String?,
+		variableValues: Map<String, Any?>,
+		extensions: GExecutorContextExtensionSet,
+	): GResult<Map<String, Any?>> = execute(
+		documentSource = GDocumentSource.of(documentSource),
+		extensions = extensions,
+		operationName = operationName,
+		variableValues = variableValues,
+	)
+
+	// Parse, validate, execute — the full request pipeline, mirroring `graphql()` in graphql-js.
+	// https://spec.graphql.org/draft/#sec-Validation
+	override suspend fun execute(
+		documentSource: GDocumentSource.Parsable,
+		operationName: String?,
+		variableValues: Map<String, Any?>,
+		extensions: GExecutorContextExtensionSet,
+	): GResult<Map<String, Any?>> = GDocument.parse(documentSource).flatMapValue { document ->
+		val validationErrors = document.validate(schema)
+		if (validationErrors.isNotEmpty()) {
+			return@flatMapValue GResult.failure(validationErrors)
+		}
+
+		execute(
+			document = document,
+			extensions = extensions,
+			operationName = operationName,
+			variableValues = variableValues,
+		)
+	}
+
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteRequest()
 	override suspend fun execute(
+		document: GDocument,
+		operationName: String?,
+		variableValues: Map<String, Any?>,
+		extensions: GExecutorContextExtensionSet,
+	): GResult<Map<String, Any?>> = try {
+		executeRequest(document = document, operationName = operationName, variableValues = variableValues, extensions = extensions)
+	} catch (exception: GErrorException) {
+		// Last resort: no error raised during execution may escape the GResult contract.
+		GResult.failure(exception.errors)
+	}
+
+	private suspend fun executeRequest(
 		document: GDocument,
 		operationName: String?,
 		variableValues: Map<String, Any?>,
@@ -27,14 +72,17 @@ internal class DefaultExecutor(
 			)
 		}
 		.flatMapValue { context ->
-			executeOperation(
-				strategy = when (context.operation.type) {
-					GOperationType.query -> Strategy.parallel
-					GOperationType.mutation -> Strategy.serial
-					GOperationType.subscription -> throw UnsupportedOperationException("Subscription operations are not yet supported.")
-				},
-				context = context,
-			)
+			when (context.operation.type) {
+				GOperationType.query -> executeOperation(strategy = Strategy.parallel, context = context)
+				GOperationType.mutation -> executeOperation(strategy = Strategy.serial, context = context)
+				GOperationType.subscription -> GResult.failure(
+					GError(
+						message = "Subscription operations are not yet supported.",
+						nodes = listOf(context.operation),
+						isRequestError = true,
+					),
+				)
+			}
 		}
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteQuery()
@@ -62,11 +110,12 @@ internal class DefaultExecutor(
 	}?.let { GResult.success(it) }
 		?: GResult.failure(
 			GError(
-				if (name != null) {
+				message = if (name != null) {
 					"There is no operation named '$name' in the document."
 				} else {
 					"There is no anonymous operation in the document."
 				},
+				isRequestError = true,
 			),
 		)
 
@@ -76,6 +125,15 @@ internal class DefaultExecutor(
 		operation: GOperationDefinition,
 		variableValues: Map<String, Any?>,
 	): GResult<DefaultExecutorContext> {
+		val rootType = schema.rootTypeForOperationType(operation.type)
+			?: return GResult.failure(
+				GError(
+					message = "Schema is not configured for ${operation.type} operations.",
+					nodes = listOf(operation),
+					isRequestError = true,
+				),
+			)
+
 		val context = DefaultExecutorContext(
 			document = document,
 			exceptionHandler = exceptionHandler,
@@ -87,8 +145,7 @@ internal class DefaultExecutor(
 			operation = operation,
 			outputCoercer = outputCoercer,
 			outputConverter = OutputConverter,
-			rootType = schema.rootTypeForOperationType(operation.type)
-				?: error("Schema is not configured for ${operation.type} operations."),
+			rootType = rootType,
 			root = Unit,
 			schema = schema,
 			selectionSetExecutor = DefaultSelectionSetExecutor,
@@ -111,11 +168,12 @@ internal class DefaultExecutor(
 		}
 	}
 
+	// Root resolution happens before execution begins, so a failure here is a request error.
 	private suspend fun resolveRoot(context: DefaultExecutorContext): GResult<Any> = GResult.catchErrors {
 		context.withExceptionHandler(origin = { GExceptionOrigin.RootResolver(resolver = rootResolver, context = context) }) {
 			with(rootResolver) { context.resolveRoot() }
 		}
-	}
+	}.mapErrors { errors -> errors.map { error -> error.copy(isRequestError = true) } }
 
 	private fun serializeError(error: GError): Map<String, Any?> = buildMap {
 		put("message", error.message)
@@ -148,7 +206,12 @@ internal class DefaultExecutor(
 	}
 
 	override fun serializeResult(result: GResult<Map<String, Any?>>): Map<String, Any?> = buildMap {
-		put("data", result.valueOrNull())
+		// A request error prevents execution from beginning, so the "data" key must be omitted entirely.
+		// A field error keeps the key — set to null if the error propagated all the way to the root.
+		// https://spec.graphql.org/draft/#sec-Response
+		if (result.errors.none { it.isRequestError }) {
+			put("data", result.valueOrNull())
+		}
 
 		if (result.errors.isNotEmpty()) {
 			put("errors", result.errors.map(::serializeError))

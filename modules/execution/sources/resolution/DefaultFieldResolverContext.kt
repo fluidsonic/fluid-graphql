@@ -11,6 +11,8 @@ internal class DefaultFieldResolverContext(
 
 	@Suppress("UNCHECKED_CAST")
 	override suspend fun next(): Any? = when (val resolver = fieldDefinition.resolver as GFieldResolver<Any>?) {
+		// A field without a resolver is a wiring bug in the application, not something a client can
+		// provoke, so it must fail loudly instead of becoming a GraphQL error in the response.
 		null -> error("No resolver is set for field '${parentType.name}.${fieldDefinition.name}'.")
 		else -> execution.withExceptionHandler(origin = { GExceptionOrigin.FieldResolver(resolver = resolver, context = this) }) {
 			resolver.resolveField(parent, context = Next())
@@ -19,6 +21,6 @@ internal class DefaultFieldResolverContext(
 
 	private inner class Next : GFieldResolverContext by this {
 
-		override suspend fun next() = error("Resolver of field '${parentType.name}.${fieldDefinition.name}' cannot delegate resolution any further.")
+		override suspend fun next(): Nothing = error("Resolver of field '${parentType.name}.${fieldDefinition.name}' cannot delegate resolution any further.")
 	}
 }

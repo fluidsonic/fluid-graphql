@@ -54,10 +54,22 @@ public class GDocument(
 		 * Parses a GraphQL document from [source].
 		 *
 		 * Returns a [GResult.Success] with the parsed document, or a [GResult.Failure] with parse errors.
+		 *
+		 * [maxTokens] caps how many lexical tokens the document may contain; the parse is aborted with a syntax error
+		 * as soon as the cap is exceeded. Whitespace, commas, comments and the end of input are not counted, and a
+		 * block string counts as a single token. It defaults to `null`, which imposes no limit.
+		 *
+		 * Parsing is recursive, so a sufficiently deeply nested document can still exhaust the call stack regardless
+		 * of [maxTokens]. Set [maxTokens] when parsing untrusted input.
 		 */
-		public fun parse(source: GDocumentSource.Parsable): GResult<GDocument> = Parser.parseDocument(source)
+		public fun parse(source: GDocumentSource.Parsable, maxTokens: Int? = null): GResult<GDocument> = Parser.parseDocument(source, maxTokens = maxTokens)
 
-		/** Parses a GraphQL document from a raw string. */
-		public fun parse(content: String, name: String = "<document>"): GResult<GDocument> = parse(GDocumentSource.of(content = content, name = name))
+		/**
+		 * Parses a GraphQL document from a raw string.
+		 *
+		 * @see parse for the meaning of [maxTokens].
+		 */
+		public fun parse(content: String, name: String = "<document>", maxTokens: Int? = null): GResult<GDocument> =
+			parse(GDocumentSource.of(content = content, name = name), maxTokens = maxTokens)
 	}
 }

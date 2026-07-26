@@ -15,7 +15,16 @@ internal object DefaultFieldSelectionExecutor {
 		.flatMapValue { value ->
 			when (value) {
 				null -> when (type) {
-					is GNonNullType -> error("Field '${parentType.name}.${fieldDefinition.name}' of type '${fieldDefinition.type}' resolved to null.")
+					// A field error, not a crash: the enclosing `flatMapErrors` propagates the null upwards
+					// until it reaches a nullable position. https://spec.graphql.org/draft/#sec-Handling-Field-Errors
+					is GNonNullType -> GResult.failure(
+						GError(
+							message = "Field '${parentType.name}.${fieldDefinition.name}' of type '${fieldDefinition.type}' resolved to null.",
+							path = path,
+							nodes = listOfNotNull(selections.firstOrNull()?.nameNode),
+						),
+					)
+
 					else -> GResult.success()
 				}
 
@@ -28,6 +37,7 @@ internal object DefaultFieldSelectionExecutor {
 								context = context,
 							)
 
+							// A broken schema, not something a client can provoke.
 							is GInputObjectType ->
 								error("Field '${parentType.name}.${fieldDefinition.name}' must have an output type but has input type '${type.name}'.")
 
@@ -116,7 +126,22 @@ internal object DefaultFieldSelectionExecutor {
 	)
 
 	// https://graphql.github.io/graphql-spec/June2018/#ExecuteField()
-	suspend fun execute(selections: List<GFieldSelection>, parent: Any, parentType: GObjectType, path: GPath, context: DefaultExecutorContext): GResult<Any?> {
+	suspend fun execute(selections: List<GFieldSelection>, parent: Any, parentType: GObjectType, path: GPath, context: DefaultExecutorContext): GResult<Any?> =
+		try {
+			executeField(selections = selections, parent = parent, parentType = parentType, path = path, context = context)
+		} catch (exception: GErrorException) {
+			// Errors raised for conditions that cannot occur in a validated document must still honour the
+			// GResult contract rather than escaping as a raw exception.
+			GResult.failure(exception.errors)
+		}
+
+	private suspend fun executeField(
+		selections: List<GFieldSelection>,
+		parent: Any,
+		parentType: GObjectType,
+		path: GPath,
+		context: DefaultExecutorContext,
+	): GResult<Any?> {
 		// An error can occur only if this function was called directly with an empty selection list.
 		require(selections.isNotEmpty()) { "'selections' must contain at least one selection." }
 
@@ -130,36 +155,36 @@ internal object DefaultFieldSelectionExecutor {
 			)
 		}
 
-		// An error can occur only if the document wasn't validated or if this function was called directly with an invalid selection.
+		// A field that the type does not define is skipped entirely, leaving its response key absent
+		// rather than present-and-null. This mirrors graphql-js, which returns from `executeField`
+		// when `schema.getField` finds no definition.
 		val fieldDefinition = parentType.fieldDefinition(firstSelection.name)
-			?: return GResult.failure(
-				GError(
-					message = "There is no field named '${firstSelection.name}' on type '${parentType.name}'.",
+
+		return when (fieldDefinition) {
+			null -> GResult.success(NoValue)
+			else -> {
+				// An error can occur only if the schema wasn't validated.
+				val fieldType = TypeResolver.resolveType(context.schema, fieldDefinition.type)
+					?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${parentType.name}'.")
+
+				complete(
+					selections = selections,
+					result = resolveFieldValue(
+						parent = parent,
+						parentType = parentType,
+						fieldDefinition = fieldDefinition,
+						selections = selections,
+						path = path,
+						context = context,
+					),
+					type = fieldType,
+					parentType = parentType,
+					fieldDefinition = fieldDefinition,
 					path = path,
-					nodes = listOf(firstSelection.nameNode),
-				),
-			)
-
-		// An error can occur only if the schema wasn't validated.
-		val fieldType = TypeResolver.resolveType(context.schema, fieldDefinition.type)
-			?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${parentType.name}'.")
-
-		return complete(
-			selections = selections,
-			result = resolveFieldValue(
-				parent = parent,
-				parentType = parentType,
-				fieldDefinition = fieldDefinition,
-				selections = selections,
-				path = path,
-				context = context,
-			),
-			type = fieldType,
-			parentType = parentType,
-			fieldDefinition = fieldDefinition,
-			path = path,
-			context = context,
-		)
+					context = context,
+				)
+			}
+		}
 	}
 
 	private suspend fun executeIntrospection(
@@ -203,7 +228,7 @@ internal object DefaultFieldSelectionExecutor {
 
 				null
 			}
-		} ?: error("There is no field named '${firstSelection.name}' on type '${originalParentType.name}'.")
+		} ?: return GResult.success(NoValue) // An unknown introspection field is skipped, same as any other unknown field.
 
 		val fieldContext = context.copy(
 			schema = Introspection.schema,
@@ -239,7 +264,10 @@ internal object DefaultFieldSelectionExecutor {
 	private fun resolveAbstractType(abstractType: GAbstractType, objectValue: Any, context: DefaultExecutorContext) = // FIXME support default resolver
 		context.schema.getPossibleTypes(abstractType)
 			.firstOrNull { it.kotlinType?.isInstance(objectValue) ?: false } // FIXME
-			?: error("Cannot resolve abstract type '${abstractType.name}' for Kotlin type '${objectValue::class.qualifiedName}': $objectValue")
+			?: GError(
+				message = "Cannot resolve abstract type '${abstractType.name}' for Kotlin type " +
+					"'${objectValue::class.qualifiedName}': $objectValue",
+			).throwException()
 
 	// https://graphql.github.io/graphql-spec/June2018/#ResolveFieldValue()
 	private suspend fun resolveFieldValue(

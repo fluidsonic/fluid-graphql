@@ -22,9 +22,12 @@ public interface GFieldResolverContext : GExecutorContext.Child {
 	public val parentType: GObjectType
 
 	/**
-	 * Delegates to the next field resolver in the chain.
+	 * Delegates to the next field resolver in the chain and returns whatever that resolver returns.
 	 *
-	 * Returns `null` if there is no further resolver, or when the next resolver returns `null`.
+	 * Throws [IllegalStateException] if there is no further resolver to delegate to — either because the
+	 * field has no resolver at all or because the end of the chain has been reached. That is a wiring
+	 * error in the application rather than something a client can cause, so it is not reported as a
+	 * GraphQL error in the response.
 	 */
 	public suspend fun next(): Any?
 }

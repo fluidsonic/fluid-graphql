@@ -10,4 +10,6 @@ Undocumented formatting contracts any new golden-string test (dsl or printer) mu
 
 Practical workflow: these tests are exact-string comparisons, so author expectations by running the test and copying actual output rather than hand-formatting.
 
+**A round-trip test cannot catch a spacing defect.** `PrinterTests.testRoundtripKitchenSinkSchema` parses, prints, re-parses and compares with `equalsNode` — and GraphQL ignores whitespace *between* tokens, so `schema  @onSchema` round-trips green (whitespace *inside* a string or block-string value is part of the value and does get compared). Every whitespace fix therefore needs an exact-string assertion next to it; the schema-definition and schema-extension spacing tests in that file say so in their comments.
+
 Remember the printer is also lossy — some AST content never prints at all; see ../language/printer-lossiness.md before concluding a golden string is wrong.

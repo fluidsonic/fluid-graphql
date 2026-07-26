@@ -97,6 +97,11 @@ internal object Printer {
 		writeRaw("directive @")
 		writeNode(definition.nameNode)
 		writeArgumentDefinitions(definition.argumentDefinitions)
+
+		if (definition.isRepeatable) {
+			writeRaw(" repeatable")
+		}
+
 		writeRaw(" on ")
 		definition.locationNodes.forEachIndexed { index, location ->
 			if (index > 0) {
@@ -299,6 +304,7 @@ internal object Printer {
 		writeRaw("type ")
 		writeNode(type.nameNode)
 		writeImplementedInterfaces(type.interfaces)
+		writeDirectives(type.directives)
 		writeFieldDefinitions(type.fieldDefinitions)
 	}
 
@@ -306,6 +312,7 @@ internal object Printer {
 		writeRaw("extend type ")
 		writeNode(extension.nameNode)
 		writeImplementedInterfaces(extension.interfaces)
+		writeDirectives(extension.directives)
 		writeFieldDefinitions(extension.fieldDefinitions)
 	}
 
@@ -407,8 +414,9 @@ internal object Printer {
 			writeRaw("\n")
 		}
 
-		writeRaw("schema ")
+		writeRaw("schema")
 		writeDirectives(definition.directives)
+		writeRaw(" ")
 		writeBlock {
 			queryOperation?.let {
 				writeNode(it)
@@ -485,7 +493,7 @@ internal object Printer {
 	}
 
 	private fun IndentingWriter.writeNode(extension: GUnionTypeExtension) {
-		writeRaw("union ")
+		writeRaw("extend union ")
 		writeNode(extension.nameNode)
 		writeDirectives(extension.directives)
 		writePossibleTypes(extension.possibleTypes)
@@ -668,6 +676,8 @@ internal object Printer {
 		if (definitions.isEmpty()) {
 			return
 		}
+
+		writeRaw(" ")
 
 		writeBlock {
 			definitions.forEach { definition ->

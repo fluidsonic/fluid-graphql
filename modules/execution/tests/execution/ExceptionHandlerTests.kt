@@ -167,7 +167,8 @@ class ExceptionHandlerTests {
 					testError1
 				},
 			)
-			.execute("{ foo(arg:42) bar(arg:42) baz }")
+			// No arguments here: unlike the node-input-coercer fixtures above, `foo` and `bar` declare none.
+			.execute("{ foo bar baz }")
 
 		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
@@ -231,7 +232,9 @@ class ExceptionHandlerTests {
 		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.failure(
-				errors = listOf(testError),
+				// Root resolution and variable coercion run before execution begins, so failures there
+				// are request errors regardless of how the error itself was constructed.
+				errors = listOf(testError.copy(isRequestError = true)),
 			),
 			actual = result,
 		)
@@ -258,7 +261,9 @@ class ExceptionHandlerTests {
 
 		assertEquals(
 			expected = GResult.failure(
-				errors = listOf(testError),
+				// Root resolution and variable coercion run before execution begins, so failures there
+				// are request errors regardless of how the error itself was constructed.
+				errors = listOf(testError.copy(isRequestError = true)),
 			),
 			actual = result,
 		)
@@ -315,7 +320,9 @@ class ExceptionHandlerTests {
 		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.failure(
-				errors = listOf(testError),
+				// Root resolution and variable coercion run before execution begins, so failures there
+				// are request errors regardless of how the error itself was constructed.
+				errors = listOf(testError.copy(isRequestError = true)),
 			),
 			actual = result,
 		)
@@ -344,7 +351,9 @@ class ExceptionHandlerTests {
 
 		assertEquals(
 			expected = GResult.failure(
-				errors = listOf(testError),
+				// Root resolution and variable coercion run before execution begins, so failures there
+				// are request errors regardless of how the error itself was constructed.
+				errors = listOf(testError.copy(isRequestError = true)),
 			),
 			actual = result,
 		)
