@@ -22,7 +22,7 @@ Linting: ktlint owns formatting/style (configured via `.editorconfig`), detekt o
 complexity/smell/bug rules (`config/detekt/detekt.yml`, with per-module
 `detekt-baseline.xml`). Both hook into `check` and CI runs `./gradlew check`.
 
-Uses the `io.fluidsonic.gradle` plugin (4.0.0) for build configuration. Gradle 9.6.1. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
+Uses the `io.fluidsonic.gradle` plugin (4.1.0) for build configuration. Gradle 9.6.1. Use `./gradlew dependencyUpdates` (versions plugin) to check for dependency updates.
 Requires JDK 21+.
 kotlinx-coroutines: 1.10.2.
 

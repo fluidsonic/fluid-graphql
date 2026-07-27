@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
+## [Unreleased]
+
+### Changed
+
+- Upgraded to fluid-gradle 4.1.0. `./gradlew check` now reports only failing tests and prints one
+  `N tests, all passed` line per module, so a failure is no longer buried in output. This replaces
+  the local test-logging workaround in the root build script, which is removed. Kotlin 2.4.10,
+  Dokka 2.2.0 and the Gradle 9.6.1 wrapper are unchanged, so published artifacts are unaffected.
+
+
 ## [0.18.0] - 2026-07-27
 
 Validation now does what it claimed to. Several rules were partly or wholly inert, and the ones that
