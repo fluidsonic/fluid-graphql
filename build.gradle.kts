@@ -9,8 +9,9 @@ buildscript {
 	}
 
 	dependencies {
-		// Resolved through `buildscript` rather than the `plugins {}` block because the Gradle Plugin Portal
-		// is unreachable from this environment while Maven Central is not.
+		// Resolved through `buildscript` rather than the `plugins {}` block. The original rationale — that the
+		// Gradle Plugin Portal is unreachable from this environment — does not hold: the portal serves the three
+		// plugins below, and it does publish a marker for this one, so this could move into `plugins {}`.
 		classpath("org.jetbrains.kotlinx:binary-compatibility-validator:0.18.1")
 	}
 }

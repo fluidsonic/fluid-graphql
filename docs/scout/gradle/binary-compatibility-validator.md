@@ -2,7 +2,7 @@
 
 version: 0.18.1 (as of this pass); how the published API surface is frozen, and the one annotation habit it forces on every new nested class.
 
-Wired in the root `build.gradle.kts`: pulled in through a `buildscript` block with `mavenCentral()` and then `apply(plugin = "binary-compatibility-validator")`, with a comment there stating that the Gradle Plugin Portal is unreachable from this environment — while the `plugins` block does resolve three plugins from the portal. See plugin-resolution.md.
+Wired in the root `build.gradle.kts`: pulled in through a `buildscript` block with `mavenCentral()` and then `apply(plugin = "binary-compatibility-validator")`. It is not in the `plugins` block for any load-bearing reason — the Gradle Plugin Portal does publish a marker for it, and the comment there says so. See plugin-resolution.md.
 
 The committed dumps are `api/fluid-graphql.api` plus `modules/*/api/*.api`; the umbrella one is empty by design (its only source is `Dummy.kt`). Changing any public declaration fails `check` until `./gradlew apiDump` is re-run and the dump is committed.
 
