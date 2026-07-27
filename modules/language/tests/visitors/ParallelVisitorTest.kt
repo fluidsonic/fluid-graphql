@@ -3619,12 +3619,12 @@ private val breadthSchema = GSchema.parse(
 private fun acceptEveryNodeKind(visitor: Visitor<Unit, StackCollectingVisitor.Data>) {
 	breadthDocument.accept(visitor, data = StackCollectingVisitor.Data())
 	breadthSchema.document.accept(visitor, data = StackCollectingVisitor.Data())
-	GListType(GBooleanType).accept(visitor, data = StackCollectingVisitor.Data())
-	GNonNullType(GBooleanType).accept(visitor, data = StackCollectingVisitor.Data())
-	GFloatType.accept(visitor, data = StackCollectingVisitor.Data())
-	GIdType.accept(visitor, data = StackCollectingVisitor.Data())
-	GIntType.accept(visitor, data = StackCollectingVisitor.Data())
-	GStringType.accept(visitor, data = StackCollectingVisitor.Data())
+	GListType(GBooleanType()).accept(visitor, data = StackCollectingVisitor.Data())
+	GNonNullType(GBooleanType()).accept(visitor, data = StackCollectingVisitor.Data())
+	GFloatType().accept(visitor, data = StackCollectingVisitor.Data())
+	GIdType().accept(visitor, data = StackCollectingVisitor.Data())
+	GIntType().accept(visitor, data = StackCollectingVisitor.Data())
+	GStringType().accept(visitor, data = StackCollectingVisitor.Data())
 }
 
 /** Every node kind `StackCollectingVisitor` can record, sorted — the yardstick the fixture above is measured against. */

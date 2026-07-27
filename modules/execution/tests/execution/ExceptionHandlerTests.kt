@@ -1,5 +1,6 @@
 package testing
 
+import io.fluidsonic.graphql.GDocument
 import io.fluidsonic.graphql.GError
 import io.fluidsonic.graphql.GExecutor
 import io.fluidsonic.graphql.GPath
@@ -7,20 +8,43 @@ import io.fluidsonic.graphql.GResult
 import io.fluidsonic.graphql.GRootResolver
 import io.fluidsonic.graphql.GRootResolverContext
 import io.fluidsonic.graphql.GraphQL
-import io.fluidsonic.graphql.coerceNodeInput
-import io.fluidsonic.graphql.coerceOutput
-import io.fluidsonic.graphql.coerceVariableInput
+import io.fluidsonic.graphql.coerceInputLiteral
+import io.fluidsonic.graphql.coerceInputValue
+import io.fluidsonic.graphql.coerceOutputValue
 import io.fluidsonic.graphql.default
-import io.fluidsonic.graphql.path
 import io.fluidsonic.graphql.resolve
 import io.fluidsonic.graphql.schema
 import io.fluidsonic.graphql.type
 import io.fluidsonic.graphql.value
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ExceptionHandlerTests {
+
+	// Cancellation is not a resolver failure. Field resolvers are suspending, so a cancelled request unwinds
+	// through them as a `CancellationException` — handing that to the exception handler would turn it into a
+	// GraphQL error and leave the caller's coroutine believing it is still running.
+	@Test
+	fun testCancellationIsNotHandled() = runTest {
+		val handled = mutableListOf<Throwable>()
+		val executor = GExecutor.default(
+			schema = GraphQL.schema {
+				Query {
+					field("foo" of String) { resolve { throw CancellationException("cancelled") } }
+				}
+			},
+			exceptionHandler = { exception ->
+				handled += exception
+				GError(message = "handled")
+			},
+		)
+
+		assertFailsWith<CancellationException> { executor.execute(GDocument.parse("{ foo }").valueOrThrow()) }
+		assertEquals(actual = handled, expected = emptyList())
+	}
 
 	@Test
 	fun testHandledExceptionInFieldResolver() = runTest {
@@ -90,8 +114,8 @@ class ExceptionHandlerTests {
 				schema = GraphQL.schema {
 					val Foo by type
 					val Bar by type
-					Scalar(Foo) { coerceNodeInput { throw testException } }
-					Scalar(Bar) { coerceNodeInput { testError2.throwException() } }
+					Scalar(Foo) { coerceInputLiteral { throw testException } }
+					Scalar(Bar) { coerceInputLiteral { testError2.throwException() } }
 					Query {
 						field("foo" of String) { argument("arg" of Foo) }
 						field("bar" of String) { argument("arg" of Bar) }
@@ -103,13 +127,19 @@ class ExceptionHandlerTests {
 					testError1
 				},
 			)
-			.execute("{ foo(arg:42) bar(arg:42) baz }")
+			// Deliberately the non-validating overload: the document validator applies these very input
+			// literal coercers, so a validating entry point rejects the document before an executor — and
+			// therefore the exception handler under test — ever sees it.
+			.execute(GDocument.parse("{ foo(arg:42) bar(arg:42) baz }").valueOrThrow())
 
 		assertEquals(expected = listOf<Throwable>(testException), actual = exceptions)
 		assertEquals(
 			expected = GResult.success(
 				value = mapOf("foo" to null, "bar" to null, "baz" to "success"),
-				errors = listOf(testError1, testError2),
+				// `bar`'s coercer raised a `GErrorException` carrying no path, so the field it failed at is
+				// stamped on — the same treatment `testHandledExceptionInOutputCoercer` expects, since both
+				// coercers fail at a response field.
+				errors = listOf(testError1, testError2.copy(path = GPath.ofName("bar"))),
 			),
 			actual = result,
 		)
@@ -126,8 +156,8 @@ class ExceptionHandlerTests {
 					schema = GraphQL.schema {
 						val Foo by type
 						val Bar by type
-						Scalar(Foo) { coerceNodeInput { throw testException } }
-						Scalar(Bar) { coerceNodeInput { testError.throwException() } }
+						Scalar(Foo) { coerceInputLiteral { throw testException } }
+						Scalar(Bar) { coerceInputLiteral { testError.throwException() } }
 						Query {
 							field("foo" of String) { argument("arg" of Foo) }
 							field("bar" of String) { argument("arg" of Bar) }
@@ -136,7 +166,8 @@ class ExceptionHandlerTests {
 					},
 					exceptionHandler = { throw it },
 				)
-				.execute("{ foo(arg:42) bar(arg:42) baz }")
+				// Deliberately the non-validating overload — see `testHandledExceptionInNodeInputCoercer`.
+				.execute(GDocument.parse("{ foo(arg:42) bar(arg:42) baz }").valueOrThrow())
 		}.exceptionOrNull()
 
 		assertEquals(expected = testException, actual = thrownException)
@@ -154,8 +185,8 @@ class ExceptionHandlerTests {
 				schema = GraphQL.schema {
 					val Foo by type
 					val Bar by type
-					Scalar(Foo) { coerceOutput { throw testException } }
-					Scalar(Bar) { coerceOutput { testError2.throwException() } }
+					Scalar(Foo) { coerceOutputValue { throw testException } }
+					Scalar(Bar) { coerceOutputValue { testError2.throwException() } }
 					Query {
 						field("foo" of Foo) { resolve { "foo" } }
 						field("bar" of Bar) { resolve { "bar" } }
@@ -191,8 +222,8 @@ class ExceptionHandlerTests {
 					schema = GraphQL.schema {
 						val Foo by type
 						val Bar by type
-						Scalar(Foo) { coerceOutput { throw testException } }
-						Scalar(Bar) { coerceOutput { testError.throwException() } }
+						Scalar(Foo) { coerceOutputValue { throw testException } }
+						Scalar(Bar) { coerceOutputValue { testError.throwException() } }
 						Query {
 							field("foo" of Foo) { resolve { "foo" } }
 							field("bar" of Bar) { resolve { "bar" } }
@@ -301,7 +332,7 @@ class ExceptionHandlerTests {
 			.default(
 				schema = GraphQL.schema {
 					val Foo by type
-					Scalar(Foo) { coerceVariableInput { throw testException } }
+					Scalar(Foo) { coerceInputValue { throw testException } }
 					Query {
 						field("foo" of String) { argument("arg" of Foo) }
 						field("bar" of String) { resolve { "success" } }
@@ -336,7 +367,7 @@ class ExceptionHandlerTests {
 			.default(
 				schema = GraphQL.schema {
 					val Foo by type
-					Scalar(Foo) { coerceVariableInput { testError.throwException() } }
+					Scalar(Foo) { coerceInputValue { testError.throwException() } }
 					Query {
 						field("foo" of String) { argument("arg" of Foo) }
 						field("bar" of String) { resolve { "success" } }
@@ -368,7 +399,7 @@ class ExceptionHandlerTests {
 				.default(
 					schema = GraphQL.schema {
 						val Foo by type
-						Scalar(Foo) { coerceVariableInput { throw testException } }
+						Scalar(Foo) { coerceInputValue { throw testException } }
 						Query {
 							field("foo" of String) { argument("arg" of Foo) }
 							field("bar" of String) { resolve { "success" } }

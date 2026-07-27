@@ -2,7 +2,9 @@ package testing
 
 import io.fluidsonic.graphql.GDocument
 import io.fluidsonic.graphql.GDocumentSource
+import io.fluidsonic.graphql.GErrorException
 import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GSchema
 import io.fluidsonic.graphql.GraphQL
 import io.fluidsonic.graphql.default
 import io.fluidsonic.graphql.resolve
@@ -10,6 +12,7 @@ import io.fluidsonic.graphql.schema
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -89,5 +92,32 @@ class ValidationContractTests {
 		val result = executor.serializeResult(executor.execute("{ hello }"))
 
 		assertEquals(actual = result, expected = mapOf("data" to mapOf("hello" to "world")))
+	}
+
+	// The request pipeline also validates the *schema*, mirroring `graphql()` in graphql-js, which returns
+	// `{"errors":[…]}` without a "data" key for a schema that violates a spec rule. Verified against
+	// graphql@17.0.2 for `interface I { a: Int b: Int } type Query implements I { a: Int }`.
+	@Test
+	fun testStringOverload_reportsSchemaValidationFailureAsRequestError() = runTest {
+		val invalidSchema = GSchema.parse("interface I { a: Int b: Int } type Query implements I { a: Int }").valueWithoutErrorsOrThrow()
+		val executor = GExecutor.default(schema = invalidSchema)
+		val response = executor.execute("{ a }")
+		val result = executor.serializeResult(response)
+
+		assertEquals(
+			actual = response.errors.map { it.message },
+			expected = listOf("Interface field I.b expected but Query does not provide it."),
+		)
+		assertFalse(result.containsKey("data"), "expected the 'data' key to be absent but got: $result")
+	}
+
+	// The low-level overload mirrors upstream's `execute()`, which throws rather than returning the errors.
+	@Test
+	fun testDocumentOverload_throwsForInvalidSchema() = runTest {
+		val invalidSchema = GSchema.parse("interface I { a: Int b: Int } type Query implements I { a: Int }").valueWithoutErrorsOrThrow()
+		val executor = GExecutor.default(schema = invalidSchema)
+		val document = GDocument.parse("{ a }").valueOrThrow()
+
+		assertFailsWith<GErrorException> { executor.execute(document) }
 	}
 }

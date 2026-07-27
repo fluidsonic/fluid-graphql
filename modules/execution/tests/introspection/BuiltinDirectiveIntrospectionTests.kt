@@ -53,6 +53,42 @@ class BuiltinDirectiveIntrospectionTests {
 		assertEquals(actual = types["String"], expected = null)
 	}
 
+	// `reason` is non-null with a default, not a nullable String — a client reading the introspected
+	// schema must see the same signature graphql-js exposes, or generated clients disagree with the server.
+	// https://spec.graphql.org/draft/#sec--deprecated
+	@Test
+	fun testDirectiveIntrospection_deprecatedReasonIsNonNullString() = runTest {
+		val data = execute(
+			"type Query { field: String }",
+			"""
+			|{
+			|   __schema {
+			|      directives {
+			|         name
+			|         args { name description defaultValue type { kind name ofType { kind name } } }
+			|      }
+			|   }
+			|}
+			""".trimMargin(),
+		)
+
+		val schemaData = assertNotNull(data["__schema"] as? Map<*, *>)
+		val directives = assertNotNull(schemaData["directives"] as? List<*>)
+		val deprecated = assertNotNull(directives.map { it as Map<*, *> }.singleOrNull { it["name"] == "deprecated" })
+		val reason = assertNotNull((deprecated["args"] as? List<*>)?.map { it as Map<*, *> }?.singleOrNull { it["name"] == "reason" })
+		val type = assertNotNull(reason["type"] as? Map<*, *>)
+
+		assertEquals(actual = type["kind"], expected = "NON_NULL")
+		assertEquals(actual = (type["ofType"] as? Map<*, *>)?.get("name"), expected = "String")
+		assertEquals(actual = reason["defaultValue"], expected = "\"No longer supported\"")
+		assertEquals(
+			actual = reason["description"],
+			expected = "Explains why this element was deprecated, usually also including a suggestion for how to access " +
+				"supported similar data. Formatted using the Markdown syntax, as specified by " +
+				"[CommonMark](https://commonmark.org/).",
+		)
+	}
+
 	private suspend fun introspectDirectives(schemaSource: String): Map<String, Boolean?> {
 		val data = execute(schemaSource, "{ __schema { directives { name isRepeatable } } }")
 		val schemaData = assertNotNull(data["__schema"] as? Map<*, *>)

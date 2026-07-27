@@ -1,6 +1,8 @@
 package testing
 
 import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GSchema
+import io.fluidsonic.graphql.GTypeRef
 import io.fluidsonic.graphql.GraphQL
 import io.fluidsonic.graphql.Object
 import io.fluidsonic.graphql.default
@@ -13,6 +15,17 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+
+/** Runs `{ __schema { types { name } } }` against [schema] and returns the type names it reports. */
+@Suppress("UNCHECKED_CAST")
+private suspend fun introspectedTypeNames(schema: GSchema): List<String> {
+	val executor = GExecutor.default(schema = schema)
+	val result = executor.serializeResult(executor.execute("{ __schema { types { name } } }"))
+	val data = result["data"] as Map<String, Any?>
+	val schemaData = data["__schema"] as Map<String, Any?>
+
+	return (schemaData["types"] as List<Map<String, Any?>>).map { it["name"] as String }
+}
 
 // GraphQL Spec §4.1 — The __schema Meta-Field
 class SchemaIntrospectionTests {
@@ -179,36 +192,50 @@ class SchemaIntrospectionTests {
 	fun testSchemaTypesIncludesBuiltinScalars() = runTest {
 		val schema = GraphQL.schema {
 			Query {
+				field("dummy" of String) {
+					argument("boolean" of GTypeRef("Boolean"))
+					argument("float" of GTypeRef("Float"))
+					argument("id" of GTypeRef("ID"))
+					argument("int" of GTypeRef("Int"))
+					resolve { "" }
+				}
+			}
+		}
+		val typeNames = introspectedTypeNames(schema)
+
+		for (name in listOf("Boolean", "Float", "ID", "Int", "String")) {
+			assertEquals(actual = typeNames.count { it == name }, expected = 1, message = "occurrences of '$name' in types: $typeNames")
+		}
+	}
+
+	// A built-in scalar reaches `__schema.types` only when the schema refers to it, matching graphql-js.
+	// `Boolean` and `String` are the exception: the built-in directives take arguments of those types, as do
+	// the introspection types — which `__schema.types` lists alongside the user's, again matching graphql-js.
+	@Test
+	fun testSchemaTypesOmitUnreferencedBuiltinScalars() = runTest {
+		val schema = GraphQL.schema {
+			Query {
 				field("dummy" of String) { resolve { "" } }
 			}
 		}
-		val executor = GExecutor.default(schema = schema)
-		val result = executor.serializeResult(
-			executor.execute(
-				"""
-			{
-			  __schema {
-			    types { name }
-			  }
-			}
-				""".trimIndent(),
+		val typeNames = introspectedTypeNames(schema)
+
+		assertEquals(
+			actual = typeNames.sorted(),
+			expected = listOf(
+				"Boolean",
+				"Query",
+				"String",
+				"__Directive",
+				"__DirectiveLocation",
+				"__EnumValue",
+				"__Field",
+				"__InputValue",
+				"__Schema",
+				"__Type",
+				"__TypeKind",
 			),
 		)
-
-		@Suppress("UNCHECKED_CAST")
-		val data = result["data"] as Map<String, Any?>
-
-		@Suppress("UNCHECKED_CAST")
-		val schemaData = data["__schema"] as Map<String, Any?>
-
-		@Suppress("UNCHECKED_CAST")
-		val types = schemaData["types"] as List<Map<String, Any?>>
-		val typeNames = types.map { it["name"] }
-		assertTrue(typeNames.contains("Boolean"), "Expected 'Boolean' in types")
-		assertTrue(typeNames.contains("Int"), "Expected 'Int' in types")
-		assertTrue(typeNames.contains("String"), "Expected 'String' in types")
-		assertTrue(typeNames.contains("Float"), "Expected 'Float' in types")
-		assertTrue(typeNames.contains("ID"), "Expected 'ID' in types")
 	}
 
 	@Test

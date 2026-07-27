@@ -266,15 +266,13 @@ private val ruleCases = listOf(
 		""",
 		expectedMessage = "A fragment must be specified on a type that exist in the schema.",
 	),
-	// A scalar rather than the more obvious input object: `GInputObjectType` is a `GCompositeType` in this codebase,
-	// so the rule accepts a fragment on `In` and only a scalar or enum condition trips it.
 	RuleCase(
 		rule = FragmentTypeConditionValidityRule,
 		document = """
-			{ ...onScalar }
-			fragment onScalar on String { x }
+			{ ...onInput }
+			fragment onInput on In { a }
 		""",
-		expectedMessage = "Fragment 'onScalar' is specified on scalar 'String' but must be specified on an interface, object or union type.",
+		expectedMessage = "Fragment \"onInput\" cannot condition on non composite type \"In\".",
 	),
 	RuleCase(
 		rule = ObjectFieldExistenceRule,
@@ -319,7 +317,7 @@ private val ruleCases = listOf(
 	RuleCase(
 		rule = ValueValidityRule,
 		document = """{ withArg(a: "not an int") }""",
-		expectedMessage = """Type 'Int' does not allow value '"not an int"'.""",
+		expectedMessage = "Int cannot represent non-integer value: \"not an int\"",
 	),
 	RuleCase(
 		rule = VariableDefinitionNameExclusivityRule,

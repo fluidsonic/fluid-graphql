@@ -125,18 +125,19 @@ class SchemaTests {
 		}.toString()
 
 		val expected = """
+			${tripleQuote}An @directive on the schema with an argument$tripleQuote
+			directive @myDirective(argument: String @deprecated) on ENUM_VALUE | QUERY | INLINE_FRAGMENT
+
 			type Query {
 				hero(episode: Episode): Character
 				droid(id: ID!): Droid
 			}
 
-			"Cool!"
-			enum Episode @hello {
-				"Cool!"
-				NEW_HOPE @deprecated(reason: "no more hope") @hello
-
+			${tripleQuote}Cool!$tripleQuote
+			enum Episode {
+				${tripleQuote}Cool!$tripleQuote
+				NEW_HOPE @deprecated(reason: "no more hope")
 				EMPIRE
-
 				JEDI
 			}
 
@@ -145,12 +146,12 @@ class SchemaTests {
 				METERS
 			}
 
-			input ReviewInput @hello {
+			input ReviewInput {
 				stars: Int! = 2
 				commentary: String
 			}
 
-			interface Character @hello {
+			interface Character {
 				id: ID!
 				name: String
 				friends: [Character]
@@ -161,10 +162,10 @@ class SchemaTests {
 				starships: [Starship]
 			}
 
-			type Droid implements Character @hello {
+			type Droid implements Character {
 				id: ID!
 				name: String!
-				friends: [Character] @deprecated(reason: null)
+				friends: [Character] @deprecated
 				appearsIn: [Episode]!
 				primaryFunction: String
 			}
@@ -182,21 +183,21 @@ class SchemaTests {
 				id: ID!
 				name: String!
 				length(
-					"nice"
-					unit: LengthUnit = "METERS" @hello
+					${tripleQuote}nice$tripleQuote
+					unit: LengthUnit = "METERS"
 				): Float
 			}
 
-			"ISO date"
-			scalar Date @hello
+			${tripleQuote}ISO date$tripleQuote
+			scalar Date
 
-			"When searching…"
-			union SearchResult @hello = Droid | Human | Starship
-
-			"An @directive on the schema with an argument"
-			directive @myDirective(argument: String @deprecated(reason: "No longer supported")) on ENUM_VALUE | QUERY | INLINE_FRAGMENT
+			${tripleQuote}When searching…$tripleQuote
+			union SearchResult = Droid | Human | Starship
 		""".trimIndent()
 
 		assertEquals(expected = expected, actual = actual)
 	}
 }
+
+/** Lets the expectation above contain GraphQL block strings, which a Kotlin raw string cannot spell directly. */
+private const val tripleQuote = "\"\"\""

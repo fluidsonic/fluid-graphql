@@ -97,27 +97,18 @@ public interface GExecutor {
 		 * @param schema The GraphQL schema to execute against.
 		 * @param exceptionHandler Handles exceptions thrown by resolvers and coercers. Defaults to propagating the exception.
 		 * @param fieldResolver Fallback resolver used when a field has no resolver attached directly to its definition.
-		 * @param nodeInputCoercer Fallback coercer for inline input values (AST nodes) not handled by type-specific coercers.
-		 * @param outputCoercer Fallback coercer for output values not handled by type-specific coercers.
-		 * @param variableInputCoercer Fallback coercer for variable input values not handled by type-specific coercers.
 		 * @param rootResolver Provides the root value passed to top-level field resolvers. Defaults to [GRootResolver.unit].
 		 */
 		public fun default(
 			schema: GSchema,
 			exceptionHandler: GExceptionHandler? = null,
 			fieldResolver: GFieldResolver<Any>? = null,
-			nodeInputCoercer: GNodeInputCoercer<Any?>? = null,
-			outputCoercer: GOutputCoercer<Any>? = null,
-			variableInputCoercer: GVariableInputCoercer<Any?>? = null,
 			rootResolver: GRootResolver = GRootResolver.unit(),
 		): GExecutor = DefaultExecutor(
 			exceptionHandler = exceptionHandler,
 			fieldResolver = fieldResolver,
-			nodeInputCoercer = nodeInputCoercer,
-			outputCoercer = outputCoercer,
 			schema = schema,
 			rootResolver = rootResolver,
-			variableInputCoercer = variableInputCoercer,
 		)
 	}
 }

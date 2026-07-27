@@ -3,7 +3,7 @@ package testing
 import io.fluidsonic.graphql.GExecutor
 import io.fluidsonic.graphql.GraphQL
 import io.fluidsonic.graphql.Object
-import io.fluidsonic.graphql.coerceOutput
+import io.fluidsonic.graphql.coerceOutputValue
 import io.fluidsonic.graphql.default
 import io.fluidsonic.graphql.document
 import io.fluidsonic.graphql.resolve
@@ -345,7 +345,7 @@ class OutputCoercionTests {
 				val DateScalar by type
 
 				Scalar(DateScalar) {
-					coerceOutput { input ->
+					coerceOutputValue { input ->
 						(input as String).uppercase()
 					}
 				}

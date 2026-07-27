@@ -90,12 +90,12 @@ class VisitorTest {
 
 		document.accept(visitor, data = StackCollectingVisitor.Data())
 		schema.document.accept(visitor, data = StackCollectingVisitor.Data())
-		GListType(GBooleanType).accept(visitor, data = StackCollectingVisitor.Data())
-		GNonNullType(GBooleanType).accept(visitor, data = StackCollectingVisitor.Data())
-		GFloatType.accept(visitor, data = StackCollectingVisitor.Data())
-		GIdType.accept(visitor, data = StackCollectingVisitor.Data())
-		GIntType.accept(visitor, data = StackCollectingVisitor.Data())
-		GStringType.accept(visitor, data = StackCollectingVisitor.Data())
+		GListType(GBooleanType()).accept(visitor, data = StackCollectingVisitor.Data())
+		GNonNullType(GBooleanType()).accept(visitor, data = StackCollectingVisitor.Data())
+		GFloatType().accept(visitor, data = StackCollectingVisitor.Data())
+		GIdType().accept(visitor, data = StackCollectingVisitor.Data())
+		GIntType().accept(visitor, data = StackCollectingVisitor.Data())
+		GStringType().accept(visitor, data = StackCollectingVisitor.Data())
 
 		val expectedStacks: List<List<String>> = listOf(
 			listOf("Document(0)"),

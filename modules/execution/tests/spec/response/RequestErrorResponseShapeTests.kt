@@ -167,7 +167,8 @@ class RequestErrorResponseShapeTests {
 		assertTrue(result.containsKey("errors"))
 	}
 
-	// --- serializeResult exercised from outside the executor, the way raptor uses it.
+	// --- serializeResult exercised from outside the executor, as a server front-end does when it builds a
+	// failure itself rather than getting one back from `execute`.
 
 	@Test
 	fun testSerializeResult_withExternallyBuiltRequestError_omitsDataKey() {

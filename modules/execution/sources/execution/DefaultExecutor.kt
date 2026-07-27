@@ -4,11 +4,8 @@ package io.fluidsonic.graphql
 internal class DefaultExecutor(
 	private val exceptionHandler: GExceptionHandler?,
 	private val fieldResolver: GFieldResolver<Any>?,
-	private val nodeInputCoercer: GNodeInputCoercer<Any?>?,
-	private val outputCoercer: GOutputCoercer<Any>?,
 	private val schema: GSchema,
 	private val rootResolver: GRootResolver,
-	private val variableInputCoercer: GVariableInputCoercer<Any?>?,
 ) : GExecutor {
 
 	override suspend fun execute(
@@ -31,6 +28,13 @@ internal class DefaultExecutor(
 		variableValues: Map<String, Any?>,
 		extensions: GExecutorContextExtensionSet,
 	): GResult<Map<String, Any?>> = GDocument.parse(documentSource).flatMapValue { document ->
+		// The schema is validated on every request, as `graphql()` does. `GSchema.validate()` memoizes, so
+		// only the first request pays for it.
+		val schemaErrors = schema.validate()
+		if (schemaErrors.isNotEmpty()) {
+			return@flatMapValue GResult.failure(schemaErrors.map { it.copy(isRequestError = true) })
+		}
+
 		val validationErrors = document.validate(schema)
 		if (validationErrors.isNotEmpty()) {
 			return@flatMapValue GResult.failure(validationErrors)
@@ -50,11 +54,17 @@ internal class DefaultExecutor(
 		operationName: String?,
 		variableValues: Map<String, Any?>,
 		extensions: GExecutorContextExtensionSet,
-	): GResult<Map<String, Any?>> = try {
-		executeRequest(document = document, operationName = operationName, variableValues = variableValues, extensions = extensions)
-	} catch (exception: GErrorException) {
-		// Last resort: no error raised during execution may escape the GResult contract.
-		GResult.failure(exception.errors)
+	): GResult<Map<String, Any?>> {
+		// Outside the catch on purpose: a broken schema is not something a client can cause, so it must fail
+		// loudly instead of becoming a response error. Mirrors `execute()` in graphql-js.
+		schema.assertValid()
+
+		return try {
+			executeRequest(document = document, operationName = operationName, variableValues = variableValues, extensions = extensions)
+		} catch (exception: GErrorException) {
+			// Last resort: no error raised during execution may escape the GResult contract.
+			GResult.failure(exception.errors)
+		}
 	}
 
 	private suspend fun executeRequest(
@@ -140,16 +150,13 @@ internal class DefaultExecutor(
 			extensions = extensions,
 			fieldResolver = fieldResolver,
 			fieldSelectionExecutor = DefaultFieldSelectionExecutor,
-			nodeInputCoercer = nodeInputCoercer,
 			nodeInputConverter = NodeInputConverter,
 			operation = operation,
-			outputCoercer = outputCoercer,
 			outputConverter = OutputConverter,
 			rootType = rootType,
 			root = Unit,
 			schema = schema,
 			selectionSetExecutor = DefaultSelectionSetExecutor,
-			variableInputCoercer = variableInputCoercer,
 			variableInputConverter = VariableInputConverter,
 			variableValues = emptyMap(),
 		)

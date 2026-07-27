@@ -6,7 +6,6 @@ import io.fluidsonic.graphql.GraphQL
 import io.fluidsonic.graphql.Object
 import io.fluidsonic.graphql.default
 import io.fluidsonic.graphql.isNotEmpty
-import io.fluidsonic.graphql.path
 import io.fluidsonic.graphql.resolve
 import io.fluidsonic.graphql.schema
 import io.fluidsonic.graphql.type

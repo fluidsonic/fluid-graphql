@@ -60,6 +60,40 @@ class NullPropagationTests {
 		assertEquals(actual = firstError["path"], expected = expected)
 	}
 
+	// --- a non-null field whose *output coercion* fails is a field error like any other.
+	// The resolver returns fine; the value is rejected on the way out. Verified against graphql@17.0.2:
+	// `{ nanFloat }` gives `data: null`, and `{ nested { nanFloat } }` gives `data: {"nested": null}`.
+
+	private val coercionFailing = GraphQL.schema {
+		val Parent by type
+
+		Object<ParentData>(Parent) {
+			field("nanFloat" of !Float) { resolve { Double.NaN } }
+		}
+
+		Query {
+			field("nanFloat" of !Float) { resolve { Double.NaN } }
+			field("nullableParent" of Parent) { resolve { ParentData() } }
+		}
+	}
+
+	@Test
+	fun testRootNonNullFailingOutputCoercion_nullifiesData() = runTest {
+		val result = serialize(coercionFailing, "{ nanFloat }")
+
+		assertTrue(result.containsKey("data"), "expected the 'data' key to be present but got: $result")
+		assertEquals(actual = result["data"], expected = null)
+		assertPaths(result, listOf("nanFloat"))
+	}
+
+	@Test
+	fun testNestedNonNullFailingOutputCoercion_nullifiesNullableParent() = runTest {
+		val result = serialize(coercionFailing, "{ nullableParent { nanFloat } }")
+
+		assertEquals(actual = result["data"], expected = mapOf("nullableParent" to null))
+		assertPaths(result, listOf("nullableParent", "nanFloat"))
+	}
+
 	// --- `{ nn }` where nn is String! and resolves to null -> data present and null.
 
 	@Test

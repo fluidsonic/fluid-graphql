@@ -72,7 +72,7 @@ class ErrorClassificationTests {
 			result.errors.isNotEmpty(),
 			"expected the result to carry errors but got: $result",
 		)
-		// Serialization must survive too — raptor always calls it.
+		// Serialization must survive too — a server front-end calls it on every result, failed or not.
 		executor.serializeResult(result)
 	}
 

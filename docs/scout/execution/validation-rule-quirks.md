@@ -10,6 +10,6 @@ Per-rule behaviors that look like bugs or hide as correct code; matters when edi
 
 **`SubscriptionRootFieldExclusivityRule` rejects a lone `__typename`** root field — introspection fields do not count as the one allowed root field, despite the error message saying "exactly one root field". It resolves fields through fragment spreads.
 
-**`ValueValidityRule` accepts any literal for custom scalars** except null against a non-null type — deliberate, encoded in `ValueValidityRuleTest` fixtures whose Scalar entries intentionally produce no errors.
+**`ValueValidityRule` owns almost none of its own behaviour.** It delegates every leaf literal to `GSchema.validateValueForExecution`, so a rejection reports the *scalar's* bare wording (`Int cannot represent non-integer value: "…"`) and a search for the old `Type 'Int' does not allow value` finds nothing. Its `attachedScalarLiteralCoercion` helper must keep resolving a coercer exactly the way `NodeInputConverter.coerceValueForScalar` does. Any literal is still accepted for a custom scalar (except null against a non-null type), because `GCustomScalarType` inherits identity coercion — pinned by `ValueValidityRuleTest.testAcceptsAnyResolvedValueForCustomerScalar`.
 
-Related: selection-unambiguity-rule.md, validation-rule-authoring.md, validation-rule-names.md.
+Related: selection-unambiguity-rule.md, validation-rule-authoring.md, validation-rule-names.md, ../language/scalar-coercion.md.

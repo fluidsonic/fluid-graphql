@@ -114,7 +114,7 @@ private val contextDependentRuleMarkers = listOf(
 	"ArgumentExistenceRule" to "Unknown argument",
 	"SelectionUnambiguityRule" to "conflict because",
 	"DirectiveLocationValidityRule" to "is not valid on",
-	"ValueValidityRule" to "does not allow value",
+	"ValueValidityRule" to "cannot represent",
 	"ObjectFieldExistenceRule" to "is not defined by type",
 )
 
@@ -211,7 +211,7 @@ private val corpus = listOf(
 		name = "invalid literal value",
 		schema = CORPUS_SCHEMA,
 		document = """{ withArg(a: "not an int") }""",
-		expectedMessages = listOf("""Type 'Int' does not allow value '"not an int"'."""),
+		expectedMessages = listOf("Int cannot represent non-integer value: \"not an int\""),
 	),
 	// Three rules fire on one bad input field, and the third is wrong: `In` is an input object type, so an input
 	// object value *is* allowed there — `GSchema.validateValue` reports the container as invalid because one of

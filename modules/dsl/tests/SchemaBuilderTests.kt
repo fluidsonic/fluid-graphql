@@ -56,7 +56,7 @@ class SchemaBuilderTests {
 					today: Date
 				}
 
-				"An ISO 8601 date string"
+				${tripleQuote}An ISO 8601 date string$tripleQuote
 				scalar Date
 			""".trimIndent(),
 		)
@@ -151,13 +151,11 @@ class SchemaBuilderTests {
 					status: Status
 				}
 
-				"The status of an item"
+				${tripleQuote}The status of an item$tripleQuote
 				enum Status {
-					"Item is active"
+					${tripleQuote}Item is active$tripleQuote
 					ACTIVE
-
 					INACTIVE @deprecated(reason: "Use ARCHIVED instead")
-
 					ARCHIVED
 				}
 			""".trimIndent(),
@@ -511,8 +509,8 @@ class SchemaBuilderTests {
 					id: ID!
 				}
 
-				"A search result"
-				union SearchResult @custom = User | Post
+				${tripleQuote}A search result$tripleQuote
+				union SearchResult = User | Post
 			""".trimIndent(),
 		)
 	}
@@ -533,12 +531,12 @@ class SchemaBuilderTests {
 		assertEquals(
 			actual = schema.toString(),
 			expected = """
+				${tripleQuote}Requires authentication$tripleQuote
+				directive @auth on FIELD_DEFINITION | OBJECT
+
 				type Query {
 					dummy: String
 				}
-
-				"Requires authentication"
-				directive @auth on FIELD_DEFINITION | OBJECT
 			""".trimIndent(),
 		)
 	}
@@ -561,11 +559,11 @@ class SchemaBuilderTests {
 		assertEquals(
 			actual = schema.toString(),
 			expected = """
+				directive @cacheControl(maxAge: Int, scope: String = "PUBLIC") on FIELD_DEFINITION | OBJECT
+
 				type Query {
 					dummy: String
 				}
-
-				directive @cacheControl(maxAge: Int, scope: String = "PUBLIC") on FIELD_DEFINITION | OBJECT
 			""".trimIndent(),
 		)
 	}
@@ -630,18 +628,18 @@ class SchemaBuilderTests {
 			actual = schema.toString(),
 			expected = """
 				type Query {
-					"Fetches a user by ID"
+					${tripleQuote}Fetches a user by ID$tripleQuote
 					user(
-						"The user's unique identifier"
+						${tripleQuote}The user's unique identifier$tripleQuote
 						id: ID!
 					): User
 				}
 
 				type User {
-					"Unique identifier"
+					${tripleQuote}Unique identifier$tripleQuote
 					id: ID!
 
-					"Display name"
+					${tripleQuote}Display name$tripleQuote
 					name: String!
 				}
 			""".trimIndent(),
@@ -882,7 +880,7 @@ class SchemaBuilderTests {
 					dummy: String
 				}
 
-				input CreateInput @validated {
+				input CreateInput {
 					name: String!
 				}
 			""".trimIndent(),
@@ -913,8 +911,8 @@ class SchemaBuilderTests {
 					entity: Entity
 				}
 
-				"A database entity"
-				interface Entity @key {
+				${tripleQuote}A database entity$tripleQuote
+				interface Entity {
 					id: ID!
 				}
 			""".trimIndent(),
@@ -941,3 +939,6 @@ class SchemaBuilderTests {
 		)
 	}
 }
+
+/** Lets the expectations above contain GraphQL block strings, which a Kotlin raw string cannot spell directly. */
+private const val tripleQuote = "\"\"\""

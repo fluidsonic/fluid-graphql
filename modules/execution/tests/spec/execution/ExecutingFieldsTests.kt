@@ -213,7 +213,10 @@ class ExecutingFieldsTests {
 
 	@Test
 	fun testNonNullChainPropagation() = runTest {
-		// Non-null field errors inside an object — error propagates to the enclosing nullable parent field
+		// A chain of non-null positions: `value` is `String!` and errors, `inner` is `Inner!` and so cannot
+		// hold the resulting null either, so the null travels all the way to `data`. Verified against
+		// graphql@17.0.2, which answers `data: null` here and `{"inner": null}` only when `inner` is nullable.
+		// https://spec.graphql.org/draft/#sec-Handling-Field-Errors
 		val schema = GraphQL.schema {
 			val Inner by type
 
@@ -231,9 +234,9 @@ class ExecutingFieldsTests {
 		}
 		val executor = GExecutor.default(schema = schema)
 		val result = executor.serializeResult(executor.execute("{ inner { value } }"))
-		// Error propagates: non-null value field errors, inner becomes null, error is reported
-		val data = result["data"] as Map<*, *>
-		assertNull(data["inner"])
+
+		assertTrue(result.containsKey("data"), "a field error keeps the 'data' key: $result")
+		assertNull(result["data"])
 		assertNotNull(result["errors"])
 	}
 

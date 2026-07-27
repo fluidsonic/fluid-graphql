@@ -62,7 +62,7 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 			rule = FragmentTypeConditionValidityRule,
 			errors = listOf(
 				"""
-				Fragment 'f' is specified on scalar 'String' but must be specified on an interface, object or union type.
+				Fragment "f" cannot condition on non composite type "String".
 
 				<document>:1:15
 				1 | fragment f on String { something }
@@ -72,9 +72,10 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 			document = """
 				|fragment f on String { something }
 			""",
+			// `scalar String` used to be declared here; redefining a built-in scalar is now rejected, and the
+			// field's own reference is what registers `String` anyway.
 			schema = """
 				|type Query { name: String }
-				|scalar String
 			""",
 		)
 	}
@@ -85,7 +86,7 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 			rule = FragmentTypeConditionValidityRule,
 			errors = listOf(
 				"""
-				Inline fragment is specified on scalar 'String' but must be specified on an interface, object or union type.
+				Fragment cannot condition on non composite type "String".
 
 				<document>:1:17
 				1 | { name { ... on String { foo } } }
@@ -95,10 +96,11 @@ class Sec5_5_3_FragmentsOnCompositeTypesTests {
 			document = """
 				|{ name { ... on String { foo } } }
 			""",
+			// `scalar String` used to be declared here; redefining a built-in scalar is now rejected, and the
+			// built-in directives keep `String` registered anyway.
 			schema = """
 				|type Query { name: ScalarType }
 				|scalar ScalarType
-				|scalar String
 			""",
 		)
 	}

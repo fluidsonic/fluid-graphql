@@ -44,7 +44,12 @@ public final class io/fluidsonic/graphql/GArgumentDefinition$Companion {
 }
 
 public final class io/fluidsonic/graphql/GBooleanType : io/fluidsonic/graphql/GScalarType {
-	public static final field INSTANCE Lio/fluidsonic/graphql/GBooleanType;
+	public fun <init> ()V
+	public fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun coerceInputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun coerceOutputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getCoerceInputLiteral ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/fluidsonic/graphql/GBooleanValue : io/fluidsonic/graphql/GValue {
@@ -394,7 +399,12 @@ public final class io/fluidsonic/graphql/GFieldSelection$Companion {
 }
 
 public final class io/fluidsonic/graphql/GFloatType : io/fluidsonic/graphql/GScalarType {
-	public static final field INSTANCE Lio/fluidsonic/graphql/GFloatType;
+	public fun <init> ()V
+	public fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun coerceInputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun coerceOutputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getCoerceInputLiteral ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/fluidsonic/graphql/GFloatValue : io/fluidsonic/graphql/GValue {
@@ -457,7 +467,13 @@ public final class io/fluidsonic/graphql/GFragmentSelection$Companion {
 }
 
 public final class io/fluidsonic/graphql/GIdType : io/fluidsonic/graphql/GScalarType {
-	public static final field INSTANCE Lio/fluidsonic/graphql/GIdType;
+	public fun <init> ()V
+	public fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun coerceInputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun coerceOutputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getCoerceInputLiteral ()Lkotlin/jvm/functions/Function1;
+	public fun valueToLiteral (Ljava/lang/Object;)Lio/fluidsonic/graphql/GValue;
 }
 
 public final class io/fluidsonic/graphql/GInlineFragmentSelection : io/fluidsonic/graphql/GSelection {
@@ -483,7 +499,7 @@ public final class io/fluidsonic/graphql/GInputObjectArgumentDefinition : io/flu
 public final class io/fluidsonic/graphql/GInputObjectArgumentDefinition$Companion {
 }
 
-public final class io/fluidsonic/graphql/GInputObjectType : io/fluidsonic/graphql/GCompositeType, io/fluidsonic/graphql/GNode$WithArgumentDefinitions {
+public final class io/fluidsonic/graphql/GInputObjectType : io/fluidsonic/graphql/GNamedType, io/fluidsonic/graphql/GNode$WithArgumentDefinitions {
 	public static final field Companion Lio/fluidsonic/graphql/GInputObjectType$Companion;
 	public fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;)V
 	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Ljava/util/List;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -514,7 +530,12 @@ public final class io/fluidsonic/graphql/GInputObjectTypeExtension$Companion {
 }
 
 public final class io/fluidsonic/graphql/GIntType : io/fluidsonic/graphql/GScalarType {
-	public static final field INSTANCE Lio/fluidsonic/graphql/GIntType;
+	public fun <init> ()V
+	public fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun coerceInputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun coerceOutputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getCoerceInputLiteral ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/fluidsonic/graphql/GIntValue : io/fluidsonic/graphql/GValue {
@@ -580,9 +601,9 @@ public final class io/fluidsonic/graphql/GLanguage {
 	public final fun getDefaultDeprecatedDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
 	public final fun getDefaultIncludeDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
 	public final fun getDefaultOneOfDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
-	public final fun getDefaultOptionalDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
 	public final fun getDefaultSkipDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
 	public final fun getDefaultSpecifiedByDirective ()Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun isReservedTypeName (Ljava/lang/String;)Z
 	public final fun isValidEnumValue (Ljava/lang/String;)Z
 	public final fun isValidFieldName (Ljava/lang/String;)Z
 	public final fun isValidFragmentName (Ljava/lang/String;)Z
@@ -1133,8 +1154,14 @@ public abstract class io/fluidsonic/graphql/GScalarType : io/fluidsonic/graphql/
 	public synthetic fun <init> (Lio/fluidsonic/graphql/GName;Lio/fluidsonic/graphql/GStringValue;Ljava/util/List;Lio/fluidsonic/graphql/GDocumentPosition;Lio/fluidsonic/graphql/GNodeExtensionSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/fluidsonic/graphql/GNodeExtensionSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun coerceInputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun coerceOutputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun equals (Ljava/lang/Object;)Z
 	public final fun equalsNode (Lio/fluidsonic/graphql/GNode;Z)Z
+	public fun getCoerceInputLiteral ()Lkotlin/jvm/functions/Function1;
+	public final fun hashCode ()I
 	public final fun isSupertypeOf (Lio/fluidsonic/graphql/GType;)Z
+	public fun valueToLiteral (Ljava/lang/Object;)Lio/fluidsonic/graphql/GValue;
 }
 
 public final class io/fluidsonic/graphql/GScalarType$Companion {
@@ -1155,6 +1182,7 @@ public final class io/fluidsonic/graphql/GScalarTypeExtension$Companion {
 public final class io/fluidsonic/graphql/GSchema {
 	public static final field Companion Lio/fluidsonic/graphql/GSchema$Companion;
 	public final fun directiveDefinition (Ljava/lang/String;)Lio/fluidsonic/graphql/GDirectiveDefinition;
+	public final fun getDescription ()Ljava/lang/String;
 	public final fun getDirectiveDefinitions ()Ljava/util/List;
 	public final fun getDocument ()Lio/fluidsonic/graphql/GDocument;
 	public final fun getMutationType ()Lio/fluidsonic/graphql/GObjectType;
@@ -1213,8 +1241,7 @@ public final class io/fluidsonic/graphql/GSchemaExtension$Companion {
 }
 
 public final class io/fluidsonic/graphql/GSchemaKt {
-	public static final fun GSchema (Lio/fluidsonic/graphql/GDocument;Z)Lio/fluidsonic/graphql/GSchema;
-	public static synthetic fun GSchema$default (Lio/fluidsonic/graphql/GDocument;ZILjava/lang/Object;)Lio/fluidsonic/graphql/GSchema;
+	public static final fun GSchema (Lio/fluidsonic/graphql/GDocument;)Lio/fluidsonic/graphql/GSchema;
 }
 
 public abstract class io/fluidsonic/graphql/GSelection : io/fluidsonic/graphql/GNode, io/fluidsonic/graphql/GNode$WithDirectives {
@@ -1240,7 +1267,12 @@ public final class io/fluidsonic/graphql/GSelectionSet$Companion {
 }
 
 public final class io/fluidsonic/graphql/GStringType : io/fluidsonic/graphql/GScalarType {
-	public static final field INSTANCE Lio/fluidsonic/graphql/GStringType;
+	public fun <init> ()V
+	public fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;)V
+	public synthetic fun <init> (Lio/fluidsonic/graphql/GNodeExtensionSet;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun coerceInputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun coerceOutputValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getCoerceInputLiteral ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/fluidsonic/graphql/GStringValue : io/fluidsonic/graphql/GValue {
@@ -1276,7 +1308,7 @@ public abstract class io/fluidsonic/graphql/GType : io/fluidsonic/graphql/GTypeS
 }
 
 public final class io/fluidsonic/graphql/GType$Companion {
-	public final fun getDefaultTypes ()Ljava/util/Set;
+	public final fun defaultTypes ()Ljava/util/Set;
 }
 
 public final class io/fluidsonic/graphql/GType$Kind : java/lang/Enum {
@@ -1455,5 +1487,17 @@ public final class io/fluidsonic/graphql/GWrappingType$Companion {
 }
 
 public abstract interface annotation class io/fluidsonic/graphql/InternalGraphqlApi : java/lang/annotation/Annotation {
+}
+
+public final class io/fluidsonic/graphql/SchemaPrinterKt {
+	public static final fun printSchema (Lio/fluidsonic/graphql/GSchema;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun printSchema$default (Lio/fluidsonic/graphql/GSchema;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+	public static final fun printType (Lio/fluidsonic/graphql/GNamedType;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun printType$default (Lio/fluidsonic/graphql/GNamedType;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+}
+
+public final class io/fluidsonic/graphql/SchemaValidationKt {
+	public static final fun assertValid (Lio/fluidsonic/graphql/GSchema;)V
+	public static final fun validate (Lio/fluidsonic/graphql/GSchema;)Ljava/util/List;
 }
 

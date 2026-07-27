@@ -19,8 +19,11 @@ class ArgumentRequirementRuleTest {
 		)
 	}
 
+	// The non-standard `@optional` directive used to make a non-null argument omissible; it was removed
+	// because the specification's requiredness rule is exactly "non-null and no default". A nullable
+	// argument is the only remaining way to leave an argument out.
 	@Test
-	fun testAcceptsAbsenceOfOptionalArguments() {
+	fun testAcceptsAbsenceOfNullableArguments() {
 		assertValidationRule(
 			rule = ArgumentRequirementRule,
 			errors = emptyList(),
@@ -31,11 +34,11 @@ class ArgumentRequirementRuleTest {
 				|}
 			""",
 			schema = """
-				|input Input { string: String! @optional, input: Input! @optional }
+				|input Input { string: String, input: Input }
 				|type Query {
-				|   id(string: String! @optional, input: Input! @optional): ID
+				|   id(string: String, input: Input): ID
 				|}
-				|directive @foo(string: String! @optional, input: Input! @optional) on FIELD
+				|directive @foo(string: String, input: Input) on FIELD
 			""",
 		)
 	}

@@ -9,7 +9,7 @@
     <ID>LargeClass:DirectiveLocationValidityRuleTest.kt:DirectiveLocationValidityRuleTest</ID>
     <ID>LargeClass:FragmentSelectionPossibilityRuleTest.kt:FragmentSelectionPossibilityRuleTest</ID>
     <ID>LargeClass:TypeIntrospectionTests.kt:TypeIntrospectionTests</ID>
-    <ID>LargeClass:ValueValidityRuleTest.kt:ValueValidityRuleTest</ID>
+    <ID>LargeClass:ValueValidityRuleDocumentRejectionTest.kt:ValueValidityRuleDocumentRejectionTest</ID>
     <ID>LongMethod:DefaultFieldSelectionExecutor.kt:DefaultFieldSelectionExecutor$private suspend fun complete: GResult&lt;Any?></ID>
     <ID>LongMethod:DirectiveLocationValidityRuleTest.kt:DirectiveLocationValidityRuleTest$@Test fun testAcceptsDirectiveInSpecifiedLocations</ID>
     <ID>LongMethod:DirectiveLocationValidityRuleTest.kt:DirectiveLocationValidityRuleTest$@Test fun testRejectsDirectiveInUnspecifiedLocation</ID>
@@ -25,11 +25,11 @@
     <ID>LongMethod:UnionInterfaceExecutionTests.kt:UnionInterfaceExecutionTests$@Test fun testAcceptsFragmentConditionsOfAbstractTypes</ID>
     <ID>LongMethod:UnionInterfaceExecutionTests.kt:UnionInterfaceExecutionTests$@Test fun testCanIntrospectOnUnionAndIntersectionTypes</ID>
     <ID>LongMethod:UnionInterfaceExecutionTests.kt:UnionInterfaceExecutionTests$@Test fun testExecutesUsingInterfaceTypesWithInlineFragments</ID>
+    <ID>LongMethod:ValueValidityRuleDocumentRejectionTest.kt:ValueValidityRuleDocumentRejectionTest$@Test fun testRejectsValuesOfIncorrectTypeInDocument</ID>
+    <ID>LongMethod:ValueValidityRuleSchemaRejectionTest.kt:ValueValidityRuleSchemaRejectionTest$@Test fun testRejectsValuesOfIncorrectTypeInSchema</ID>
     <ID>LongMethod:ValueValidityRuleTest.kt:ValueValidityRuleTest$@Test fun testAcceptsAnyResolvedValueForCustomerScalar</ID>
     <ID>LongMethod:ValueValidityRuleTest.kt:ValueValidityRuleTest$@Test fun testAcceptsValuesOfCorrectTypeInDocument</ID>
     <ID>LongMethod:ValueValidityRuleTest.kt:ValueValidityRuleTest$@Test fun testAcceptsValuesOfCorrectTypeInSchema</ID>
-    <ID>LongMethod:ValueValidityRuleTest.kt:ValueValidityRuleTest$@Test fun testRejectsValuesOfIncorrectTypeInDocument</ID>
-    <ID>LongMethod:ValueValidityRuleTest.kt:ValueValidityRuleTest$@Test fun testRejectsValuesOfIncorrectTypeInSchema</ID>
     <ID>LongMethod:VariableDefinitionNameExclusivityRuleTest.kt:VariableDefinitionNameExclusivityRuleTest$@Test fun testRejectsDuplicateVariableNames</ID>
     <ID>LongMethod:VariableDefinitionTypeValidityRuleTest.kt:VariableDefinitionTypeValidityRuleTest$@Test fun testRejectsDuplicateVariableNames</ID>
     <ID>LoopWithTooManyJumpStatements:SubscriptionRootFieldExclusivityRule.kt:SubscriptionRootFieldExclusivityRule$for</ID>

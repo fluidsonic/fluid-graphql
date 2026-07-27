@@ -34,6 +34,11 @@ class ExecutingOperationsTests {
 	fun testMutationFieldsExecuteSerially() = runTest {
 		val executionOrder = mutableListOf<String>()
 		val schema = GraphQL.schema {
+			// A query root type is mandatory even for a schema exercised only through mutations, and
+			// `GSchema.validate` now says so — see `SchemaValidationTests`.
+			Query {
+				field("unused" of String) { resolve { "unused" } }
+			}
 			Mutation {
 				field("first" of String) {
 					resolve {

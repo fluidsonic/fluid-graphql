@@ -1,15 +1,17 @@
 # Printer formatting rules locked by golden-string tests
 
-Undocumented formatting contracts any new golden-string test (dsl or printer) must reproduce exactly; recovered only by diffing DSL inputs against expected strings across `modules/dsl/tests/`.
+Undocumented formatting contracts any new golden-string test must reproduce exactly; recovered only by diffing inputs against expected strings.
+
+**First establish which printer the test exercises.** `schema.toString()` and `modules/language/tests/spec/SchemaPrinterTests.kt` go through `SchemaPrinter`; `GDocument.toString()`, `Printer.print(...)` and `PrinterTests.kt` go through `Printer`. They format differently on purpose (../language/schema-printing.md), so a rule learnt from one does not transfer. The DSL suites `modules/dsl/tests/SchemaTests.kt` and `SchemaBuilderTests.kt` assert `schema.toString()` and therefore pin `SchemaPrinter` — which is why their expectations spell descriptions as block strings via a local `tripleQuote` constant, and why applied directives are absent from them.
+
+Contracts that hold for `Printer`:
 
 - `GDocument.toString()` output ends with a trailing newline; schema `toString()` output does not — an invisible difference that produces baffling failures.
 - Definitions in a printed document are separated by TWO blank lines; type definitions in a printed schema by one.
-- An enum where any value has a description prints blank lines between ALL its values; directives alone do NOT trigger this (`writeEnumValueDefinitions` in `modules/language/sources/printing/Printer.kt` checks descriptions only). A plain enum prints values on consecutive lines (see the enum cases in `SchemaBuilderTests.enumType_withDescriptionsAndDeprecation` and `SchemaTests`).
-- Object values in documents print multiline, one field per line, with a comma ending every line except the last (no comma after the final field); list values print inline.
-- Field arguments carrying descriptions print in a multiline parenthesized form with the description above the argument (`SchemaBuilderTests.fieldDescriptions`). More than three arguments also forces the multiline form even without descriptions (`writeArgumentDefinitions` in `Printer.kt`).
+- An enum where any value has a description prints blank lines between ALL its values; directives alone do NOT trigger this (`writeEnumValueDefinitions` in `modules/language/sources/printing/Printer.kt` checks descriptions only). `SchemaPrinter` never does this.
+- Object values in documents print multiline, one field per line, with a comma ending every line except the last; list values print inline.
+- Field arguments carrying descriptions print multiline with the description above the argument. More than three arguments also forces the multiline form even without descriptions (`writeArgumentDefinitions` in `Printer.kt`) — `SchemaPrinter` wraps only for descriptions.
 
-Practical workflow: these tests are exact-string comparisons, so author expectations by running the test and copying actual output rather than hand-formatting.
+**A round-trip test cannot catch a spacing defect.** `PrinterTests.testRoundtripKitchenSinkSchema` parses, prints, re-parses and compares with `equalsNode` — GraphQL ignores whitespace *between* tokens, so `schema  @onSchema` round-trips green. Every whitespace fix needs an exact-string assertion next to it.
 
-**A round-trip test cannot catch a spacing defect.** `PrinterTests.testRoundtripKitchenSinkSchema` parses, prints, re-parses and compares with `equalsNode` — and GraphQL ignores whitespace *between* tokens, so `schema  @onSchema` round-trips green (whitespace *inside* a string or block-string value is part of the value and does get compared). Every whitespace fix therefore needs an exact-string assertion next to it; the schema-definition and schema-extension spacing tests in that file say so in their comments.
-
-Remember the printer is also lossy — some AST content never prints at all; see ../language/printer-lossiness.md before concluding a golden string is wrong.
+Related: ../language/printer-lossiness.md, ../language/schema-printing.md.

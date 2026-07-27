@@ -361,10 +361,10 @@ public sealed class GNode(public val extensions: GNodeExtensionSet<GNode>, publi
 		/**
 		 * Returns `true` if a value must be supplied at runtime.
 		 *
-		 * A definition is required when its [type] is [GNonNullTypeRef], it has no [defaultValue],
-		 * and it is not annotated with `@optional`.
+		 * A definition is required when its [type] is [GNonNullTypeRef] and it has no [defaultValue].
 		 */
-		public fun isRequired(): Boolean = type is GNonNullTypeRef && defaultValue === null && directive(GLanguage.defaultOptionalDirective.name) == null
+		// https://spec.graphql.org/draft/#sec-Required-Arguments
+		public fun isRequired(): Boolean = type is GNonNullTypeRef && defaultValue === null
 	}
 
 	/** Marks a node that carries a list of applied [GDirective]s. */
@@ -592,10 +592,6 @@ public sealed class GArgumentDefinition(
 	public companion object
 }
 
-/** The built-in GraphQL `Boolean` scalar type. */
-// https://graphql.github.io/graphql-spec/draft/#sec-Boolean.Input-Coercion
-public object GBooleanType : GScalarType(name = "Boolean")
-
 /** A GraphQL boolean value literal (`true` or `false`). */
 public class GBooleanValue(
 	public val value: Boolean,
@@ -628,11 +624,12 @@ public class GBooleanValue(
 public fun GBooleanValue(value: Boolean): GBooleanValue = GBooleanValue(value = value, origin = null)
 
 /**
- * Sealed base class for composite GraphQL types: [GObjectType], [GInterfaceType], [GUnionType],
- * and [GInputObjectType].
+ * Sealed base class for composite GraphQL types: [GObjectType], [GInterfaceType] and [GUnionType].
  *
- * Composite types can have selection sets applied to them in queries.
+ * Composite types are exactly the types a fragment may be conditioned on and the only types that can
+ * have selection sets applied to them in queries. [GInputObjectType] is deliberately not one of them.
  */
+// https://spec.graphql.org/draft/#sec-Fragments-on-Object-Interface-or-Union-Types
 public sealed class GCompositeType(
 	description: GStringValue?,
 	directives: List<GDirective>,
@@ -1069,10 +1066,6 @@ public class GFieldDefinition(
 	public companion object
 }
 
-/** The built-in GraphQL `Float` scalar type. */
-// https://graphql.github.io/graphql-spec/draft/#sec-Float.Input-Coercion
-public object GFloatType : GScalarType(name = "Float")
-
 /** A GraphQL float value literal. The [value] must be finite. */
 public class GFloatValue(public val value: Double, origin: GDocumentPosition? = null, extensions: GNodeExtensionSet<GFloatValue> = GNodeExtensionSet.empty()) :
 	GValue(
@@ -1110,10 +1103,6 @@ public fun GFloatValue(value: Float): GFloatValue = GFloatValue(value.toDouble()
 
 /** Creates a [GFloatValue] from an [Int]. */
 public fun GFloatValue(value: Int): GFloatValue = GFloatValue(value.toDouble())
-
-/** The built-in GraphQL `ID` scalar type. */
-// https://graphql.github.io/graphql-spec/draft/#sec-ID.Input-Coercion
-public object GIdType : GScalarType(name = "ID")
 
 /**
  * An inline fragment spread (`... on Type { ... }` or `... { ... }`) within a selection set.
@@ -1182,7 +1171,12 @@ public class GInputObjectArgumentDefinition(
 	public companion object
 }
 
-/** A GraphQL input object type definition. */
+/**
+ * A GraphQL input object type definition.
+ *
+ * An input object is an input type only: it is not a [GCompositeType], so it cannot be used as a
+ * fragment type condition and cannot have a selection set applied to it.
+ */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Objects
 // https://graphql.github.io/graphql-spec/June2018/#sec-Input-Object
 public class GInputObjectType(
@@ -1192,7 +1186,7 @@ public class GInputObjectType(
 	directives: List<GDirective> = emptyList(),
 	origin: GDocumentPosition? = null,
 	extensions: GNodeExtensionSet<GInputObjectType> = GNodeExtensionSet.empty(),
-) : GCompositeType(
+) : GNamedType(
 	description = description,
 	directives = directives,
 	extensions = extensions,
@@ -1272,10 +1266,6 @@ public class GInputObjectTypeExtension(
 
 	public companion object
 }
-
-/** The built-in GraphQL `Int` scalar type. */
-// https://graphql.github.io/graphql-spec/draft/#sec-Int.Input-Coercion
-public object GIntType : GScalarType(name = "Int")
 
 /** A GraphQL interface type definition. */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Interfaces
@@ -1823,8 +1813,13 @@ public class GOperationTypeDefinition(
 /**
  * Sealed base class for GraphQL scalar types.
  *
- * Built-in singletons: [GBooleanType], [GFloatType], [GIdType], [GIntType], [GStringType].
+ * Built-in scalars: [GBooleanType], [GFloatType], [GIdType], [GIntType], [GStringType].
  * User-defined scalars use [GCustomScalarType].
+ *
+ * Unlike graphql-js, whose built-in scalars are process-wide singletons compared by reference, fluid gives
+ * every schema its own instances: a coercer attaches to a *node* through its [GNodeExtensionSet], so a
+ * shared instance would leak one schema's coercer into every other schema in the process. Reference
+ * identity is therefore not stable across schemas, and [equals] compares by name and class instead.
  */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalars
 // https://graphql.github.io/graphql-spec/June2018/#sec-Scalar
@@ -1857,6 +1852,58 @@ public sealed class GScalarType(
 		extensions = extensions,
 	)
 
+	/**
+	 * Coerces a value produced by a field resolver into the representation this scalar serializes as.
+	 *
+	 * The default is the identity, which is what a scalar without its own output coercion does.
+	 *
+	 * @param value The resolved value. Never `null` — nullability is resolved before coercion.
+	 * @return The serializable representation of [value].
+	 * @throws GErrorException If [value] cannot represent this scalar. The message is bare and carries no
+	 *   positional context; the caller enriches it with the field, argument or variable it came from.
+	 */
+	public open fun coerceOutputValue(value: Any): Any = value
+
+	/**
+	 * Coerces a value supplied as a variable, or produced from a literal by [coerceInputLiteral]'s absence,
+	 * into the Kotlin value this scalar represents.
+	 *
+	 * The default is the identity, which is what a scalar without its own input coercion does.
+	 *
+	 * @param value The supplied value. Never `null` — nullability is resolved before coercion.
+	 * @return The coerced value, which may be `null`.
+	 * @throws GErrorException If [value] cannot represent this scalar. The message is bare and carries no
+	 *   positional context; the caller enriches it with the field, argument or variable it came from.
+	 */
+	public open fun coerceInputValue(value: Any): Any? = value
+
+	/**
+	 * Coerces a literal from the document into the Kotlin value this scalar represents, or `null` if this
+	 * scalar defines no literal coercion.
+	 *
+	 * An absent coercion is deliberately distinct from a coercion that *returns* `null`, which is why this
+	 * is a nullable function reference rather than an overridable function. A caller that finds it absent
+	 * converts the literal generically and passes the result to [coerceInputValue].
+	 *
+	 * The function throws [GErrorException] with a bare, context-free message if the literal cannot
+	 * represent this scalar; the caller enriches it with the argument the literal was written for.
+	 */
+	public open val coerceInputLiteral: ((value: GValue) -> Any?)? = null
+
+	/**
+	 * Converts a Kotlin value back into the literal that would produce it, or `null` if this scalar cannot
+	 * represent [value] as a literal.
+	 *
+	 * The default returns `null` for every value, which is what a scalar without its own literal
+	 * conversion does.
+	 *
+	 * @param value The value to convert. May be `null`.
+	 * @return The equivalent literal, or `null` if none exists.
+	 * @throws GErrorException If [value] is of a kind this scalar accepts but is itself unrepresentable.
+	 *   The message is bare and carries no positional context.
+	 */
+	public open fun valueToLiteral(value: Any?): GValue? = null
+
 	final override fun equalsNode(other: GNode, includingOrigin: Boolean): Boolean = this === other ||
 		(
 			other is GScalarType &&
@@ -1865,6 +1912,23 @@ public sealed class GScalarType(
 				nameNode.equalsNode(other.nameNode, includingOrigin = includingOrigin) &&
 				(!includingOrigin || origin == other.origin)
 			)
+
+	/**
+	 * Returns `true` if [other] is a scalar of the very same class and name.
+	 *
+	 * Scalar identity is by name **and** class because built-in scalars are per-schema instances (see the
+	 * class documentation), so two schemas' `Int` types must compare equal despite being distinct objects.
+	 * The class is part of the comparison so that a [GCustomScalarType] named `Int` stays distinct from a
+	 * [GIntType]: were it not, `==` and `is GIntType` would disagree about the same pair of types.
+	 *
+	 * Description, directives, origin and extensions are deliberately ignored — use
+	 * [equalsNode][GNode.equalsNode] to compare those.
+	 */
+	final override fun equals(other: Any?): Boolean = this === other ||
+		(other is GScalarType && this::class == other::class && name == other.name)
+
+	/** Returns a hash code consistent with [equals], derived from the scalar's name alone. */
+	final override fun hashCode(): Int = name.hashCode()
 
 	final override fun isSupertypeOf(other: GType): Boolean = this == other ||
 		(other is GNonNullType && isSupertypeOf(other.nullableType))
@@ -1930,10 +1994,6 @@ public class GSchemaExtension(
 	public companion object
 }
 
-/** The built-in GraphQL `String` scalar type. */
-// https://graphql.github.io/graphql-spec/draft/#sec-String.Input-Coercion
-public object GStringType : GScalarType(name = "String")
-
 /** A GraphQL string value literal. May be a single-line or block string ([isBlock]). */
 public class GStringValue(
 	public val value: String,
@@ -1976,7 +2036,7 @@ public fun GStringValue(value: String): GStringValue = GStringValue(value = valu
  * - [GWrappingType]: [GListType], [GNonNullType]
  *
  * Use [isInputType] / [isOutputType] to check usage context, and [isSubtypeOf] / [isSupertypeOf]
- * to test subtype relationships. The companion [GType.defaultTypes] lists the five built-in scalars.
+ * to test subtype relationships. The companion [GType.defaultTypes] creates the five built-in scalars.
  */
 // https://graphql.github.io/graphql-spec/June2018/#sec-Wrapping-Types
 // https://graphql.github.io/graphql-spec/June2018/#sec-Types
@@ -2019,12 +2079,20 @@ public sealed class GType(extensions: GNodeExtensionSet<GType>, public val kind:
 
 	public companion object {
 
-		public val defaultTypes: Set<GNamedType> = setOf<GNamedType>(
-			GBooleanType,
-			GFloatType,
-			GIdType,
-			GIntType,
-			GStringType,
+		/**
+		 * Creates a fresh instance of each of the five built-in scalar types (`Boolean`, `Float`, `ID`,
+		 * `Int`, `String`).
+		 *
+		 * A new set of new instances is returned on every call: built-in scalars are per-schema, never
+		 * shared, so that a coercer attached to one schema's built-in cannot be seen by another schema.
+		 * See [GScalarType].
+		 */
+		public fun defaultTypes(): Set<GNamedType> = setOf<GNamedType>(
+			GBooleanType(),
+			GFloatType(),
+			GIdType(),
+			GIntType(),
+			GStringType(),
 		)
 	}
 

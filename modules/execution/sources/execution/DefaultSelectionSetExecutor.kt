@@ -64,7 +64,7 @@ internal object DefaultSelectionSetExecutor {
 				// An unresolvable type condition never applies, so the fragment is skipped — exactly as for an
 				// inline fragment below. graphql-js routes both through `doesFragmentConditionMatch`, which
 				// returns false when `typeFromAST` yields no type, and draws no distinction between the two.
-				val fragmentType = TypeResolver.resolveType(context.schema, fragment.typeCondition)
+				val fragmentType = context.schema.resolveType(fragment.typeCondition)
 					?: return GResult.success()
 
 				if (!doesFragmentTypeApply(fragmentType, to = parentType)) {
@@ -86,7 +86,7 @@ internal object DefaultSelectionSetExecutor {
 				if (fragmentTypeCondition !== null) {
 					// An unresolvable type condition never applies, so the fragment is skipped. graphql-js
 					// `doesFragmentConditionMatch` returns false when `typeFromAST` yields no type.
-					val fragmentType = TypeResolver.resolveType(context.schema, fragmentTypeCondition)
+					val fragmentType = context.schema.resolveType(fragmentTypeCondition)
 						?: return GResult.success()
 
 					if (!doesFragmentTypeApply(fragmentType, to = parentType)) {

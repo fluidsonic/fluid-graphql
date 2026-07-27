@@ -653,6 +653,9 @@ public fun GSchemaBuilder.ValueContainer.value(value: List<String>?): GSchemaBui
  *     }
  * }
  * ```
+ *
+ * @throws GErrorException if the configured schema defines two types of the same name, or a type whose name
+ *   is reserved: one of the built-in scalars or any name beginning with `__`.
  */
 @Suppress("UnusedReceiverParameter")
 public fun GraphQL.schema(configure: GSchemaBuilder.() -> Unit): GSchema = DefaultSchemaBuilder().apply(configure).build()

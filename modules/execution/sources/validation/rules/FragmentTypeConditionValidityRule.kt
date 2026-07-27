@@ -1,10 +1,10 @@
 package io.fluidsonic.graphql
 
-// https://graphql.github.io/graphql-spec/draft/#sec-Object-Spreads-In-Object-Scope
+// https://spec.graphql.org/draft/#sec-Fragments-on-Object-Interface-or-Union-Types
 internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 
 	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {
-		val type = TypeResolver.resolveType(data.schema, definition.typeCondition)
+		val type = data.schema.resolveType(definition.typeCondition)
 			?: return // Cannot validate type that doesn't exist.
 
 		if (type is GCompositeType) {
@@ -12,7 +12,7 @@ internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 		}
 
 		data.reportError(
-			message = "Fragment '${definition.name}' is specified on ${type.kind} '${type.name}' but must be specified on an interface, object or union type.",
+			message = "Fragment \"${definition.name}\" cannot condition on non composite type \"${type.name}\".",
 			nodes = listOf(definition.typeCondition, type.nameNode),
 		)
 	}
@@ -21,7 +21,7 @@ internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 		val typeCondition = selection.typeCondition
 			?: return // Type condition is optional.
 
-		val type = TypeResolver.resolveType(data.schema, typeCondition)
+		val type = data.schema.resolveType(typeCondition)
 			?: return // Cannot validate type that doesn't exist.
 
 		if (type is GCompositeType) {
@@ -29,7 +29,7 @@ internal object FragmentTypeConditionValidityRule : ValidationRule.Singleton() {
 		}
 
 		data.reportError(
-			message = "Inline fragment is specified on ${type.kind} '${type.name}' but must be specified on an interface, object or union type.",
+			message = "Fragment cannot condition on non composite type \"${type.name}\".",
 			nodes = listOf(typeCondition, type.nameNode),
 		)
 	}

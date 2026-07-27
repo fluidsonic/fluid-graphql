@@ -261,7 +261,7 @@ internal class SelectionUnambiguityRule : ValidationRule() {
 
 		return getFieldsAndFragmentSpreads(
 			data = data,
-			parentType = TypeResolver.resolveType(data.schema, fragment.typeCondition),
+			parentType = data.schema.resolveType(fragment.typeCondition),
 			selectionSet = fragment.selectionSet,
 		)
 	}
@@ -284,7 +284,7 @@ internal class SelectionUnambiguityRule : ValidationRule() {
 					fieldMap.fieldsByResponseName.getOrPut(selection.alias ?: selection.name) { mutableListOf() } += ResolvedField(
 						parentType = parentType,
 						selection = selection,
-						type = definition?.type?.let { TypeResolver.resolveType(data.schema, it) },
+						type = definition?.type?.let { data.schema.resolveType(it) },
 					)
 				}
 
@@ -294,7 +294,7 @@ internal class SelectionUnambiguityRule : ValidationRule() {
 
 				is GInlineFragmentSelection -> collectFieldsAndFragmentSpreads(
 					data = data,
-					parentType = selection.typeCondition?.let { TypeResolver.resolveType(data.schema, it) } ?: parentType,
+					parentType = selection.typeCondition?.let { data.schema.resolveType(it) } ?: parentType,
 					selectionSet = selection.selectionSet,
 					fieldMap = fieldMap,
 					fragmentSpreads = fragmentSpreads,

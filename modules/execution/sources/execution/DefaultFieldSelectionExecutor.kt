@@ -37,10 +37,6 @@ internal object DefaultFieldSelectionExecutor {
 								context = context,
 							)
 
-							// A broken schema, not something a client can provoke.
-							is GInputObjectType ->
-								error("Field '${parentType.name}.${fieldDefinition.name}' must have an output type but has input type '${type.name}'.")
-
 							is GObjectType -> type
 						}
 
@@ -61,6 +57,10 @@ internal object DefaultFieldSelectionExecutor {
 							)
 						}
 					}
+
+					// A broken schema, not something a client can provoke.
+					is GInputObjectType ->
+						error("Field '${parentType.name}.${fieldDefinition.name}' must have an output type but has input type '${type.name}'.")
 
 					is GLeafType ->
 						convertOutput(
@@ -89,8 +89,8 @@ internal object DefaultFieldSelectionExecutor {
 							else -> GResult.success(value)
 						}
 
-					is GNonNullType ->
-						complete(
+					is GNonNullType -> {
+						val completed = complete(
 							selections = selections,
 							result = GResult.success(value),
 							type = type.nullableType,
@@ -99,6 +99,17 @@ internal object DefaultFieldSelectionExecutor {
 							path = path,
 							context = context,
 						)
+
+						// The unwrapped frame answers a field error of its own — a failed output coercion, or a
+						// non-null child that nullified itself — by becoming null, because the type it was given
+						// is nullable. This position is not, so that null cannot stand here and the errors have
+						// to keep propagating outwards instead of stopping one level too early.
+						// https://spec.graphql.org/draft/#sec-Handling-Field-Errors
+						when {
+							completed.valueOrNull() === null && completed.errors.isNotEmpty() -> GResult.failure(completed.errors)
+							else -> completed
+						}
+					}
 				}
 			}
 		}
@@ -164,7 +175,7 @@ internal object DefaultFieldSelectionExecutor {
 			null -> GResult.success(NoValue)
 			else -> {
 				// An error can occur only if the schema wasn't validated.
-				val fieldType = TypeResolver.resolveType(context.schema, fieldDefinition.type)
+				val fieldType = context.schema.resolveType(fieldDefinition.type)
 					?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${parentType.name}'.")
 
 				complete(
@@ -203,21 +214,21 @@ internal object DefaultFieldSelectionExecutor {
 		val fieldDefinition = when (firstSelection.name) {
 			Introspection.schemaField.name -> {
 				parent = context.schema
-				parentType = Introspection.schemaType
+				parentType = Introspection.schemaType(context.schema)
 
 				Introspection.schemaField.takeIf { originalParentType == context.schema.queryType }
 			}
 
 			Introspection.typeField.name -> {
 				parent = context.schema
-				parentType = Introspection.schemaType
+				parentType = Introspection.schemaType(context.schema)
 
 				Introspection.typeField.takeIf { originalParentType == context.schema.queryType }
 			}
 
 			Introspection.typenameField.name -> {
 				parent = originalParentType
-				parentType = Introspection.typeType
+				parentType = Introspection.typeType(context.schema)
 
 				Introspection.typenameField
 			}
@@ -230,12 +241,8 @@ internal object DefaultFieldSelectionExecutor {
 			}
 		} ?: return GResult.success(NoValue) // An unknown introspection field is skipped, same as any other unknown field.
 
-		val fieldContext = context.copy(
-			schema = Introspection.schema,
-			root = context.schema,
-			rootType = Introspection.schemaType,
-		)
-		val fieldType = TypeResolver.resolveType(fieldContext.schema, fieldDefinition.type)
+		// No schema is swapped in here: the introspection types are members of `context.schema` itself.
+		val fieldType = context.schema.resolveType(fieldDefinition.type)
 			?: error("Cannot resolve type '${fieldDefinition.type}' of field '${fieldDefinition.name}' in '${originalParentType.name}'.")
 
 		return complete(
@@ -246,13 +253,13 @@ internal object DefaultFieldSelectionExecutor {
 				fieldDefinition = fieldDefinition,
 				selections = selections,
 				path = path,
-				context = fieldContext,
+				context = context,
 			),
 			type = fieldType,
 			parentType = parentType,
 			fieldDefinition = fieldDefinition,
 			path = path,
-			context = fieldContext,
+			context = context,
 		)
 	}
 

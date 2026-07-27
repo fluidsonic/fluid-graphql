@@ -120,33 +120,38 @@ public inline fun <reified KotlinType : Any> GSchemaBuilder.Object(
 /**
  * Attaches an inline input coercer to this scalar type definition.
  *
- * The [coercer] is called when a value for this scalar is provided inline in a document (not via a variable).
+ * The [coercer] is called when a value for this scalar is provided inline in a document (not via a
+ * variable), and takes precedence over [GScalarType.coerceInputLiteral]. Report an invalid value by
+ * throwing [GErrorException]; the executor adds the argument the value was written for.
  */
-public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceNodeInput(coercer: GNodeInputCoercerContext.(input: GValue) -> Result) {
-	require(extension(LeafTypeNodeInputCoercerExtensionKey) == null) { "Only one node input coercer can be provided." }
+public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceInputLiteral(coercer: (value: GValue) -> Result) {
+	require(extension(LeafTypeInputLiteralCoercerExtensionKey) == null) { "Only one input literal coercer can be provided." }
 
-	extension(LeafTypeNodeInputCoercerExtensionKey, GNodeInputCoercer(coercer))
+	extension(LeafTypeInputLiteralCoercerExtensionKey, GInputLiteralCoercer(coercer))
 }
 
 /**
  * Attaches an output coercer to this scalar type definition.
  *
- * The [coercer] is called when a resolver returns a value of this scalar type, converting it
- * to a GraphQL-serializable form.
+ * The [coercer] is called when a resolver returns a value of this scalar type, converting it to a
+ * GraphQL-serializable form, and takes precedence over [GScalarType.coerceOutputValue]. Report an invalid
+ * value by throwing [GErrorException]; the executor adds the field the value was resolved for.
  */
-public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutput(coercer: GOutputCoercerContext.(input: Any) -> Result) {
-	require(extension(LeafTypeOutputCoercerExtensionKey) == null) { "Only one output coercer can be provided." }
+public fun <Result : Any> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceOutputValue(coercer: (value: Any) -> Result) {
+	require(extension(LeafTypeOutputValueCoercerExtensionKey) == null) { "Only one output value coercer can be provided." }
 
-	extension(LeafTypeOutputCoercerExtensionKey, GOutputCoercer(coercer))
+	extension(LeafTypeOutputValueCoercerExtensionKey, GOutputValueCoercer(coercer))
 }
 
 /**
  * Attaches a variable input coercer to this scalar type definition.
  *
- * The [coercer] is called when a value for this scalar is provided as a variable.
+ * The [coercer] is called when a value for this scalar is provided as a variable, and takes precedence
+ * over [GScalarType.coerceInputValue]. Report an invalid value by throwing [GErrorException]; the executor
+ * adds the variable the value was supplied for.
  */
-public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceVariableInput(coercer: GVariableInputCoercerContext.(input: Any) -> Result) {
-	require(extension(LeafTypeVariableInputCoercerExtensionKey) == null) { "Only one variable input coercer can be provided." }
+public fun <Result> GSchemaBuilder.ScalarTypeDefinitionBuilder.coerceInputValue(coercer: (value: Any) -> Result) {
+	require(extension(LeafTypeInputValueCoercerExtensionKey) == null) { "Only one input value coercer can be provided." }
 
-	extension(LeafTypeVariableInputCoercerExtensionKey, GVariableInputCoercer(coercer))
+	extension(LeafTypeInputValueCoercerExtensionKey, GInputValueCoercer(coercer))
 }

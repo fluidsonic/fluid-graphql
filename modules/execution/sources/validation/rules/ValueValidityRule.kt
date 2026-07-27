@@ -7,9 +7,16 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		val argumentDefinition = data.relatedArgumentDefinition
 			?: return // Cannot validate unknown argument.
 
-		data.schema.validateValue(argument.value, typeRef = argumentDefinition.type).forEach { error ->
-			data.reportError(error)
-		}
+		data.schema
+			.validateValueForExecution(
+				argument.value,
+				type = null,
+				typeRef = argumentDefinition.type,
+				scalarLiteralCoercionOverride = ::attachedScalarLiteralCoercion,
+			)
+			.forEach { error ->
+				data.reportError(error)
+			}
 
 		visit.skipChildren()
 	}
@@ -21,9 +28,11 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		val type = data.relatedType
 			?: return // Cannot validate argument of unknown type.
 
-		data.schema.validateValue(defaultValue, type = type).forEach { error ->
-			data.reportError(error)
-		}
+		data.schema
+			.validateValueForExecution(defaultValue, type = type, typeRef = null, scalarLiteralCoercionOverride = ::attachedScalarLiteralCoercion)
+			.forEach { error ->
+				data.reportError(error)
+			}
 
 		visit.skipChildren()
 	}
@@ -35,10 +44,18 @@ internal object ValueValidityRule : ValidationRule.Singleton() {
 		val type = data.relatedType
 			?: return // Cannot validate argument of unknown type.
 
-		data.schema.validateValue(defaultValue, type = type).forEach { error ->
-			data.reportError(error)
-		}
+		data.schema
+			.validateValueForExecution(defaultValue, type = type, typeRef = null, scalarLiteralCoercionOverride = ::attachedScalarLiteralCoercion)
+			.forEach { error ->
+				data.reportError(error)
+			}
 
 		visit.skipChildren()
 	}
 }
+
+// The validator must resolve the coercer the very same way `NodeInputConverter.coerceValueForScalar` does:
+// a coercer attached to the type wins over the coercion the type performs itself, so validating without it
+// would accept a literal that execution then rejects — or reject one it would have accepted.
+private fun attachedScalarLiteralCoercion(type: GScalarType): ((value: GValue) -> Any?)? =
+	type.inputLiteralCoercer?.let { coercer -> coercer::coerceInputLiteral }

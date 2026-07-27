@@ -31,8 +31,16 @@ internal object NodeInputConverter {
 		}
 	}
 
+	// An argument or input object field that is not supplied and has no default value must be *absent* from
+	// the coerced map unless its type forbids null, mirroring `VariableInputConverter.coerceValueAbsence`.
+	// https://spec.graphql.org/draft/#sec-Coercing-Field-Arguments
 	private fun coerceValueAbsence(defaultValue: GValue?, context: Context): Any? = defaultValue
-		.ifNull { context.invalid() }
+		.ifNull {
+			return when (context.type) {
+				is GNonNullType -> context.invalid()
+				else -> NoValue
+			}
+		}
 		.let {
 			convertValue(
 				context = context.copy(
@@ -45,15 +53,14 @@ internal object NodeInputConverter {
 
 	// http://spec.graphql.org/draft/#sec-Enums.Input-Coercion
 	@Suppress("UNCHECKED_CAST")
-	private fun coerceValueForEnum(value: GValue, type: GEnumType, context: Context): Any? =
-		when (val coercer = type.nodeInputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
-			null -> (value as? GEnumValue)
-				?.let { type.value(it.name) }
-				?.name
-				?: context.invalid(details = "valid values: ${type.values.sortedBy { it.name }.joinToString(separator = ", ") { it.name }}")
+	private fun coerceValueForEnum(value: GValue, type: GEnumType, context: Context): Any? = when (val coercer = type.inputLiteralCoercer) {
+		null -> (value as? GEnumValue)
+			?.let { type.value(it.name) }
+			?.name
+			?: context.invalid(details = "valid values: ${type.values.sortedBy { it.name }.joinToString(separator = ", ") { it.name }}")
 
-			else -> coerceValueWithCoercer(coercer = coercer as GNodeInputCoercer<Any?>, context = context.copy(isUsingCoercerProvidedByType = true))
-		}
+		else -> coerceValueWithCoercer(coercer = coercer as GInputLiteralCoercer<Any?>, context = context)
+	}
 
 	// http://spec.graphql.org/draft/#sec-Input-Objects.Input-Coercion
 	@Suppress("UNCHECKED_CAST")
@@ -65,7 +72,7 @@ internal object NodeInputConverter {
 
 			type.argumentDefinitions
 				.associate { argumentDefinition ->
-					val argumentType = TypeResolver.resolveType(context.execution.schema, argumentDefinition.type) ?: validationError(
+					val argumentType = context.execution.schema.resolveType(argumentDefinition.type) ?: validationError(
 						message = "Type '${argumentDefinition.type}' cannot be resolved.",
 						argumentDefinition = argumentDefinition,
 					)
@@ -82,15 +89,13 @@ internal object NodeInputConverter {
 						),
 					)
 				}
+				.filterValues { it != NoValue }
 				.let { argumentValues ->
-					when (val coercer = type.nodeInputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
+					when (val coercer = type.inputLiteralCoercer) {
 						null -> argumentValues
 						else -> coerceValueWithCoercer(
-							coercer = coercer as GNodeInputCoercer<Any?>,
-							context = context.copy(
-								isUsingCoercerProvidedByType = true,
-								value = argumentValues,
-							),
+							coercer = coercer as GInputLiteralCoercer<Any?>,
+							context = context.copy(value = argumentValues),
 						)
 					}
 				}
@@ -152,48 +157,26 @@ internal object NodeInputConverter {
 	@Suppress("UNUSED_PARAMETER")
 	private fun coerceValueForNonNull(value: GValue, type: GNonNullType, context: Context): Any? = convertValue(context = context.copy(type = type.wrappedType))
 
+	// Precedence: a coercer attached to the type wins over the coercion the type performs itself. A scalar
+	// that defines no literal coercion at all — as opposed to one whose literal coercion returns `null` —
+	// sees the literal converted generically and handed to its value coercion instead.
 	@Suppress("UNCHECKED_CAST")
-	private fun coerceValueForScalar(value: GValue, type: GScalarType, context: Context): Any? = when (type) {
-		GBooleanType -> when (value) {
-			is GBooleanValue -> value.value
-			else -> context.invalid()
-		}
-
-		GFloatType -> when (value) {
-			is GFloatValue -> value.value
-			is GIntValue -> value.value.toDouble()
-			else -> context.invalid()
-		}
-
-		GIdType -> when (value) {
-			is GIntValue -> value.value.toString()
-			is GStringValue -> value.value
-			else -> context.invalid()
-		}
-
-		GIntType -> when (value) {
-			is GIntValue -> value.value
-			else -> context.invalid()
-		}
-
-		GStringType -> when (value) {
-			is GStringValue -> value.value
-			else -> context.invalid()
-		}
-
-		else -> when (val coercer = type.nodeInputCoercer?.takeUnless { context.isUsingCoercerProvidedByType }) {
-			null -> value.unwrap()
-			else -> coerceValueWithCoercer(
-				coercer = coercer as GNodeInputCoercer<Any?>,
-				context = context.copy(isUsingCoercerProvidedByType = true),
-			)
-		}
+	private fun coerceValueForScalar(value: GValue, type: GScalarType, context: Context): Any? = when (val coercer = type.inputLiteralCoercer) {
+		null -> context.enrichingCoercionFailure { coerceValueWithType(value = value, type = type) }
+		else -> coerceValueWithCoercer(coercer = coercer as GInputLiteralCoercer<Any?>, context = context)
 	}
 
-	private fun coerceValueWithCoercer(coercer: GNodeInputCoercer<Any?>, context: Context): Any? =
-		context.execution.withExceptionHandler(origin = { GExceptionOrigin.NodeInputCoercer(coercer = coercer, context = context) }) {
-			with(coercer) { context.coerceNodeInput(context.value) }
-		}
+	private fun coerceValueWithType(value: GValue, type: GScalarType): Any? = when (val coerceLiteral = type.coerceInputLiteral) {
+		// `coerceValue` answers a null literal before scalar dispatch, so `unwrap` cannot yield null here.
+		null -> type.coerceInputValue(checkNotNull(value.unwrap()) { "A null literal must not reach scalar coercion." })
+		else -> coerceLiteral(value)
+	}
+
+	private fun coerceValueWithCoercer(coercer: GInputLiteralCoercer<Any?>, context: Context): Any? = context.execution.withExceptionHandler(
+		origin = { GExceptionOrigin.InputLiteralCoercer(coercer = coercer, context = context, path = context.fieldSelectionPath) },
+	) {
+		coercer.coerceInputLiteral(context.value)
+	}
 
 	fun convertArguments(
 		node: GNode.WithArguments,
@@ -213,7 +196,7 @@ internal object NodeInputConverter {
 
 		return GResult.catchErrors {
 			definitions.associate { argumentDefinition ->
-				val argumentType = TypeResolver.resolveType(context.schema, argumentDefinition.type) ?: validationError(
+				val argumentType = context.schema.resolveType(argumentDefinition.type) ?: validationError(
 					message = "Type '${argumentDefinition.type}' cannot be resolved.",
 					argumentDefinition = argumentDefinition,
 				)
@@ -227,20 +210,17 @@ internal object NodeInputConverter {
 						fullType = argumentType,
 						fullValue = argumentValue,
 						isDefaultValue = false,
-						isUsingCoercerProvidedByType = false,
 						parentNode = parentNode,
 						type = argumentType,
 						value = argumentValue,
 					),
 				)
 			}
+				.filterValues { it != NoValue }
 		}
 	}
 
-	private fun convertValue(context: Context): Any? = when (val coercer = context.execution.nodeInputCoercer) {
-		null -> coerceValue(context = context)
-		else -> coerceValueWithCoercer(coercer = coercer, context = context)
-	}
+	private fun convertValue(context: Context): Any? = coerceValue(context = context)
 
 	fun convertValue(value: GValue, type: GType, parentNode: GNode, context: DefaultExecutorContext): GResult<Any?> = GResult.catchErrors {
 		convertValue(
@@ -251,7 +231,6 @@ internal object NodeInputConverter {
 				fullType = type,
 				fullValue = value,
 				isDefaultValue = false,
-				isUsingCoercerProvidedByType = false,
 				parentNode = parentNode,
 				type = type,
 				value = value,
@@ -289,19 +268,30 @@ internal object NodeInputConverter {
 	)
 
 	private data class Context(
-		override val argumentDefinition: GArgumentDefinition?,
+		val argumentDefinition: GArgumentDefinition?,
 		override val execution: DefaultExecutorContext,
-		override val fieldSelectionPath: GPath?,
+		val fieldSelectionPath: GPath?,
 		val fullType: GType,
 		val fullValue: GValue?,
 		private val isDefaultValue: Boolean,
-		val isUsingCoercerProvidedByType: Boolean,
 		val parentNode: GNode,
-		override val type: GType,
+		val type: GType,
 		val value: Any?,
-	) : GNodeInputCoercerContext {
+	) : GExecutorContext.Child {
 
-		override fun invalid(details: String?) = makeValueError(details = details).throwException()
+		/**
+		 * Runs [coerce], turning the bare message of a coercion failure into a fully positioned error.
+		 *
+		 * The leaf type reports only what is wrong with the value; the argument it was written for and the
+		 * literal itself are known here and nowhere else.
+		 */
+		fun <Result> enrichingCoercionFailure(coerce: () -> Result): Result = try {
+			coerce()
+		} catch (exception: GErrorException) {
+			invalid(details = exception.errors.first().message)
+		}
+
+		fun invalid(details: String? = null): Nothing = makeValueError(details = details).throwException()
 
 		private fun makeValueError(details: String? = null): GError {
 			val fullValue = fullValue ?: return GError(
@@ -375,7 +365,5 @@ internal object NodeInputConverter {
 				nodes = listOf(if (isDefaultValue) parentNode else fullValue),
 			)
 		}
-
-		override fun next(): Any? = coerceValue(context = this)
 	}
 }

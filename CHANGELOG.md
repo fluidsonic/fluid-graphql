@@ -5,14 +5,105 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
-## [Unreleased]
+## [0.19.0] - 2026-07-27
+
+Scalar coercion moves onto the types themselves. It used to live in three parallel tables inside the
+converters — one per direction — which had drifted apart from each other and from the fourth copy
+inside schema validation, so a literal could pass validation and then fail at execution. There is
+now one definition per scalar, and validation asks the scalar rather than re-deciding.
+**Anyone with custom coercers must migrate**; coercers lose their receiver and the interfaces are
+renamed. Behaviour was checked cell by cell against graphql-js 17.0.2 by executing it.
+
+### Added
+
+- `printSchema(schema)` and `printType(type)` produce SDL byte-identical to graphql-js at the
+  default two-space indent. The library could parse and execute a schema but not print one.
+- `GSchema.validate()` reports specification violations as data and `GSchema.assertValid()` throws.
+  Five rules ship: unimplemented interface fields, undeclared transitive interfaces, root operation
+  types, and the two OneOf input-field rules. Results are computed once per schema.
+- `GScalarType` carries its own coercion as four open members — `coerceOutputValue`,
+  `coerceInputValue`, `coerceInputLiteral` and `valueToLiteral` — mirroring graphql-js.
+- `GSchema.description` exposes the description written on a `schema { … }` definition, and
+  `__Schema.description` now answers it.
+- `GLanguage.isReservedTypeName(name)` answers whether a name is one the schema factory refuses — the
+  five built-in scalars and anything beginning with `__` — so a caller building a schema from names it
+  does not control can check instead of catching. It reads the same set the factory enforces.
 
 ### Changed
 
+- **Breaking.** Coercers are context-free single-argument functions. `GNodeInputCoercer`,
+  `GVariableInputCoercer` and `GOutputCoercer` become `GInputLiteralCoercer`, `GInputValueCoercer`
+  and `GOutputValueCoercer`; their receiver, the four coercer context types, `next()` and the
+  executor-level fallback coercers on `GExecutor.default` are gone. There was never a chain to
+  delegate to — only a re-entrancy flag. The six extension accessors are renamed to match. A coercer
+  now raises a bare message and the converter supplies the field, argument or variable context.
+- **Breaking.** The built-in scalars are classes rather than objects, and every schema owns its own
+  instances, so `GIntType` becomes `GIntType()` and `GType.defaultTypes` becomes a function. A
+  shared instance would carry one schema's attached coercer into every other schema in the process.
+  `GScalarType` gains equality by name and runtime class, since reference identity is no longer
+  stable across schemas.
+- **Breaking.** Type names the specification reserves are refused at construction: the built-in
+  scalar names, anything beginning with `__`, and two types sharing a name. Previously a
+  `scalar Int` was accepted and silently discarded.
+- **Breaking.** `@optional` and `supportOptional` are removed. They tracked a specification issue
+  open since 2021, and the requiredness clause applied whether or not the directive was registered,
+  so any schema using that name for its own purposes had required arguments silently reclassified.
+- **Breaking.** `GInputObjectType` is no longer a `GCompositeType`, which the specification does not
+  permit. Exhaustive `when` blocks that relied on it absorbing input objects will fail to compile.
+- **Breaking.** Coercion follows graphql-js cell by cell, so its output-only laxness is reproduced:
+  `Int` and `Float` accept a boolean and a `Number()`-parsed string on output but not on input,
+  `Boolean` accepts any finite number, and `String` renders finite numbers and booleans.
+- The introspection types are ordinary members of every schema, so `__schema.types` lists them and
+  a fragment on `__Type` resolves through the same lookup as any user type. The executor no longer
+  swaps in a second schema mid-request. Unreferenced built-in scalars are no longer listed, matching
+  graphql-js; `Boolean` and `String` always are, because the built-in directives take arguments of
+  those types.
+- A scalar literal rejected by a coercer attached to the type is now a validation error rather than
+  a field error, so it aborts the request before execution.
+- `GSchema.toString()` delegates to `printSchema`, so it shows the schema's public shape rather than
+  a copy of the source document: applied directives other than `@deprecated`, `@oneOf` and
+  `@specifiedBy` are dropped, descriptions print as block strings, and directive definitions precede
+  the types.
 - Upgraded to fluid-gradle 4.1.0. `./gradlew check` now reports only failing tests and prints one
   `N tests, all passed` line per module, so a failure is no longer buried in output. This replaces
   the local test-logging workaround in the root build script, which is removed. Kotlin 2.4.10,
   Dokka 2.2.0 and the Gradle 9.6.1 wrapper are unchanged, so published artifacts are unaffected.
+
+### Fixed
+
+- `Int` passed a string through verbatim where an `Int` was declared, emitting a string into the
+  response, and `Float` serialised `NaN` and the infinities into invalid JSON.
+- An omitted nullable argument was rejected as though it were required, so `{ field }` failed
+  whenever the schema declared `field(input: Input)` with a nullable input. It is now absent from
+  the coerced arguments, as *Coercing Field Arguments* requires.
+- A cancelled request was reported as a GraphQL error instead of unwinding. Field resolvers suspend,
+  so cancellation reached the exception handler, which converted it into an error and left the
+  caller's coroutine believing it was still running.
+- `@deprecated(reason:)` was typed as a nullable `String` where the specification and graphql-js
+  both declare `String!`, so an introspecting client saw a signature the server did not mean. Its
+  description also had an unbalanced parenthesis.
+- A field error raised *while completing* a value — a failed output coercion, or a non-null child that
+  nullified itself — stopped propagating one level too early, so a non-null field kept a `null` the
+  specification does not allow it to hold. `{ nonNullFloat }` returned `{"nonNullFloat": null}` where
+  it must return `data: null`. A resolver that threw or returned null was already handled correctly;
+  only errors originating inside completion were affected.
+- Whether an input coercer's error carried a response `path` depended on how the coercer signalled the
+  failure rather than on where it failed, and the two ways disagreed in opposite directions. A literal
+  coercer raising a `GErrorException` produced an error with no path even though the response field was
+  known, while a variable coercer's exception routed through a `GExceptionHandler` produced a path naming
+  the *variable* — which is not a response field, and belongs on a request error that carries no `data` to
+  index into. Both now follow the origin: a literal coercion failure carries its field, a variable
+  coercion failure carries no path.
+- Validation rebuilt a coercer's error from its message alone, so a scalar that rejected a literal with
+  `extensions` — a machine-readable `code`, say — reached the client with the prose intact and the
+  structure gone. The error is now kept whole and only its location added, which is the one thing a
+  coercer cannot know. Execution already behaved this way, so the two paths now agree about what a
+  client is told regardless of which entry point rejected the value.
+- `__schema.types` listed each built-in scalar twice whenever a document also defined one.
+- A fragment conditioned on an input-object type was reported as never matching its parent type
+  rather than as conditioning on a non-composite type.
+- Validation reported at most one bad leaf per value tree in some shapes; it now reports every one,
+  as graphql-js does, including through a coercer that throws.
 
 
 ## [0.18.0] - 2026-07-27

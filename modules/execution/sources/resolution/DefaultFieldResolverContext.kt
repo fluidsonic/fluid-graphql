@@ -10,7 +10,7 @@ internal class DefaultFieldResolverContext(
 ) : GFieldResolverContext {
 
 	@Suppress("UNCHECKED_CAST")
-	override suspend fun next(): Any? = when (val resolver = fieldDefinition.resolver as GFieldResolver<Any>?) {
+	override suspend fun next(): Any? = when (val resolver = resolverForField() as GFieldResolver<Any>?) {
 		// A field without a resolver is a wiring bug in the application, not something a client can
 		// provoke, so it must fail loudly instead of becoming a GraphQL error in the response.
 		null -> error("No resolver is set for field '${parentType.name}.${fieldDefinition.name}'.")
@@ -18,6 +18,16 @@ internal class DefaultFieldResolverContext(
 			resolver.resolveField(parent, context = Next())
 		}
 	}
+
+	/**
+	 * The resolver that produces this field's value: the one attached to the field definition, or the
+	 * library's own for a field of an introspection type.
+	 *
+	 * The introspection types are pure data — the language module that owns them cannot express a resolver —
+	 * so their resolution is supplied here rather than found on the node.
+	 */
+	private fun resolverForField(): GFieldResolver<*>? = fieldDefinition.resolver
+		?: IntrospectionResolvers.resolverFor(typeName = parentType.name, fieldName = fieldDefinition.name)
 
 	private inner class Next : GFieldResolverContext by this {
 

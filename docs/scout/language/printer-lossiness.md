@@ -17,6 +17,6 @@ The lexer produces COMMENT tokens into its doubly linked token chain, but `Lexer
 
 ## Already fixed
 
-Directives on object types and object type extensions, the `extend` keyword on union extensions, `repeatable` on directive definitions, and the spacing around schema-definition directives were all printing defects and are fixed; `modules/language/tests/spec/PrinterTests.kt` now pins each. Stale comments claiming otherwise remain in `modules/dsl/tests/SchemaBuilderTests.kt` (`objectTypeWithDirective`).
+Directives on object types and object type extensions, the `extend` keyword on union extensions, `repeatable` on directive definitions, and the spacing around schema-definition directives were all printing defects and are fixed; `modules/language/tests/spec/PrinterTests.kt` now pins each. The comment in `modules/dsl/tests/SchemaBuilderTests.kt` (`objectTypeWithDirective`) claiming the printer drops directives on object types is misattributed: `Printer` prints them, but that test reads `schema.toString()`, which goes through `printSchema` and drops applied directives on purpose.
 
-Related: ../testing/printer-golden-conventions.md.
+Related: schema-printing.md, ../testing/printer-golden-conventions.md.

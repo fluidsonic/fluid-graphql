@@ -694,4 +694,35 @@ class FragmentSelectionPossibilityRuleTest {
 			""",
 		)
 	}
+
+	@Test
+	fun testIgnoresFragmentsOnInputObjectTypes() {
+		// An input object is not a composite type, so `FragmentTypeConditionValidityRule` owns that error and this rule
+		// must stay silent instead of adding a misleading "will never match the unrelated type".
+		assertValidationRule(
+			rule = FragmentSelectionPossibilityRule,
+			errors = emptyList(),
+			document = """
+				|{
+				|  object {
+				|    ...inputObjectFragment
+				|    ... on In {
+				|      a
+				|    }
+				|  }
+				|}
+				|
+				|fragment inputObjectFragment on In {
+				|  a
+				|}
+			""",
+			schema = """
+				|type Query {
+				|  object: Object
+				|}
+				|type Object { value: String }
+				|input In { a: Int }
+			""",
+		)
+	}
 }

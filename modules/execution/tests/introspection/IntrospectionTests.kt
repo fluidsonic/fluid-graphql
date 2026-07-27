@@ -9,6 +9,14 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/** The `typeFragment` shape of [IntrospectionTests.testFragments] for the introspection type [name]. */
+private fun introspectedType(name: String, fieldNames: List<String>? = null, enumValueNames: List<String>? = null): Map<String, Any?> = mapOf(
+	"enumValues" to enumValueNames?.map { mapOf("name" to it) },
+	"fields" to fieldNames?.map { mapOf("name" to it) },
+	"inputFields" to null,
+	"name" to name,
+)
+
 class IntrospectionTests {
 
 	@Test
@@ -80,29 +88,69 @@ class IntrospectionTests {
 								"inputFields" to null,
 								"name" to "Boolean",
 							),
-							mapOf(
-								"enumValues" to null,
-								"fields" to null,
-								"inputFields" to null,
-								"name" to "Float",
-							),
-							mapOf(
-								"enumValues" to null,
-								"fields" to null,
-								"inputFields" to null,
-								"name" to "ID",
-							),
-							mapOf(
-								"enumValues" to null,
-								"fields" to null,
-								"inputFields" to null,
-								"name" to "Int",
-							),
+							// `Float`, `ID` and `Int` are absent: this schema refers to none of them, and a
+							// built-in scalar is registered only when something refers to it. `Boolean` and
+							// `String` stay because the built-in directives take arguments of those types.
 							mapOf(
 								"enumValues" to null,
 								"fields" to null,
 								"inputFields" to null,
 								"name" to "String",
+							),
+							// The introspection types are ordinary members of the type map, so they describe
+							// themselves here just like any user type. graphql@17.0.2 reports them too.
+							introspectedType("__Schema", fieldNames = listOf("description", "types", "queryType", "mutationType", "subscriptionType", "directives")),
+							introspectedType(
+								"__Type",
+								fieldNames = listOf(
+									"kind",
+									"name",
+									"description",
+									"specifiedByURL",
+									"isOneOf",
+									"fields",
+									"interfaces",
+									"possibleTypes",
+									"enumValues",
+									"inputFields",
+									"ofType",
+								),
+							),
+							introspectedType("__Field", fieldNames = listOf("name", "description", "args", "type", "isDeprecated", "deprecationReason")),
+							introspectedType(
+								"__InputValue",
+								fieldNames = listOf("name", "description", "type", "defaultValue", "isDeprecated", "deprecationReason"),
+							),
+							introspectedType("__EnumValue", fieldNames = listOf("name", "description", "isDeprecated", "deprecationReason")),
+							introspectedType(
+								"__TypeKind",
+								enumValueNames = listOf("SCALAR", "OBJECT", "INTERFACE", "UNION", "ENUM", "INPUT_OBJECT", "LIST", "NON_NULL"),
+							),
+							introspectedType("__Directive", fieldNames = listOf("name", "description", "isRepeatable", "locations", "args")),
+							introspectedType(
+								"__DirectiveLocation",
+								enumValueNames = listOf(
+									"QUERY",
+									"MUTATION",
+									"SUBSCRIPTION",
+									"FIELD",
+									"FRAGMENT_DEFINITION",
+									"FRAGMENT_SPREAD",
+									"INLINE_FRAGMENT",
+									"VARIABLE_DEFINITION",
+									"SCHEMA",
+									"SCALAR",
+									"OBJECT",
+									"FIELD_DEFINITION",
+									"ARGUMENT_DEFINITION",
+									"INTERFACE",
+									"UNION",
+									"ENUM",
+									"ENUM_VALUE",
+									"INPUT_OBJECT",
+									"INPUT_FIELD_DEFINITION",
+									"DIRECTIVE_DEFINITION",
+								),
 							),
 						),
 					),

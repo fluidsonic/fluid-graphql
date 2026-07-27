@@ -41,7 +41,7 @@ class FragmentTypeConditionValidityRuleTest {
 			rule = FragmentTypeConditionValidityRule,
 			errors = listOf(
 				"""
-					Fragment 'fragOnScalar' is specified on scalar 'Date' but must be specified on an interface, object or union type.
+					Fragment "fragOnScalar" cannot condition on non composite type "Date".
 
 					<document>:1:26
 					1 | fragment fragOnScalar on Date {
@@ -54,7 +54,7 @@ class FragmentTypeConditionValidityRuleTest {
 					  |        ^
 				""",
 				"""
-					Inline fragment is specified on scalar 'Date' but must be specified on an interface, object or union type.
+					Fragment cannot condition on non composite type "Date".
 
 					<document>:6:10
 					5 | fragment inlineFragOnScalar on Dog {
@@ -86,6 +86,58 @@ class FragmentTypeConditionValidityRuleTest {
 				|type Dog implements Pet { name: String }
 				|union CatOrDog = Cat | Dog
 				|scalar Date
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsFragmentOnInputObjectType() {
+		assertValidationRule(
+			rule = FragmentTypeConditionValidityRule,
+			errors = listOf(
+				"""
+					Fragment "fragOnInputObject" cannot condition on non composite type "In".
+
+					<document>:1:31
+					1 | fragment fragOnInputObject on In {
+					  |                               ^
+					2 |   a
+
+					<document>:3:7
+					2 | type Dog { name: String }
+					3 | input In { a: Int }
+					  |       ^
+				""",
+				"""
+					Fragment cannot condition on non composite type "In".
+
+					<document>:6:10
+					5 | fragment inlineFragOnInputObject on Dog {
+					6 |   ... on In {
+					  |          ^
+					7 |     a
+
+					<document>:3:7
+					2 | type Dog { name: String }
+					3 | input In { a: Int }
+					  |       ^
+				""",
+			),
+			document = """
+				|fragment fragOnInputObject on In {
+				|  a
+				|}
+				|
+				|fragment inlineFragOnInputObject on Dog {
+				|  ... on In {
+				|    a
+				|  }
+				|}
+			""",
+			schema = """
+				|type Query { id: ID }
+				|type Dog { name: String }
+				|input In { a: Int }
 			""",
 		)
 	}

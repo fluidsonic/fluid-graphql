@@ -5,8 +5,7 @@ package io.fluidsonic.graphql
  *
  * The default directive definitions ([defaultDeprecatedDirective], [defaultIncludeDirective],
  * [defaultOneOfDirective], [defaultSkipDirective], [defaultSpecifiedByDirective]) are automatically
- * added to every schema built with the [GSchema] factory. The non-standard [defaultOptionalDirective]
- * is added only when `supportOptional = true` is passed.
+ * added to every schema built with the [GSchema] factory.
  *
  * Name validation functions follow the GraphQL October 2021 specification.
  */
@@ -32,9 +31,9 @@ public object GLanguage {
 		argumentDefinitions = listOf(
 			GDirectiveArgumentDefinition(
 				name = "reason",
-				type = GStringTypeRef,
+				type = GStringTypeRef.nonNullableRef,
 				description = "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. " +
-					"Formatted using the Markdown syntax (as specified by [CommonMark](https://commonmark.org/).",
+					"Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).",
 				defaultValue = GStringValue("No longer supported"),
 			),
 		),
@@ -66,23 +65,6 @@ public object GLanguage {
 			GDirectiveLocation.FIELD,
 			GDirectiveLocation.FRAGMENT_SPREAD,
 			GDirectiveLocation.INLINE_FRAGMENT,
-		),
-	)
-
-	/**
-	 * Non-standard `@optional` directive that allows omitting a value for a non-null argument or input field.
-	 *
-	 * Must be enabled explicitly by passing `supportOptional = true` to the [GSchema] factory.
-	 *
-	 * @see <a href="https://github.com/graphql/graphql-spec/issues/872">graphql-spec#872</a>
-	 */
-	// Non-standard, see https://github.com/graphql/graphql-spec/issues/872
-	public val defaultOptionalDirective: GDirectiveDefinition = GDirectiveDefinition(
-		name = "optional",
-		description = "Accepts the complete absence of a value even if the argument is of a non-null type.",
-		locations = setOf(
-			GDirectiveLocation.ARGUMENT_DEFINITION,
-			GDirectiveLocation.INPUT_FIELD_DEFINITION,
 		),
 	)
 
@@ -182,6 +164,23 @@ public object GLanguage {
 		isValidName(name)
 
 	/**
+	 * Returns `true` if [name] is reserved and therefore cannot name a type definition.
+	 *
+	 * Reserved are the five built-in scalar names and every name beginning with `__`, which covers the
+	 * introspection types. A definition carrying such a name makes the [GSchema] factory throw, so check this
+	 * first when building a schema from names you do not control, rather than catching the exception.
+	 *
+	 * This says nothing about whether [name] is well-formed — see [isValidTypeName] — nor about whether some
+	 * other definition already uses it, which is a property of the whole schema rather than of one name.
+	 *
+	 * Note graphql-js has no counterpart: it accepts `ID` and `__Foo` as type names, reporting the latter from
+	 * `validateSchema()` instead, so there is nothing there to check against.
+	 */
+	// https://spec.graphql.org/draft/#sec-Schema
+	public fun isReservedTypeName(name: String): Boolean = isValidIntrospectionName(name) ||
+		name in builtinScalarTypeNames
+
+	/**
 	 * Returns `true` if [name] is a valid introspection identifier.
 	 *
 	 * Introspection names must be valid identifiers and must start with `__`.
@@ -209,6 +208,14 @@ public object GLanguage {
 	public fun isValidTypeName(name: String): Boolean = !name.startsWith(introspectionNamePrefix) &&
 		isValidName(name)
 }
+
+/**
+ * The names the specification reserves for the built-in scalar types.
+ *
+ * Single source for [GLanguage.isReservedTypeName] and for the [GSchema] factory's own check, so the
+ * predicate a caller consults and the rule the factory enforces cannot drift apart.
+ */
+internal val builtinScalarTypeNames: Set<String> = setOf("Boolean", "Float", "ID", "Int", "String")
 
 /**
  * The error message reported when a value for the OneOf Input Object type [typeName] does not specify

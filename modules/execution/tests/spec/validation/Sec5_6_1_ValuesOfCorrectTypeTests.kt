@@ -68,7 +68,7 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			rule = ValueValidityRule,
 			errors = listOf(
 				"""
-				Type 'Int' does not allow value '"hello"'.
+				Int cannot represent non-integer value: "hello"
 
 				<document>:1:14
 				1 | { field(arg: "hello") }
@@ -94,7 +94,7 @@ class Sec5_6_1_ValuesOfCorrectTypeTests {
 			rule = ValueValidityRule,
 			errors = listOf(
 				"""
-				Type 'String' does not allow value '42'.
+				String cannot represent a non string value: 42
 
 				<document>:1:14
 				1 | { field(arg: 42) }

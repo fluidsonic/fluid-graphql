@@ -73,11 +73,23 @@ class SchemaDefinitionTests {
 
 	@Test
 	fun testSchemaTypesContainBuiltinScalars() {
-		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
+		val schema = GSchema.parse("type Query { b: Boolean, f: Float, i: ID, n: Int, s: String }").valueOrThrow()
 		assertNotNull(schema.resolveType("Boolean"))
 		assertNotNull(schema.resolveType("Int"))
 		assertNotNull(schema.resolveType("String"))
 		assertNotNull(schema.resolveType("Float"))
 		assertNotNull(schema.resolveType("ID"))
+	}
+
+	// A built-in scalar is added only when something refers to it, matching graphql-js. `String` is referred
+	// to here by the field, `Boolean` by the built-in `@skip`/`@include` directives.
+	@Test
+	fun testSchemaTypesOmitUnreferencedBuiltinScalars() {
+		val schema = GSchema.parse("type Query { field: String }").valueOrThrow()
+		assertNotNull(schema.resolveType("Boolean"))
+		assertNotNull(schema.resolveType("String"))
+		assertNull(schema.resolveType("Float"))
+		assertNull(schema.resolveType("ID"))
+		assertNull(schema.resolveType("Int"))
 	}
 }

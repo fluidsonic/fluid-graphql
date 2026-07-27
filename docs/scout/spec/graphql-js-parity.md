@@ -9,6 +9,7 @@ The parity is visible throughout: `modules/language/tests/utility/KitchenSinkQue
 Two traps when establishing what upstream does:
 
 - **Run it, do not read it.** Reading upstream's source has twice yielded the opposite of what executing the same input actually returns. A claim about upstream behaviour is only settled by executing it.
+- **Do not render the probe's answer through `JSON.stringify`.** It prints `Infinity` as `null` and omits an `undefined` property entirely, so a rejecting call and an accepting one that returns a non-finite number look identical. A probe rendered that way nearly produced the opposite conclusion about `Float`'s literal coercion of `1e400` — the single fact one deliberate divergence rests on (../execution/spec-deviations.md). Print `typeof` and the raw value instead.
 - **Compare against the matching entry point.** `graphql()` validates first, `execute()` does not, so the same document legitimately gives two different answers upstream — exactly as it does here (see ../execution/validation-entry-points.md).
 
 Related: spec-citations.md, ../execution/error-classification.md.

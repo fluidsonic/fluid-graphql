@@ -73,7 +73,7 @@ class VisitorContextTest {
 		val inputScalarArgumentDefinition = inputType.argumentDefinition("scalar")!!
 		val inputStringArgumentDefinition = inputType.argumentDefinition("string")!!
 		val nonNullInputType = GNonNullType(inputType)
-		val nonNullStringType = GNonNullType(GStringType)
+		val nonNullStringType = GNonNullType(GStringType())
 
 		val context = CapturingContext(document, schema)
 		document.accept(CapturingVisitor().contextualize(context))

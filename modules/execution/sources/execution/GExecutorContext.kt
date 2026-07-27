@@ -1,6 +1,5 @@
 package io.fluidsonic.graphql
 
-// FIXME add (default)outputCoercer
 /**
  * Context available throughout a single GraphQL operation execution.
  *

@@ -14,7 +14,7 @@ Add the umbrella artifact (includes all modules) to your Gradle build:
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.fluidsonic.graphql:fluid-graphql:0.18.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql:0.19.0")
 }
 ```
 
@@ -23,13 +23,13 @@ Or depend on individual modules:
 ```kotlin
 dependencies {
     // Core type system, parser, printer, AST
-    implementation("io.fluidsonic.graphql:fluid-graphql-language:0.18.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql-language:0.19.0")
 
     // Kotlin DSL for building schemas and documents
-    implementation("io.fluidsonic.graphql:fluid-graphql-dsl:0.18.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql-dsl:0.19.0")
 
     // Query execution engine and validation
-    implementation("io.fluidsonic.graphql:fluid-graphql-execution:0.18.0")
+    implementation("io.fluidsonic.graphql:fluid-graphql-execution:0.19.0")
 }
 ```
 

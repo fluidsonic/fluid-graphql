@@ -11,10 +11,9 @@ import kotlin.test.assertEquals
 // These tests deliberately use the `execute(document: GDocument)` overload, which does not validate,
 // so that they exercise input coercion itself rather than the validation rules.
 //
-// Note: `singleOneOf` takes a OneOf Input Object that declares a single field. A two-field type
-// cannot be used for the accepting cases because `NodeInputConverter` currently rejects every
-// omitted nullable input field ("A value of type 'Int' must be provided for argument 'b'."),
-// which is a separate pre-existing defect unrelated to `@oneOf`.
+// Note: `singleOneOf` takes a OneOf Input Object that declares a single field. That is a leftover from
+// when `NodeInputConverter` rejected every omitted nullable input field; both coercion paths now drop
+// absent fields, so a two-field type would serve the accepting cases just as well.
 // https://spec.graphql.org/draft/#sec-OneOf-Input-Objects.Input-Coercion
 class OneOfDirectiveCoercionTests {
 
@@ -140,7 +139,6 @@ class OneOfDirectiveCoercionTests {
 		)
 	}
 
-	// The variable path drops absent fields, so a two-field type works here.
 	@Test
 	fun testVariable_acceptsExactlyOneNonNullField() = runTest {
 		assertCoercionSuccess(

@@ -54,50 +54,6 @@ internal fun mergeSchemaExtensions(schemaDefinition: GSchemaDefinition?, schemaE
 }
 
 /**
- * Builds the type system document that a schema assembled from [document] represents — that is, [document]
- * with every type extension already merged into the definition it extends.
- *
- * [mergedTypesByName] provides the merged type definitions, keyed by name. Type definitions of [document]
- * are substituted by their merged counterpart and appear in the order [document] declares them; extension
- * nodes contribute nothing of their own. Executable definitions are dropped.
- *
- * Only definitions [document] declares are emitted. The built-in scalars are therefore never printed even
- * though [mergedTypesByName] contains them, because a schema receives them from [GType.defaultTypes] rather
- * than from its document.
- */
-internal fun mergedTypeSystemDocument(document: GDocument, mergedTypesByName: Map<String, GNamedType>): GDocument {
-	val schemaDefinition = mergeSchemaExtensions(
-		schemaDefinition = document.definitions.filterIsInstance<GSchemaDefinition>().firstOrNull(),
-		schemaExtensions = document.definitions.filterIsInstance<GSchemaExtension>(),
-	)
-
-	val definitions = mutableListOf<GTypeSystemDefinition>()
-	var hasWrittenSchemaDefinition = false
-
-	for (definition in document.definitions) {
-		when (definition) {
-			is GDirectiveDefinition ->
-				definitions += definition
-
-			is GNamedType ->
-				mergedTypesByName[definition.name]?.let { definitions += it }
-
-			// The merged schema definition takes the place of whichever of the two comes first in the document.
-			is GSchemaDefinition, is GSchemaExtension ->
-				if (!hasWrittenSchemaDefinition && schemaDefinition !== null) {
-					definitions += schemaDefinition
-					hasWrittenSchemaDefinition = true
-				}
-
-			else ->
-				Unit
-		}
-	}
-
-	return GDocument(definitions = definitions)
-}
-
-/**
  * Returns this node's extension set typed for [Node].
  *
  * [GNode.extensions] is erased to `GNodeExtensionSet<GNode>` by [GNode]'s covariant type parameter, so
