@@ -124,3 +124,23 @@ allprojects {
 		source.setFrom(files("sources", "tests"))
 	}
 }
+
+// `io.fluidsonic.gradle` logs every passed test (LibraryModuleConfigurator.configureTestTask), so `check` emitted
+// ~1950 lines and 85 KB on success — burying a failure at exactly the moment you need to read it. Report only
+// failures, which is also Gradle's own default.
+//
+// Two things here are load-bearing, and each one fails silently rather than loudly:
+//
+//   - `setEvents(...)` rather than the `testLogging { events("failed") }` block. The block form is a no-op in this
+//     context: reading `testLogging.events` straight after it returns the unchanged set.
+//   - `gradle.projectsEvaluated`, not the `allprojects` block above. The plugin configures the test tasks while
+//     each module's build file is evaluated, which is after the root block — and after any `afterEvaluate`
+//     registered from it. Configuring earlier means the plugin overwrites it.
+gradle.projectsEvaluated {
+	allprojects {
+		tasks.withType<AbstractTestTask>().configureEach {
+			testLogging.setEvents(listOf("failed"))
+			testLogging.showStackTraces = true
+		}
+	}
+}
