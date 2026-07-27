@@ -1,12 +1,23 @@
 package testing
+import io.fluidsonic.graphql.GBooleanType
 import io.fluidsonic.graphql.GDocument
+import io.fluidsonic.graphql.GFloatType
+import io.fluidsonic.graphql.GIdType
+import io.fluidsonic.graphql.GIntType
+import io.fluidsonic.graphql.GListType
+import io.fluidsonic.graphql.GNonNullType
 import io.fluidsonic.graphql.GOperationDefinition
+import io.fluidsonic.graphql.GSchema
 import io.fluidsonic.graphql.GSelectionSet
+import io.fluidsonic.graphql.GStringType
 import io.fluidsonic.graphql.GVariableDefinition
+import io.fluidsonic.graphql.Visitor
 import io.fluidsonic.graphql.accept
 import io.fluidsonic.graphql.parallelize
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class ParallelVisitorTest {
 
@@ -3322,44 +3333,45 @@ class ParallelVisitorTest {
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
-		val expectedStacks: List<List<String>> = listOf(
-			listOf("Document.A(0)"),
-			listOf("Document.A(0)", "Document.B(0)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Name.C(2.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "VariableDefinition.C(2.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Directive.C(2.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Directive.C(2.C)", "Name.C(3.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Directive.C(2.C)", "Argument.C(3.C)"),
-			listOf(
+		// Skipping ends a visitor's business with the node it skipped in: it stops descending there and receives no
+		// `afterChildren` for that node, while the visitors that did descend still get theirs. A skips in the
+		// document, B in the operation, C in every selection set and variable definition.
+		assertEquals(
+			actual = visitorTarget.enters,
+			expected = listOf(
 				"Document.A(0)",
 				"Document.B(0)",
 				"Document.C(0)",
 				"OperationDefinition.B(1.B)",
 				"OperationDefinition.C(1.C)",
+				"Name.C(2.C)",
+				"VariableDefinition.C(2.C)",
 				"Directive.C(2.C)",
+				"Name.C(3.C)",
 				"Argument.C(3.C)",
 				"Name.C(4.C)",
-			),
-			listOf(
-				"Document.A(0)",
-				"Document.B(0)",
-				"Document.C(0)",
-				"OperationDefinition.B(1.B)",
-				"OperationDefinition.C(1.C)",
-				"Directive.C(2.C)",
-				"Argument.C(3.C)",
 				"IntValue.C(4.C)",
+				"SelectionSet.C(2.C)",
 			),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "SelectionSet.C(2.C)"),
 		)
 
-		val actualStacksString = makePrettyStacks(visitorTarget.stacks)
-		val expectedStacksString = makePrettyStacks(expectedStacks)
-
-		assertEquals(expected = expectedStacksString, actual = actualStacksString)
+		// No `Document.A`, no `OperationDefinition.B`, no `VariableDefinition.C` and no `SelectionSet.C` — those are
+		// exactly the four nodes whose children a visitor skipped. `Document.B` is still there: B skipped in the
+		// operation, not in the document, so it leaves the document once the operation's subtree is done.
+		assertEquals(
+			actual = visitorTarget.leaves,
+			expected = listOf(
+				"Name.C(2.C)",
+				"Name.C(3.C)",
+				"Name.C(4.C)",
+				"IntValue.C(4.C)",
+				"Argument.C(3.C)",
+				"Directive.C(2.C)",
+				"OperationDefinition.C(1.C)",
+				"Document.B(0)",
+				"Document.C(0)",
+			),
+		)
 	}
 
 	@Test
@@ -3397,47 +3409,267 @@ class ParallelVisitorTest {
 
 		document.accept(visitors.parallelize(), data = StackCollectingVisitor.Data())
 
-		val expectedStacks: List<List<String>> = listOf(
-			listOf("Document.A(0)"),
-			listOf("Document.A(0)", "Document.B(0)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Name.C(2.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "VariableDefinition.C(2.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Directive.C(2.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Directive.C(2.C)", "Name.C(3.C)"),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "Directive.C(2.C)", "Argument.C(3.C)"),
-			listOf(
+		// The same enter sequence as `testSkipsChildren` — aborting and skipping stop a visitor descending at the same
+		// three nodes here — which is what makes the leave channel the only thing that tells the two apart.
+		assertEquals(
+			actual = visitorTarget.enters,
+			expected = listOf(
 				"Document.A(0)",
 				"Document.B(0)",
 				"Document.C(0)",
 				"OperationDefinition.B(1.B)",
 				"OperationDefinition.C(1.C)",
+				"Name.C(2.C)",
+				"VariableDefinition.C(2.C)",
 				"Directive.C(2.C)",
+				"Name.C(3.C)",
 				"Argument.C(3.C)",
 				"Name.C(4.C)",
-			),
-			listOf(
-				"Document.A(0)",
-				"Document.B(0)",
-				"Document.C(0)",
-				"OperationDefinition.B(1.B)",
-				"OperationDefinition.C(1.C)",
-				"Directive.C(2.C)",
-				"Argument.C(3.C)",
 				"IntValue.C(4.C)",
+				"SelectionSet.C(2.C)",
 			),
-			listOf("Document.A(0)", "Document.B(0)", "Document.C(0)", "OperationDefinition.B(1.B)", "OperationDefinition.C(1.C)", "SelectionSet.C(2.C)"),
 		)
 
-		val actualStacksString = makePrettyStacks(visitorTarget.stacks)
-		val expectedStacksString = makePrettyStacks(expectedStacks)
+		// Aborting drops a visitor's pending blocks for every node still open, not just the one it aborted in — so
+		// unlike in `testSkipsChildren` there is no `Document.B`, even though B entered the document and descended
+		// from it before aborting in the operation. C aborts in the first selection set, which takes `Document.C` and
+		// `OperationDefinition.C` with it and, being the last visitor standing, ends the traversal.
+		assertEquals(
+			actual = visitorTarget.leaves,
+			expected = listOf(
+				"Name.C(2.C)",
+				"Name.C(3.C)",
+				"Name.C(4.C)",
+				"IntValue.C(4.C)",
+				"Argument.C(3.C)",
+				"Directive.C(2.C)",
+			),
+		)
+	}
 
-		assertEquals(expected = expectedStacksString, actual = actualStacksString)
+	// The three goldens above run one executable document and so reach only 20 of the 43 node kinds a `Visitor.Typed`
+	// dispatches — no SDL definition, no extension, no type reference other than a named one. That is the breadth a
+	// lone visitor is held to by `VisitorTest.testVisitsADocument`, and the shared traversal must match it.
+	@Test
+	fun testVisitsEveryNodeKindInParallel() {
+		val target = StackCollectingVisitor.Target()
+
+		acceptEveryNodeKind(breadthVisitors(target).parallelize())
+
+		assertEquals(actual = target.enters.map(::kindOf).distinct().sorted(), expected = allNodeKinds)
+	}
+
+	// Pinned against a lone visitor over the same nodes rather than against a hand-written stack golden: what matters
+	// is that parallelizing changes nothing about which nodes a visitor sees, and in which order.
+	@Test
+	fun testVisitsTheSameNodesInParallelAsAlone() {
+		val soloTarget = StackCollectingVisitor.Target()
+		val parallelTarget = StackCollectingVisitor.Target()
+
+		acceptEveryNodeKind(StackCollectingVisitor(target = soloTarget))
+		acceptEveryNodeKind(breadthVisitors(parallelTarget).parallelize())
+
+		for (suffix in visitorSuffixes) {
+			assertEquals(
+				actual = parallelTarget.entersOf(suffix).map(::kindOf),
+				expected = soloTarget.enters.map(::kindOf),
+				message = "Visitor '$suffix' entered other nodes in parallel than a lone visitor does.",
+			)
+			assertEquals(
+				actual = parallelTarget.leavesOf(suffix).map(::kindOf),
+				expected = soloTarget.leaves.map(::kindOf),
+				message = "Visitor '$suffix' left other nodes in parallel than a lone visitor does.",
+			)
+		}
+	}
+
+	// Leaves mirror entries rather than reversing them: all three visitors enter a node back to back in registration
+	// order, and leave it back to back in that same order.
+	@Test
+	fun testEntersAndLeavesInForwardVisitorOrder() {
+		val target = StackCollectingVisitor.Target()
+
+		acceptEveryNodeKind(breadthVisitors(target).parallelize())
+
+		assertEquals(actual = suffixesPerNode(target, isEnter = true), expected = listOf(visitorSuffixes))
+		assertEquals(actual = suffixesPerNode(target, isEnter = false), expected = listOf(visitorSuffixes))
+	}
+
+	// Across visitors the order is forward, but within one visitor it is strict LIFO — every node it entered is left
+	// exactly once, innermost first, with none left open at the end.
+	@Test
+	fun testLeavesEachVisitorsNodesInLifoOrder() {
+		val target = StackCollectingVisitor.Target()
+
+		acceptEveryNodeKind(breadthVisitors(target).parallelize())
+
+		for (suffix in visitorSuffixes) {
+			val open = mutableListOf<StackCollectingVisitor.Target.Entry>()
+
+			for (event in target.events.filter { it.entry.suffix == suffix }) {
+				if (event.isEnter) {
+					open += event.entry
+				} else {
+					assertSame(
+						actual = open.removeLast(),
+						expected = event.entry,
+						message = "Visitor '$suffix' left '${event.entry.label}' out of LIFO order.",
+					)
+				}
+			}
+
+			assertTrue(open.isEmpty(), "Visitor '$suffix' never left ${open.map { it.label }}.")
+		}
 	}
 
 	private fun makePrettyStacks(stacks: List<List<String>>) = "\n" + stacks.joinToString(",\n") { stack ->
 		"listOf(" + stack.joinToString(", ") { "\"$it\"" } + ")"
 	} + "\n"
 }
+
+private val visitorSuffixes = listOf(".A", ".B", ".C")
+
+private fun breadthVisitors(target: StackCollectingVisitor.Target) = visitorSuffixes.map { StackCollectingVisitor(suffix = it, target = target) }
+
+/** Strips the visitor suffix and the data value from an entry label, leaving just the node kind. */
+private fun kindOf(label: String) = label.substringBefore('.').substringBefore('(')
+
+/** The suffixes of each consecutive group of three events, deduplicated — one entry if every group is in order. */
+private fun suffixesPerNode(target: StackCollectingVisitor.Target, isEnter: Boolean) = target.events
+	.filter { it.isEnter == isEnter }
+	.chunked(visitorSuffixes.size)
+	.map { group -> group.map { it.entry.suffix } }
+	.distinct()
+
+/**
+ * The fixture of `VisitorTest.testVisitsADocument`, which reaches every node kind except `FragmentDefinition`, plus
+ * the fragment definition it lacks — so the parallel path is held to all 43 kinds rather than 42.
+ */
+private val breadthDocument = GDocument.parse(
+	"""
+	|query query(${'$'}variable: Int = 1 @foo) @foo(argument: 1) {
+	|   field(argument: 1) @foo {
+	|      ...fragment @foo
+	|      ... on Foo @foo {
+	|         field(argument: [{ id: ${'$'}variable }, true, 1, 2.0, "", VALUE, null])
+	|      }
+	|   }
+	|}
+	|
+	|fragment fragment on Foo @foo {
+	|   field
+	|}
+	""".trimMargin(),
+).valueWithoutErrorsOrThrow()
+
+private val breadthSchema = GSchema.parse(
+	"""
+	|${'"'}""description${'"'}""
+	|enum Enum @foo { VALUE @foo }
+	|
+	|extend enum Enum @foo { VALUE2 @foo }
+	|
+	|${'"'}""description${'"'}""
+	|input Input @foo {
+	|   field: String @foo
+	|}
+	|
+	|extend input Input @foo {
+	|   field: String @foo
+	|}
+	|
+	|${'"'}""description${'"'}""
+	|interface Interface implements Something @foo {
+	|   field(argument: Int = 2 @foo): [Int!] @foo
+	|}
+	|
+	|extend interface Interface implements Something @foo {
+	|   field(argument: Int = 2 @foo): [Int!] @foo
+	|}
+	|
+	|${'"'}""description${'"'}""
+	|type Type implements Something @foo {
+	|   field(argument: Int = 2 @foo): [Int!] @foo
+	|}
+	|
+	|extend type Type implements Something @foo {
+	|   field(argument: Int = 2 @foo): [Int!] @foo
+	|}
+	|
+	|${'"'}""description${'"'}""
+	|scalar Scalar @foo
+	|extend scalar Scalar @foo
+	|
+	|${'"'}""description${'"'}""
+	|union Union @foo = Type | OtherType
+	|extend union Union @foo = ThirdType
+	|
+	|schema @foo {
+	|  query: Query
+	|  mutation: Mutation
+	|}
+	|extend schema @foo {
+	|  subscription: Subscription
+	|}
+	|
+	|directive @foo on ARGUMENT_DEFINITION
+	""".trimMargin(),
+).valueWithoutErrorsOrThrow()
+
+private fun acceptEveryNodeKind(visitor: Visitor<Unit, StackCollectingVisitor.Data>) {
+	breadthDocument.accept(visitor, data = StackCollectingVisitor.Data())
+	breadthSchema.document.accept(visitor, data = StackCollectingVisitor.Data())
+	GListType(GBooleanType).accept(visitor, data = StackCollectingVisitor.Data())
+	GNonNullType(GBooleanType).accept(visitor, data = StackCollectingVisitor.Data())
+	GFloatType.accept(visitor, data = StackCollectingVisitor.Data())
+	GIdType.accept(visitor, data = StackCollectingVisitor.Data())
+	GIntType.accept(visitor, data = StackCollectingVisitor.Data())
+	GStringType.accept(visitor, data = StackCollectingVisitor.Data())
+}
+
+/** Every node kind `StackCollectingVisitor` can record, sorted — the yardstick the fixture above is measured against. */
+private val allNodeKinds = listOf(
+	"Argument",
+	"ArgumentDefinition",
+	"BooleanValue",
+	"Directive",
+	"DirectiveDefinition",
+	"Document",
+	"EnumType",
+	"EnumTypeExtension",
+	"EnumValue",
+	"EnumValueDefinition",
+	"FieldDefinition",
+	"FieldSelection",
+	"FloatValue",
+	"FragmentDefinition",
+	"FragmentSelection",
+	"InlineFragmentSelection",
+	"InputObjectType",
+	"InputObjectTypeExtension",
+	"IntValue",
+	"InterfaceType",
+	"InterfaceTypeExtension",
+	"ListTypeRef",
+	"ListValue",
+	"Name",
+	"NamedTypeRef",
+	"NonNullTypeRef",
+	"NullValue",
+	"ObjectType",
+	"ObjectTypeExtension",
+	"ObjectValue",
+	"OperationDefinition",
+	"OperationTypeDefinition",
+	"ScalarType",
+	"ScalarTypeExtension",
+	"SchemaDefinition",
+	"SchemaExtensionDefinition",
+	"SelectionSet",
+	"StringValue",
+	"SyntheticNode",
+	"UnionType",
+	"UnionTypeExtension",
+	"VariableDefinition",
+	"VariableRef",
+)

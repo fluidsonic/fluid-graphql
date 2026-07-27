@@ -7,15 +7,19 @@ internal class AllVariablesUsedRule : ValidationRule() {
 
 	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		variableDefs = mutableListOf()
-		visit.visitChildren()
-		val usedNames = collectVariableRefs(definition.selectionSet, data.document).map { it.first }.toSet()
-		variableDefs.filter { it.name !in usedNames }
-			.forEach { varDef ->
-				data.reportError(
-					message = "Variable '\$${varDef.name}' is defined but never used.",
-					nodes = listOf(varDef.nameNode),
-				)
-			}
+
+		// The definitions are collected by `onVariableDefinition` while the operation's subtree is traversed, so
+		// they are only complete once the traversal leaves the operation again.
+		visit.afterChildren {
+			val usedNames = collectVariableRefs(definition.selectionSet, data.document).map { it.first }.toSet()
+			variableDefs.filter { it.name !in usedNames }
+				.forEach { varDef ->
+					data.reportError(
+						message = "Variable '\$${varDef.name}' is defined but never used.",
+						nodes = listOf(varDef.nameNode),
+					)
+				}
+		}
 	}
 
 	override fun onVariableDefinition(definition: GVariableDefinition, data: ValidationContext, visit: Visit) {

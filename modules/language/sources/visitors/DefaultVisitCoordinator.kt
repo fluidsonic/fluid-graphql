@@ -7,6 +7,9 @@ private class DefaultVisitCoordinator<Result, in Data>(private val visitor: Visi
 
 private class DefaultVisit<Result, Data>(node: GNode, private val data: Data, private val visitor: Visitor<Result, Data>) : Visit {
 
+	// The blocks registered for the node currently being visited. Saved and restored around a node's children so
+	// that a block always runs when the traversal leaves the node it was registered for.
+	private var afterChildrenBlocks: MutableList<() -> Unit>? = null
 	private var result: Result? = null
 	private var state = State.initial
 	private var walker = node.walk()
@@ -29,6 +32,13 @@ private class DefaultVisit<Result, Data>(node: GNode, private val data: Data, pr
 		}
 	}
 
+	override fun afterChildren(block: () -> Unit) {
+		check(state !== State.completed && state !== State.initial) { ".afterChildren() cannot be called here." }
+
+		val blocks = afterChildrenBlocks ?: mutableListOf<() -> Unit>().also { afterChildrenBlocks = it }
+		blocks += block
+	}
+
 	private fun dispatchVisit(node: GNode, data: Data) {
 		if (isAborting) {
 			return
@@ -37,8 +47,10 @@ private class DefaultVisit<Result, Data>(node: GNode, private val data: Data, pr
 		// We don't put `this.data` on the stack.
 		// It's only relevant in `visitChildren()`, which has already been called at this point, and it can only be called at most once per node.
 
+		val previousAfterChildrenBlocks = afterChildrenBlocks
 		val previousState = state
 
+		this.afterChildrenBlocks = null
 		this.state = State.beforeVisitingChildren
 
 		try {
@@ -47,7 +59,16 @@ private class DefaultVisit<Result, Data>(node: GNode, private val data: Data, pr
 			if (state === State.beforeVisitingChildren) {
 				visitChildren()
 			}
+
+			// Only a node whose children were actually visited is left again: skipping them ends the visit of the
+			// node right there, and aborting ends it for every node still open. Running the blocks here rather than
+			// on the way out of the `try` also drops them when an exception unwinds the traversal.
+			if (state === State.afterVisitingChildren) {
+				afterChildrenBlocks?.forEach { block -> block() }
+			}
 		} finally {
+			this.afterChildrenBlocks = previousAfterChildrenBlocks
+
 			if (!isAborting) {
 				this.state = previousState
 			}

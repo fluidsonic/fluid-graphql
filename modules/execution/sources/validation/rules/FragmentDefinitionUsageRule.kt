@@ -6,30 +6,32 @@ internal class FragmentDefinitionUsageRule : ValidationRule() {
 	private val fragmentDefinitions = mutableListOf<GFragmentDefinition>()
 	private val operationDefinitions = mutableListOf<GOperationDefinition>()
 
+	// Both definition lists are collected while the document's subtree is traversed, so which fragments went unused
+	// is only known once the traversal leaves the document again.
 	override fun onDocument(document: GDocument, data: ValidationContext, visit: Visit) {
-		visit.visitChildren()
+		visit.afterChildren {
+			val referencedFragmentNames = mutableSetOf<String>()
 
-		val referencedFragmentNames = mutableSetOf<String>()
-
-		for (operationDefinition in operationDefinitions) {
-			collectReferencedFragmentNames(
-				document = data.document,
-				set = operationDefinition.selectionSet,
-				target = referencedFragmentNames,
-			)
-		}
-
-		fragmentDefinitions
-			.filterNot { referencedFragmentNames.contains(it.name) }
-			.groupBy { it.name }
-			.values
-			.map { it.first() }
-			.forEach { fragment ->
-				data.reportError(
-					message = "Fragment '${fragment.name}' is not used by any operation.",
-					nodes = listOf(fragment.nameNode),
+			for (operationDefinition in operationDefinitions) {
+				collectReferencedFragmentNames(
+					document = data.document,
+					set = operationDefinition.selectionSet,
+					target = referencedFragmentNames,
 				)
 			}
+
+			fragmentDefinitions
+				.filterNot { referencedFragmentNames.contains(it.name) }
+				.groupBy { it.name }
+				.values
+				.map { it.first() }
+				.forEach { fragment ->
+					data.reportError(
+						message = "Fragment '${fragment.name}' is not used by any operation.",
+						nodes = listOf(fragment.nameNode),
+					)
+				}
+		}
 	}
 
 	override fun onFragmentDefinition(definition: GFragmentDefinition, data: ValidationContext, visit: Visit) {

@@ -14,8 +14,6 @@
     <ID>LongMethod:DirectiveLocationValidityRuleTest.kt:DirectiveLocationValidityRuleTest$@Test fun testAcceptsDirectiveInSpecifiedLocations</ID>
     <ID>LongMethod:DirectiveLocationValidityRuleTest.kt:DirectiveLocationValidityRuleTest$@Test fun testRejectsDirectiveInUnspecifiedLocation</ID>
     <ID>LongMethod:ExecutionTests.kt:ExecutionTests$@Test fun testExecutesWithAComplexSchema</ID>
-    <ID>LongMethod:FieldSubselectionRuleTest.kt:FieldSubselectionRuleTest$@Test fun testRejectsCompositeTypeFieldsWithoutSubselection</ID>
-    <ID>LongMethod:FieldSubselectionRuleTest.kt:FieldSubselectionRuleTest$@Test fun testRejectsLeafFieldsWithSubselection</ID>
     <ID>LongMethod:FragmentCycleDetectionRuleTest.kt:FragmentCycleDetectionRuleTest$@Test fun testRejectsCyclicFragmentReferences</ID>
     <ID>LongMethod:FragmentDefinitionNameExclusivityRuleTest.kt:FragmentDefinitionNameExclusivityRuleTest$@Test fun testReportsAllProblematicFragments</ID>
     <ID>LongMethod:FragmentSelectionPossibilityRuleTest.kt:FragmentSelectionPossibilityRuleTest$@Test fun testAcceptsFragmentSelectionsOnPossibleTypes</ID>
@@ -43,7 +41,6 @@
     <ID>ReturnCount:DefaultSelectionSetExecutor.kt:DefaultSelectionSetExecutor$private fun collectFieldSelections: GResult&lt;Map&lt;String, List&lt;GFieldSelection>>></ID>
     <ID>ReturnCount:DefaultSelectionSetExecutor.kt:DefaultSelectionSetExecutor$private fun collectFieldSelections: GResult&lt;Nothing?></ID>
     <ID>ReturnCount:DirectiveLocationValidityRule.kt:DirectiveLocationValidityRule$override fun onDirective</ID>
-    <ID>ReturnCount:FieldSubselectionRule.kt:FieldSubselectionRule$override fun onFieldSelection</ID>
     <ID>ReturnCount:FragmentSelectionPossibilityRule.kt:FragmentSelectionPossibilityRule$override fun onFragmentSelection</ID>
     <ID>ReturnCount:FragmentSelectionPossibilityRule.kt:FragmentSelectionPossibilityRule$override fun onInlineFragmentSelection</ID>
     <ID>ReturnCount:FragmentTypeConditionValidityRule.kt:FragmentTypeConditionValidityRule$override fun onInlineFragmentSelection</ID>

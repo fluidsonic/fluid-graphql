@@ -79,9 +79,7 @@ public class GSchema internal constructor(
 		GOperationType.subscription -> subscriptionType
 	}
 
-	override fun toString(): String = GDocument(
-		definitions = document.definitions.filterIsInstance<GTypeSystemDefinition>(),
-	).toString()
+	override fun toString(): String = mergedTypeSystemDocument(document = document, mergedTypesByName = typesByName).toString()
 
 	/**
 	 * Validates that [value] is a legal GraphQL value for [type].
@@ -390,10 +388,16 @@ public class GSchema internal constructor(
  * `schema { ... }` definition or by convention: `Query`, `Mutation`, `Subscription`), and
  * adds the standard built-in directives if they are not already defined in the document.
  *
+ * Type system extensions (`extend type Foo { … }`, `extend schema { … }`, …) are merged into the
+ * definitions they extend; see [mergeTypeExtensions]. An extension of a definition the document does
+ * not contain is silently ignored. An operation type declared by a schema extension overrides the one
+ * declared by the `schema { … }` definition, or the conventional root type name when there is none.
+ *
  * Set [supportOptional] to `true` to also register the non-standard `@optional` directive.
  */
 public fun GSchema(document: GDocument, supportOptional: Boolean = false): GSchema {
 	val typeSystemDefinitions = document.definitions.filterIsInstance<GTypeSystemDefinition>()
+	val typeSystemExtensions = document.definitions.filterIsInstance<GTypeSystemExtension>()
 
 	val directiveDefinitions = typeSystemDefinitions.filterIsInstance<GDirectiveDefinition>().toMutableList()
 
@@ -416,28 +420,28 @@ public fun GSchema(document: GDocument, supportOptional: Boolean = false): GSche
 
 	val schemaDefinition = typeSystemDefinitions.filterIsInstance<GSchemaDefinition>()
 		.singleOrNull() // FIXME
-	val typeDefinitions = typeSystemDefinitions.filterIsInstance<GNamedType>()
+	val schemaExtensions = typeSystemExtensions.filterIsInstance<GSchemaExtension>()
 
-	val mutationTypeRef: GNamedTypeRef?
-	val queryTypeRef: GNamedTypeRef?
-	val subscriptionTypeRef: GNamedTypeRef?
+	// Extensions must be merged here rather than in the constructor: the constructor derives interface and
+	// union membership from the types it receives, which would go out of sync with the merged ones.
+	val typeDefinitions = mergeTypeExtensions(
+		typeDefinitions = typeSystemDefinitions.filterIsInstance<GNamedType>(),
+		typeExtensions = typeSystemExtensions.filterIsInstance<GTypeExtension>(),
+	)
 
-	if (schemaDefinition !== null) {
-		mutationTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.mutation)?.type
-		queryTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.query)?.type
-		subscriptionTypeRef = schemaDefinition.operationTypeDefinition(GOperationType.subscription)?.type
-	} else {
-		mutationTypeRef = GTypeRef(GLanguage.defaultMutationTypeName)
-		queryTypeRef = GTypeRef(GLanguage.defaultQueryTypeName)
-		subscriptionTypeRef = GTypeRef(GLanguage.defaultSubscriptionTypeName)
-	}
+	fun rootTypeRef(operationType: GOperationType, conventionalTypeName: String): GNamedTypeRef? =
+		schemaExtensions.asReversed().firstNotNullOfOrNull { it.operationTypeDefinition(operationType) }?.type
+			?: when (schemaDefinition) {
+				null -> GTypeRef(conventionalTypeName)
+				else -> schemaDefinition.operationTypeDefinition(operationType)?.type
+			}
 
 	return GSchema(
 		directiveDefinitions = directiveDefinitions,
 		document = document,
-		mutationType = mutationTypeRef,
-		queryType = queryTypeRef,
-		subscriptionType = subscriptionTypeRef,
+		mutationType = rootTypeRef(operationType = GOperationType.mutation, conventionalTypeName = GLanguage.defaultMutationTypeName),
+		queryType = rootTypeRef(operationType = GOperationType.query, conventionalTypeName = GLanguage.defaultQueryTypeName),
+		subscriptionType = rootTypeRef(operationType = GOperationType.subscription, conventionalTypeName = GLanguage.defaultSubscriptionTypeName),
 		types = typeDefinitions,
 	)
 }

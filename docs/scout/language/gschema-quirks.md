@@ -8,4 +8,4 @@ Silent failure modes in `modules/language/sources/model/GSchema.kt` and directiv
 
 **`GDirectiveDefinition` drops unknown locations.** Its constructor resolves location names via `mapNotNullTo` against the `GDirectiveLocation` enum (`modules/language/sources/model/nodes/GNode.kt`); unrecognized names are silently omitted from `locations` while remaining in `locationNodes` — printed SDL and resolved semantics diverge with no error.
 
-Related: nonstandard-spec-extensions.md, ../execution/oneof-enforcement.md, ../execution/omitted-nullable-arguments.md.
+Related: type-system-extension-merging.md, nonstandard-spec-extensions.md, ../execution/oneof-enforcement.md, ../execution/omitted-nullable-arguments.md.

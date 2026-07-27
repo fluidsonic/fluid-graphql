@@ -6,6 +6,6 @@ Two ways the parser rejects input that the GraphQL grammar itself accepts; matte
 
 **`maxTokens` is a per-call, opt-in cap.** `GDocument.parse(source, maxTokens)` defaults to `null`, meaning unlimited; the executor's `documentSource` overloads never pass it, so requests through `GExecutor` are uncapped. Enforcement lives in `Lexer.readCountedToken`, which charges every token except comments and end-of-input — whitespace and commas never become tokens, and a whole block string counts as one — and aborts with a syntax error once the cap is exceeded. Because a document of exactly `maxTokens` tokens still parses, off-by-one expectations in tests matter (`modules/language/tests/parsing/LexerTests.kt`).
 
-The cap does not bound recursion: parsing is recursive descent, so deeply nested input can still exhaust the stack.
+Neither cap bounds recursion: parsing is recursive descent, so deeply nested input exhausts the stack — and that is now the *first* thing to give way in the whole pipeline. See nesting-depth-limits.md.
 
-Related: ../spec/graphql-js-parity.md, printer-lossiness.md.
+Related: ../spec/graphql-js-parity.md, printer-lossiness.md, nesting-depth-limits.md.

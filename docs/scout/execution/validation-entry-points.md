@@ -11,6 +11,6 @@ So the *same* document answers differently depending on the overload — the `do
 
 An unvalidated document does not produce errors for what validation would have caught: an unknown field, a spread of an undefined fragment, and an unresolvable type condition are all **skipped**, leaving the response key absent rather than present-and-null. Two different mechanisms do it: an unknown field selection yields the shared `NoValue` sentinel (`modules/execution/sources/utility/NoValue.kt`) from `DefaultFieldSelectionExecutor.executeField`, which `isAbsent` filters out of the result map, while the fragment cases return early during `collectFieldSelections` — both in `DefaultSelectionSetExecutor`. Pinned by `modules/execution/tests/execution/SkippedSelectionTests.kt` and `ErrorTests` (`testInvalidFieldInNonValidatedQueryIsSkipped`).
 
-`GDocument.validate(schema)` (`modules/execution/sources/extensions/GDocument.execution.kt`) flags every error it returns as `isRequestError`.
+`GDocument.validate(schema)` (`modules/execution/sources/extensions/GDocument.execution.kt`) flags every error it returns as `isRequestError`, and caps the result at 101 errors with no way to change that — see validation-error-limit.md.
 
-Related: error-classification.md, error-channels.md, ../spec/graphql-js-parity.md.
+Related: error-classification.md, error-channels.md, validation-error-limit.md, ../spec/graphql-js-parity.md.

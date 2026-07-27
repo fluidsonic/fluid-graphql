@@ -5,9 +5,10 @@ internal class VariablesInAllowedPositionRule : ValidationRule() {
 
 	private var varDefMap = mutableMapOf<String, GVariableDefinition>()
 
+	// `onVariableRef` relies on the operation's own definitions only, and a variable reference can never precede
+	// them, so this needs nothing but a clean map before the operation's subtree is traversed.
 	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		varDefMap = mutableMapOf()
-		visit.visitChildren()
 	}
 
 	override fun onVariableDefinition(definition: GVariableDefinition, data: ValidationContext, visit: Visit) {

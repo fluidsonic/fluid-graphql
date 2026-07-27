@@ -7,14 +7,18 @@ internal class AllVariableUsesDefinedRule : ValidationRule() {
 
 	override fun onOperationDefinition(definition: GOperationDefinition, data: ValidationContext, visit: Visit) {
 		definedVarNames = mutableSetOf()
-		visit.visitChildren()
-		val usages = collectVariableRefs(definition.selectionSet, data.document)
-		for ((name, node) in usages) {
-			if (name !in definedVarNames) {
-				data.reportError(
-					message = "Variable '\$$name' is not defined.",
-					nodes = listOf(node),
-				)
+
+		// The names are collected by `onVariableDefinition` while the operation's subtree is traversed, so they are
+		// only complete once the traversal leaves the operation again.
+		visit.afterChildren {
+			val usages = collectVariableRefs(definition.selectionSet, data.document)
+			for ((name, node) in usages) {
+				if (name !in definedVarNames) {
+					data.reportError(
+						message = "Variable '\$$name' is not defined.",
+						nodes = listOf(node),
+					)
+				}
 			}
 		}
 	}

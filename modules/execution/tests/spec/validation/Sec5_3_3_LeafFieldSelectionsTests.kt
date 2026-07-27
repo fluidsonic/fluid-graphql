@@ -1,8 +1,6 @@
 package testing
 
-import io.fluidsonic.graphql.FieldSubselectionRule
-import io.fluidsonic.graphql.document
-import io.fluidsonic.graphql.schema
+import io.fluidsonic.graphql.ScalarLeavesRule
 import kotlin.test.Test
 
 // GraphQL Spec §5.3.3 — Leaf Field Selections
@@ -11,7 +9,7 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testAcceptsScalarLeaf() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = emptyList(),
 			document = """
 				|{ name }
@@ -25,7 +23,7 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testAcceptsEnumLeaf() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = emptyList(),
 			document = """
 				|{ status }
@@ -40,7 +38,7 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testAcceptsObjectWithSelection() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = emptyList(),
 			document = """
 				|{ dog { name } }
@@ -55,7 +53,7 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testAcceptsInterfaceWithSelection() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = emptyList(),
 			document = """
 				|{ pet { name } }
@@ -71,7 +69,7 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testAcceptsUnionWithSelection() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = emptyList(),
 			document = """
 				|{ catOrDog { __typename } }
@@ -88,19 +86,15 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testRejectsScalarWithSelection() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = listOf(
 				"""
-				Cannot select children of 'String' field 'name'.
+					Field "name" must not have a selection since type "String" has no subfields.
 
-				<document>:1:8
-				1 | { name { foo } }
-				  |        ^
-
-				<document>:1:14
-				1 | type Query { name: String }
-				  |              ^
-			""",
+					<document>:1:8
+					1 | { name { foo } }
+					  |        ^
+				""",
 			),
 			document = """
 				|{ name { foo } }
@@ -114,20 +108,15 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testRejectsEnumWithSelection() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = listOf(
 				"""
-				Cannot select children of 'Status' field 'status'.
+					Field "status" must not have a selection since type "Status" has no subfields.
 
-				<document>:1:10
-				1 | { status { foo } }
-				  |          ^
-
-				<document>:1:14
-				1 | type Query { status: Status }
-				  |              ^
-				2 | enum Status { ACTIVE INACTIVE }
-			""",
+					<document>:1:10
+					1 | { status { foo } }
+					  |          ^
+				""",
 			),
 			document = """
 				|{ status { foo } }
@@ -142,20 +131,15 @@ class Sec5_3_3_LeafFieldSelectionsTests {
 	@Test
 	fun testRejectsObjectWithoutSelection() {
 		assertValidationRule(
-			rule = FieldSubselectionRule,
+			rule = ScalarLeavesRule,
 			errors = listOf(
 				"""
-				Must select children of 'Dog' field 'dog'.
+					Field "dog" of type "Dog" must have a selection of subfields. Did you mean "dog { ... }"?
 
-				<document>:1:3
-				1 | { dog }
-				  |   ^
-
-				<document>:1:14
-				1 | type Query { dog: Dog }
-				  |              ^
-				2 | type Dog { name: String }
-			""",
+					<document>:1:3
+					1 | { dog }
+					  |   ^
+				""",
 			),
 			document = """
 				|{ dog }

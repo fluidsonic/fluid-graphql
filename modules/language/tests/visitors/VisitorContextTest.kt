@@ -455,6 +455,41 @@ class VisitorContextTest {
 		assertEquals(expected = expectedElements, actual = actualElements)
 	}
 
+	// `relatedSelectionSet` was assigned on entering a selection set but never restored on leaving it, so it
+	// leaked out of the first selection set visited and every later sibling saw it as its parent.
+	//
+	// Two sibling operations are the smallest fixture that shows this. The golden test above has a single
+	// selection set, which is precisely why the bug survived: with one selection set there is nothing to leak into.
+	@Test
+	fun testRestoresRelatedSelectionSetBetweenSiblingDefinitions() {
+		val document = GDocument.parse(
+			"""
+			|query A { field }
+			|query B { field }
+			""".trimMargin(),
+		).valueWithoutErrorsOrThrow()
+
+		val schema = GSchema.parse("type Query { field: String }").valueWithoutErrorsOrThrow()
+
+		val parentSelectionSets = mutableListOf<GSelectionSet?>()
+		val visitor = object : Visitor<Unit, VisitorContext>() {
+
+			override fun onNode(node: GNode, data: VisitorContext, visit: Visit) {
+				if (node is GSelectionSet) {
+					parentSelectionSets += data.relatedParentSelectionSet
+				}
+			}
+		}
+
+		document.accept(visitor.contextualize(VisitorContext(document, schema)))
+
+		assertEquals(
+			actual = parentSelectionSets,
+			expected = listOf<GSelectionSet?>(null, null),
+			message = "Each operation's top-level selection set is a root, so neither has a parent selection set.",
+		)
+	}
+
 	@Suppress("EqualsOrHashCode")
 	private data class CapturedElement(
 		val node: GNode,

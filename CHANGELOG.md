@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
+## [0.18.0] - 2026-07-27
+
+Validation now does what it claimed to. Several rules were partly or wholly inert, and the ones that
+ran were unsafe on deeply nested or hostile input — which matters because `GDocument.validate` runs
+on every request in a server. **Documents that passed validation before may now be rejected.** The
+public API is unchanged, so nothing needs recompiling to pick this up.
+
+### Added
+
+- `extend type`, `extend interface`, `extend union`, `extend enum`, `extend input`, `extend scalar`
+  and `extend schema` are merged into the schema. They were parsed, kept on `GSchema.document`, and
+  then silently discarded, so extending a type had no effect at all. Members accumulate in document
+  order, two extensions of one target both apply, and a member that collides with an existing one
+  replaces it in place. Extending a type the document does not define, or a built-in scalar, is
+  ignored rather than reported — reporting it needs schema validation, which does not exist yet.
+- Validation stops after 100 errors and appends `Too many validation errors, error limit reached.
+  Validation aborted.`, matching graphql-js. A document with thousands of violations is rejected
+  either way and no client can act on the rest, so the remaining work is wasted.
+
+### Changed
+
+- **Breaking.** Field selection merging (§5.3.2) and leaf field selections (§5.3.3) report
+  graphql-js's messages, error counts and error locations. Merging reports one error per conflicting
+  pair, so three mutually conflicting fields now yield three errors rather than one. §5.3.3 had two
+  overlapping rules reporting the same violation twice with different wording and now has one, so
+  those documents produce one error instead of two. Anything matching on message text breaks.
+- **Breaking.** Errors are reported in document order. They used to be grouped by rule, because each
+  rule walked the document separately.
+- `GSchema.toString()` reflects merged extensions rather than printing the unmerged document.
+- Deeply nested documents validate. Nesting cost one call frame per rule per level, so validation
+  gave out well before the parser did; the traversal is now iterative and the parser is the binding
+  limit.
+- Validation walks the document once for all rules instead of once per rule.
+
+### Fixed
+
+- Field selection merging checked only the first selection set of the first definition in a
+  document. Conflicts nested inside a field, and everything in every later operation or fragment,
+  went unreported.
+- A fragment that spreads itself crashed validation with a `StackOverflowError` instead of being
+  reported as a cycle — reachable from untrusted input.
+- Reordering the fields of an input object argument was reported as a conflict, though a different
+  field order is the same value.
+- Two fields of distinct composite types were reported as having incompatible types, which the
+  specification permits, and their sub-selections were then never checked for conflicts.
+- Conflicting field names and arguments went unreported when the parent type or the field definition
+  could not be resolved.
+- Leaf and composite selection errors were not reported at all for wrapped types such as `Int!` or
+  `[Dog]`; the surviving rule also now names the full wrapped type, as graphql-js does.
+- A visitor that skipped a subtree could hide it from the other visitors, dropping validation of
+  that subtree entirely, when it was the last one registered.
+
+
 ## [0.17.0] - 2026-07-26
 
 Behaviour is now checked against graphql-js 17.0.2 by executing it, not by reading it. Several

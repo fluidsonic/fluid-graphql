@@ -8,176 +8,202 @@ public open class VisitorContext(
 		{ name, parentType -> (parentType as? GNode.WithFieldDefinitions)?.fieldDefinition(name) },
 ) {
 
-	private var visitingNode: GNode? = null
+	// All traversal state lives in one holder so that [leave] can restore it by reassigning a single reference.
+	// It used to save and restore each field individually, and `relatedSelectionSet` was left out of both lists —
+	// it leaked out of the first selection set visited and every later sibling saw it as its parent.
+	//
+	// Internal rather than private only because [with] is an internal inline function, which cannot reference a
+	// private type. Treat both this and [State] as private to this class.
+	internal var state: State = State()
 
-	public var parentNode: GNode? = null
-		private set
+	// The state of every node the traversal has entered but not yet left, outermost first. It lives on the heap so
+	// that a traversal can be arbitrarily deep without holding one stack frame per level.
+	private val stateStack = mutableListOf<State>()
 
-	public var relatedArgumentDefinition: GArgumentDefinition? = null
-		private set
+	public val parentNode: GNode? get() = state.parentNode
+	public val relatedArgumentDefinition: GArgumentDefinition? get() = state.relatedArgumentDefinition
+	public val relatedDirective: GDirective? get() = state.relatedDirective
+	public val relatedDirectiveDefinition: GDirectiveDefinition? get() = state.relatedDirectiveDefinition
+	public val relatedFieldDefinition: GFieldDefinition? get() = state.relatedFieldDefinition
+	public val relatedFieldSelection: GFieldSelection? get() = state.relatedFieldSelection
+	public val relatedFragmentDefinition: GFragmentDefinition? get() = state.relatedFragmentDefinition
+	public val relatedOperationDefinition: GOperationDefinition? get() = state.relatedOperationDefinition
+	public val relatedParentSelectionSet: GSelectionSet? get() = state.relatedParentSelectionSet
+	public val relatedParentType: GType? get() = state.relatedParentType
+	public val relatedSelection: GSelection? get() = state.relatedSelection
+	public val relatedSelectionSet: GSelectionSet? get() = state.relatedSelectionSet
+	public val relatedType: GType? get() = state.relatedType
 
-	public var relatedDirective: GDirective? = null
-		private set
+	/**
+	 * Advances the context to [node], which must be a child of the node last entered, or the root if none was.
+	 *
+	 * Every [enter] must be paired with a [leave], which restores the state of the enclosing node.
+	 */
+	internal fun enter(node: GNode) {
+		val previousState = state
+		stateStack += previousState
 
-	public var relatedDirectiveDefinition: GDirectiveDefinition? = null
-		private set
+		// Everything the three `apply…` calls below read is still the enclosing node's state until that field is
+		// assigned, which is what lets them derive the new state from the old one.
+		val state = previousState.copy(parentNode = previousState.visitingNode, visitingNode = node)
+		this.state = state
 
-	public var relatedFieldDefinition: GFieldDefinition? = null
-		private set
+		applyTypeState(state, node)
+		applyDirectiveState(state, node)
+		applySelectionState(state, node)
+	}
 
-	public var relatedFieldSelection: GFieldSelection? = null
-		private set
+	/** Restores the state of the node enclosing the one last entered. Must be paired with an [enter]. */
+	internal fun leave() {
+		check(stateStack.isNotEmpty()) { "Cannot leave a node that was never entered." }
 
-	public var relatedFragmentDefinition: GFragmentDefinition? = null
-		private set
-
-	public var relatedOperationDefinition: GOperationDefinition? = null
-		private set
-
-	public var relatedParentSelectionSet: GSelectionSet? = null
-		private set
-
-	public var relatedParentType: GType? = null
-		private set
-
-	public var relatedSelection: GSelection? = null
-		private set
-
-	public var relatedSelectionSet: GSelectionSet? = null
-		private set
-
-	public var relatedType: GType? = null
-		private set
+		state = stateStack.removeAt(stateStack.size - 1)
+	}
 
 	internal inline fun <Result> with(node: GNode, block: () -> Result): Result {
-		val _parentNode = parentNode
-		parentNode = visitingNode
+		enter(node)
 
-		val _visitingNode = visitingNode
-		visitingNode = node
+		try {
+			return block()
+		} finally {
+			leave()
+		}
+	}
 
-		val _relatedArgumentDefinition = relatedArgumentDefinition
-		val _relatedDirective = relatedDirective
-		val _relatedDirectiveDefinition = relatedDirectiveDefinition
-		val _relatedFieldDefinition = relatedFieldDefinition
-		val _relatedFieldSelection = relatedFieldSelection
-		val _relatedFragmentDefinition = relatedFragmentDefinition
-		val _relatedOperationDefinition = relatedOperationDefinition
-		val _relatedParentSelectionSet = relatedParentSelectionSet
-		val _relatedParentType = relatedParentType
-		val _relatedSelection = relatedSelection
-		val _relatedType = relatedType
-
+	// The three `apply…` functions below are one dispatch over every node type that contributes state, split over
+	// three disjoint sets of node types so that no single `when` grows unreadable. Since the sets are disjoint, at
+	// most one of the three matches a given node and their order does not matter.
+	private fun applyTypeState(state: State, node: GNode) {
 		when (node) {
 			is GArgument -> {
-				val underlyingRelatedType = relatedType?.underlyingNamedType
+				val underlyingRelatedType = state.relatedType?.underlyingNamedType
 
-				relatedArgumentDefinition = when {
-					parentNode is GDirective -> relatedDirectiveDefinition?.argumentDefinition(node.name)
+				state.relatedArgumentDefinition = when {
+					state.parentNode is GDirective -> state.relatedDirectiveDefinition?.argumentDefinition(node.name)
 					underlyingRelatedType is GInputObjectType -> underlyingRelatedType.argumentDefinition(node.name)
-					parentNode is GFieldSelection -> relatedFieldDefinition?.argumentDefinition(node.name)
+					state.parentNode is GFieldSelection -> state.relatedFieldDefinition?.argumentDefinition(node.name)
 					else -> null
 				}
-				relatedParentType = when {
-					parentNode is GDirective -> null
+				state.relatedParentType = when {
+					state.parentNode is GDirective -> null
 					underlyingRelatedType is GInputObjectType -> underlyingRelatedType
-					parentNode is GFieldSelection -> relatedParentType
-					else -> relatedType
+					state.parentNode is GFieldSelection -> state.relatedParentType
+					else -> state.relatedType
 				}
-				relatedType = relatedArgumentDefinition?.let { schema.resolveType(it.type) }
+				state.relatedType = state.relatedArgumentDefinition?.let { schema.resolveType(it.type) }
 			}
 
 			is GArgumentDefinition -> {
-				relatedArgumentDefinition = node
-				relatedParentType = relatedType
-				relatedType = schema.resolveType(node.type)
+				state.relatedArgumentDefinition = node
+				state.relatedParentType = state.relatedType
+				state.relatedType = schema.resolveType(node.type)
 			}
 
+			is GFieldDefinition -> {
+				state.relatedFieldDefinition = node
+				state.relatedType = node.type.let { schema.resolveType(it) }
+			}
+
+			is GNamedType -> {
+				state.relatedParentType = null
+				state.relatedType = node
+			}
+
+			is GVariableDefinition ->
+				state.relatedType = schema.resolveType(node.type)
+
+			else ->
+				Unit
+		}
+	}
+
+	private fun applyDirectiveState(state: State, node: GNode) {
+		when (node) {
 			is GDirective -> {
-				relatedDirective = node
-				relatedDirectiveDefinition = schema.directiveDefinition(node.name)
-				relatedType = null
+				state.relatedDirective = node
+				state.relatedDirectiveDefinition = schema.directiveDefinition(node.name)
+				state.relatedType = null
 			}
 
 			is GDirectiveDefinition ->
-				relatedDirectiveDefinition = node
+				state.relatedDirectiveDefinition = node
 
-			is GFieldDefinition -> {
-				relatedFieldDefinition = node
-				relatedType = relatedFieldDefinition?.type?.let { schema.resolveType(it) }
-			}
+			else ->
+				Unit
+		}
+	}
 
+	private fun applySelectionState(state: State, node: GNode) {
+		when (node) {
 			is GFieldSelection -> {
-				relatedFieldDefinition = (_relatedParentType as? GNamedType)?.let { fieldDefinition(node.name, it) }
-				relatedFieldSelection = node
-				relatedSelection = node
-				relatedType = relatedFieldDefinition
+				state.relatedFieldDefinition = (state.relatedParentType as? GNamedType)?.let { fieldDefinition(node.name, it) }
+				state.relatedFieldSelection = node
+				state.relatedSelection = node
+				state.relatedType = state.relatedFieldDefinition
 					?.type
 					?.let { schema.resolveType(it) }
 			}
 
 			is GFragmentDefinition -> {
-				relatedFragmentDefinition = node
-				relatedType = schema.resolveType(node.typeCondition)
-				relatedParentType = relatedType
+				state.relatedFragmentDefinition = node
+				state.relatedType = schema.resolveType(node.typeCondition)
+				state.relatedParentType = state.relatedType
 			}
 
 			is GFragmentSelection -> {
-				relatedFragmentDefinition = document.fragment(node.name)
-				relatedSelection = node
-				relatedType = relatedFragmentDefinition?.let { schema.resolveType(it.typeCondition) }
+				state.relatedFragmentDefinition = document.fragment(node.name)
+				state.relatedSelection = node
+				state.relatedType = state.relatedFragmentDefinition?.let { schema.resolveType(it.typeCondition) }
 			}
 
 			is GInlineFragmentSelection -> {
-				relatedFragmentDefinition = null
-				relatedSelection = node
-				relatedType = when (val typeCondition = node.typeCondition) {
-					null -> relatedParentType
+				state.relatedFragmentDefinition = null
+				state.relatedSelection = node
+				state.relatedType = when (val typeCondition = node.typeCondition) {
+					null -> state.relatedParentType
 					else -> schema.resolveType(typeCondition)
 				}
 			}
 
-			is GNamedType -> {
-				relatedParentType = null
-				relatedType = node
-			}
-
 			is GOperationDefinition -> {
-				relatedOperationDefinition = node
-				relatedType = schema.rootTypeForOperationType(node.type)
+				state.relatedOperationDefinition = node
+				state.relatedType = schema.rootTypeForOperationType(node.type)
 			}
 
 			is GSelectionSet -> {
-				relatedParentType = _relatedType?.underlyingNamedType
-				relatedParentSelectionSet = relatedSelectionSet
-				relatedSelectionSet = node
-				relatedType = null
+				state.relatedParentType = state.relatedType?.underlyingNamedType
+				state.relatedParentSelectionSet = state.relatedSelectionSet
+				state.relatedSelectionSet = node
+				state.relatedType = null
 			}
-
-			is GVariableDefinition ->
-				relatedType = schema.resolveType(node.type)
 
 			else ->
 				Unit
 		}
-
-		try {
-			return block()
-		} finally {
-			parentNode = _parentNode
-			visitingNode = _visitingNode
-
-			relatedArgumentDefinition = _relatedArgumentDefinition
-			relatedDirective = _relatedDirective
-			relatedDirectiveDefinition = _relatedDirectiveDefinition
-			relatedFieldDefinition = _relatedFieldDefinition
-			relatedFieldSelection = _relatedFieldSelection
-			relatedFragmentDefinition = _relatedFragmentDefinition
-			relatedOperationDefinition = _relatedOperationDefinition
-			relatedParentSelectionSet = _relatedParentSelectionSet
-			relatedParentType = _relatedParentType
-			relatedSelection = _relatedSelection
-			relatedType = _relatedType
-		}
 	}
+
+	/**
+	 * The traversal state for one node.
+	 *
+	 * Every mutable field of the context lives here so that entering a node is a [copy] and leaving it is a single
+	 * reassignment. Adding a field here therefore cannot go on to be forgotten by a restore.
+	 *
+	 * Internal rather than private only so that the internal inline [with] can reference it.
+	 */
+	internal data class State(
+		var parentNode: GNode? = null,
+		var relatedArgumentDefinition: GArgumentDefinition? = null,
+		var relatedDirective: GDirective? = null,
+		var relatedDirectiveDefinition: GDirectiveDefinition? = null,
+		var relatedFieldDefinition: GFieldDefinition? = null,
+		var relatedFieldSelection: GFieldSelection? = null,
+		var relatedFragmentDefinition: GFragmentDefinition? = null,
+		var relatedOperationDefinition: GOperationDefinition? = null,
+		var relatedParentSelectionSet: GSelectionSet? = null,
+		var relatedParentType: GType? = null,
+		var relatedSelection: GSelection? = null,
+		var relatedSelectionSet: GSelectionSet? = null,
+		var relatedType: GType? = null,
+		var visitingNode: GNode? = null,
+	)
 }

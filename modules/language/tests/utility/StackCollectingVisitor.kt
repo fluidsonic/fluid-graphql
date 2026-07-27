@@ -54,16 +54,35 @@ internal class StackCollectingVisitor(
 ) : Visitor.Typed<Unit, StackCollectingVisitor.Data>() {
 
 	private fun on(node: GNode, name: String, data: Data, visit: Visit) {
-		target.currentStack += "$name$suffix($data)"
-		target.stacks += target.currentStack.toList()
+		val entry = Target.Entry(label = "$name$suffix($data)", suffix = suffix)
+		target.currentStack += entry
+		target.stacks += target.currentStack.map { it.label }
+		target.events += Target.Event(entry = entry, isEnter = true)
 
 		when {
-			abortsInNode(node) -> visit.abort()
-			skipsChildrenInNode(node) -> visit.skipChildren()
-			else -> visit.visitChildren(Data(value = data.value + 1, suffix = suffix))
-		}
+			// Skipping or aborting ends this visitor's business with the node right here — no `afterChildren` block
+			// would run for it — so the entry closes now, even though the traversal may go on to visit the node's
+			// children on behalf of the other visitors.
+			abortsInNode(node) -> {
+				visit.abort()
+				target.currentStack -= entry
+			}
 
-		target.currentStack.removeAt(target.currentStack.size - 1)
+			skipsChildrenInNode(node) -> {
+				visit.skipChildren()
+				target.currentStack -= entry
+			}
+
+			// Removed by identity, not by position: the visitors of a parallel traversal leave a node in visiting
+			// order, so this visitor's entry need not be the innermost one left.
+			else -> {
+				visit.afterChildren {
+					target.currentStack -= entry
+					target.events += Target.Event(entry = entry, isEnter = false)
+				}
+				visit.visitChildren(Data(value = data.value + 1, suffix = suffix))
+			}
+		}
 	}
 
 	override fun onArgument(argument: GArgument, data: Data, visit: Visit) = on(argument, "Argument", data, visit)
@@ -118,7 +137,34 @@ internal class StackCollectingVisitor(
 
 	class Target {
 
-		val currentStack = mutableListOf<String>()
+		val currentStack = mutableListOf<Entry>()
 		val stacks = mutableListOf<List<String>>()
+
+		/**
+		 * Every enter and leave in the order they happened, so that the two channels below can be read separately
+		 * while their relative order remains available for asserting the LIFO nesting of a whole traversal.
+		 */
+		val events = mutableListOf<Event>()
+
+		/** Labels of the nodes entered, in visiting order. */
+		val enters: List<String> get() = events.filter { it.isEnter }.map { it.entry.label }
+
+		/**
+		 * Labels of the nodes left, in the order their `afterChildren` blocks ran. A node a visitor skipped the
+		 * children of, or was already aborted in, is absent — that visitor never leaves it.
+		 */
+		val leaves: List<String> get() = events.filterNot { it.isEnter }.map { it.entry.label }
+
+		/** Labels entered by the visitor with [suffix], in visiting order. */
+		fun entersOf(suffix: String) = events.filter { it.isEnter && it.entry.suffix == suffix }.map { it.entry.label }
+
+		/** Labels left by the visitor with [suffix], in the order their `afterChildren` blocks ran. */
+		fun leavesOf(suffix: String) = events.filterNot { it.isEnter }.filter { it.entry.suffix == suffix }.map { it.entry.label }
+
+		/** One visitor's presence in one node, identified by object rather than by [label], which repeats. */
+		class Entry(val label: String, val suffix: String = "")
+
+		/** One visitor entering or leaving one node, carrying the [entry] so a leave can be matched to its enter. */
+		class Event(val entry: Entry, val isEnter: Boolean)
 	}
 }

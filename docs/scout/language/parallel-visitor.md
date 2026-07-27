@@ -1,15 +1,15 @@
 # parallelize() is a single-pass multiplexer, not concurrency
 
-Semantics of `Iterable<Visitor>.parallelize()` (`modules/language/sources/visitors/ParallelVisitor.kt`); matters for validation (all ~30 rules run through it) and any multi-visitor code.
+Semantics of `Iterable<Visitor>.parallelize()` (`modules/language/sources/visitors/ParallelVisitor.kt`); matters for validation (all 29 rules run through it) and any multi-visitor code.
 
-No threads or coroutines are involved. `ParallelVisitor` runs all visitors in lock-step over one shared walker: for each node, every visitor's handler runs (each staying on the stack while its siblings run) before any child is descended into. Rules therefore share one deterministic traversal, firing per node in registration order.
+No threads or coroutines are involved. `ParallelVisitor` runs all visitors in lock-step over one shared walker: for each node every visitor's `onNode` runs and returns before the next visitor sees that node, and the subtree is traversed only afterwards. Rules therefore share one deterministic traversal, firing per node in registration order — so their errors come out in document order rather than grouped by rule.
 
 Control-flow semantics invert naive expectations:
 
-- **skipChildren is isolated per visitor:** a visitor calling `skipChildren()` is dropped from deeper nodes, but the walker still descends as long as any other visitor has not skipped. One validation rule pruning its own view does not hide nodes from sibling rules.
-- **abort removes only the aborting visitor;** traversal stops entirely only when every visitor has aborted.
-- **Traversal advances via mutual recursion:** a visitor's `visitChildren()` call does not visit children directly — it triggers the parent to dispatch the next sibling visitor (or, once all visitors have run for the node, to descend). `ParallelVisitor.onNode` calls `skipChildren()` on the outer Visit because it orchestrates traversal itself (a FIXME there says traversal should instead be orchestrated via Visit).
-- `parallelize()` on an empty iterable returns `Visitor.noOp()`, but `ParallelVisit` itself requires a non-empty visitor list.
+- **Traversal is iterative over a heap stack** (`ParallelVisit.step`), not recursion through the visitors, so nesting costs heap rather than one call frame per visitor (nesting-depth-limits.md). Consequence: `visitChildren()` returns *before* the subtree is traversed and only records the data the subtree is visited with. Work that must follow a subtree belongs in `visit.afterChildren { … }` — see visitor-traversal.md.
+- **skipChildren is isolated per visitor:** a skipping visitor sees no node of that subtree, but the walker still descends as long as any other visitor has not skipped (`ParallelVisit.shouldDescend`). A skipped node runs no `afterChildren` block for that visitor either, so registering one and then skipping drops it silently.
+- **abort removes only the aborting visitor;** traversal stops entirely only when every visitor has aborted. An abort supersedes that visitor's skip.
+- **Never compose as `parallelize().contextualize()`.** It typechecks, but advances the `VisitorContext` only for the root node and thereby silences most validation rules; use `parallelizeContextualized()`. Verified to bite — see the `contextDependentRuleMarkers` comment in `modules/execution/tests/validation/ValidatorCorpusTest.kt`.
 
 The golden-stack tests pin the exact interleaving — see ../testing/ast-golden-tests.md.
 

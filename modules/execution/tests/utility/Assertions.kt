@@ -88,6 +88,7 @@ internal fun assertValidationRule(rule: ValidationRule.Provider, errors: List<St
 	val context = ValidationContext(
 		document = document,
 		schema = schema,
+		maxErrors = Int.MAX_VALUE, // A single rule's expectations are pinned in full, so they must never be capped.
 	)
 
 	document.accept(rule.provide().contextualize(context))

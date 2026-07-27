@@ -1,271 +1,434 @@
 package io.fluidsonic.graphql
 
 // FIXME do we need to consider @skip and @include? if so, can we merge the code with Executor.collectFieldSelections?
-// FIXME will give false-negatives if two fragments are in conflict, but are never possible at the same time
-//       Maybe if there is a conflict run a more thorough check that validates all possible object types independently.
+// This is a port of graphql-js' OverlappingFieldsCanBeMergedRule.
 // https://spec.graphql.org/draft/#sec-Field-Selection-Merging
-internal object SelectionUnambiguityRule : ValidationRule.Singleton() {
+internal class SelectionUnambiguityRule : ValidationRule() {
 
+	private val cachedFieldsAndFragmentSpreads: MutableMap<GSelectionSet, FieldsAndFragmentSpreads> = mutableMapOf()
+	private val comparedFieldsAndFragmentPairs = OrderedPairSet<FieldMap, String>()
+	private val comparedFragmentPairs = PairSet()
+
+	// Runs for every selection set, like upstream. Memoization — not a narrower hook — is what keeps this from
+	// re-walking or double-reporting.
 	override fun onSelectionSet(set: GSelectionSet, data: ValidationContext, visit: Visit) {
-		// We only care about top-level selection sets in operations and fragment definitions.
-		// Nested selections will already be checked recursively through these.
-		if (data.relatedParentSelectionSet !== null) {
+		val conflicts = findConflictsWithinSelectionSet(
+			data = data,
+			parentType = data.relatedParentType?.underlyingNamedType,
+			selectionSet = set,
+		)
+
+		for (conflict in conflicts) {
+			data.reportError(
+				message = "Fields \"${conflict.responseName}\" conflict because ${conflict.reason.describe()}. " +
+					"Use different aliases on the fields to fetch both if this was intentional.",
+				nodes = conflict.fields1 + conflict.fields2,
+			)
+		}
+	}
+
+	private fun findConflictsWithinSelectionSet(data: ValidationContext, parentType: GNamedType?, selectionSet: GSelectionSet): List<Conflict> {
+		val conflicts = mutableListOf<Conflict>()
+		val (fieldMap, fragmentSpreads) = getFieldsAndFragmentSpreads(data = data, parentType = parentType, selectionSet = selectionSet)
+
+		collectConflictsWithin(data = data, conflicts = conflicts, fieldMap = fieldMap)
+
+		for (index1 in fragmentSpreads.indices) {
+			collectConflictsBetweenFieldsAndFragment(data, conflicts, false, fieldMap, fragmentSpreads[index1])
+
+			for (index2 in index1 + 1 until fragmentSpreads.size) {
+				collectConflictsBetweenFragments(data, conflicts, false, fragmentSpreads[index1], fragmentSpreads[index2])
+			}
+		}
+
+		return conflicts
+	}
+
+	private fun findConflictsBetweenSubSelectionSets(
+		data: ValidationContext,
+		areMutuallyExclusive: Boolean,
+		parentType1: GNamedType?,
+		selectionSet1: GSelectionSet,
+		parentType2: GNamedType?,
+		selectionSet2: GSelectionSet,
+	): List<Conflict> {
+		val conflicts = mutableListOf<Conflict>()
+		val (fieldMap1, fragmentSpreads1) = getFieldsAndFragmentSpreads(data = data, parentType = parentType1, selectionSet = selectionSet1)
+		val (fieldMap2, fragmentSpreads2) = getFieldsAndFragmentSpreads(data = data, parentType = parentType2, selectionSet = selectionSet2)
+
+		collectConflictsBetween(data, conflicts, areMutuallyExclusive, fieldMap1, fieldMap2)
+
+		for (fragmentSpread2 in fragmentSpreads2) {
+			collectConflictsBetweenFieldsAndFragment(data, conflicts, areMutuallyExclusive, fieldMap1, fragmentSpread2)
+		}
+
+		for (fragmentSpread1 in fragmentSpreads1) {
+			collectConflictsBetweenFieldsAndFragment(data, conflicts, areMutuallyExclusive, fieldMap2, fragmentSpread1)
+		}
+
+		for (fragmentSpread1 in fragmentSpreads1) {
+			for (fragmentSpread2 in fragmentSpreads2) {
+				collectConflictsBetweenFragments(data, conflicts, areMutuallyExclusive, fragmentSpread1, fragmentSpread2)
+			}
+		}
+
+		return conflicts
+	}
+
+	private fun collectConflictsBetweenFieldsAndFragment(
+		data: ValidationContext,
+		conflicts: MutableList<Conflict>,
+		areMutuallyExclusive: Boolean,
+		fieldMap: FieldMap,
+		fragmentSpread: FragmentSpread,
+	) {
+		if (comparedFieldsAndFragmentPairs.has(fieldMap, fragmentSpread.key, areMutuallyExclusive)) {
 			return
 		}
 
-		// Cannot validate a selection for an unknown type.
-		val parentType = data.relatedParentType?.underlyingNamedType
+		comparedFieldsAndFragmentPairs.add(fieldMap, fragmentSpread.key, areMutuallyExclusive)
+
+		// Cannot validate a selection that refers to a nonexistent fragment. A fragment whose fields we already
+		// hold contributes nothing new either.
+		val referenced = data.document.fragment(fragmentSpread.node.name)
+			?.let { getReferencedFieldsAndFragmentSpreads(data = data, fragment = it) }
+			?.takeIf { it.fieldMap !== fieldMap }
 			?: return
 
-		findConflictsInSet(
-			set = set.selections.withParentType(parentType),
-			data = data,
-		)
-	}
+		collectConflictsBetween(data, conflicts, areMutuallyExclusive, fieldMap, referenced.fieldMap)
 
-	// FIXME default values
-	private fun argumentValuesAreEqual(selection1: GFieldSelection, selection2: GFieldSelection): Boolean {
-		if (selection1.arguments.size != selection2.arguments.size) {
-			return false
-		}
-
-		for (argument1 in selection1.arguments) {
-			val argument2 = selection2.argument(argument1.name)
-				?: return false
-
-			if (argument1.value != argument2.value) {
-				return false
-			}
-		}
-
-		return true
-	}
-
-	private fun findConflictsForResponseName(responseName: String, fields: List<ResolvedField>, data: ValidationContext) {
-		val firstField = fields.first()
-
-		if (fields.size > 1) {
-			val isPotentiallyCompatibleType = fields.fold(true) { compatible, otherField ->
-				compatible && isPotentiallyCompatibleType(firstField.type, otherField.type)
-			}
-			if (!isPotentiallyCompatibleType) {
-				return data.reportError(
-					message = "Field '$responseName' in '${firstField.parentType.name}' is selected in multiple locations but with incompatible types.",
-					nodes = fields.flatMap { listOf(it.selection.aliasNode ?: it.selection.nameNode, it.definition.type) },
-				)
-			}
-
-			// Cannot validate a selection of a field of an invalid type.
-			val potentiallyCompatibleType = firstField.type.underlyingNamedType
-			if (!potentiallyCompatibleType.isOutputType()) {
-				return
-			}
-
-			var bothFieldsAreOfDistinctObjectType = false
-			var selectsDifferentFieldNames = false
-
-			// TODO We can improve this by pointing to specific incompatible arguments.
-			val incompatibleFields = fields.filterIndexed incompatible@{ index, otherField ->
-				// No need to compare field against itself.
-				if (index == 0) {
-					return@incompatible false
-				}
-
-				// If both fields belong to different Object types they can never be part of the same response.
-				bothFieldsAreOfDistinctObjectType = firstField.parentType !== otherField.parentType &&
-					firstField.parentType is GObjectType &&
-					otherField.parentType is GObjectType
-				if (bothFieldsAreOfDistinctObjectType) {
-					return@incompatible false
-				}
-
-				if (firstField.selection.name != otherField.selection.name) {
-					selectsDifferentFieldNames = true
-
-					return@incompatible true
-				}
-
-				if (!argumentValuesAreEqual(firstField.selection, otherField.selection)) {
-					return@incompatible true
-				}
-
-				false
-			}
-
-			if (incompatibleFields.isNotEmpty()) {
-				data.reportError(
-					message = "Field '$responseName' in '${firstField.parentType.name}' is selected in multiple locations " +
-						"but selects different fields or with different arguments.",
-					nodes = (listOf(firstField) + incompatibleFields).flatMap { field ->
-						if (selectsDifferentFieldNames) {
-							listOf(field.selection.nameNode, field.definition.nameNode)
-						} else {
-							listOf(field.selection.arguments.firstOrNull()?.value ?: field.selection.nameNode)
-						}
-					},
-				)
-			} else if (!bothFieldsAreOfDistinctObjectType) {
-				findConflictsInSet(
-					set = fields.flatMap { field ->
-						val parentType = field.type.underlyingNamedType
-
-						field.selection.selectionSet?.selections?.map { selection ->
-							SelectionInfo(parentType = parentType, selection = selection)
-						}.orEmpty()
-					},
-					data = data,
-				)
-			}
-		} else {
-			findConflictsInSet(
-				set = fields.flatMap { field ->
-					val parentType = field.type.underlyingNamedType
-
-					field.selection.selectionSet?.selections?.map { selection ->
-						SelectionInfo(parentType = parentType, selection = selection)
-					}.orEmpty()
-				},
-				data = data,
-			)
+		for (referencedFragmentSpread in referenced.fragmentSpreads) {
+			collectConflictsBetweenFieldsAndFragment(data, conflicts, areMutuallyExclusive, fieldMap, referencedFragmentSpread)
 		}
 	}
 
-	private fun findConflictsInSet(set: List<SelectionInfo>, data: ValidationContext) {
-		val fieldsByResponseName = set.groupByResponseName(context = data)
-
-		for ((responseName, fields) in fieldsByResponseName) {
-			findConflictsForResponseName(
-				responseName = responseName,
-				fields = fields,
-				data = data,
-			)
-		}
-	}
-
-	private fun GSelection.groupByResponseName(
-		parentType: GNamedType,
-		result: MutableMap<String, MutableList<ResolvedField>>,
-		visitedFragments: MutableSet<String>,
+	private fun collectConflictsBetweenFragments(
 		data: ValidationContext,
+		conflicts: MutableList<Conflict>,
+		areMutuallyExclusive: Boolean,
+		fragmentSpread1: FragmentSpread,
+		fragmentSpread2: FragmentSpread,
 	) {
-		when (this) {
-			is GFieldSelection -> {
-				// Cannot validate a selection of a nonexistent field.
-				// FIXME Will this work for introspection queries?
-				val fieldDefinition = (parentType as? GNode.WithFieldDefinitions)?.fieldDefinition(name)
-					?: return
+		if (fragmentSpread1.key == fragmentSpread2.key ||
+			comparedFragmentPairs.has(fragmentSpread1.key, fragmentSpread2.key, areMutuallyExclusive)
+		) {
+			return
+		}
 
-				// Cannot validate a selection of a field of an unknown type.
-				// FIXME Will this work for introspection queries?
-				val fieldType = TypeResolver.resolveType(data.schema, fieldDefinition.type)
-					?: return
+		comparedFragmentPairs.add(fragmentSpread1.key, fragmentSpread2.key, areMutuallyExclusive)
 
-				result.getOrPut(alias ?: name) { mutableListOf() } += ResolvedField(
-					definition = fieldDefinition,
-					parentType = parentType,
-					selection = this,
-					type = fieldType,
-				)
-			}
+		// Cannot validate a selection that refers to a nonexistent fragment.
+		val fragment1 = data.document.fragment(fragmentSpread1.node.name)
+		val fragment2 = data.document.fragment(fragmentSpread2.node.name)
+		if (fragment1 === null || fragment2 === null) {
+			return
+		}
 
-			is GFragmentSelection -> {
-				// Cannot validate a selection that refers to a nonexistent fragment.
-				val fragment = data.document.fragment(name) ?: return
+		val (fieldMap1, referencedFragmentSpreads1) = getReferencedFieldsAndFragmentSpreads(data = data, fragment = fragment1)
+		val (fieldMap2, referencedFragmentSpreads2) = getReferencedFieldsAndFragmentSpreads(data = data, fragment = fragment2)
 
-				// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
-				val fragmentType = TypeResolver.resolveType(data.schema, fragment.typeCondition)
-					?.takeIf { it.isOutputType() }
-					?: return
+		collectConflictsBetween(data, conflicts, areMutuallyExclusive, fieldMap1, fieldMap2)
 
-				fragment.selectionSet.selections
-					.withParentType(parentType = fragmentType)
-					.groupByResponseName(
-						result = result,
-						visitedFragments = visitedFragments,
-						context = data,
-					)
-			}
+		for (referencedFragmentSpread2 in referencedFragmentSpreads2) {
+			collectConflictsBetweenFragments(data, conflicts, areMutuallyExclusive, fragmentSpread1, referencedFragmentSpread2)
+		}
 
-			is GInlineFragmentSelection -> {
-				val fragmentType = typeCondition?.let { typeCondition ->
-					// Cannot validate a selection that refers to a fragment on an unknown, invalid or incompatible type.
-					TypeResolver.resolveType(data.schema, typeCondition)
-						?.takeIf { it.isOutputType() }
-						?: return
-				} ?: parentType
+		for (referencedFragmentSpread1 in referencedFragmentSpreads1) {
+			collectConflictsBetweenFragments(data, conflicts, areMutuallyExclusive, referencedFragmentSpread1, fragmentSpread2)
+		}
+	}
 
-				selectionSet.selections
-					.withParentType(parentType = fragmentType)
-					.groupByResponseName(
-						result = result,
-						visitedFragments = visitedFragments,
-						context = data,
-					)
+	private fun collectConflictsWithin(data: ValidationContext, conflicts: MutableList<Conflict>, fieldMap: FieldMap) {
+		for ((responseName, fields) in fieldMap.fieldsByResponseName) {
+			for (index1 in fields.indices) {
+				for (index2 in index1 + 1 until fields.size) {
+					findConflict(
+						data = data,
+						parentFieldsAreMutuallyExclusive = false,
+						responseName = responseName,
+						field1 = fields[index1],
+						field2 = fields[index2],
+					)?.let { conflicts += it }
+				}
 			}
 		}
 	}
 
-	private fun isPotentiallyCompatibleType(a: GType, b: GType): Boolean {
-		if (a === b) {
-			return true
-		}
+	private fun collectConflictsBetween(
+		data: ValidationContext,
+		conflicts: MutableList<Conflict>,
+		parentFieldsAreMutuallyExclusive: Boolean,
+		fieldMap1: FieldMap,
+		fieldMap2: FieldMap,
+	) {
+		for ((responseName, fields1) in fieldMap1.fieldsByResponseName) {
+			val fields2 = fieldMap2.fieldsByResponseName[responseName] ?: continue
 
-		return when (a) {
-			is GListType ->
-				if (b is GListType) {
-					isPotentiallyCompatibleType(a.elementType, b.elementType)
-				} else {
-					false
+			for (field1 in fields1) {
+				for (field2 in fields2) {
+					findConflict(
+						data = data,
+						parentFieldsAreMutuallyExclusive = parentFieldsAreMutuallyExclusive,
+						responseName = responseName,
+						field1 = field1,
+						field2 = field2,
+					)?.let { conflicts += it }
 				}
-
-			is GNonNullType ->
-				if (b is GNonNullType) {
-					isPotentiallyCompatibleType(a.nullableType, b.nullableType)
-				} else {
-					false
-				}
-
-			is GEnumType,
-			is GInterfaceType,
-			is GInputObjectType,
-			is GObjectType,
-			is GScalarType,
-			is GUnionType,
-			->
-				false
+			}
 		}
 	}
 
-	private fun List<GSelection>.withParentType(parentType: GNamedType) = map { SelectionInfo(parentType = parentType, selection = it) }
+	private fun findConflict(
+		data: ValidationContext,
+		parentFieldsAreMutuallyExclusive: Boolean,
+		responseName: String,
+		field1: ResolvedField,
+		field2: ResolvedField,
+	): Conflict? {
+		val node1 = field1.selection
+		val node2 = field2.selection
+		val type1 = field1.type
+		val type2 = field2.type
+		val selectionSet1 = node1.selectionSet
+		val selectionSet2 = node2.selectionSet
 
-	private fun List<SelectionInfo>.groupByResponseName(context: ValidationContext): Map<String, List<ResolvedField>> {
-		val result = mutableMapOf<String, MutableList<ResolvedField>>()
+		// Fields of two distinct object types are never part of the same response, so their names and arguments
+		// need not match — but their types still have to be mergeable, as do their sub-selections.
+		val areMutuallyExclusive = parentFieldsAreMutuallyExclusive ||
+			(field1.parentType !== field2.parentType && field1.parentType is GObjectType && field2.parentType is GObjectType)
 
-		groupByResponseName(
-			result = result,
-			visitedFragments = mutableSetOf(),
-			context = context,
+		return when {
+			!areMutuallyExclusive && node1.name != node2.name -> Conflict(
+				responseName = responseName,
+				reason = SimpleConflictReason("\"${node1.name}\" and \"${node2.name}\" are different fields"),
+				fields1 = listOf(node1),
+				fields2 = listOf(node2),
+			)
+
+			!areMutuallyExclusive && !argumentValuesAreEqual(node1, node2) -> Conflict(
+				responseName = responseName,
+				reason = SimpleConflictReason("they have differing arguments"),
+				fields1 = listOf(node1),
+				fields2 = listOf(node2),
+			)
+
+			type1 !== null && type2 !== null && doTypesConflict(type1, type2) -> Conflict(
+				responseName = responseName,
+				reason = SimpleConflictReason("they return conflicting types \"${type1.name}\" and \"${type2.name}\""),
+				fields1 = listOf(node1),
+				fields2 = listOf(node2),
+			)
+
+			selectionSet1 !== null && selectionSet2 !== null -> subfieldConflicts(
+				conflicts = findConflictsBetweenSubSelectionSets(
+					data = data,
+					areMutuallyExclusive = areMutuallyExclusive,
+					parentType1 = type1?.underlyingNamedType,
+					selectionSet1 = selectionSet1,
+					parentType2 = type2?.underlyingNamedType,
+					selectionSet2 = selectionSet2,
+				),
+				responseName = responseName,
+				node1 = node1,
+				node2 = node2,
+			)
+
+			else -> null
+		}
+	}
+
+	private fun getFieldsAndFragmentSpreads(data: ValidationContext, parentType: GNamedType?, selectionSet: GSelectionSet): FieldsAndFragmentSpreads {
+		cachedFieldsAndFragmentSpreads[selectionSet]?.let { return it }
+
+		val fieldMap = FieldMap()
+		val fragmentSpreads = mutableMapOf<String, FragmentSpread>()
+		collectFieldsAndFragmentSpreads(
+			data = data,
+			parentType = parentType,
+			selectionSet = selectionSet,
+			fieldMap = fieldMap,
+			fragmentSpreads = fragmentSpreads,
 		)
+
+		val result = FieldsAndFragmentSpreads(fieldMap = fieldMap, fragmentSpreads = fragmentSpreads.values.toList())
+		cachedFieldsAndFragmentSpreads[selectionSet] = result
 
 		return result
 	}
 
-	private fun List<SelectionInfo>.groupByResponseName(
-		context: ValidationContext,
-		result: MutableMap<String, MutableList<ResolvedField>>,
-		visitedFragments: MutableSet<String>,
+	private fun getReferencedFieldsAndFragmentSpreads(data: ValidationContext, fragment: GFragmentDefinition): FieldsAndFragmentSpreads {
+		cachedFieldsAndFragmentSpreads[fragment.selectionSet]?.let { return it }
+
+		return getFieldsAndFragmentSpreads(
+			data = data,
+			parentType = TypeResolver.resolveType(data.schema, fragment.typeCondition),
+			selectionSet = fragment.selectionSet,
+		)
+	}
+
+	// Fragment spreads are collected but deliberately not expanded here. That keeps collection non-recursive
+	// across fragments, which is what makes fragment cycles harmless.
+	private fun collectFieldsAndFragmentSpreads(
+		data: ValidationContext,
+		parentType: GNamedType?,
+		selectionSet: GSelectionSet,
+		fieldMap: FieldMap,
+		fragmentSpreads: MutableMap<String, FragmentSpread>,
 	) {
-		for ((parentType, selection) in this) {
-			selection.groupByResponseName(
-				data = context,
-				parentType = parentType,
-				result = result,
-				visitedFragments = visitedFragments,
-			)
+		for (selection in selectionSet.selections) {
+			when (selection) {
+				is GFieldSelection -> {
+					// FIXME Will this work for introspection queries?
+					val definition = (parentType as? GNode.WithFieldDefinitions)?.fieldDefinition(selection.name)
+
+					fieldMap.fieldsByResponseName.getOrPut(selection.alias ?: selection.name) { mutableListOf() } += ResolvedField(
+						parentType = parentType,
+						selection = selection,
+						type = definition?.type?.let { TypeResolver.resolveType(data.schema, it) },
+					)
+				}
+
+				// fluid's fragment spreads have no arguments, so the fragment name alone identifies a spread.
+				is GFragmentSelection ->
+					fragmentSpreads[selection.name] = FragmentSpread(key = selection.name, node = selection)
+
+				is GInlineFragmentSelection -> collectFieldsAndFragmentSpreads(
+					data = data,
+					parentType = selection.typeCondition?.let { TypeResolver.resolveType(data.schema, it) } ?: parentType,
+					selectionSet = selection.selectionSet,
+					fieldMap = fieldMap,
+					fragmentSpreads = fragmentSpreads,
+				)
+			}
 		}
 	}
 
-	private class ResolvedField(val definition: GFieldDefinition, val parentType: GNamedType, val selection: GFieldSelection, val type: GType)
+	companion object : Factory(::SelectionUnambiguityRule)
+}
 
-	private data class SelectionInfo(val parentType: GNamedType, val selection: GSelection)
+private fun subfieldConflicts(conflicts: List<Conflict>, responseName: String, node1: GFieldSelection, node2: GFieldSelection): Conflict? {
+	if (conflicts.isEmpty()) {
+		return null
+	}
+
+	return Conflict(
+		responseName = responseName,
+		reason = NestedConflictReason(conflicts.map { it.responseName to it.reason }),
+		fields1 = listOf<GNode>(node1) + conflicts.flatMap { it.fields1 },
+		fields2 = listOf<GNode>(node2) + conflicts.flatMap { it.fields2 },
+	)
+}
+
+// FIXME default values
+private fun argumentValuesAreEqual(selection1: GFieldSelection, selection2: GFieldSelection): Boolean {
+	if (selection1.arguments.size != selection2.arguments.size) {
+		return false
+	}
+
+	return selection1.arguments.all { argument1 ->
+		val argument2 = selection2.argument(argument1.name)
+
+		argument2 !== null && stringifyValue(argument1.value) == stringifyValue(argument2.value)
+	}
+}
+
+/** Returns whether [type1] and [type2] can never describe the same value — note the inverted polarity. */
+private fun doTypesConflict(type1: GType, type2: GType): Boolean = when {
+	type1 is GListType -> if (type2 is GListType) doTypesConflict(type1.elementType, type2.elementType) else true
+	type2 is GListType -> true
+	type1 is GNonNullType -> if (type2 is GNonNullType) doTypesConflict(type1.nullableType, type2.nullableType) else true
+	type2 is GNonNullType -> true
+	type1 is GLeafType || type2 is GLeafType -> type1 !== type2
+	else -> false
+}
+
+/**
+ * Renders [value] in a form where two values that differ only in the order of input object fields
+ * produce the same string, so that they compare as equal.
+ */
+private fun stringifyValue(value: GValue): String = sortValueNode(value).toString()
+
+/** Returns [value] with the fields of all nested input object values sorted by name. */
+private fun sortValueNode(value: GValue): GValue = when (value) {
+	is GListValue -> GListValue(elements = value.elements.map(::sortValueNode), origin = value.origin)
+	is GObjectValue -> GObjectValue(
+		arguments = value.arguments
+			.sortedBy { it.name }
+			.map { GArgument(name = it.nameNode, value = sortValueNode(it.value), origin = it.origin) },
+		origin = value.origin,
+	)
+
+	else -> value
+}
+
+/** One reported conflict: the fields that conflict, and why. */
+private class Conflict(val responseName: String, val reason: ConflictReason, val fields1: List<GNode>, val fields2: List<GNode>)
+
+private sealed interface ConflictReason {
+
+	fun describe(): String
+}
+
+private class SimpleConflictReason(private val message: String) : ConflictReason {
+
+	override fun describe(): String = message
+}
+
+private class NestedConflictReason(private val reasons: List<Pair<String, ConflictReason>>) : ConflictReason {
+
+	override fun describe(): String = reasons.joinToString(separator = " and ") { (responseName, reason) ->
+		"subfields \"$responseName\" conflict because ${reason.describe()}"
+	}
+}
+
+/**
+ * Fields of one selection set, grouped by response name.
+ *
+ * Deliberately does not override [equals]: memoization and the pair sets below rely on identity, matching
+ * graphql-js which keys those on the `Map` instance.
+ */
+private class FieldMap {
+
+	val fieldsByResponseName: MutableMap<String, MutableList<ResolvedField>> = mutableMapOf()
+}
+
+private data class FieldsAndFragmentSpreads(val fieldMap: FieldMap, val fragmentSpreads: List<FragmentSpread>)
+
+private class FragmentSpread(val key: String, val node: GFragmentSelection)
+
+private class ResolvedField(val parentType: GNamedType?, val selection: GFieldSelection, val type: GType?)
+
+/**
+ * Records ordered `(a, b)` pairs together with the exclusivity flag they were compared under.
+ *
+ * [has] reports a pair as present when it was compared under the same flag, or — when asked with
+ * [weaklyPresent] — under any flag. Comparing a pair non-exclusively subsumes the exclusive comparison,
+ * but not the other way around.
+ */
+private class OrderedPairSet<A : Any, B : Any> {
+
+	private val data: MutableMap<A, MutableMap<B, Boolean>> = mutableMapOf()
+
+	fun has(a: A, b: B, weaklyPresent: Boolean): Boolean {
+		val storedValue = data[a]?.get(b) ?: return false
+
+		return weaklyPresent || !storedValue
+	}
+
+	fun add(a: A, b: B, weaklyPresent: Boolean) {
+		data.getOrPut(a) { mutableMapOf() }[b] = weaklyPresent
+	}
+}
+
+/** [OrderedPairSet] that ignores the order of the two keys. */
+private class PairSet {
+
+	private val orderedPairSet = OrderedPairSet<String, String>()
+
+	fun has(a: String, b: String, weaklyPresent: Boolean): Boolean =
+		if (a < b) orderedPairSet.has(a, b, weaklyPresent) else orderedPairSet.has(b, a, weaklyPresent)
+
+	fun add(a: String, b: String, weaklyPresent: Boolean) {
+		if (a < b) orderedPairSet.add(a, b, weaklyPresent) else orderedPairSet.add(b, a, weaklyPresent)
+	}
 }

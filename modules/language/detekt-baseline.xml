@@ -9,7 +9,6 @@
     <ID>CyclomaticComplexMethod:Lexer.kt:Lexer$private fun readString: Token</ID>
     <ID>CyclomaticComplexMethod:Lexer.kt:Lexer$private fun readToken: Token</ID>
     <ID>CyclomaticComplexMethod:Parser.kt:Parser$private fun parseValue: GValue</ID>
-    <ID>CyclomaticComplexMethod:VisitorContext.kt:VisitorContext$internal inline fun &lt;Result> with: Result</ID>
     <ID>CyclomaticComplexMethod:VisitorContextTest.kt:VisitorContextTest.CapturedElement$override fun equals: Boolean</ID>
     <ID>LargeClass:ParallelVisitorTest.kt:ParallelVisitorTest</ID>
     <ID>LargeClass:Parser.kt:Parser</ID>
@@ -22,7 +21,6 @@
     <ID>LongMethod:ParallelVisitorTest.kt:ParallelVisitorTest$@Test fun testSkipsChildren</ID>
     <ID>LongMethod:ParallelVisitorTest.kt:ParallelVisitorTest$@Test fun testVisitsADocumentInParallel</ID>
     <ID>LongMethod:Parser.kt:Parser$private fun parseValue: GValue</ID>
-    <ID>LongMethod:VisitorContext.kt:VisitorContext$internal inline fun &lt;Result> with: Result</ID>
     <ID>LongMethod:VisitorContextTest.kt:VisitorContextTest$@Test fun testProvidesCorrectInformation</ID>
     <ID>LongMethod:VisitorTest.kt:VisitorTest$@Test fun testVisitsADocument</ID>
     <ID>LoopWithTooManyJumpStatements:Lexer.kt:Lexer$while</ID>
@@ -41,7 +39,6 @@
     <ID>ReturnCount:GNode.kt:public fun List&lt;GNode?>.equalsNode: Boolean</ID>
     <ID>ReturnCount:GSchema.kt:GSchema$@Suppress("NAME_SHADOWING") private fun validateValue: List&lt;GError>?</ID>
     <ID>TooGenericExceptionCaught:DefaultVisitCoordinator.kt:DefaultVisit$e: Throwable</ID>
-    <ID>TooGenericExceptionCaught:ParallelVisitor.kt:ParallelVisit$e: Throwable</ID>
     <ID>TooManyFunctions:GNode.kt:io.fluidsonic.graphql.GNode.kt</ID>
     <ID>TooManyFunctions:Lexer.kt:Lexer</ID>
     <ID>TooManyFunctions:Parser.kt:Parser</ID>
