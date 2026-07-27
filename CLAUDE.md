@@ -68,3 +68,5 @@ language  <--  dsl  <--  execution
 - Source directories use flat `sources/` instead of the standard `src/main/kotlin/` layout
 - Tab indentation
 - Tags have no `v` prefix (e.g., `0.15.0`, not `v0.15.0`)
+- `.idea/gradle.xml` is tracked and the IDE rewrites it automatically. A modification showing up
+  unprompted is normal — commit it when the change is expected, rather than reverting or ignoring it.
