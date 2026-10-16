@@ -107,7 +107,9 @@ internal object VariableInputConverter {
 
 	@Suppress("UNCHECKED_CAST")
 	private fun coerceValueForInputObject(value: Any, type: GInputObjectType, context: Context): Any? = when (value) {
-		is Map<*, *> ->
+		is Map<*, *> -> {
+			val errorCount = context.errors.size
+
 			type.argumentDefinitions
 				.associate { argumentDefinition ->
 					val argumentType = context.execution.schema.resolveType(argumentDefinition.type) ?: validationError(
@@ -130,17 +132,30 @@ internal object VariableInputConverter {
 				}
 				.filterValues { it != NoValue }
 				.let { argumentValues ->
-					// Checked on the coerced result, so absent fields have already been dropped.
+					// Compares counts so that the coercer still runs when only other variables failed.
+					val hasFailedField = context.errors.size > errorCount
+
 					// https://spec.graphql.org/draft/#sec-OneOf-Input-Objects.Input-Coercion
 					if (type.directive(GLanguage.defaultOneOfDirective.name) !== null) {
 						val argumentValue = argumentValues.entries.singleOrNull()
-						if (argumentValue === null || argumentValue.value === null) {
+						val isViolated = when {
+							// A failed field was dropped like an absent one, so count the declared fields the client supplied instead.
+							hasFailedField -> type.argumentDefinitions.count { value.containsKey(it.name) } != 1
+							// Checked on the coerced result, so absent fields have already been dropped.
+							else -> argumentValue === null || argumentValue.value === null
+						}
+						if (isViolated) {
 							GError(
 								message = oneOfViolationMessage(typeName = type.name),
 								path = context.path,
 								nodes = listOf(context.variableDefinition),
 							).throwException()
 						}
+					}
+
+					// The coercer must never see a map from which a failed field was dropped.
+					if (hasFailedField) {
+						return NoValue
 					}
 
 					when (val coercer = type.inputValueCoercer) {
@@ -151,6 +166,7 @@ internal object VariableInputConverter {
 						)
 					}
 				}
+		}
 
 		else -> context.invalid()
 	}

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
+## [Unreleased]
+
+### Fixed
+
+- Variable coercion no longer runs an input object's coercer after one of its fields failed, which surfaced a spurious internal error.
+- A `@oneOf` input variable with a failed field reports the one-field violation only when the client supplied other than exactly one field.
+
+
 ## [0.19.0] - 2026-07-27
 
 Scalar coercion moves onto the types themselves. It used to live in three parallel tables inside the

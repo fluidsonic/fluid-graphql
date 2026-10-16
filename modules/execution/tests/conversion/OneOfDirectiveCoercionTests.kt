@@ -140,6 +140,46 @@ class OneOfDirectiveCoercionTests {
 	}
 
 	@Test
+	fun testVariable_reportsOnlyTheFieldErrorWhenItsOnlyFieldFails() = runTest {
+		assertCoercionError(
+			document = "query someQuery(${'$'}input: OneOfInput) { field(input: ${'$'}input) }",
+			variableValues = mapOf("input" to mapOf("a" to "not-an-int")),
+			expectedError = """
+				String value is not valid for variable 'input.a' with type 'Int' (Int cannot represent non-integer value: "not-an-int").
+
+				<document>:1:17
+				1 | query someQuery(${'$'}input: OneOfInput) { field(input: ${'$'}input) }
+				  |                 ^
+			""",
+		)
+	}
+
+	// The failed field is dropped from the coerced map, so the violation must come from the fields the client supplied.
+	@Test
+	fun testVariable_reportsFieldErrorAndViolationWhenAFailedFieldHasASibling() = runTest {
+		assertCoercionErrors(
+			document = "query someQuery(${'$'}input: OneOfInput) { field(input: ${'$'}input) }",
+			variableValues = mapOf("input" to mapOf("a" to "not-an-int", "b" to 1)),
+			expectedErrors = listOf(
+				"""
+					String value is not valid for variable 'input.a' with type 'Int' (Int cannot represent non-integer value: "not-an-int").
+
+					<document>:1:17
+					1 | query someQuery(${'$'}input: OneOfInput) { field(input: ${'$'}input) }
+					  |                 ^
+				""",
+				"""
+					Within OneOf Input Object type "OneOfInput", exactly one field must be specified, and the value for that field must be non-null.
+
+					<document>:1:17
+					1 | query someQuery(${'$'}input: OneOfInput) { field(input: ${'$'}input) }
+					  |                 ^
+				""",
+			),
+		)
+	}
+
+	@Test
 	fun testVariable_acceptsExactlyOneNonNullField() = runTest {
 		assertCoercionSuccess(
 			document = "query someQuery(${'$'}input: OneOfInput) { field(input: ${'$'}input) }",
@@ -154,9 +194,13 @@ class OneOfDirectiveCoercionTests {
 	}
 
 	private suspend fun assertCoercionError(document: String, variableValues: Map<String, Any?> = emptyMap(), expectedError: String) {
+		assertCoercionErrors(document = document, variableValues = variableValues, expectedErrors = listOf(expectedError))
+	}
+
+	private suspend fun assertCoercionErrors(document: String, variableValues: Map<String, Any?> = emptyMap(), expectedErrors: List<String>) {
 		val result = executor().execute(GDocument.parse(document).valueOrThrow(), variableValues = variableValues)
 
-		assertErrors(expected = listOf(expectedError), actual = result.errors)
+		assertErrors(expected = expectedErrors, actual = result.errors)
 	}
 
 	private suspend fun assertCoercionSuccess(document: String, variableValues: Map<String, Any?> = emptyMap(), expected: Map<String, Any?>) {

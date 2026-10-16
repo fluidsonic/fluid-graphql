@@ -1,7 +1,9 @@
 package testing
 
 import io.fluidsonic.graphql.GExecutor
+import io.fluidsonic.graphql.GInputValueCoercer
 import io.fluidsonic.graphql.GraphQL
+import io.fluidsonic.graphql.InputObjectInputValueCoercerExtensionKey
 import io.fluidsonic.graphql.arguments
 import io.fluidsonic.graphql.default
 import io.fluidsonic.graphql.document
@@ -12,6 +14,7 @@ import io.fluidsonic.graphql.type
 import io.fluidsonic.graphql.value
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class VariableCoercionTests {
@@ -364,6 +367,92 @@ class VariableCoercionTests {
 	}
 
 	@Test
+	fun testInputObjectVariableCoercion_skipsCoercerWhenFieldIsInvalid() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}reason: Reason) { reason(value: ${'$'}reason) }""",
+			variableValues = mapOf("reason" to mapOf("type" to "dod")),
+			expectedErrors = listOf(
+				"String value is not valid for type 'ReasonType' in variable 'reason.type' with type 'ReasonType!' (valid values: ACCIDENT, ILLNESS).",
+			),
+			expectedCoercerCalls = 0,
+		)
+	}
+
+	@Test
+	fun testInputObjectVariableCoercion_skipsCoercerWhenRequiredFieldIsMissing() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}reason: Reason) { reason(value: ${'$'}reason) }""",
+			variableValues = mapOf("reason" to emptyMap<String, Any?>()),
+			expectedErrors = listOf(
+				"A value must be provided for variable 'reason.type' of type 'ReasonType!'.",
+			),
+			expectedCoercerCalls = 0,
+		)
+	}
+
+	@Test
+	fun testInputObjectVariableCoercion_skipsCoercerWhenNonNullFieldIsNull() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}reason: Reason) { reason(value: ${'$'}reason) }""",
+			variableValues = mapOf("reason" to mapOf("type" to null)),
+			expectedErrors = listOf(
+				"Null value is not valid for variable 'reason.type' with type 'ReasonType!'.",
+			),
+			expectedCoercerCalls = 0,
+		)
+	}
+
+	@Test
+	fun testInputObjectVariableCoercion_skipsCoercerWhenListFieldElementIsInvalid() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}batch: Batch) { batch(value: ${'$'}batch) }""",
+			variableValues = mapOf("batch" to mapOf("types" to listOf("ACCIDENT", "dod"))),
+			expectedErrors = listOf(
+				"String value is not valid for type 'ReasonType' in variable 'batch.types[1]' with type '[ReasonType!]!' (valid values: ACCIDENT, ILLNESS).",
+			),
+			expectedCoercerCalls = 0,
+		)
+	}
+
+	@Test
+	fun testInputObjectVariableCoercion_skipsOuterCoercerWhenNestedObjectFieldIsInvalid() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}holder: Holder) { holder(value: ${'$'}holder) }""",
+			variableValues = mapOf("holder" to mapOf("reason" to mapOf("type" to "dod"))),
+			expectedErrors = listOf(
+				"String value is not valid for type 'ReasonType' in variable 'holder.reason.type' with type 'ReasonType!' (valid values: ACCIDENT, ILLNESS).",
+			),
+			expectedCoercerCalls = 0,
+		)
+	}
+
+	// The failed element stays in the list rather than being dropped, so only the error count can tell the outer object.
+	// The one expected call is the valid first element's.
+	@Test
+	fun testInputObjectVariableCoercion_skipsOuterCoercerWhenObjectInListFieldIsInvalid() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}holder: Holder) { holder(value: ${'$'}holder) }""",
+			variableValues = mapOf("holder" to mapOf("reasons" to listOf(mapOf("type" to "ACCIDENT"), mapOf("type" to "dod")))),
+			expectedErrors = listOf(
+				"String value is not valid for type 'ReasonType' in variable 'holder.reasons[1].type' with type 'ReasonType!' (valid values: ACCIDENT, ILLNESS).",
+			),
+			expectedCoercerCalls = 1,
+		)
+	}
+
+	@Test
+	fun testInputObjectVariableCoercion_runsCoercerWhenOnlyAnotherVariableIsInvalid() = runTest {
+		assertInputObjectCoercion(
+			document = """query(${'$'}type: ReasonType!, ${'$'}reason: Reason!) { type(value: ${'$'}type) reason(value: ${'$'}reason) }""",
+			variableValues = mapOf("type" to "dod", "reason" to mapOf("type" to "ACCIDENT")),
+			expectedErrors = listOf(
+				"String value is not valid for type 'ReasonType' in variable 'type' with type 'ReasonType!' (valid values: ACCIDENT, ILLNESS).",
+			),
+			expectedCoercerCalls = 1,
+		)
+	}
+
+	@Test
 	fun testVariableWithDefaultValue_overriddenByProvided() = runTest {
 		assertExecution(
 			schema = stringSchema,
@@ -371,5 +460,66 @@ class VariableCoercionTests {
 			variableValues = mapOf("v" to "provided"),
 			expected = mapOf("data" to mapOf("echo" to "provided")),
 		)
+	}
+
+	private suspend fun assertInputObjectCoercion(document: String, variableValues: Map<String, Any?>, expectedErrors: List<String>, expectedCoercerCalls: Int) {
+		// Counts calls instead of failing inside the coercer, because the executor turns an exception thrown there into an error.
+		var coercerCalls = 0
+		val countingCoercer = GInputValueCoercer<Map<String, Any?>> { value ->
+			coercerCalls += 1
+			value
+		}
+
+		val schema = GraphQL.schema {
+			val Batch by type
+			val Holder by type
+			val Reason by type
+			val ReasonType by type
+
+			Enum(ReasonType) {
+				value("ACCIDENT")
+				value("ILLNESS")
+			}
+
+			InputObject(Batch) {
+				argument("types" of !List(!ReasonType))
+				extension(InputObjectInputValueCoercerExtensionKey, countingCoercer)
+			}
+
+			InputObject(Holder) {
+				argument("reason" of Reason)
+				argument("reasons" of List(!Reason))
+				extension(InputObjectInputValueCoercerExtensionKey, countingCoercer)
+			}
+
+			InputObject(Reason) {
+				argument("type" of !ReasonType)
+				extension(InputObjectInputValueCoercerExtensionKey, countingCoercer)
+			}
+
+			Query {
+				field("batch" of String) {
+					argument("value" of Batch)
+					resolve { "resolved" }
+				}
+				field("holder" of String) {
+					argument("value" of Holder)
+					resolve { "resolved" }
+				}
+				field("reason" of String) {
+					argument("value" of Reason)
+					resolve { "resolved" }
+				}
+				field("type" of String) {
+					argument("value" of ReasonType)
+					resolve { "resolved" }
+				}
+			}
+		}
+
+		val result = GExecutor.default(schema = schema).execute(document, variableValues = variableValues)
+
+		assertEquals(expected = expectedErrors, actual = result.errors.map { it.message })
+		assertEquals(expected = expectedCoercerCalls, actual = coercerCalls, message = "Input object coercer calls")
 	}
 }
