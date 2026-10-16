@@ -3,14 +3,6 @@
 	"enabledPlugins": {
 		"genki-dev@genki": true
 	},
-	"extraKnownMarketplaces": {
-		"genki": {
-			"source": {
-				"source": "git",
-				"url": "https://github.com/staygenki/claude-code-plugins.git"
-			}
-		}
-	},
 	"permissions": {
 		"allow": [],
 		"ask": [],
