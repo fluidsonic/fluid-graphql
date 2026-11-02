@@ -51,7 +51,6 @@ internal class Validator(val rules: List<ValidationRule.Provider>) {
 				FragmentTypeConditionValidityRule,
 				ObjectFieldExistenceRule,
 				ObjectFieldNameExclusivityRule,
-				ObjectFieldRequirementRule,
 				OperationDefinitionNameExclusivityRule,
 				ScalarLeavesRule,
 				SelectionUnambiguityRule,

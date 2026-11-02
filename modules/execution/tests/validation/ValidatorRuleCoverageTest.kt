@@ -22,7 +22,6 @@ import io.fluidsonic.graphql.GDocument
 import io.fluidsonic.graphql.GSchema
 import io.fluidsonic.graphql.ObjectFieldExistenceRule
 import io.fluidsonic.graphql.ObjectFieldNameExclusivityRule
-import io.fluidsonic.graphql.ObjectFieldRequirementRule
 import io.fluidsonic.graphql.OperationDefinitionNameExclusivityRule
 import io.fluidsonic.graphql.ScalarLeavesRule
 import io.fluidsonic.graphql.SelectionUnambiguityRule
@@ -39,7 +38,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 // Every rule registered in `Validator.default` must demonstrably fire *through* `Validator`, both alone and while
-// sharing one traversal with the other 28 rules.
+// sharing one traversal with the other 27 rules.
 //
 // The ~220 per-rule tests all go through `assertValidationRule`, which runs a single rule against a fresh
 // `ValidationContext` and never touches `Validator`. A rule that the shared traversal fails to dispatch to would
@@ -95,7 +94,7 @@ class ValidatorRuleCoverageTest {
 	}
 }
 
-// Six of the 29 rules are registered through a companion object, whose `simpleName` is just "Companion" — which
+// Six of the 28 rules are registered through a companion object, whose `simpleName` is just "Companion" — which
 // would collapse them into one indistinguishable name and blunt `testEveryRegisteredRuleHasACase`. The enclosing
 // class name is the stable identity.
 private val ValidationRule.Provider.ruleName: String
@@ -113,8 +112,8 @@ private class RuleCase(val rule: ValidationRule.Provider, val document: String, 
 }
 
 // One schema serves every case that does not need an unusual shape: it carries an optional and a required field
-// argument, an optional and a required input object, two unrelated object types, a non-repeatable directive, and a
-// subscription root with two fields.
+// argument, an input object, two unrelated object types, a non-repeatable directive, and a subscription root with two
+// fields.
 private const val RULE_SCHEMA = """
 	schema {
 		query: Query
@@ -128,7 +127,6 @@ private const val RULE_SCHEMA = """
 		withArg(a: Int): String
 		withRequiredArg(a: Int!): String
 		withInput(input: In): String
-		withRequiredInput(input: RequiredIn): String
 	}
 
 	type Obj {
@@ -146,10 +144,6 @@ private const val RULE_SCHEMA = """
 
 	input In {
 		a: Int
-	}
-
-	input RequiredIn {
-		a: Int!
 	}
 
 	directive @once on FIELD
@@ -283,11 +277,6 @@ private val ruleCases = listOf(
 		rule = ObjectFieldNameExclusivityRule,
 		document = "{ withInput(input: { a: 1, a: 2 }) }",
 		expectedMessage = "An input object can only have a single field named 'a'.",
-	),
-	RuleCase(
-		rule = ObjectFieldRequirementRule,
-		document = "{ withRequiredInput(input: { }) }",
-		expectedMessage = "Value for Input type 'RequiredIn' is missing required field 'a'.",
 	),
 	RuleCase(
 		rule = OperationDefinitionNameExclusivityRule,

@@ -9,6 +9,6 @@ Two consequences that surprise readers:
 - **A capped result has `maxErrors + 1` entries**, not `maxErrors`. `ValidationContext.collectingErrors` appends a terminal `GError` ("Too many validation errors, error limit reached. Validation aborted.") that carries no nodes and therefore no location block. With `maxErrors = 0` that terminal error is the *only* one reported.
 - **It is a stop, not a truncation.** `ValidationContext.reportError` throws a private exception once the limit is reached, unwinding the shared traversal, so rules stop being invoked. `ValidatorErrorLimitTest` asserts the invocation count precisely to distinguish this from an `errors.take(maxErrors)` implementation. Deliberately not a `GErrorException`, since rules and `GSchema.validateValue` raise that for real failures.
 
-Errors come out in **document order**, interleaved across rules, because all 29 rules share one traversal — so which errors survive the cap depends on position in the document, not on rule registration order (`ValidatorCorpusTest.testErrorsAreReportedInDocumentOrderRatherThanGroupedByRule`).
+Errors come out in **document order**, interleaved across rules, because all registered rules share one traversal — so which errors survive the cap depends on position in the document, not on rule registration order (`ValidatorCorpusTest.testErrorsAreReportedInDocumentOrderRatherThanGroupedByRule`).
 
 Related: validation-entry-points.md, validation-rule-authoring.md, ../language/parallel-visitor.md.

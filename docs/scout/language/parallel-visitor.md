@@ -1,6 +1,6 @@
 # parallelize() is a single-pass multiplexer, not concurrency
 
-Semantics of `Iterable<Visitor>.parallelize()` (`modules/language/sources/visitors/ParallelVisitor.kt`); matters for validation (all 29 rules run through it) and any multi-visitor code.
+Semantics of `Iterable<Visitor>.parallelize()` (`modules/language/sources/visitors/ParallelVisitor.kt`); matters for validation (all 28 rules run through it) and any multi-visitor code.
 
 No threads or coroutines are involved. `ParallelVisitor` runs all visitors in lock-step over one shared walker: for each node every visitor's `onNode` runs and returns before the next visitor sees that node, and the subtree is traversed only afterwards. Rules therefore share one deterministic traversal, firing per node in registration order — so their errors come out in document order rather than grouped by rule.
 

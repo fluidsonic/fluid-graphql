@@ -44,7 +44,6 @@
     <ID>ReturnCount:FragmentSelectionPossibilityRule.kt:FragmentSelectionPossibilityRule$override fun onFragmentSelection</ID>
     <ID>ReturnCount:FragmentSelectionPossibilityRule.kt:FragmentSelectionPossibilityRule$override fun onInlineFragmentSelection</ID>
     <ID>ReturnCount:FragmentTypeConditionValidityRule.kt:FragmentTypeConditionValidityRule$override fun onInlineFragmentSelection</ID>
-    <ID>ReturnCount:ObjectFieldRequirementRule.kt:ObjectFieldRequirementRule$override fun onValue</ID>
     <ID>ReturnCount:SelectionUnambiguityRule.kt:SelectionUnambiguityRule$private fun GSelection.groupByResponseName</ID>
     <ID>ReturnCount:SelectionUnambiguityRule.kt:SelectionUnambiguityRule$private fun argumentValuesAreEqual: Boolean</ID>
     <ID>ReturnCount:VariableInputConverter.kt:VariableInputConverter$private fun coerceValueAbsence: Any?</ID>
