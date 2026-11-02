@@ -6,7 +6,7 @@ Validation used to be the low ceiling: each rule got its own walk and descended 
 
 Three rules still recurse per level of selection nesting themselves, which keeps validation's own ceiling well below the bare traversal's:
 
-- `collectVariableRefs` (`modules/execution/sources/validation/rules/VariableRefCollector.kt`), used by both variable-usage rules,
+- the private `collectFromSelectionSet` (`modules/execution/sources/validation/rules/VariableRefCollector.kt`), reached from `collectVariableRefs` and used by AllVariableUsesDefinedRule and AllVariablesUsedRule; the fragment walk beside it, `collectReferencedFragments`, is iterative,
 - `FragmentDefinitionUsageRule.collectReferencedFragmentNames`,
 - `SelectionUnambiguityRule` — the mutual recursion between `findConflict` and `findConflictsBetweenSubSelectionSets`.
 

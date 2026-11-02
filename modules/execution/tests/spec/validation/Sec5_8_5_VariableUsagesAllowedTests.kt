@@ -154,4 +154,124 @@ class Sec5_8_5_VariableUsagesAllowedTests {
 			""",
 		)
 	}
+
+	// Each operation is checked against the fragments it reaches, whatever the document order. Verified against
+	// graphql@17.0.2, as are the three tests below.
+	@Test
+	fun testRejectsNullableVariableOfOperationSharingFragmentWithLaterOperation() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:1:9
+				1 | query B(${'$'}v: Boolean) { ...f }
+				  |         ^
+				2 | query A(${'$'}v: Boolean!) { ...f }
+
+				<document>:3:42
+				2 | query A(${'$'}v: Boolean!) { ...f }
+				3 | fragment f on Query { field @include(if: ${'$'}v) }
+				  |                                          ^
+			""",
+			),
+			document = """
+				|query B(${'$'}v: Boolean) { ...f }
+				|query A(${'$'}v: Boolean!) { ...f }
+				|fragment f on Query { field @include(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableUsedInFragmentDefinedBeforeOperation() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:2:9
+				1 | fragment f on Query { field @include(if: ${'$'}v) }
+				2 | query Q(${'$'}v: Boolean) { ...f }
+				  |         ^
+
+				<document>:1:42
+				1 | fragment f on Query { field @include(if: ${'$'}v) }
+				  |                                          ^
+				2 | query Q(${'$'}v: Boolean) { ...f }
+			""",
+			),
+			document = """
+				|fragment f on Query { field @include(if: ${'$'}v) }
+				|query Q(${'$'}v: Boolean) { ...f }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	@Test
+	fun testAcceptsAnyVariableUsedInUnreferencedFragment() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = """
+				|query Q(${'$'}v: Boolean) { field }
+				|fragment f on Query { field @include(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableOfEachOperationSharingFragment() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:1:9
+				1 | query A(${'$'}v: Boolean) { ...f }
+				  |         ^
+				2 | query B(${'$'}v: Boolean) { ...f }
+
+				<document>:3:42
+				2 | query B(${'$'}v: Boolean) { ...f }
+				3 | fragment f on Query { field @include(if: ${'$'}v) }
+				  |                                          ^
+			""",
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:2:9
+				1 | query A(${'$'}v: Boolean) { ...f }
+				2 | query B(${'$'}v: Boolean) { ...f }
+				  |         ^
+				3 | fragment f on Query { field @include(if: ${'$'}v) }
+
+				<document>:3:42
+				2 | query B(${'$'}v: Boolean) { ...f }
+				3 | fragment f on Query { field @include(if: ${'$'}v) }
+				  |                                          ^
+			""",
+			),
+			document = """
+				|query A(${'$'}v: Boolean) { ...f }
+				|query B(${'$'}v: Boolean) { ...f }
+				|fragment f on Query { field @include(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
 }
