@@ -102,6 +102,24 @@ class Sec5_5_7_FragmentSpreadIsPossibleTests {
 		)
 	}
 
+	// graphql-js resolves a fragment name defined twice to the last definition. Verified against graphql@17.0.2.
+	@Test
+	fun testAcceptsSpreadOfLastOfDuplicateFragmentDefinitions() {
+		assertValidationRule(
+			rule = FragmentSelectionPossibilityRule,
+			errors = emptyList(),
+			document = """
+				|{ ...f }
+				|fragment f on A { y }
+				|fragment f on Query { x }
+			""",
+			schema = """
+				|type Query { x: String }
+				|type A { y: String }
+			""",
+		)
+	}
+
 	@Test
 	fun testAcceptsInlineFragmentOnSameObject() {
 		assertValidationRule(

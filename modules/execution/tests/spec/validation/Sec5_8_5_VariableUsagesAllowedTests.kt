@@ -390,6 +390,62 @@ class Sec5_8_5_VariableUsagesAllowedTests {
 	}
 
 	@Test
+	fun testAcceptsNonNullVariableForItemOfNonNullList() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = """
+				|query Q(${'$'}v: Int!) { field(list: [${'$'}v]) }
+			""",
+			schema = """
+				|type Query { field(list: [Int!]!): String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableForNonNullItemOfNestedList() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Int' cannot be used as an argument of type 'Int!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Int) { field(list: [[${'$'}v]]) }
+				  |         ^
+
+				<document>:1:34
+				1 | query Q(${'$'}v: Int) { field(list: [[${'$'}v]]) }
+				  |                                  ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Int) { field(list: [[${'$'}v]]) }
+			""",
+			schema = """
+				|type Query { field(list: [[Int!]]): String }
+			""",
+		)
+	}
+
+	// An input object field inside a list keeps its own default value.
+	@Test
+	fun testAcceptsNullableVariableForFieldWithDefaultOfObjectInList() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = """
+				|query Q(${'$'}v: Int) { field(list: [{ a: ${'$'}v }]) }
+			""",
+			schema = """
+				|input In { a: Int! = 1 }
+				|type Query { field(list: [In]): String }
+			""",
+		)
+	}
+
+	@Test
 	fun testAcceptsNullableVariableInListForNonListArg() {
 		assertValidationRule(
 			rule = VariablesInAllowedPositionRule,

@@ -105,9 +105,11 @@ public open class VisitorContext(
 			}
 
 			// As in graphql-js `TypeInfo`, the items take the list's item type, and a list given where no list is expected
-			// takes that type itself, made nullable.
-			is GListValue ->
+			// takes that type itself, made nullable. The list's own type becomes the items' parent type.
+			is GListValue -> {
+				state.relatedParentType = state.relatedType
 				state.relatedType = state.relatedType?.nullableType?.let { (it as? GListType)?.elementType ?: it }
+			}
 
 			is GNamedType -> {
 				state.relatedParentType = null

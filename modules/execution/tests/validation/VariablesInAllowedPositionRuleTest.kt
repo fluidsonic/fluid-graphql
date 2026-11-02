@@ -74,6 +74,21 @@ class VariablesInAllowedPositionRuleTest {
 		)
 	}
 
+	// A variable supplying only an item of the list a OneOf field holds is not what must be non-nullable.
+	// Verified against graphql@17.0.2: no errors.
+	@Test
+	fun testAcceptsNullableVariableForListItemOfOneOfInputObjectField() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = "query someQuery(${'$'}a: Int) { field(input: { a: [${'$'}a] }) }",
+			schema = """
+				|input Input @oneOf { a: [Int] b: Int }
+				|type Query { field(input: Input): String }
+			""",
+		)
+	}
+
 	@Test
 	fun testAcceptsNonNullVariableForOneOfInputObjectField() {
 		assertValidationRule(
