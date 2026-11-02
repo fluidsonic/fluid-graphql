@@ -5,12 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
-## [Unreleased]
+## [0.19.1] - 2026-11-02
 
 ### Fixed
 
 - Variable coercion no longer runs an input object's coercer after one of its fields failed, which surfaced a spurious internal error.
 - A `@oneOf` input variable with a failed field reports the one-field violation only when the client supplied other than exactly one field.
+- A variable used only in a directive argument, such as `@include(if: $v)`, now counts as used, and an undefined one there is reported.
+- Variable positions inside fragments are checked against every operation spreading them, instead of against whichever operation came last in the document.
+- Undefined-variable errors list an operation's own usages before those of its fragments, in graphql-js order.
+- A variable inside a list literal is checked against the list's item type, so `ids: [$id]` with `$id: ID!` is no longer rejected.
+- A fragment name defined more than once resolves to its last definition, as in graphql-js.
+- A fragment spread after a repeated or undefined spread no longer leaves its fragment reported as unused.
+- Required fields of input objects inside lists and in non-null positions are now checked.
+- A nullable variable supplying a list item of a `@oneOf` field is no longer rejected.
 
 
 ## [0.19.0] - 2026-07-27
