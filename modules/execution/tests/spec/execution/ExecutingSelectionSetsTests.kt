@@ -143,6 +143,37 @@ class ExecutingSelectionSetsTests {
 		assertEquals(expected = "barValue", actual = data["bar"])
 	}
 
+	// The `documentSource` overload validates, so these also pin that a variable used only in a directive
+	// counts as used (§5.8.4).
+	@Test
+	fun testIncludeAndSkipDirectivesWithVariable() = runTest {
+		val schema = GraphQL.schema {
+			Query {
+				field("foo" of String) { resolve { "fooValue" } }
+				field("bar" of String) { resolve { "barValue" } }
+			}
+		}
+		val executor = GExecutor.default(schema = schema)
+
+		for (document in listOf(
+			"query T(${'$'}v: Boolean!) { foo @include(if: ${'$'}v) bar }",
+			"query T(${'$'}v: Boolean!) { foo @skip(if: ${'$'}v) bar }",
+			"query T(${'$'}v: Boolean!) { ... @include(if: ${'$'}v) { foo } bar }",
+			"query T(${'$'}v: Boolean!) { ...frag @include(if: ${'$'}v) bar } fragment frag on Query { foo }",
+		)) {
+			for (value in listOf(true, false)) {
+				val included = value != document.contains("@skip")
+				val expected = if (included) mapOf("foo" to "fooValue", "bar" to "barValue") else mapOf("bar" to "barValue")
+
+				assertEquals(
+					expected = mapOf("data" to expected),
+					actual = executor.serializeResult(executor.execute(document, variableValues = mapOf("v" to value))),
+					message = "$document with \$v = $value",
+				)
+			}
+		}
+	}
+
 	@Test
 	fun testTypedInlineFragmentOnObject() = runTest {
 		val schema = GraphQL.schema {

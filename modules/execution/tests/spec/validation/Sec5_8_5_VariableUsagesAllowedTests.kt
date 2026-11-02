@@ -85,4 +85,73 @@ class Sec5_8_5_VariableUsagesAllowedTests {
 			""",
 		)
 	}
+
+	@Test
+	fun testAcceptsNonNullVariableForNonNullDirectiveArg() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = """
+				|query Q(${'$'}v: Boolean!) { field @include(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableForNonNullDirectiveArg() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Boolean) { field @include(if: ${'$'}v) }
+				  |         ^
+
+				<document>:1:43
+				1 | query Q(${'$'}v: Boolean) { field @include(if: ${'$'}v) }
+				  |                                           ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Boolean) { field @include(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableForNonNullDirectiveArgInFragment() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Boolean) { ...frag }
+				  |         ^
+				2 | fragment frag on Query { field @skip(if: ${'$'}v) }
+
+				<document>:2:42
+				1 | query Q(${'$'}v: Boolean) { ...frag }
+				2 | fragment frag on Query { field @skip(if: ${'$'}v) }
+				  |                                          ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Boolean) { ...frag }
+				|fragment frag on Query { field @skip(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
 }

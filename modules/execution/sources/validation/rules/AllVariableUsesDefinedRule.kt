@@ -11,7 +11,7 @@ internal class AllVariableUsesDefinedRule : ValidationRule() {
 		// The names are collected by `onVariableDefinition` while the operation's subtree is traversed, so they are
 		// only complete once the traversal leaves the operation again.
 		visit.afterChildren {
-			val usages = collectVariableRefs(definition.selectionSet, data.document)
+			val usages = collectVariableRefs(definition, data.document)
 			for ((name, node) in usages) {
 				if (name !in definedVarNames) {
 					data.reportError(

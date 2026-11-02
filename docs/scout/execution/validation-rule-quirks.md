@@ -6,7 +6,7 @@ Per-rule behaviors that look like bugs or hide as correct code; matters when edi
 
 **`VariablesInAllowedPositionRule` scopes by document order.** Its `varDefMap` resets only in `onOperationDefinition`, so variable references inside fragment definitions are checked against whichever operation was most recently visited — or silently skipped if the fragment precedes all operations. Map misses `?: return` silently; the undefined-variable error is reported by `AllVariableUsesDefinedRule` instead. It also carries the OneOf nullable-variable check, which bypasses the shared OneOf message (oneof-enforcement.md).
 
-**Variable-usage rules are hybrid collectors:** definitions come from visitor callbacks, but uses come from the standalone `collectVariableRefs`, which recursively follows fragment spreads (the operation subtree cannot see fragment definitions elsewhere), guards cycles with a visited set, and skips undefined fragments.
+**Variable-usage rules are hybrid collectors:** definitions come from visitor callbacks, but uses come from the standalone collector described in variable-reference-collector.md.
 
 **`SubscriptionRootFieldExclusivityRule` rejects a lone `__typename`** root field — introspection fields do not count as the one allowed root field, despite the error message saying "exactly one root field". It resolves fields through fragment spreads.
 
