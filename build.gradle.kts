@@ -94,7 +94,7 @@ tasks.matching { it.name == "check" }.configureEach {
 	dependsOn("checkApiDumpExcludesInternalApi")
 }
 
-fluidLibrary(name = "graphql", version = "0.19.1") {
+fluidLibrary(name = "graphql", version = "0.19.2") {
 	allModules {
 		language {
 			withExperimentalApi("io.fluidsonic.graphql.InternalGraphqlApi")

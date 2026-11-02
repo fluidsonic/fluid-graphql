@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.19.1.
+**fluid-graphql** is a Kotlin/JVM GraphQL library (package: `io.fluidsonic.graphql`). Version 0.19.2.
 
 ## Build Commands
 

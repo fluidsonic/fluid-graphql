@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 
+## [0.19.2] - 2026-11-03
+
+### Fixed
+
+- A missing required field of an input object literal is reported once, as "Required field '…' of type '…' is missing.", instead of twice.
+
+
 ## [0.19.1] - 2026-11-02
 
 ### Fixed
