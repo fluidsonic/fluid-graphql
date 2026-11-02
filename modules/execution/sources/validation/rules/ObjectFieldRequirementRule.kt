@@ -8,7 +8,7 @@ internal object ObjectFieldRequirementRule : ValidationRule.Singleton() {
 			return // Irrelevant.
 		}
 
-		val type = data.relatedType as? GInputObjectType
+		val type = data.relatedType?.nullableType as? GInputObjectType
 			?: return // Cannot validate unknown or incorrect type.
 
 		val missingArguments = type.argumentDefinitions

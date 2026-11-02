@@ -25,6 +25,44 @@ class ObjectFieldRequirementRuleTest {
 	}
 
 	@Test
+	fun testRejectsAbsenceOfRequiredFieldOfObjectInNonNullPosition() {
+		assertValidationRule(
+			rule = ObjectFieldRequirementRule,
+			errors = listOf(
+				"""
+					Value for Input type 'Input' is missing required field 'required'.
+
+					<document>:1:13
+					1 | { id(input: {}, list: [{}]) }
+					  |             ^
+
+					<document>:2:15
+					1 | type Query { id(input: Input!, list: [Input!]): ID }
+					2 | input Input { required: Boolean! }
+					  |               ^
+				""",
+				"""
+					Value for Input type 'Input' is missing required field 'required'.
+
+					<document>:1:24
+					1 | { id(input: {}, list: [{}]) }
+					  |                        ^
+
+					<document>:2:15
+					1 | type Query { id(input: Input!, list: [Input!]): ID }
+					2 | input Input { required: Boolean! }
+					  |               ^
+				""",
+			),
+			document = "{ id(input: {}, list: [{}]) }",
+			schema = """
+				|type Query { id(input: Input!, list: [Input!]): ID }
+				|input Input { required: Boolean! }
+			""",
+		)
+	}
+
+	@Test
 	fun testRejectsAbsenceOfRequiredFieldOfObjectInList() {
 		assertValidationRule(
 			rule = ObjectFieldRequirementRule,
