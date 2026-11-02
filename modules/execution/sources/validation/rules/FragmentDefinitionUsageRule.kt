@@ -54,20 +54,18 @@ internal class FragmentDefinitionUsageRule : ValidationRule() {
 						)
 					}
 
-				is GFragmentSelection -> {
-					if (!target.add(selection.name)) {
-						return
+				// Each fragment is visited once, and a nonexistent one not at all. Either way the remaining selections
+				// still need visiting.
+				is GFragmentSelection ->
+					if (target.add(selection.name)) {
+						document.fragment(selection.name)?.let { definition ->
+							collectReferencedFragmentNames(
+								document = document,
+								set = definition.selectionSet,
+								target = target,
+							)
+						}
 					}
-
-					val definition = document.fragment(selection.name)
-						?: return // Cannot visit nonexistent fragment.
-
-					collectReferencedFragmentNames(
-						document = document,
-						set = definition.selectionSet,
-						target = target,
-					)
-				}
 
 				is GInlineFragmentSelection ->
 					collectReferencedFragmentNames(

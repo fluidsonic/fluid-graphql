@@ -100,4 +100,37 @@ class Sec5_5_4_FragmentsMustBeUsedTests {
 			""",
 		)
 	}
+
+	// Verified against graphql@17.0.2: no errors.
+	@Test
+	fun testAcceptsFragmentSpreadAfterUndefinedSpread() {
+		assertValidationRule(
+			rule = FragmentDefinitionUsageRule,
+			errors = emptyList(),
+			document = """
+				|{ ...missing ...fragB }
+				|fragment fragB on Query { id }
+			""",
+			schema = """
+				|type Query { id: ID }
+			""",
+		)
+	}
+
+	// Verified against graphql@17.0.2: no errors.
+	@Test
+	fun testAcceptsFragmentSpreadAfterRepeatedSpread() {
+		assertValidationRule(
+			rule = FragmentDefinitionUsageRule,
+			errors = emptyList(),
+			document = """
+				|{ ...fragA ...fragA ...fragB }
+				|fragment fragA on Query { id }
+				|fragment fragB on Query { id }
+			""",
+			schema = """
+				|type Query { id: ID }
+			""",
+		)
+	}
 }
