@@ -68,6 +68,16 @@ class SkippedSelectionTests {
 		assertSkipped("known ...Missing", mapOf("known" to "K"))
 	}
 
+	// Verified against graphql@17.0.2, executed without validation:
+	// `{ ...f } fragment f on Query { a } fragment f on Query { b }` -> {"data":{"b":"B"}}.
+	@Test
+	fun testDuplicateFragmentName_usesLastDefinition() = runTest {
+		assertEquals(
+			actual = execute("{ ...F } fragment F on Query { known } fragment F on Query { o { a } }"),
+			expected = mapOf("data" to mapOf("o" to mapOf("a" to "A"))),
+		)
+	}
+
 	@Test
 	fun testInlineFragmentOnUndefinedType_isSkipped() = runTest {
 		assertSkipped("known ... on Undefined { known }", mapOf("known" to "K"))

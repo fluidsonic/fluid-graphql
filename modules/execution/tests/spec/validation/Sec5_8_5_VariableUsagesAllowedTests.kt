@@ -403,6 +403,37 @@ class Sec5_8_5_VariableUsagesAllowedTests {
 		)
 	}
 
+	// graphql-js resolves a fragment name to the last definition carrying it. Verified against graphql@17.0.2.
+	@Test
+	fun testChecksLastOfDuplicateFragmentDefinitions() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Boolean) { ...f }
+				  |         ^
+				2 | fragment f on Query { field }
+
+				<document>:3:42
+				2 | fragment f on Query { field }
+				3 | fragment f on Query { field @include(if: ${'$'}v) }
+				  |                                          ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Boolean) { ...f }
+				|fragment f on Query { field }
+				|fragment f on Query { field @include(if: ${'$'}v) }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
 	@Test
 	fun testRejectsNullableVariableOfEachOperationSharingFragment() {
 		assertValidationRule(

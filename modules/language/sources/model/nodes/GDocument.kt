@@ -26,9 +26,13 @@ public class GDocument(
 				(!includingOrigin || origin == other.origin)
 			)
 
-	/** Returns the fragment definition with the given [name], or `null` if not found. */
+	/**
+	 * Returns the fragment definition with the given [name], or `null` if not found.
+	 *
+	 * If an invalid document defines the name more than once, the last definition is returned, as in graphql-js.
+	 */
 	public fun fragment(name: String): GFragmentDefinition? {
-		for (definition in definitions) {
+		for (definition in definitions.asReversed()) {
 			if (definition is GFragmentDefinition && definition.name == name) {
 				return definition
 			}
