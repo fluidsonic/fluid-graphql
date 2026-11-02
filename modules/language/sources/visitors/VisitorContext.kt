@@ -104,6 +104,11 @@ public open class VisitorContext(
 				state.relatedType = node.type.let { schema.resolveType(it) }
 			}
 
+			// As in graphql-js `TypeInfo`, the items take the list's item type, and a list given where no list is expected
+			// takes that type itself, made nullable.
+			is GListValue ->
+				state.relatedType = state.relatedType?.nullableType?.let { (it as? GListType)?.elementType ?: it }
+
 			is GNamedType -> {
 				state.relatedParentType = null
 				state.relatedType = node

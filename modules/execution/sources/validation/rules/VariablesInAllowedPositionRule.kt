@@ -99,7 +99,8 @@ private class VariableUsageCollector : Visitor.Hierarchical<Unit, VisitorContext
 		usages += VariableUsage(
 			ref = ref,
 			locationType = data.relatedType,
-			locationDefaultValue = data.relatedArgumentDefinition?.defaultValue,
+			// A list item never has a default value, even if the list it is part of has one.
+			locationDefaultValue = data.relatedArgumentDefinition?.defaultValue?.takeIf { data.parentNode !is GListValue },
 			parentType = data.relatedParentType,
 		)
 	}

@@ -232,6 +232,178 @@ class Sec5_8_5_VariableUsagesAllowedTests {
 	}
 
 	@Test
+	fun testRejectsVariableWithIncompatibleTypeInFragmentOnNonRootType() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}x' of type 'String' cannot be used as an argument of type 'Int'.
+
+				<document>:1:9
+				1 | query Q(${'$'}x: String) { o { ...f } }
+				  |         ^
+				2 | fragment f on O { field(arg: ${'$'}x) }
+
+				<document>:2:30
+				1 | query Q(${'$'}x: String) { o { ...f } }
+				2 | fragment f on O { field(arg: ${'$'}x) }
+				  |                              ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}x: String) { o { ...f } }
+				|fragment f on O { field(arg: ${'$'}x) }
+			""",
+			schema = """
+				|type Query { o: O }
+				|type O { field(arg: Int): String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableForIntrospectionFieldArgInFragment() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}n' of type 'String' cannot be used as an argument of type 'String!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}n: String) { ...f }
+				  |         ^
+				2 | fragment f on Query { __type(name: ${'$'}n) { name } }
+
+				<document>:2:36
+				1 | query Q(${'$'}n: String) { ...f }
+				2 | fragment f on Query { __type(name: ${'$'}n) { name } }
+				  |                                    ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}n: String) { ...f }
+				|fragment f on Query { __type(name: ${'$'}n) { name } }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableOnceInCyclicFragments() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Boolean' cannot be used as an argument of type 'Boolean!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Boolean) { ...a }
+				  |         ^
+				2 | fragment a on Query { ...b field @include(if: ${'$'}v) }
+
+				<document>:2:47
+				1 | query Q(${'$'}v: Boolean) { ...a }
+				2 | fragment a on Query { ...b field @include(if: ${'$'}v) }
+				  |                                               ^
+				3 | fragment b on Query { ...a }
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Boolean) { ...a }
+				|fragment a on Query { ...b field @include(if: ${'$'}v) }
+				|fragment b on Query { ...a }
+			""",
+			schema = """
+				|type Query { field: String }
+			""",
+		)
+	}
+
+	// A list item takes the list's item type, and a list value where no list is expected takes that type itself, made
+	// nullable. A list item never has a default value. Verified against graphql@17.0.2, as are the three tests below.
+	@Test
+	fun testAcceptsNonNullVariableForNonNullListItem() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = """
+				|query Q(${'$'}v: Int!) { field(list: [${'$'}v]) }
+			""",
+			schema = """
+				|type Query { field(list: [Int!]): String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableForNonNullListItem() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Int' cannot be used as an argument of type 'Int!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Int) { field(list: [${'$'}v]) }
+				  |         ^
+
+				<document>:1:33
+				1 | query Q(${'$'}v: Int) { field(list: [${'$'}v]) }
+				  |                                 ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Int) { field(list: [${'$'}v]) }
+			""",
+			schema = """
+				|type Query { field(list: [Int!]): String }
+			""",
+		)
+	}
+
+	@Test
+	fun testRejectsNullableVariableForNonNullListItemOfArgWithDefault() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+				Variable '${'$'}v' of type 'Int' cannot be used as an argument of type 'Int!'.
+
+				<document>:1:9
+				1 | query Q(${'$'}v: Int) { field(list: [${'$'}v]) }
+				  |         ^
+
+				<document>:1:33
+				1 | query Q(${'$'}v: Int) { field(list: [${'$'}v]) }
+				  |                                 ^
+			""",
+			),
+			document = """
+				|query Q(${'$'}v: Int) { field(list: [${'$'}v]) }
+			""",
+			schema = """
+				|type Query { field(list: [Int!] = [1]): String }
+			""",
+		)
+	}
+
+	@Test
+	fun testAcceptsNullableVariableInListForNonListArg() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = emptyList(),
+			document = """
+				|query Q(${'$'}v: Int) { field(arg: [${'$'}v]) }
+			""",
+			schema = """
+				|type Query { field(arg: Int!): String }
+			""",
+		)
+	}
+
+	@Test
 	fun testRejectsNullableVariableOfEachOperationSharingFragment() {
 		assertValidationRule(
 			rule = VariablesInAllowedPositionRule,

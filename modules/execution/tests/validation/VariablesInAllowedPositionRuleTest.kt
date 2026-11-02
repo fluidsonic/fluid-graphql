@@ -48,6 +48,33 @@ class VariablesInAllowedPositionRuleTest {
 	}
 
 	@Test
+	fun testRejectsNullableVariableForOneOfInputObjectFieldInFragment() {
+		assertValidationRule(
+			rule = VariablesInAllowedPositionRule,
+			errors = listOf(
+				"""
+					Variable "${'$'}a" is of type "Int" but must be non-nullable to be used for OneOf Input Object "Input".
+
+					<document>:1:17
+					1 | query someQuery(${'$'}a: Int) { ...f }
+					  |                 ^
+					2 | fragment f on Query { field(input: { a: ${'$'}a }) }
+
+					<document>:2:41
+					1 | query someQuery(${'$'}a: Int) { ...f }
+					2 | fragment f on Query { field(input: { a: ${'$'}a }) }
+					  |                                         ^
+				""",
+			),
+			document = """
+				|query someQuery(${'$'}a: Int) { ...f }
+				|fragment f on Query { field(input: { a: ${'$'}a }) }
+			""",
+			schema = oneOfSchema,
+		)
+	}
+
+	@Test
 	fun testAcceptsNonNullVariableForOneOfInputObjectField() {
 		assertValidationRule(
 			rule = VariablesInAllowedPositionRule,
